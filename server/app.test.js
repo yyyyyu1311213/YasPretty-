@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import appModule from './app.cjs'
 import errorsModule from './errors.cjs'
+import { products } from '../src/data/products.js'
+import schemasModule from './schemas.cjs'
 
 const { buildApp } = appModule
 const { AppError } = errorsModule
+const { productRecordSchema } = schemasModule
 
 const product = {
   id: 'p1',
@@ -77,7 +80,7 @@ async function createApp(options = {}) {
     config: config(options.config),
     logger: false,
     serveStatic: false,
-    products: [product],
+    products: options.products || [product],
     providers: {
       weather: options.weather || mockWeather(),
       zhipu: options.zhipu || mockZhipu(),
@@ -92,6 +95,13 @@ afterEach(async () => {
 })
 
 describe('YasPretty API gateway', () => {
+  it('validates every catalog record against the stage 3 evidence fields', () => {
+    expect(products).toHaveLength(35)
+    products.forEach((item) => expect(productRecordSchema.parse(item)).toMatchObject({ id: item.id }))
+    expect(products.filter((item) => item.factVerificationStatus === 'verified')).toHaveLength(3)
+    expect(products.filter((item) => item.verificationStatus === 'verified')).toHaveLength(0)
+  })
+
   it('returns a minimal health response and security headers', async () => {
     const app = await createApp()
     const response = await app.inject({ method: 'GET', url: '/api/health' })
@@ -332,5 +342,31 @@ describe('YasPretty API gateway', () => {
     expect(response.json().plan.sourceMode).toBe('local')
     expect(response.json().plan.limitations.join('')).toContain('回退')
     expect(zhipu.chat).toHaveBeenCalledTimes(2)
+  })
+
+  it('uses only stage 3 products with complete official facts in color steps', async () => {
+    const app = await createApp({ zhipu: { configured: false }, products })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/makeup-plans',
+      payload: {
+        userProfile: {
+          skinType: '混油皮',
+          skinTypeSource: 'self_reported',
+          undertone: '暖调',
+          finishPreferences: [],
+          budgetTotal: 500,
+          skillLevel: '新手',
+        },
+        makeupRequest: { scene: '通勤', style: '自然', wearHours: 8, timeOfDay: '白天' },
+      },
+    })
+
+    expect(response.statusCode).toBe(200)
+    const plan = response.json().plan
+    expect(plan.steps.find((step) => step.id === 'cheeks').primaryProductId).toBe('lancome-is-me-liquid-blush')
+    expect(plan.steps.find((step) => step.id === 'lips').primaryProductId).toBe('lancome-pure-matte-lipstick')
+    expect(plan.steps.find((step) => step.id === 'eyes-brows').primaryProductId).toBe('loreal-paris-anti-gravity-mascara')
+    expect(plan.recommendedProductIds).not.toContain('loreal-paris-single-eyeshadow')
   })
 })

@@ -62,7 +62,7 @@ function PlanProduct({ id, onOpenProduct }) {
   return (
     <button type="button" className="makeup-plan-product" onClick={() => onOpenProduct(product)}>
       <span><b>{product.brand}</b>{product.name}</span>
-      <small>{product.category} · {product.finish} · 参考价 {product.price} 元（价格待核验）</small>
+      <small>{product.category} · {product.finish} · {product.price == null ? '价格待核验' : product.priceVerifiedAt ? `参考价 ${product.price} 元（核验于 ${product.priceVerifiedAt}）` : `参考价 ${product.price} 元（价格待核验）`}</small>
       <ChevronRight size={15} />
     </button>
   )

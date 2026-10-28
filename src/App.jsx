@@ -286,7 +286,7 @@ function LibraryView({ filters, results, sort, isFilterOpen, collection, onChang
   return (
     <section className="library-page content-section">
       <div className="library-heading">
-        <div><p className="eyebrow">产品库 / 目前收录底妆 / {products.length} 条资料</p><h1>找到匹配的底妆</h1></div>
+        <div><p className="eyebrow">产品库 / 目前收录彩妆 / {products.length} 条资料</p><h1>找到匹配的彩妆</h1></div>
         <label className="library-search"><Search size={17} /><input value={filters.keyword} onChange={(event) => onChangeFilter('keyword', event.target.value, false)} placeholder="搜索品牌、产品名、色号" /></label>
       </div>
       <div className="library-controls-mobile">
@@ -336,14 +336,14 @@ function ProductCard({ product, collection, onOpen, onFavorite, onRemoveFavorite
   const status = collection[product.id]
   return (
     <article className="product-card">
-      <button className="product-photo" onClick={() => onOpen(product)} aria-label={`查看 ${product.brand} ${product.name} 详情`}><img src={product.image} alt={`${product.brand} ${product.name} 产品图（图片授权待核验）`} loading="lazy" /><span className="category-stamp">{product.category}</span><span className="verification-stamp">图片授权待核验</span></button>
+      <button className="product-photo" onClick={() => onOpen(product)} aria-label={`查看 ${product.brand} ${product.name} 详情`}><img src={product.image} alt={`${product.brand} ${product.name} 产品图（图片授权待核验）`} loading="lazy" /><span className="category-stamp">{product.category}</span><span className="verification-stamp">{product.imageAuthorizationStatus === 'verified' ? '图片已核验' : '图片授权待核验'}</span></button>
       <div className="product-card-body">
         <div className="product-card-top"><p className="product-brand">{product.brand}</p><button className={status ? 'favorite-button saved' : 'favorite-button'} aria-label={status ? '取消收藏' : '收藏'} title={status ? '取消收藏' : '收藏'} onClick={() => status ? onRemoveFavorite(product.id) : onFavorite(product.id, '想买')}><Heart size={18} fill={status ? 'currentColor' : 'none'} /></button></div>
         <button className="product-name" onClick={() => onOpen(product)}>{product.name}</button>
         <p className="shade-line"><span className="shade-dot" /> 代表色号 {product.shades.slice(0, 2).map((shade) => shade.name).join(' / ')}</p>
-        <div className="tag-row"><span>{product.skins[0]}</span><span>{product.finish}</span><span>{product.coverage}遮瑕</span><span>{product.wear}h+</span></div>
+        <div className="tag-row"><span>{product.skins[0]}</span><span>{product.finish}</span>{product.coverage && <span>{product.coverage}遮瑕</span>}{product.wear ? <span>{product.wear}h+</span> : <span>官网资料</span>}</div>
         <p className="product-note">“{product.note}”</p>
-        <div className="rating-row"><span><Star size={15} fill="currentColor" /> 编辑示例 {product.rating}</span><button onClick={() => onOpen(product)}>查看档案 <ChevronRight size={15} /></button></div>
+        <div className="rating-row"><span>{product.rating ? <><Star size={15} fill="currentColor" /> 编辑示例 {product.rating}</> : '官网资料，非用户统计'}</span><button onClick={() => onOpen(product)}>查看档案 <ChevronRight size={15} /></button></div>
       </div>
     </article>
   )
@@ -359,13 +359,14 @@ function DetailDrawer({ product, collection, onClose, onOpenProduct, onFavorite,
     <div className="dialog-backdrop" onMouseDown={onClose}>
       <aside className="detail-drawer" role="dialog" aria-modal="true" aria-label={`${product.brand} ${product.name} 产品详情`} onMouseDown={(event) => event.stopPropagation()}>
         <button className="dialog-close" aria-label="关闭详情" title="关闭详情" onClick={onClose}><X size={20} /></button>
-        <div className="detail-hero"><img src={shadeImage} alt={`${product.brand} ${product.name} ${shade.name} 产品图（图片授权待核验）`} /><div className="detail-hero-info"><p className="eyebrow">{product.category} / YASPRETTY FILE</p><p className="product-brand">{product.brand}</p><h2>{product.name}</h2><div className="detail-rating"><Star size={17} fill="currentColor" /> 编辑示例 {product.rating} <span>非用户统计</span></div><p>{product.note}</p><StatusControl productId={product.id} status={status} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} /></div></div>
+        <div className="detail-hero"><img src={shadeImage} alt={`${product.brand} ${product.name} ${shade.name} 产品图（图片授权待核验）`} /><div className="detail-hero-info"><p className="eyebrow">{product.category} / YASPRETTY FILE</p><p className="product-brand">{product.brand}</p><h2>{product.name}</h2><div className="detail-rating">{product.rating ? <><Star size={17} fill="currentColor" /> 编辑示例 {product.rating} <span>非用户统计</span></> : <span>官网资料，非用户统计</span>}</div><p>{product.note}</p><StatusControl productId={product.id} status={status} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} /></div></div>
         <div className="detail-body">
-          <section className="detail-section"><h3>基础信息</h3><p className="data-verification-note">价格、图片、产地、色号和产品表现仍待来源核验；以下仅为当前资料库参考。</p><dl className="facts-grid"><div><dt>品牌所属地区</dt><dd>{product.brandRegion}（待核验）</dd></div><div><dt>实际生产地</dt><dd>{product.madeIn}（待核验）</dd></div><div><dt>参考价格</dt><dd>{product.priceLabel}（价格待核验）</dd></div><div><dt>适合肤质</dt><dd>{product.skins.join(' / ')}（待核验）</dd></div><div><dt>妆效</dt><dd>{product.finish}（待核验）</dd></div><div><dt>持妆参考</dt><dd>{product.wear} 小时+（待核验）</dd></div></dl></section>
+          <section className="detail-section"><h3>基础信息</h3><p className="data-verification-note">{product.factVerificationStatus === 'verified' ? '名称、品类、色号和价格已按页面来源记录；图片再利用授权仍待核验，不能作为公开商品素材。' : '价格、图片、产地、色号和产品表现仍待来源核验；以下仅为当前资料库参考。'}</p><dl className="facts-grid"><div><dt>品牌所属地区</dt><dd>{product.brandRegion}{product.factVerificationStatus === 'verified' ? '' : '（待核验）'}</dd></div><div><dt>实际生产地</dt><dd>{product.madeIn}{product.factVerificationStatus === 'verified' ? '' : '（待核验）'}</dd></div><div><dt>参考价格</dt><dd>{product.priceLabel}{product.priceVerifiedAt ? `（核验于 ${product.priceVerifiedAt}）` : '（价格待核验）'}</dd></div><div><dt>适合肤质</dt><dd>{product.skins.join(' / ')}{product.factVerificationStatus === 'verified' ? '（编辑适配维度）' : '（待核验）'}</dd></div><div><dt>妆效</dt><dd>{product.finish}{product.factVerificationStatus === 'verified' ? '（来源/编辑维度）' : '（待核验）'}</dd></div><div><dt>持妆参考</dt><dd>{product.wear ? `${product.wear} 小时+（待核验）` : '官网未提供可比持妆时长'}</dd></div></dl></section>
           <section className="detail-section shade-section"><h3>代表色号</h3><div className="shade-list">{product.shades.map((item, index) => <button key={item.name} className={shade.name === item.name ? 'shade-choice selected' : 'shade-choice'} onClick={() => setShade(item)}><span className={`shade-swatch shade-${index}`} /><b>{item.name}</b></button>)}</div><div className="shade-description"><span>{shade.tone}</span><span>{shade.lightness}</span><span>适合 {shade.suitable}</span></div></section>
           <section className="detail-section"><h3>分项评价</h3><div className="metric-grid">{Object.entries(product.metrics).map(([label, value]) => <Metric key={label} label={label} value={value} />)}</div></section>
           <section className="detail-section two-columns"><div><h3>喜欢它的理由</h3><ul className="detail-list">{product.pros.map((item) => <li key={item}><Check size={15} />{item}</li>)}</ul></div><div><h3>使用时注意</h3><ul className="detail-list caution-list">{product.cautions.map((item) => <li key={item}><span>•</span>{item}</li>)}</ul></div></section>
           <section className="detail-section"><h3>适合场景</h3><div className="scene-row">{product.scenes.map((scene) => <span key={scene}>{scene}</span>)}</div></section>
+          <section className="detail-section"><h3>来源与公开状态</h3><p className="data-verification-note">{product.imageSource?.note || '图片来源状态待补充。'}</p>{product.informationSources?.length ? <ul className="detail-list source-list">{product.informationSources.map((source) => <li key={source.url}><Check size={15} /><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a><small>{source.publisher} · 访问于 {source.accessedAt}</small></li>)}</ul> : <p className="data-verification-note">当前没有可复核的外部来源记录。</p>}</section>
           <section className="detail-section recommendations"><div className="detail-section-title"><h3>相似产品</h3><span>继续对比</span></div><div className="recommendation-list">{recommendations.map((item) => <button key={item.id} onClick={() => onOpenProduct(item)}><img src={item.image} alt="" /><span><b>{item.brand}</b>{item.name}<small>{item.finish} · {item.coverage}遮瑕</small></span><ChevronRight size={16} /></button>)}</div></section>
         </div>
       </aside>

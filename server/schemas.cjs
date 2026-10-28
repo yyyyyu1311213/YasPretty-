@@ -33,6 +33,35 @@ const sourceSchema = z.object({
   accessedAt: z.string().datetime(),
 }).strict()
 
+const productSourceSchema = z.object({
+  title: z.string().trim().min(1).max(300),
+  url: z.string().url().max(2000),
+  publisher: z.string().trim().max(200).default(''),
+  accessedAt: z.string().date(),
+  supports: z.array(z.string().trim().min(1).max(160)).max(12).default([]),
+}).strict()
+
+const productRecordSchema = z.object({
+  id: z.string().trim().min(1).max(120),
+  brand: z.string().trim().min(1).max(120),
+  name: z.string().trim().min(1).max(240),
+  category: z.string().trim().min(1).max(30),
+  price: z.number().finite().nonnegative().nullable(),
+  priceCurrency: z.string().trim().length(3),
+  priceVerifiedAt: z.string().date().nullable(),
+  informationSources: z.array(productSourceSchema).max(8),
+  imageSource: z.object({
+    url: z.string().url().nullable(),
+    authorizationStatus: z.enum(['pending', 'verified', 'rejected']),
+    note: z.string().trim().min(1).max(300),
+  }).strict(),
+  imageAuthorizationStatus: z.enum(['pending', 'verified', 'rejected']),
+  verificationStatus: z.enum(['pending', 'verified', 'rejected', 'not_applicable']),
+  factVerificationStatus: z.enum(['pending', 'verified', 'rejected', 'not_applicable']),
+  publicStatus: z.string().trim().min(1).max(80),
+  recommendationReady: z.boolean(),
+}).passthrough()
+
 const assistantResponseSchema = z.object({
   answer: z.string().trim().min(1).max(20000),
   sources: z.array(sourceSchema).max(5),
@@ -120,6 +149,7 @@ module.exports = {
   makeupPlanSchema,
   makeupRequestSchema,
   planStepSchema,
+  productRecordSchema,
   userProfileSchema,
   weatherQuerySchema,
 }

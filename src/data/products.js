@@ -1,4 +1,4 @@
-export const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉']
+export const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉', '眼影', '睫毛膏', '腮红', '唇妆']
 export const skinOptions = ['油皮', '混油皮', '干皮', '混干皮', '敏感肌']
 export const finishOptions = ['哑光', '柔雾', '奶油肌', '自然光泽']
 
@@ -10,6 +10,66 @@ const productImages = {
   studio: 'https://images.unsplash.com/photo-1583241800698-e8ab01830a53?auto=format&fit=crop&w=1200&q=85',
   rose: 'https://images.unsplash.com/photo-1590156221719-19d5c6b0bd9f?auto=format&fit=crop&w=1200&q=85'
 }
+
+const auditDate = '2026-10-29'
+
+function officialSource(title, url, supports) {
+  return { title, url, publisher: title.includes('巴黎欧莱雅') ? '巴黎欧莱雅中国官网' : '兰蔻中国官网', accessedAt: auditDate, supports }
+}
+
+function enrichProductRecord(product) {
+  return {
+    ...product,
+    priceCurrency: product.priceCurrency || 'CNY',
+    priceVerifiedAt: product.priceVerifiedAt || null,
+    informationSources: product.informationSources || [],
+    imageSource: product.imageSource || { url: null, authorizationStatus: 'pending', note: '当前图片为内部演示占位，不代表对应商品实物图。' },
+    imageAuthorizationStatus: product.imageAuthorizationStatus || 'pending',
+    verificationStatus: product.verificationStatus || 'pending',
+    factVerificationStatus: product.factVerificationStatus || 'pending',
+    publicStatus: product.publicStatus || 'blocked_pending_product_evidence',
+    recommendationReady: product.recommendationReady !== false,
+  }
+}
+
+const stage3Products = [
+  {
+    id: 'lancome-is-me-liquid-blush', brand: 'Lancôme', name: '是我液体腮红', category: '腮红', brandRegion: '法国', madeIn: '以包装批次为准', price: 290, priceLabel: '290 元（官网参考价）',
+    image: productImages.rose, skins: ['油皮', '混油皮', '干皮', '混干皮', '敏感肌'], finish: '自然光泽', coverage: '低', wear: null, oxidation: null, rating: null,
+    shades: [{ name: '#50「是我」粉', tone: '冷调', lightness: '白皙', suitable: '自然提气色' }, { name: '#40 惬意棕', tone: '暖调', lightness: '自然', suitable: '暖调腮红方向' }, { name: '#30 雀跃橙', tone: '暖调', lightness: '自然', suitable: '杏橘色方向' }],
+    note: '官网描述为水感液体腮红；实际显色会受用量、底妆和光线影响。', pros: ['官网列出多枚色号与规格', '液体质地适合薄层叠加'], cautions: ['当前只核验官网商品名称、品类、色号与价格；不把官网文案当作持妆承诺', '颜色请在自然光下复核'], scenes: ['通勤', '约会', '自然妆'], metrics: {},
+    informationSources: [officialSource('兰蔻是我液体腮红｜兰蔻官网', 'https://www.lancome.com.cn/product/LAN00316/', ['品牌、名称、腮红品类、色号、CNY 价格'])],
+    imageSource: { url: 'https://res-wxec-unipt.lorealchina.com/prod/lan/20260702/9b2619c4-9f9e-42d0-938b-aa0b25131dbd.jpg', authorizationStatus: 'pending', note: '官方页面图片仅作来源指向，未取得再利用授权。' },
+    priceVerifiedAt: auditDate, verificationStatus: 'pending', factVerificationStatus: 'verified', publicStatus: 'blocked_image_authorization', recommendationReady: true,
+  },
+  {
+    id: 'lancome-pure-matte-lipstick', brand: 'Lancôme', name: '菁纯丝绒雾面唇膏', category: '唇妆', brandRegion: '法国', madeIn: '以包装批次为准', price: 380, priceLabel: '380 元（官网参考价）',
+    image: productImages.rose, skins: ['油皮', '混油皮', '干皮', '混干皮', '敏感肌'], finish: '柔雾', coverage: '中', wear: null, oxidation: null, rating: null,
+    shades: [{ name: '#196 朱砂橘', tone: '暖调', lightness: '自然', suitable: '暖橘方向' }, { name: '#296 上瘾红', tone: '中性调', lightness: '自然', suitable: '红调方向' }, { name: '#316 着迷粉', tone: '冷调', lightness: '白皙', suitable: '粉调方向' }],
+    note: '官网将其归为唇部产品并列出多枚色号；色彩呈现受唇色与光线影响。', pros: ['官网列出色号、规格和 CNY 价格', '柔雾方向适合少量叠加'], cautions: ['当前不提供脱色、持妆时长等未经独立验证的结论', '唇部干燥、破损或不适时先暂停使用'], scenes: ['通勤', '约会', '正式活动'], metrics: {},
+    informationSources: [officialSource('兰蔻菁纯丝绒雾面唇膏｜兰蔻官网', 'https://www.lancome.com.cn/product/LAN00295/', ['品牌、名称、唇部品类、色号、CNY 价格'])],
+    imageSource: { url: 'https://res-wxec-unipt.lorealchina.com/prod/lan/20261012/5855626a-d7b4-410a-a51f-947681c6159d.jpg', authorizationStatus: 'pending', note: '官方页面图片仅作来源指向，未取得再利用授权。' },
+    priceVerifiedAt: auditDate, verificationStatus: 'pending', factVerificationStatus: 'verified', publicStatus: 'blocked_image_authorization', recommendationReady: true,
+  },
+  {
+    id: 'loreal-paris-anti-gravity-mascara', brand: 'L’Oréal Paris', name: '反重力睫毛膏', category: '睫毛膏', brandRegion: '法国', madeIn: '以包装批次为准', price: 144, priceLabel: '144 元（官网参考价）',
+    image: productImages.tube, skins: ['油皮', '混油皮', '干皮', '混干皮', '敏感肌'], finish: '自然', coverage: '中', wear: null, oxidation: null, rating: null,
+    shades: [{ name: '黑色 9.9ml', tone: '中性调', lightness: '自然', suitable: '日常眉眼' }],
+    note: '官网页面列出 9.9ml 规格和 CNY 价格；不将名称转译为夸张功效承诺。', pros: ['官网列出规格、价格和商品图片来源', '可作为眉眼步骤的站内候选'], cautions: ['刷头、晕染和防水表现未在本台账中独立验证', '眼周出现刺痛、红肿或不适时立即停止使用'], scenes: ['通勤', '日常', '正式活动'], metrics: {},
+    informationSources: [officialSource('反重力睫毛膏｜巴黎欧莱雅', 'https://www.lorealparis.com.cn/product/MU0111/', ['品牌、名称、睫毛膏品类、9.9ml 规格、CNY 价格'])],
+    imageSource: { url: 'https://res-wxec-unipt.lorealchina.com/prod/pl/20250916/91e2098b-d400-4a2f-bee3-685bb128fdae.png', authorizationStatus: 'pending', note: '官方页面图片仅作来源指向，未取得再利用授权。' },
+    priceVerifiedAt: auditDate, verificationStatus: 'pending', factVerificationStatus: 'verified', publicStatus: 'blocked_image_authorization', recommendationReady: true,
+  },
+  {
+    id: 'loreal-paris-single-eyeshadow', brand: 'L’Oréal Paris', name: '单色眼影', category: '眼影', brandRegion: '法国', madeIn: '以包装批次为准', price: null, priceLabel: '价格待核验',
+    image: productImages.compact, skins: ['油皮', '混油皮', '干皮', '混干皮', '敏感肌'], finish: '自然光泽', coverage: '低', wear: null, oxidation: null, rating: null,
+    shades: [{ name: '官网色号未在本次记录中展开', tone: 'unknown', lightness: 'unknown', suitable: '先以自然光观察' }],
+    note: '官网可复核商品名称、品类和图片来源，但本次抓取未取得结构化价格与色号清单。', pros: ['作为眼妆品类资料入口'], cautions: ['价格、色号和表现待核验，当前不进入结构化商品推荐', '眼周出现刺痛、红肿或不适时立即停止使用'], scenes: ['日常', '通勤'], metrics: {},
+    informationSources: [officialSource('单色眼影｜巴黎欧莱雅', 'https://www.lorealparis.com.cn/product/MU009/', ['品牌、名称、眼影品类'])],
+    imageSource: { url: 'https://res-wxec-unipt.lorealchina.com/prod/pl/20200811/dc84d0fb-9571-4b49-b7b5-300de8b48a7b.jpg', authorizationStatus: 'pending', note: '官方页面图片仅作来源指向，未取得再利用授权。' },
+    priceVerifiedAt: null, verificationStatus: 'pending', publicStatus: 'blocked_missing_price_and_image_authorization', recommendationReady: false,
+  },
+]
 
 const internationalShadeProfiles = [
   { tone: '冷调', lightness: '白皙', suitable: '冷白皮' },
@@ -134,8 +194,9 @@ export const products = [
     shades: [{ name: '01 透明雾', tone: '中性调', lightness: '透明', suitable: '自然定妆' }, { name: '02 微光肤', tone: '暖调', lightness: '自然', suitable: '黄皮柔焦' }],
     note: '带出门补妆很方便，压住鼻翼油光也不会显得干。', pros: ['饼状设计方便携带', '妆感保留柔和光泽', '价格易入手'], cautions: ['大油皮午后可能需要补一次', '粉扑要定期清洁'], scenes: ['通勤', '补妆', '平价底妆'], metrics: { 遮瑕度: 1, 持妆度: 3, 控油度: 3, 保湿度: 3, 毛孔修饰: 3, 氧化程度: 1, 卡粉风险: 1 }
   },
-  ...internationalFoundations
-]
+  ...internationalFoundations,
+  ...stage3Products,
+].map(enrichProductRecord)
 
 export const quickFilters = [
   { label: '油皮持妆', query: { skins: ['油皮'], minWear: 9 } },

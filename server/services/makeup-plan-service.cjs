@@ -5,6 +5,7 @@ const {
 } = require('../schemas.cjs')
 
 const BASE_CATEGORIES = new Set(['粉底液', '气垫'])
+const EYE_CATEGORIES = new Set(['眼影', '睫毛膏', '眼线', '眉笔'])
 
 function normalize(value) {
   return String(value || '').trim().toLowerCase()
@@ -15,6 +16,7 @@ function unique(values) {
 }
 
 function productMatchesHardConditions(product, profile) {
+  if (product.recommendationReady === false) return false
   if (profile.skinType !== 'unknown' && !product.skins.includes(profile.skinType)) return false
   if (profile.budgetTotal > 0 && product.price > profile.budgetTotal) return false
   if (profile.finishPreferences.length && !profile.finishPreferences.includes(product.finish)) return false
@@ -104,6 +106,7 @@ function buildSteps(selection) {
   const base = firstProduct(candidates, (product) => BASE_CATEGORIES.has(product.category))
   const concealer = firstProduct(candidates, (product) => product.category === '遮瑕')
   const powder = firstProduct(candidates, (product) => product.category === '散粉')
+  const eyeProduct = firstProduct(candidates, (product) => EYE_CATEGORIES.has(product.category))
   const baseReasons = selection.candidateEvidence.find((item) => item.productId === base?.id)?.matchedConditions || []
   const concealerReasons = selection.candidateEvidence.find((item) => item.productId === concealer?.id)?.matchedConditions || []
   const powderReasons = selection.candidateEvidence.find((item) => item.productId === powder?.id)?.matchedConditions || []
@@ -165,12 +168,14 @@ function buildSteps(selection) {
       category: '眉眼',
       goal: '建立轮廓，但保留适合日常的轻重关系',
       technique: request.style.includes('浓') || request.style.includes('氛围') ? '眉尾和眼尾逐步加深，边缘用刷具晕开；先完成一侧再对照。' : '用贴近眉毛和睫毛根部的颜色轻轻填补空隙，眼尾只加一点深度。',
-      texture: '细粉或柔滑笔触',
+      texture: eyeProduct?.finish || '细粉或柔滑笔触',
       colorDirection: colorDirection(profile, request),
-      primaryProductId: null,
-      alternativeProductIds: [],
-      reasons: ['当前产品库尚无已核验眉妆、眼影、睫毛膏或眼线产品，避免虚构商品。'],
-      cautions: ['眼周出现刺痛、红肿或不适时立即停止使用。'],
+      primaryProductId: eyeProduct?.id || null,
+      alternativeProductIds: candidates.filter(({ product }) => EYE_CATEGORIES.has(product.category) && product.id !== eyeProduct?.id).slice(0, 2).map(({ product }) => product.id),
+      reasons: eyeProduct
+        ? unique(['候选通过预算、排除品牌等硬条件；眉形与眼影颜色仍需用户自行纠正', ...(selection.candidateEvidence.find((item) => item.productId === eyeProduct.id)?.matchedConditions || [])]).slice(0, 5)
+        : ['当前没有已核验的眉妆、眼影、睫毛膏或眼线站内产品，只提供方法与颜色方向。'],
+      cautions: eyeProduct?.cautions?.slice(0, 2) || ['眼周出现刺痛、红肿或不适时立即停止使用。'],
     },
     {
       id: 'cheeks',
@@ -179,10 +184,12 @@ function buildSteps(selection) {
       technique: '微笑后从颧骨高点向外上方少量晕开，先轻后重，避免一开始集中在鼻翼附近。',
       texture: '粉状或膏状均可，优先选择容易少量叠加的质地',
       colorDirection: colorDirection(profile, request),
-      primaryProductId: null,
-      alternativeProductIds: [],
-      reasons: ['当前产品库暂无已核验腮红产品，只提供可纠正的手法与颜色方向。'],
-      cautions: ['颜色方向受光线影响明显，完成后请在自然光下复核。'],
+      primaryProductId: firstProduct(candidates, (product) => product.category === '腮红')?.id || null,
+      alternativeProductIds: candidates.filter(({ product }) => product.category === '腮红').slice(1, 3).map(({ product }) => product.id),
+      reasons: firstProduct(candidates, (product) => product.category === '腮红')
+        ? ['站内记录已通过官网名称、品类、色号和参考价格核验；颜色仍受光线影响。']
+        : ['当前产品库暂无已核验腮红产品，只提供可纠正的手法与颜色方向。'],
+      cautions: firstProduct(candidates, (product) => product.category === '腮红')?.cautions?.slice(0, 2) || ['颜色方向受光线影响明显，完成后请在自然光下复核。'],
     },
     {
       id: 'lips',
@@ -191,10 +198,12 @@ function buildSteps(selection) {
       technique: '先薄涂一层确认边界，再决定是否叠加；需要更自然时用指腹轻拍边缘。',
       texture: '根据场景选择润泽或柔雾质地',
       colorDirection: colorDirection(profile, request),
-      primaryProductId: null,
-      alternativeProductIds: [],
-      reasons: ['当前产品库暂无已核验唇妆产品，不输出具体商品或价格。'],
-      cautions: ['唇部干燥、破损或不适时先暂停使用相关产品。'],
+      primaryProductId: firstProduct(candidates, (product) => product.category === '唇妆')?.id || null,
+      alternativeProductIds: candidates.filter(({ product }) => product.category === '唇妆').slice(1, 3).map(({ product }) => product.id),
+      reasons: firstProduct(candidates, (product) => product.category === '唇妆')
+        ? ['站内记录已通过官网名称、品类、色号和参考价格核验；色彩仍需结合唇色复核。']
+        : ['当前产品库暂无已核验唇妆产品，不输出具体商品或价格。'],
+      cautions: firstProduct(candidates, (product) => product.category === '唇妆')?.cautions?.slice(0, 2) || ['唇部干燥、破损或不适时先暂停使用相关产品。'],
     },
   ]
 }
@@ -208,7 +217,7 @@ function buildLocalPlan(selection, fallbackReason = '当前使用本地规则模
   ]).slice(0, 6)
   const limitations = [
     fallbackReason,
-    '当前站内产品仍有价格、评分、外部事实和图片来源待核验；推荐仅用于缩小选择范围。',
+    '部分站内产品的价格、评分、外部事实或图片授权仍待核验；带有官网来源的新增彩妆也不等于已获得素材再利用授权。',
     '不上传照片也可以完成本方案；本阶段没有进行人脸分析或医疗判断。',
   ]
   if (makeupRequest.weatherEnabled) limitations.push('已开启天气选项，但本次没有提供天气上下文，未将实时天气因素写入方案。')
