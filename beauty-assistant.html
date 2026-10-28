@@ -1,0 +1,2889 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小鱼 · yaspretty 粉底液顾问（智谱 GLM）</title>
+<style>
+  /* ============ 全局 ============ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    color: #2b2326;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #ffe7ef 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #fff1d6 0%, transparent 55%),
+      linear-gradient(180deg, #fdfaf7 0%, #f7f1ec 100%);
+    overflow: hidden;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  input, select { font-family: inherit; }
+
+  /* ============ 启动开场白 ============ */
+  #welcome {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 18px;
+    background:
+      radial-gradient(900px 500px at 20% 20%, #ffd6e3 0%, transparent 60%),
+      radial-gradient(700px 400px at 90% 80%, #ffe5c2 0%, transparent 55%),
+      linear-gradient(160deg, #fff5f0 0%, #f7eee8 100%);
+    z-index: 50;
+    animation: fadeIn .6s ease;
+    text-align: center;
+    padding: 24px;
+  }
+  #welcome .badge {
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f6a5c1 0%, #f9c2a0 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 32px; font-weight: 600;
+    box-shadow: 0 18px 50px rgba(246, 165, 193, 0.45);
+    animation: float 3.6s ease-in-out infinite;
+  }
+  #welcome h1 { font-size: 28px; letter-spacing: 1px; color: #2b2326; }
+  #welcome h1 .accent { background: linear-gradient(135deg, #f08aa8, #f0a878); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #welcome .tag { color: #8a7a76; font-size: 15px; }
+  #welcome .rules {
+    margin-top: 8px;
+    background: rgba(255,255,255,.7);
+    backdrop-filter: blur(8px);
+    border-radius: 14px;
+    padding: 14px 18px;
+    color: #6b5e5a;
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 470px;
+    border: 1px solid rgba(255,255,255,.7);
+  }
+  #welcome .rules b { color: #c97a93; }
+  #welcome .btnrow { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; justify-content: center; }
+  #welcome button.primary {
+    border: none; outline: none;
+    padding: 13px 36px;
+    border-radius: 999px;
+    font-size: 15px;
+    color: #fff;
+    background: linear-gradient(135deg, #f6a5c1 0%, #f0a878 100%);
+    box-shadow: 0 12px 28px rgba(240, 138, 168, 0.35);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  #welcome button.primary:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(240, 138, 168, 0.45); }
+  #welcome button.ghost {
+    border: 1px solid rgba(201,122,147,.35);
+    background: rgba(255,255,255,.85);
+    color: #c97a93;
+    padding: 13px 24px;
+    border-radius: 999px;
+    font-size: 14px;
+  }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ 聊天主界面 ============ */
+  #app {
+    position: fixed; inset: 0;
+    display: none;
+    grid-template-rows: auto 1fr auto auto;
+    max-width: 780px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(12px);
+    border-left: 1px solid rgba(255,255,255,.6);
+    border-right: 1px solid rgba(255,255,255,.6);
+  }
+  #app.show { display: grid; animation: fadeIn .4s ease; }
+
+  /* 头部 */
+  header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(255,228,236,.85), rgba(255,232,210,.85));
+    border-bottom: 1px solid rgba(255,255,255,.6);
+  }
+  header .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f6a5c1, #f9c2a0);
+    color: #fff; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    box-shadow: 0 6px 16px rgba(246,165,193,.35);
+    flex-shrink: 0;
+  }
+  header .info { flex: 1; line-height: 1.3; min-width: 0; }
+  header .name { font-weight: 600; color: #2b2326; font-size: 15px; }
+  header .status { font-size: 12px; color: #c97a93; display: flex; align-items: center; gap: 6px; }
+  header .status::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: #6dd3a8; box-shadow: 0 0 0 3px rgba(109,211,168,.25);
+    flex-shrink: 0;
+  }
+  header .status.offline::before { background: #f0a878; box-shadow: 0 0 0 3px rgba(240,168,120,.25); }
+  header .status.error::before { background: #e77; box-shadow: 0 0 0 3px rgba(238,119,119,.25); }
+  header .status.web { color: #7aa3c9; }
+  header .status.web::before { background: #7aa3c9; box-shadow: 0 0 0 3px rgba(122,163,201,.25); animation: statusPulse 1.1s ease-in-out infinite; }
+  @keyframes statusPulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+  header .iconbtn {
+    background: rgba(255,255,255,.7);
+    border: 1px solid rgba(201,122,147,.2);
+    color: #c97a93;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  header .iconbtn:hover { background: #fff; }
+
+  /* 消息区 */
+  #messages {
+    overflow-y: auto;
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+    scroll-behavior: smooth;
+  }
+  #messages::-webkit-scrollbar { width: 6px; }
+  #messages::-webkit-scrollbar-thumb { background: rgba(201,122,147,.3); border-radius: 3px; }
+
+  .msg { display: flex; gap: 8px; max-width: 92%; animation: pop .3s ease; }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .msg .ava {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff;
+  }
+  .msg.bot .ava { background: linear-gradient(135deg, #f6a5c1, #f9c2a0); }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg.user .ava { background: linear-gradient(135deg, #c8b8a8, #a89686); }
+  .msg .bubble {
+    padding: 11px 14px;
+    border-radius: 14px;
+    line-height: 1.65;
+    font-size: 14px;
+    word-break: break-word;
+    white-space: pre-wrap;
+    min-width: 0;
+  }
+  .msg.bot .bubble {
+    background: #fff;
+    border: 1px solid rgba(255,255,255,.8);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    border-top-left-radius: 4px;
+    color: #2b2326;
+  }
+  .msg.user .bubble {
+    background: linear-gradient(135deg, #f6a5c1, #f0a878);
+    color: #fff;
+    border-top-right-radius: 4px;
+  }
+  .msg .bubble b { color: #c0607e; font-weight: 600; }
+  .msg .bubble p { margin: 0 0 6px; }
+  .msg .bubble p:last-child { margin-bottom: 0; }
+  .msg .bubble ul { margin: 4px 0 6px 18px; }
+  .msg .bubble li { margin: 2px 0; }
+
+  /* 打字光标 */
+  .cursor {
+    display: inline-block;
+    width: 2px; height: 15px;
+    background: #f08aa8;
+    vertical-align: -2px;
+    margin-left: 2px;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+
+  /* 思考中 */
+  .thinking { display: flex; gap: 4px; align-items: center; height: 18px; }
+  .thinking i {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #f0a8c0;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .thinking i:nth-child(2) { animation-delay: .15s; }
+  .thinking i:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0); opacity: .5; }
+    30% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* 产品卡片 */
+  .product-card {
+    margin-top: 10px;
+    background: #fffaf6;
+    border: 1px solid #f5e6dd;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(0,0,0,.04);
+  }
+  .product-card .head {
+    display: flex; gap: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, #fff3ec, #fff7f2);
+  }
+  .product-card .head .thumb {
+    width: 60px; height: 60px; border-radius: 10px;
+    background: #f7eee7 center/cover no-repeat;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,.04);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .product-card .head .meta { flex: 1; min-width: 0; }
+  .product-card .head .brand { font-size: 11px; color: #c97a93; letter-spacing: .5px; }
+  .product-card .head .name { font-size: 14px; font-weight: 600; color: #2b2326; margin-top: 2px; line-height: 1.35; }
+  .product-card .head .tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .product-card .head .tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #f5d6c2;
+    color: #b06b3e;
+  }
+  .product-card .skin-warn {
+    background: #fff8ec;
+    border-bottom: 1px solid #f5e0c4;
+    color: #a8763e;
+    font-size: 11.5px;
+    padding: 8px 12px;
+    line-height: 1.55;
+  }
+  .product-card .skin-note {
+    background: #f4f8fb;
+    border-bottom: 1px solid #e0ecf5;
+    color: #6b8ba3;
+    font-size: 11.5px;
+    padding: 8px 12px;
+    line-height: 1.55;
+  }
+  .correction-note {
+    margin-top: 8px;
+    padding: 9px 12px;
+    background: #fff8ec;
+    border-left: 3px solid #e8b979;
+    border-radius: 6px;
+    color: #8a6234;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+
+  /* 🌐 联网来源提示（一行小字，明确区分资料来源） */
+  .web-note {
+    margin-top: 9px;
+    padding-top: 7px;
+    border-top: 1px dashed #e8dbe2;
+    color: #a2939b;
+    font-size: 11.5px;
+    line-height: 1.55;
+    word-break: break-word;
+  }
+  .web-thinking {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #b07f9a;
+    font-size: 12.5px;
+  }
+  .web-thinking span { animation: webPulse 1s ease-in-out infinite; }
+  @keyframes webPulse { 0%,100% { opacity: .5; transform: scale(.92); } 50% { opacity: 1; transform: scale(1.08); } }
+  .product-card .body { padding: 12px 14px; font-size: 13px; color: #5b4a44; line-height: 1.65; }
+  .product-card .body b { color: #2b2326; }
+  .product-card .body .shades { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .product-card .body .shade {
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #f0d9c8;
+    font-size: 11px;
+    color: #6b5e5a;
+  }
+  .product-card .body .shade b { color: #c97a93; }
+  .product-card .body .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .product-card .body .metric {
+    background: #fff;
+    border: 1px solid #f5e6dd;
+    border-radius: 8px;
+    padding: 5px 8px;
+    font-size: 11px;
+    color: #8a7a76;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .product-card .body .metric .bar { display: flex; gap: 2px; }
+  .product-card .body .metric .bar i {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #f0d9c8;
+  }
+  .product-card .body .metric .bar i.on { background: #f08aa8; }
+
+  /* 快捷选项 */
+  #quick {
+    padding: 10px 18px 4px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    min-height: 0;
+  }
+  #quick:empty { display: none; }
+  .chip {
+    border: 1px solid rgba(201,122,147,.35);
+    background: rgba(255,255,255,.85);
+    color: #c97a93;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .chip:hover { background: #fff; transform: translateY(-1px); }
+  .chip:active { transform: translateY(0); }
+
+  /* 输入区 */
+  .composer {
+    display: flex; gap: 8px;
+    padding: 10px 14px 14px;
+    background: rgba(255,255,255,.7);
+    border-top: 1px solid rgba(255,255,255,.6);
+  }
+  .composer input {
+    flex: 1;
+    padding: 11px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(201,122,147,.25);
+    background: #fff;
+    outline: none;
+    font-size: 14px;
+    transition: border-color .2s ease;
+    min-width: 0;
+  }
+  .composer input:focus { border-color: #f6a5c1; }
+  .composer button {
+    border: none;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #f6a5c1, #f0a878);
+    color: #fff; font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 6px 14px rgba(246,165,193,.35);
+  }
+  .composer button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+
+  /* ============ 设置弹窗 ============ */
+  #settings {
+    position: fixed; inset: 0;
+    background: rgba(43,35,38,.35);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 80;
+    padding: 20px;
+  }
+  #settings.show { display: flex; animation: fadeIn .25s ease; }
+  #settings .panel {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.18);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  #settings h2 { font-size: 17px; margin-bottom: 4px; color: #2b2326; }
+  #settings .sub { font-size: 12px; color: #9a8a86; margin-bottom: 18px; }
+  #settings label { display: block; font-size: 12px; color: #6b5e5a; margin-bottom: 6px; font-weight: 600; }
+  #settings .field { margin-bottom: 16px; }
+  #settings input[type=text], #settings input[type=password], #settings select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #eee2da;
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+    background: #fffdfc;
+    color: #2b2326;
+  }
+  #settings input:focus, #settings select:focus { border-color: #f6a5c1; }
+  #settings .hint { font-size: 11px; color: #9a8a86; margin-top: 5px; line-height: 1.5; }
+  #settings .switch-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #5b4a44;
+    font-weight: 500;
+    margin-bottom: 0;
+    padding: 9px 12px;
+    border: 1px solid #eee2da;
+    border-radius: 10px;
+    background: #fffdfc;
+    cursor: pointer;
+    user-select: none;
+  }
+  #settings .switch-row input[type=checkbox] {
+    width: 16px; height: 16px;
+    flex: 0 0 auto;
+    accent-color: #f08aa8;
+    cursor: pointer;
+  }
+  #settings .warn {
+    background: #fff8ec;
+    border: 1px solid #f5dfc0;
+    color: #a8763e;
+    font-size: 11.5px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  #settings .mode-tip {
+    display: none;
+    background: #eef7f1;
+    border: 1px solid #cfe8db;
+    color: #3f7a5c;
+    font-size: 11.5px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  #settings .mode-tip.show { display: block; }
+  #settings .row { display: flex; gap: 8px; }  #settings .row button { flex: 1; }
+  #settings .btn {
+    border: none;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  #settings .btn.primary { background: linear-gradient(135deg, #f6a5c1, #f0a878); color: #fff; }
+  #settings .btn.ghost { background: #f8f2ee; color: #6b5e5a; }
+  #settings .btn.test { background: #fff; border: 1px solid #f5d6c2; color: #b06b3e; width: 100%; margin-bottom: 12px; }
+  #settings .testresult { font-size: 12px; margin-top: 8px; line-height: 1.5; }
+  #settings .testresult.ok { color: #2e9e70; }
+  #settings .testresult.err { color: #d9534f; }
+
+  /* ============ 🧠 记忆面板 ============ */
+  header .iconbtn.hasmem { position: relative; }
+  header .iconbtn.hasmem::after {
+    content: "";
+    position: absolute; top: 4px; right: 4px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #f08aa8;
+    box-shadow: 0 0 0 2px #fff;
+  }
+  #memPanel {
+    position: fixed; inset: 0;
+    background: rgba(43,35,38,.42);
+    backdrop-filter: blur(3px);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 85;
+    padding: 20px;
+  }
+  #memPanel.show { display: flex; animation: fadeIn .25s ease; }
+  #memPanel .panel {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.18);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  #memPanel h2 { font-size: 17px; margin-bottom: 4px; color: #2b2326; }
+  #memPanel .sub { font-size: 12px; color: #9a8a86; margin-bottom: 14px; }
+  #memPanel .mem-store {
+    font-size: 11.5px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+    background: #eef7f1; border: 1px solid #cfe8db; color: #3f7a5c;
+  }
+  #memPanel .mem-store.warn { background: #fff8ec; border-color: #f5dfc0; color: #a8763e; }
+  #memPanel .mem-box { margin-bottom: 14px; }
+  #memPanel .mem-box h3 {
+    font-size: 12px; color: #6b5e5a; margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  #memPanel .mem-box h3 span.cnt { font-weight: 400; color: #b9a9a4; }
+  #memPanel .mem-card {
+    border: 1px solid #eee2da; border-radius: 12px;
+    padding: 10px 12px; background: #fffdfc;
+  }
+  #memPanel .mem-kv { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.7; }
+  #memPanel .mem-kv .k { color: #9a8a86; flex: 0 0 76px; }
+  #memPanel .mem-kv .v { color: #2b2326; font-weight: 600; flex: 1; word-break: break-all; }
+  #memPanel .mem-kv .t { color: #c3b5b0; font-weight: 400; font-size: 11px; flex: 0 0 auto; }
+  #memPanel .mem-item {
+    display: flex; gap: 8px; align-items: flex-start;
+    font-size: 12.5px; color: #2b2326; line-height: 1.6;
+    padding: 7px 0; border-bottom: 1px dashed #f2e9e4;
+  }
+  #memPanel .mem-item:last-child { border-bottom: none; }
+  #memPanel .mem-item .txt { flex: 1; }
+  #memPanel .mem-item .meta { color: #c3b5b0; font-size: 10.5px; margin-top: 2px; }
+  #memPanel .mem-item .x {
+    flex: 0 0 auto; border: none; background: transparent;
+    color: #c3b5b0; font-size: 15px; line-height: 1; cursor: pointer;
+    padding: 0 2px;
+  }
+  #memPanel .mem-item .x:hover { color: #d9534f; }
+  #memPanel .mem-empty { font-size: 12.5px; color: #b9a9a4; padding: 10px 0; text-align: center; }
+  #memPanel .row { display: flex; gap: 8px; margin-top: 8px; }
+  #memPanel .row button { flex: 1; }
+  #memPanel .btn { border: none; padding: 11px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+  #memPanel .btn.primary { background: linear-gradient(135deg, #f6a5c1, #f0a878); color: #fff; }
+  #memPanel .btn.ghost { background: #f8f2ee; color: #6b5e5a; }
+  #memPanel .btn.danger { background: #fdeeee; color: #c0453f; }
+
+  @media (max-width: 520px) {
+    #welcome h1 { font-size: 22px; }
+    #welcome .badge { width: 76px; height: 76px; font-size: 26px; }
+    #welcome .rules { font-size: 12px; padding: 12px 14px; }
+    .msg { max-width: 95%; }
+    .msg .bubble { font-size: 13.5px; }
+    header .name { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 开场白 / 启动屏 ============ -->
+<div id="welcome">
+  <div class="badge">小鱼</div>
+  <h1>嗨，我是 <span class="accent">小鱼</span> ✨</h1>
+  <div class="tag">yaspretty · 你的专属粉底液顾问</div>
+  <div class="rules">
+    我只回答资料库里 <b>22 款粉底液</b> 的相关内容。<br/>
+    不知道怎么选？先告诉我你的 <b>肤质</b>，我陪你一步步挑～<br/>
+    🧠 我有<b>永久记忆</b>：会记住你的肤质和偏好，下次打开不用重说<br/>
+    对话由 <b>智谱 GLM</b> 大模型驱动 · 资料来源：<b>yaspretty 彩妆资料库</b>
+  </div>
+  <div class="btnrow">
+    <button class="primary" id="startBtn">开始咨询</button>
+    <button class="ghost" id="settingsBtnWelcome">⚙ 模型设置</button>
+    <button class="ghost" id="memBtnWelcome">🧠 记忆</button>
+  </div>
+  <div class="tag" id="welcomeMemTip" style="margin-top:14px; display:none;"></div>
+</div>
+
+<!-- ============ 聊天主界面 ============ -->
+<div id="app">
+  <header>
+    <div class="avatar">小鱼</div>
+    <div class="info">
+      <div class="name">小鱼 · yaspretty 美妆顾问</div>
+      <div class="status" id="connStatus">已连接智谱 GLM</div>
+    </div>
+    <button class="iconbtn" id="memBtn" title="小鱼的记忆">🧠</button>
+    <button class="iconbtn" id="settingsBtn" title="模型设置">⚙</button>
+    <button class="iconbtn" id="restartBtn" title="重新开始">↻</button>
+  </header>
+
+  <div id="messages"></div>
+  <div id="quick"></div>
+
+  <div class="composer">
+    <input id="input" type="text" placeholder="和小鱼说点什么吧..." autocomplete="off" />
+    <button id="sendBtn">发送</button>
+  </div>
+</div>
+
+<!-- ============ 设置弹窗 ============ -->
+<div id="settings">
+  <div class="panel">
+    <h2>模型设置</h2>
+    <div class="sub">配置智谱大模型，让小鱼更聪明地理解你</div>
+
+    <div class="warn">
+      ⚠️ API Key 保存在浏览器本地（localStorage），仅用于请求智谱开放平台。请勿将本文件分享给他人或部署到公网，以免 Key 泄露。
+    </div>
+
+    <div class="mode-tip" id="modeTip"></div>
+
+    <div class="field">
+      <label>API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="输入智谱 API Key" />
+      <div class="hint">在 <b>bigmodel.cn</b> 控制台 → API Keys 获取，格式如 xxxxx.xxxxx</div>
+    </div>
+
+    <div class="field">
+      <label>模型</label>
+      <select id="modelSelect">
+        <option value="glm-4-flash">glm-4-flash（免费 · 速度快，推荐）</option>
+        <option value="glm-4-air">glm-4-air（均衡）</option>
+        <option value="glm-4-plus">glm-4-plus（最强 · 较贵）</option>
+        <option value="glm-4-flashx">glm-4-flashx（高速增强）</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>回答发散度（temperature）</label>
+      <input type="text" id="tempInput" placeholder="0.7" />
+      <div class="hint">0 = 严谨稳定，1 = 更活泼。推荐 0.6 ~ 0.8</div>
+    </div>
+
+    <div class="field">
+      <label>联网搜索</label>
+      <label class="switch-row">
+        <input type="checkbox" id="webSearchToggle" />
+        <span>资料库外的问题自动上网查</span>
+      </label>
+      <div class="hint">开启后：口红 / 气垫等其他品类、资料库未收录的品牌粉底液、最新价格与新品资讯、以及非美妆话题，小鱼都会联网查找并回答，并在回复下方标注来源。资料库内的问题仍优先使用资料库。</div>
+    </div>
+
+    <button class="btn test" id="testBtn">🔌 测试连接</button>
+    <div class="testresult" id="testResult"></div>
+
+    <div class="row" style="margin-top:8px">
+      <button class="btn ghost" id="openMemFromSettings">🧠 查看 / 管理小鱼的记忆</button>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <button class="btn ghost" id="cancelSettings">取消</button>
+      <button class="btn primary" id="saveSettings">保存并应用</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 🧠 记忆面板 ============ -->
+<div id="memPanel">
+  <div class="panel">
+    <h2>🧠 小鱼的记忆</h2>
+    <div class="sub">这些信息会永久保留，下次打开小鱼还记得你，不用重新说一遍</div>
+    <div class="mem-store" id="memStoreTip"></div>
+    <div id="memBody"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn ghost" id="memExport">导出 JSON</button>
+      <button class="btn danger" id="memClear">清空全部记忆</button>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="memClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+ *  1. 产品数据库 —— 资料库中的 22 款粉底液
+ * ============================================================ */
+const PRODUCTS = [
+  {
+    id: "nars-light-reflecting",
+    brand: "NARS", name: "超方瓶粉底液",
+    price: 430, priceLabel: "400 - 450 元", rating: 4.7,
+    skins: ["混干皮","干皮","混油皮"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "L0.5", tone: "冷调", lightness: "白皙", suitable: "冷白皮" },
+      { name: "L2",   tone: "冷调", lightness: "白皙", suitable: "自然白皮" },
+      { name: "L4",   tone: "中性调", lightness: "自然", suitable: "黄一白至黄二白" }
+    ],
+    note: "薄薄一层就有通透的皮肤质感，光泽克制。",
+    pros: ["延展度高，不容易留下粉痕","妆面细腻，有柔焦感","氧化幅度小"],
+    cautions: ["瑕疵较多时需要叠加遮瑕","油皮盛夏建议定妆"],
+    scenes: ["通勤","秋冬","约会"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "estee-lauder-double-wear",
+    brand: "Estée Lauder", name: "持妆粉底液",
+    price: 520, priceLabel: "500 - 550 元", rating: 4.6,
+    skins: ["油皮","混油皮"], finish: "柔雾", coverage: "高", wear: 12, oxidation: "中",
+    shades: [
+      { name: "1W1 Bone", tone: "暖调", lightness: "白皙", suitable: "黄一白" },
+      { name: "1N1 Ivory Nude", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "2W0 Warm Vanilla", tone: "暖调", lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "需要快速拍开，但成膜后面对出油和闷热很稳。",
+    pros: ["遮瑕与持妆表现突出","高温通勤不易斑驳","少量即可均匀肤色"],
+    cautions: ["上妆前要做足保湿","偏干部位建议分区使用"],
+    scenes: ["夏季","长时间带妆","拍照"],
+    metrics: { 遮瑕: 5, 持妆: 5, 控油: 5, 保湿: 2, 毛孔修饰: 4, 氧化: 2, 卡粉风险: 3 }
+  },
+  {
+    id: "armani-luminous-silk",
+    brand: "GIORGIO ARMANI", name: "大师粉底液",
+    price: 690, priceLabel: "650 - 700 元", rating: 4.8,
+    skins: ["混干皮","干皮","混油皮"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "2", tone: "冷调", lightness: "白皙", suitable: "冷白皮" },
+      { name: "3", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "4", tone: "暖调", lightness: "自然", suitable: "黄一白" }
+    ],
+    note: "像给皮肤加了一层很薄的柔焦滤镜，精致但不厚。",
+    pros: ["轻盈且有高级光泽","叠加后仍显自然","与大部分妆前兼容"],
+    cautions: ["深瑕疵需要另外遮盖","价格较高"],
+    scenes: ["约会","拍照","秋冬"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "dior-forever-skin-glow",
+    brand: "Dior", name: "Forever Skin Glow 恒久凝脂亮泽粉底液",
+    price: 690, priceLabel: "660 - 700 元", rating: 4.7,
+    skins: ["混干皮","干皮","混油皮"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "0N", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "1W", tone: "暖调",   lightness: "白皙", suitable: "黄一白" },
+      { name: "2N", tone: "中性调", lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "妆面有细腻的光泽感，薄层就能均匀肤色。",
+    pros: ["光泽克制，不显油","延展顺滑","适合叠加遮瑕"],
+    cautions: ["重度油皮建议定妆","色号建议先线下试色"],
+    scenes: ["通勤","秋冬","约会"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "dior-forever-matte",
+    brand: "Dior", name: "Forever Skin Matte 恒久凝脂柔雾粉底液",
+    price: 690, priceLabel: "660 - 700 元", rating: 4.6,
+    skins: ["油皮","混油皮"], finish: "柔雾", coverage: "高", wear: 10, oxidation: "中",
+    shades: [
+      { name: "0N", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "1W", tone: "暖调",   lightness: "白皙", suitable: "黄一白" },
+      { name: "2N", tone: "中性调", lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "成膜后是干净的柔雾感，适合想要精致持妆的妆面。",
+    pros: ["柔焦修饰力好","出油后不易花妆","遮瑕可叠加"],
+    cautions: ["干皮需做好保湿","少量分区上妆更均匀"],
+    scenes: ["夏季","长时间带妆","通勤"],
+    metrics: { 遮瑕: 4, 持妆: 5, 控油: 5, 保湿: 2, 毛孔修饰: 4, 氧化: 2, 卡粉风险: 3 }
+  },
+  {
+    id: "ysl-all-hours",
+    brand: "YSL", name: "All Hours 恒久无瑕粉底液",
+    price: 630, priceLabel: "600 - 650 元", rating: 4.7,
+    skins: ["油皮","混油皮"], finish: "柔雾", coverage: "高", wear: 11, oxidation: "中",
+    shades: [
+      { name: "LN1", tone: "冷调", lightness: "白皙", suitable: "冷白皮" },
+      { name: "LN4", tone: "冷调", lightness: "自然", suitable: "自然偏白" },
+      { name: "MN1", tone: "中性调", lightness: "白皙", suitable: "中性一白" }
+    ],
+    note: "有修饰力但不会过分厚重，适合通勤到晚间的转换。",
+    pros: ["肤色修饰均匀","妆面细腻","持妆表现稳定"],
+    cautions: ["鼻翼部位需少量叠加","偏干皮可搭配保湿妆前"],
+    scenes: ["通勤","约会","长时间带妆"],
+    metrics: { 遮瑕: 4, 持妆: 5, 控油: 4, 保湿: 3, 毛孔修饰: 4, 氧化: 2, 卡粉风险: 2 }
+  },
+  {
+    id: "chanel-les-beiges",
+    brand: "CHANEL", name: "LES BEIGES 健康光泽粉底液",
+    price: 680, priceLabel: "650 - 700 元", rating: 4.6,
+    skins: ["混干皮","干皮","敏感肌"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "B10",  tone: "冷调", lightness: "白皙", suitable: "冷白皮" },
+      { name: "BD21", tone: "中性调", lightness: "自然", suitable: "中性二白" },
+      { name: "B30",  tone: "暖调", lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "轻薄、透亮，保留皮肤本身的细微质感。",
+    pros: ["自然光泽感","妆感轻盈","适合快速上妆"],
+    cautions: ["瑕疵肌需配合遮瑕","大油皮建议局部定妆"],
+    scenes: ["通勤","约会","秋冬"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 3, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "prada-reveal-skin",
+    brand: "PRADA BEAUTY", name: "Reveal Skin 柔焦粉底液",
+    price: 720, priceLabel: "690 - 750 元", rating: 4.6,
+    skins: ["混干皮","混油皮","敏感肌"], finish: "奶油肌", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "LC5",  tone: "冷调", lightness: "白皙", suitable: "冷白皮" },
+      { name: "LN10", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "MN20", tone: "中性调", lightness: "自然", suitable: "中性二白" }
+    ],
+    note: "妆面像被柔焦过，保留皮肤光泽却不显厚。",
+    pros: ["柔焦毛孔感","自然奶油光","叠加不易结块"],
+    cautions: ["高遮瑕需求需另加遮瑕","色号跨度建议试色"],
+    scenes: ["通勤","约会","拍照"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 5, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "givenchy-prisme-libre",
+    brand: "GIVENCHY", name: "Prisme Libre Skin-Caring Glow 粉底液",
+    price: 620, priceLabel: "590 - 650 元", rating: 4.5,
+    skins: ["混干皮","干皮","敏感肌"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "N80",  tone: "冷调", lightness: "白皙", suitable: "冷白皮" },
+      { name: "N95",  tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "W100", tone: "暖调", lightness: "自然", suitable: "黄一白" }
+    ],
+    note: "上脸有柔润的皮肤光，妆感显得轻而完整。",
+    pros: ["妆面通透","保湿感在线","细纹处较服帖"],
+    cautions: ["夏季油皮需要散粉辅助","叠涂应控制用量"],
+    scenes: ["通勤","约会","秋冬"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 5, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "lancome-teint-idole",
+    brand: "LANCÔME", name: "Teint Idole Ultra Wear 持妆粉底液",
+    price: 530, priceLabel: "500 - 560 元", rating: 4.6,
+    skins: ["油皮","混油皮"], finish: "柔雾", coverage: "高", wear: 10, oxidation: "中",
+    shades: [
+      { name: "105W", tone: "暖调",   lightness: "白皙", suitable: "黄一白" },
+      { name: "110C", tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "120N", tone: "中性调", lightness: "自然", suitable: "中性二白" }
+    ],
+    note: "遮瑕和持妆之间的平衡成熟，适合忙碌的工作日。",
+    pros: ["修饰红痘印能力好","持妆时间长","妆面均匀"],
+    cautions: ["需注意妆前兼容性","眼下建议避开厚涂"],
+    scenes: ["通勤","夏季","长时间带妆"],
+    metrics: { 遮瑕: 5, 持妆: 5, 控油: 5, 保湿: 2, 毛孔修饰: 4, 氧化: 2, 卡粉风险: 3 }
+  },
+  {
+    id: "mac-studio-fix",
+    brand: "M·A·C", name: "Studio Fix Fluid 柔雾持妆粉底液",
+    price: 410, priceLabel: "380 - 440 元", rating: 4.5,
+    skins: ["油皮","混油皮"], finish: "柔雾", coverage: "高", wear: 10, oxidation: "中",
+    shades: [
+      { name: "NW10", tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "NC15", tone: "暖调",   lightness: "白皙", suitable: "黄一白" },
+      { name: "NC20", tone: "暖调",   lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "妆效可由薄透到高修饰，适合需要调节遮瑕度的人。",
+    pros: ["色号选择多","遮瑕可自由叠加","适合拍照"],
+    cautions: ["不要一次取量过多","干皮建议搭配滋润妆前"],
+    scenes: ["拍照","通勤","夏季"],
+    metrics: { 遮瑕: 5, 持妆: 5, 控油: 4, 保湿: 2, 毛孔修饰: 4, 氧化: 2, 卡粉风险: 3 }
+  },
+  {
+    id: "bobbi-brown-weightless-skin",
+    brand: "BOBBI BROWN", name: "Weightless Skin 无感持妆粉底液",
+    price: 620, priceLabel: "590 - 650 元", rating: 4.6,
+    skins: ["混干皮","混油皮","敏感肌"], finish: "奶油肌", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "0 Alabaster",   tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "1 Warm Ivory",  tone: "暖调",   lightness: "白皙", suitable: "黄一白" },
+      { name: "2 Sand",        tone: "中性调", lightness: "自然", suitable: "中性自然" }
+    ],
+    note: "呈现细腻的奶油肌感，整体显得很有精神。",
+    pros: ["妆感自然","肤色修饰柔和","通勤友好"],
+    cautions: ["重瑕疵需局部遮瑕","油皮需定妆加强"],
+    scenes: ["通勤","约会","秋冬"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "mufe-hd-skin-foundation",
+    brand: "MAKE UP FOR EVER", name: "HD Skin 高清持妆粉底液",
+    price: 460, priceLabel: "430 - 490 元", rating: 4.6,
+    skins: ["混干皮","混油皮","敏感肌"], finish: "奶油肌", coverage: "中", wear: 9, oxidation: "低",
+    shades: [
+      { name: "1N00", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "1N06", tone: "中性调", lightness: "白皙", suitable: "中性自然偏白" },
+      { name: "1Y08", tone: "暖调",   lightness: "自然", suitable: "黄一白" }
+    ],
+    note: "对镜头和毛孔都有不错的柔焦修饰，妆面很干净。",
+    pros: ["毛孔修饰自然","颜色选择丰富","适合拍摄场景"],
+    cautions: ["干皮需避开粉感较重的手法","定妆需少量多次"],
+    scenes: ["拍照","通勤","约会"],
+    metrics: { 遮瑕: 3, 持妆: 5, 控油: 4, 保湿: 4, 毛孔修饰: 5, 氧化: 1, 卡粉风险: 2 }
+  },
+  {
+    id: "laura-mercier-real-flawless",
+    brand: "LAURA MERCIER", name: "Real Flawless 柔光粉底液",
+    price: 520, priceLabel: "490 - 550 元", rating: 4.5,
+    skins: ["混干皮","干皮","敏感肌"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "0N1", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "1N1", tone: "中性调", lightness: "白皙", suitable: "中性自然" },
+      { name: "2W1", tone: "暖调",   lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "像一层柔光滤镜，细腻而不刻意。",
+    pros: ["自然修饰肤色","妆面有层次","叠加后仍轻盈"],
+    cautions: ["深色痘印建议另加遮瑕","盛夏需强化定妆"],
+    scenes: ["约会","通勤","秋冬"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "shiseido-revitalessence",
+    brand: "SHISEIDO", name: "Revitalessence Skin Glow 粉底液",
+    price: 520, priceLabel: "490 - 550 元", rating: 4.6,
+    skins: ["混干皮","干皮","敏感肌"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "110 Alabaster", tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "220 Linen",     tone: "暖调",   lightness: "白皙", suitable: "黄一白" },
+      { name: "330 Bamboo",    tone: "暖调",   lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "皮肤看起来有水润的微光，适合干燥季节。",
+    pros: ["光泽轻透","干纹处较服帖","妆感有呼吸感"],
+    cautions: ["油皮建议只用在秋冬","局部定妆更平衡"],
+    scenes: ["秋冬","通勤","约会"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 5, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "cle-de-peau-radiant-natural",
+    brand: "Clé de Peau Beauté", name: "Radiant Fluid Foundation Natural 光润粉底液",
+    price: 980, priceLabel: "920 - 1020 元", rating: 4.8,
+    skins: ["混干皮","干皮","敏感肌"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "O10",  tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "BF20", tone: "暖调",   lightness: "自然", suitable: "黄一白" },
+      { name: "B30",  tone: "中性调", lightness: "自然", suitable: "中性自然" }
+    ],
+    note: "光泽细腻而精致，整体妆面显得非常完整。",
+    pros: ["妆效高级","细纹修饰柔和","延展性好"],
+    cautions: ["价格较高","遮瑕度属于自然修饰"],
+    scenes: ["约会","通勤","秋冬"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 5, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "cle-de-peau-radiant-matte",
+    brand: "Clé de Peau Beauté", name: "Radiant Fluid Foundation Matte 柔雾粉底液",
+    price: 980, priceLabel: "920 - 1020 元", rating: 4.7,
+    skins: ["油皮","混油皮"], finish: "柔雾", coverage: "中", wear: 10, oxidation: "中",
+    shades: [
+      { name: "O10",  tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "BF20", tone: "暖调",   lightness: "自然", suitable: "黄一白" },
+      { name: "B30",  tone: "中性调", lightness: "自然", suitable: "中性自然" }
+    ],
+    note: "柔雾中带一点皮肤感，适合追求精致妆面的人。",
+    pros: ["毛孔修饰好","妆面平整","长时间妆感干净"],
+    cautions: ["上妆前需要均匀保湿","建议快速拍开"],
+    scenes: ["通勤","长时间带妆","夏季"],
+    metrics: { 遮瑕: 4, 持妆: 5, 控油: 5, 保湿: 3, 毛孔修饰: 5, 氧化: 2, 卡粉风险: 2 }
+  },
+  {
+    id: "suqqu-the-liquid",
+    brand: "SUQQU", name: "The Liquid Foundation 粉霜",
+    price: 700, priceLabel: "670 - 730 元", rating: 4.6,
+    skins: ["混干皮","干皮","敏感肌"], finish: "奶油肌", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "105", tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "110", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "120", tone: "暖调",   lightness: "自然", suitable: "黄一白" }
+    ],
+    note: "粉质细腻，妆面是自然的奶油光泽。",
+    pros: ["肤感舒适","妆面柔和","适合秋冬通勤"],
+    cautions: ["大油皮需分区定妆","色号需仔细对比"],
+    scenes: ["通勤","约会","秋冬"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 5, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "charlotte-tilbury-airbrush",
+    brand: "Charlotte Tilbury", name: "Airbrush Flawless Foundation",
+    price: 490, priceLabel: "460 - 520 元", rating: 4.7,
+    skins: ["油皮","混油皮"], finish: "柔雾", coverage: "高", wear: 10, oxidation: "中",
+    shades: [
+      { name: "1 Neutral", tone: "中性调", lightness: "白皙", suitable: "中性一白" },
+      { name: "3 Neutral", tone: "中性调", lightness: "自然", suitable: "中性自然" },
+      { name: "4 Warm",    tone: "暖调",   lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "修饰力很清晰，呈现平整的柔雾妆面。",
+    pros: ["遮瑕表现突出","柔焦效果强","适合正式场合"],
+    cautions: ["取量从半泵开始","干皮需搭配保湿底妆"],
+    scenes: ["拍照","通勤","长时间带妆"],
+    metrics: { 遮瑕: 5, 持妆: 5, 控油: 5, 保湿: 2, 毛孔修饰: 5, 氧化: 2, 卡粉风险: 3 }
+  },
+  {
+    id: "fenty-pro-filtr",
+    brand: "FENTY BEAUTY", name: "Pro Filt'r Soft Matte Longwear Foundation",
+    price: 340, priceLabel: "320 - 360 元", rating: 4.5,
+    skins: ["油皮","混油皮"], finish: "柔雾", coverage: "高", wear: 10, oxidation: "中",
+    shades: [
+      { name: "110", tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "150", tone: "暖调",   lightness: "白皙", suitable: "黄一白" },
+      { name: "210", tone: "暖调",   lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "柔雾妆面干净利落，色号体系丰富。",
+    pros: ["色号覆盖广","控油表现好","遮瑕可叠加"],
+    cautions: ["务必配合保湿妆前","成膜较快需要分区上妆"],
+    scenes: ["通勤","夏季","长时间带妆"],
+    metrics: { 遮瑕: 4, 持妆: 5, 控油: 5, 保湿: 2, 毛孔修饰: 4, 氧化: 2, 卡粉风险: 3 }
+  },
+  {
+    id: "hourglass-ambient-soft-glow",
+    brand: "HOURGLASS", name: "Ambient Soft Glow Foundation",
+    price: 590, priceLabel: "560 - 620 元", rating: 4.5,
+    skins: ["混干皮","干皮","敏感肌"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "1.5", tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "4",   tone: "中性调", lightness: "自然", suitable: "中性自然" },
+      { name: "6.5", tone: "暖调",   lightness: "自然", suitable: "黄二白" }
+    ],
+    note: "妆面有温柔的柔光感，修饰度和透气感平衡。",
+    pros: ["光泽自然","肤色修饰均匀","适合拍照"],
+    cautions: ["高温天需控油定妆","深瑕疵需遮瑕辅助"],
+    scenes: ["约会","通勤","拍照"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  },
+  {
+    id: "pat-mcgrath-skin-fetish",
+    brand: "PAT McGRATH LABS", name: "Skin Fetish: Sublime Perfection Foundation",
+    price: 620, priceLabel: "590 - 650 元", rating: 4.6,
+    skins: ["混干皮","干皮","敏感肌"], finish: "自然光泽", coverage: "中", wear: 8, oxidation: "低",
+    shades: [
+      { name: "Light 2",         tone: "冷调",   lightness: "白皙", suitable: "冷白皮" },
+      { name: "Light Medium 10", tone: "中性调", lightness: "白皙", suitable: "中性自然偏白" },
+      { name: "Medium 15",       tone: "暖调",   lightness: "自然", suitable: "黄一白" }
+    ],
+    note: "光泽精致但不张扬，适合想要高级皮肤质感的时候。",
+    pros: ["通透显肤质","妆感层次细","适合精致妆容"],
+    cautions: ["局部瑕疵需额外遮盖","建议少量多次叠加"],
+    scenes: ["约会","拍照","通勤"],
+    metrics: { 遮瑕: 3, 持妆: 4, 控油: 3, 保湿: 4, 毛孔修饰: 4, 氧化: 1, 卡粉风险: 1 }
+  }
+];
+
+/* 资料库索引 */
+const SKIN_OPTIONS  = ["油皮","混油皮","干皮","混干皮","敏感肌"];
+const FINISH_OPTIONS = ["哑光","柔雾","奶油肌","自然光泽"];
+const SCENE_OPTIONS  = ["通勤","约会","拍照","夏季","秋冬","长时间带妆"];
+
+/* ============================================================
+ *  2. 配置（API Key / 模型）
+ * ============================================================ */
+const CONFIG_KEY = "yaspretty-assistant-config";
+const DEFAULT_CONFIG = {
+  apiKey: "",
+  model: "glm-4-flash",
+  temperature: 0.7,
+  webSearch: true
+};
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem(CONFIG_KEY);
+    if (raw) return Object.assign({}, DEFAULT_CONFIG, JSON.parse(raw));
+  } catch (e) {}
+  return Object.assign({}, DEFAULT_CONFIG);
+}
+function saveConfig(cfg) {
+  try { localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg)); } catch (e) {}
+}
+let config = loadConfig();
+
+/* ============================================================
+ *  2.5 联网搜索决策 —— 资料库优先，超出范围才上网
+ * ============================================================ */
+/* 资料库未收录的品类（命中即联网查询） */
+const NON_CATALOG = ["口红","唇釉","唇彩","唇膏","唇蜜","气垫","遮瑕","散粉","蜜粉","粉饼","腮红","眼影","睫毛膏","睫毛","眉笔","眉粉","眼线","卸妆","防晒","隔离","妆前乳","妆前","粉底霜","粉底膏","粉霜","粉底棒","粉底刷","高光","修容","香水","精华","面霜","水乳","面膜","洗发","美甲","美妆蛋","化妆刷"];
+
+/* 实时 / 外部信息信号 —— 只有这些才需要上网（资料库里的信息没有时效性） */
+const REALTIME_SIGNAL = /(最新|新品|新款|新出|刚出|刚上|上市|发售|今年|去年|明年|2024|2025|2026|近期|最近|现在|目前|多少钱|价格|价位|定价|促销|折扣|打折|降价|涨价|官网|专柜|免税|测评|评测|评价|口碑|销量|排行|榜单|成分|升级|新版|二代|第二代|第三代|限量|联名|代言|真假|鉴别|代购|海淘|旗舰店|哪里买|值得买|开箱|试色)/i;
+
+/* 明显与美妆无关的话题 */
+const OFF_TOPIC = /(天气|气温|下雨|台风|股票|基金|房价|汇率|编程|代码|python|javascript|数学题|方程|翻译|作文|论文|旅游|机票|酒店|电影|电视剧|综艺|游戏|星座|运势|菜谱|减肥餐|健身|会议|邮件|简历|面试)/i;
+
+/* 资料库里完全没有、但用户常问的品牌（命中即联网查，注意避开短词以免误伤） */
+const OUTSIDE_BRANDS = ["爱马仕","hermes","hermès","tom ford","汤姆福特","娇兰","guerlain","sisley","希思黎","黛珂","decorte","植村秀","shu uemura","兰芝","雪花秀","whoo","赫妍","hera","悦诗风吟","innisfree","3ce","clio","珂莱欧","谜尚","爱丽小屋","伊蒂之屋","完美日记","花西子","橘朵","彩棠","毛戈平","卡姿兰","自然堂","珀莱雅","欧莱雅","美宝莲","露华浓","妙巴黎","kiko","milani","illamasqua","by terry","黛玛蔻","dermacol","kryolan","蜜丝佛陀","max factor","欧珀莱","佰草集"];
+
+/* 判断这次提问是否需要联网（原则：资料库内有答案的绝不联网） */
+function needsWebSearch(text) {
+  const t = String(text || "").trim();
+  if (!t) return false;
+  if (!config.webSearch) return false;
+
+  // 寒暄 / 身份闲聊 / 控制指令 → 不需要联网
+  if (/^(你好|您好|hi|hello|嗨|哈喽|在吗|谢谢|感谢|多谢|再见|拜拜|bye|重新开始|重来一次|重置)$/i.test(t)) return false;
+  if (/^(你是谁|你叫什么|你是什么|你是ai吗|你真人吗|你是机器人吗|你能做什么|你会什么)/.test(t)) return false;
+
+  // 用户明确要求联网
+  if (/(搜一下|搜索一下|联网|上网|查一下|帮我查|网上查|google)/i.test(t)) return true;
+
+  // 资料库未收录的品类（口红、气垫、散粉等）
+  if (NON_CATALOG.some(k => t.includes(k))) return true;
+
+  // 实时 / 外部信息信号（价格、新品、测评、榜单等）
+  if (REALTIME_SIGNAL.test(t)) return true;
+
+  // 明显与美妆无关的话题
+  if (OFF_TOPIC.test(t)) return true;
+
+  // 资料库未收录的美妆品牌（且没命中库内产品）
+  const low = t.toLowerCase();
+  if (OUTSIDE_BRANDS.some(k => low.includes(k)) && !findProductByKeyword(t)) return true;
+
+  // 其余（肤质 / 妆效 / 场景 / 推荐 / 资料库内产品咨询）→ 一律用资料库
+  return false;
+}
+
+/* ============================================================
+ *  3. System Prompt —— 产品库注入 + 严格约束
+ * ============================================================ */
+function buildCatalogText() {
+  return PRODUCTS.map(p => {
+    const shadeStr = p.shades.map(s => `${s.name}(${s.tone}/${s.lightness}/${s.suitable})`).join("、");
+    return [
+      `【id: ${p.id}】`,
+      `品牌：${p.brand}｜名称：${p.name}｜价格：${p.priceLabel}｜资料库评分：${p.rating}`,
+      `适用肤质：${p.skins.join("/")}｜妆效：${p.finish}｜遮瑕度：${p.coverage}｜参考持妆：${p.wear}小时｜氧化程度：${p.oxidation}`,
+      `适合场景：${p.scenes.join("/")}`,
+      `色号：${shadeStr}`,
+      `描述：${p.note}`,
+      `优点：${p.pros.join("；")}`,
+      `注意：${p.cautions.join("；")}`
+    ].join("\n");
+  }).join("\n\n");
+}
+
+/* 按肤质反查可用产品 —— 直接给模型一张查询表，避免它自己推理出错 */
+function buildSkinIndex() {
+  return SKIN_OPTIONS.map(skin => {
+    const list = PRODUCTS.filter(p => p.skins.includes(skin));
+    return `- **${skin}可用**（共 ${list.length} 款）：${list.map(p => p.brand + " " + p.name + `(${p.id})`).join("、")}`;
+  }).join("\n");
+}
+
+function buildSystemPrompt() {
+  const WEB_ON = !!config.webSearch;
+  return `${buildMemoryBlock()}
+
+---
+
+你是「小鱼」，yaspretty 彩妆资料库的专属粉底液顾问，说话温柔、专业、像闺蜜一样亲切，称呼用户为"你"。适当使用 ✨💄 等表情但不过度。
+
+# ⚠️ 最高优先级规则（必须严格遵守，不可违背）
+1. 你的核心身份是 **yaspretty 的专属粉底液顾问**。下方【产品资料库】收录的 ${PRODUCTS.length} 款粉底液是你**最权威、最优先**的信息来源——凡涉及这 ${PRODUCTS.length} 款的肤质 / 妆效 / 价格 / 色号 / 优缺点，一律以资料库为准。
+2. ${WEB_ON ? "资料库**不包含**的品类（口红、唇釉、气垫、遮瑕、散粉、粉饼、腮红、眼影、睫毛膏、眉笔、防晒、妆前乳等）：先如实说明「资料库里暂时没有收录这类产品」，然后基于**联网搜索**给出简要参考，并注明这是网上信息、以官方渠道为准。" : "资料库**不包含**的品类（口红、唇釉、气垫、遮瑕、散粉、粉饼、腮红、眼影、睫毛膏、眉笔、防晒、妆前乳等），必须礼貌说明「资料库里暂时没有收录这类产品」，并引导用户回到粉底液咨询。"}
+3. 用户提到的粉底液如果**不在资料库中**：如实说明"资料库里没有收录这款"${WEB_ON ? "，可以把联网查到的信息作为参考告诉他（注明是网上信息）" : ""}，然后推荐资料库中最接近的 2-3 款。
+4. **绝对禁止编造**任何产品信息：名称、色号、价格、成分、功效、销量、用户评价、上线时间等。资料库里没有、联网也查不到的，就直接说不知道。
+5. 资料库中产品的价格**只能**使用给定的 priceLabel，不得自行换算或估算${WEB_ON ? "；联网查到的价格要说明是网上信息、可能随时变动" : ""}。
+6. 与美妆彩妆无关的问题（天气、新闻、编程、数学等）${WEB_ON ? "：可以联网简短回答（2-3 句），说明这是联网信息，然后自然地把话题带回粉底液咨询。" : "，礼貌说明你只负责粉底液咨询并引导回来。"}
+7. 资料库里没有"遮瑕度低"的粉底液（最低是中），不要编造。
+8. **绝不能"美化"产品来凑合用户需求。** 禁止声称某款产品适合用户的肤质，除非它的「适用肤质」确实包含该肤质。反例（严禁出现）：用户是干皮，却说"MAC Studio Fix 适合干皮"——资料库明确标注它只适合油皮/混油皮。**说错比少推荐更严重。**
+
+${WEB_ON ? `# 🌐 联网搜索补充说明（本次对话已开启联网能力）
+0. **消息里可能出现【网页 1】【网页 2】形式的「实时联网检索结果」**：只要出现，就必须**基于这些网页内容**回答，并说明信息来自联网搜索；不要凭自己的记忆编造网页里没有的色号 / 价格 / 成分。
+1. **资料库优先，绝不覆盖**：涉及资料库内 ${PRODUCTS.length} 款的任何事实，一律以资料库为准；即使网上信息与资料库不同，也**不得**用网上信息改写资料库内容。
+2. **库外问题直接联网回答**，且回答结构固定为三步：① **开头先用一句话说明资料库里是否收录**（例如「口红不在小鱼的资料库里哦」）② **再给出联网查到的实质参考内容**（要有具体信息，不能只反问或让用户重复需求）③ 视情况自然地拉回粉底液。资料库未收录的品牌粉底液、口红 / 气垫 / 散粉等其他品类、行业新品资讯、成分原理、护肤知识，以及美妆之外的一般问题，都按这个结构回答，不要推脱。
+3. **必须诚实标注来源**：内容来自联网时，在回答里自然说明（例如"这部分是小鱼刚从网上查到的"），**不要**让用户误以为这是资料库的官方信息。
+4. **冲突时两个口径都讲**：例如"资料库记录的官方口径是 X，网上信息显示 Y"，把两者都告诉用户，由用户自行判断。
+5. **联网查到的产品严禁输出 [[PRODUCT:id]] 标记**——产品卡片只用于资料库收录的 ${PRODUCTS.length} 款，否则用户会误以为我们收录了它。
+6. 联网信息可能过期或有偏差，涉及价格 / 促销时提醒用户"以官方渠道为准"。
+7. **不要丢掉粉底液顾问的身份**：回答完库外问题后，自然地拉回主题（例如"要不要顺手从小鱼的资料库里挑一支粉底液？"）。不要变成一个什么都聊的通用助手。
+` : ""}
+# 推荐原则（专业度关键）
+- **必须优先满足用户已确认的肤质条件**。这是硬性约束。
+- **推荐前必须先查下面的【肤质快速查询表】**，只从对应肤质的名单里挑选产品。用户是干皮，就绝不能推荐只适合油皮/混油皮的产品。
+- 如果因为预算等新需求，导致在已确认条件下可选产品不足 3 款，就**如实说明**（例如"在这个预算内、又符合你干皮条件的选择比较少，这几款是我能找到最合适的"），而不是硬凑不适合的产品。
+- 用户提出新条件（如"便宜点"）时，要在**原有条件基础上**追加筛选，而不是把之前的条件丢掉。
+- **输出前逐款自检**：这一款的「适用肤质」里有用户的肤质吗？没有就**不能**出现在推荐里，也**不能**在文字里说它适合。宁可在预算内只找到 1~2 款，也不要塞一款肤质不符的。
+- 措辞要诚实：如果你不确定，就说"资料库里符合条件的只有这几款"，不要靠编造优点来凑数。
+
+# 【肤质快速查询表】（推荐前必须查表！）
+${buildSkinIndex()}
+
+# 信息提取（极重要，避免重复询问）
+- 用户一句话里可能同时包含多个信息。例如"我是干皮，想要奶油肌"同时提供了【肤质=干皮】和【妆效=奶油肌】。
+- 必须完整提取用户已提供的**所有**信息，**绝对不要重复询问用户已经说过的内容**。
+- 记住整段对话中已收集的信息（肤质 / 妆效 / 场景 / 预算 / 遮瑕需求），只询问仍然缺失的那一项。
+- 一次只问一个问题，不要一口气抛出一串问题。
+- 信息足够（至少【肤质】+【妆效】）时就直接给出推荐，不要没完没了地追问。
+
+# 服务流程（自然引导，不要机械念稿）
+1. 先了解用户的**肤质**（油皮 / 混油皮 / 干皮 / 混干皮 / 敏感肌）
+2. 如果用户表示不清楚肤质，用这个自查法引导：
+   "洗完脸不涂任何东西，2 小时后观察 T 区和脸颊——
+    · 全脸紧绷、可能起皮 → 干皮
+    · T 区油、脸颊干 → 混干皮
+    · 全脸明显油光 → 油皮
+    · T 区油、脸颊微油 → 混油皮
+    · 容易泛红刺痛 → 敏感肌"
+3. 了解**妆效偏好**（哑光 / 柔雾 / 奶油肌 / 自然光泽）
+4. 了解**使用场景**（通勤 / 约会 / 拍照 / 夏季 / 秋冬 / 长时间带妆）
+5. 可选：了解预算、遮瑕需求
+6. 综合以上信息，从资料库中推荐 **3 款**最合适的，说明为什么适合
+
+# 输出格式约定（非常重要，前端依赖此格式渲染）
+
+## A. 产品标记 —— 提到资料库中的具体产品时必用
+凡是**推荐、介绍、对比**资料库中的具体产品（哪怕只提到 1 款），都要在文字之后**单独成行**输出：
+[[PRODUCT:产品id]]
+可连续输出多个（最多 3 个）。例如：
+[[PRODUCT:nars-light-reflecting]]
+[[PRODUCT:armani-luminous-silk]]
+
+## B. 快捷选项标记 —— 每一轮回复都必须输出！
+**无论回复什么内容，都要在回复的最末尾单独成行输出快捷选项**，让用户可以直接点选：
+[[CHIPS:选项1|选项2|选项3]]
+- 2~5 个选项，每个选项 2~8 个字
+- 选项必须贴合当前对话阶段，是用户接下来最可能的回答
+- 询问肤质时 → [[CHIPS:我是油皮|我是干皮|我是混油皮|我是混干皮|我不太确定]]
+- 询问妆效时 → [[CHIPS:哑光|柔雾|奶油肌|自然光泽]]
+- 询问场景时 → [[CHIPS:通勤|约会|拍照|夏季|长时间带妆]]
+- 拒绝非粉底液问题时 → [[CHIPS:帮我推荐粉底液|我是干皮|我是油皮]]
+- 推荐完之后 → [[CHIPS:详细介绍第一款|换个需求|重新开始]]
+
+这两个标记都必须**独立成行**，前后不加其他文字。**绝不能在回复中解释、提及或暴露这些标记格式。**
+
+# 对话示例（严格模仿这种语气、节奏和格式）
+
+【示例1 · 引导肤质】
+用户：我不太确定自己是什么肤质
+小鱼：没关系～小鱼的肤质自查法送你：洗完脸不涂任何东西，2 小时后观察 T 区和脸颊——
+· 全脸紧绷、可能起皮 → 干皮
+· T 区油、脸颊干 → 混干皮
+· 全脸明显油光 → 油皮
+· T 区油、脸颊微油 → 混油皮
+· 容易泛红刺痛 → 敏感肌
+你是哪一种呢？
+[[CHIPS:我是油皮|我是干皮|我是混油皮|我是混干皮|我是敏感肌]]
+
+【示例2 · 一句话含多个信息】（重点！注意这里没有重复问妆效）
+用户：我应该是干皮，想要奶油肌的妆效
+小鱼：好的呀～**干皮 + 奶油肌**，小鱼已经记住啦 ✨
+那平时主要在什么场合用呢？
+[[CHIPS:通勤|约会|拍照|秋冬|长时间带妆]]
+
+【示例2b · 三要素齐全时直接推荐，绝不再反问】
+用户：我是干皮，想要奶油肌妆效、通勤用的粉底液
+小鱼：好的呀～**干皮 + 奶油肌 + 通勤**都记住啦 ✨ 小鱼这就从资料库里给你挑（已逐款确认适用肤质含干皮）：
+1. ……
+2. ……
+3. ……
+只要肤质、妆效、场景都已经给到，就直接进入推荐，**不要再反问"你平时什么场合用"**。
+
+【示例3 · 收集完毕给出推荐】
+用户：通勤吧
+小鱼：收到！干皮 + 奶油肌 + 通勤，小鱼给你挑了这 3 款（都是干皮能直接用的，或与干皮非常接近的混干皮）：
+1. SUQQU The Liquid Foundation 粉霜 —— 奶油肌妆效，粉质细腻，干皮友好
+2. BOBBI BROWN Weightless Skin 无感持妆粉底液 —— 细腻奶油感，混干皮/敏感肌适用，与干皮很接近
+3. PRADA BEAUTY Reveal Skin 柔焦粉底液 —— 奶油光 + 柔焦毛孔，混干皮适用，与干皮很接近
+[[PRODUCT:suqqu-the-liquid]]
+[[PRODUCT:bobbi-brown-weightless-skin]]
+[[PRODUCT:prada-reveal-skin]]
+[[CHIPS:详细介绍第一款|我想换个预算|重新开始]]
+
+${WEB_ON ? `
+【示例4 · 资料库没有的品类（说明未收录 + 联网给参考 + 拉回主题）】
+用户：帮我推荐一支口红
+小鱼：口红不在小鱼的资料库里哦（资料库专注粉底液）～不过小鱼刚上网帮你看了下，最近讨论度比较高的有这几支（网上信息，具体色号建议专柜试色）：
+1. ……
+2. ……
+小鱼的本职还是粉底液，要不要顺手帮你挑一支？
+[[CHIPS:帮我推荐粉底液|我是干皮|我是油皮]]
+` : `
+【示例4 · 拒绝非粉底液】
+用户：推荐一支口红
+小鱼：抱歉哦，资料库里暂时没有收录口红～不过粉底液小鱼很在行，要不要帮你挑一支？
+[[CHIPS:帮我推荐粉底液|我是干皮|我是油皮]]
+`}
+
+【示例5 · 追加"便宜点"（重点！绝不能推肤质不符的产品来凑数）】
+用户：有没有便宜点的
+小鱼：在适合干皮的名单里，价位相对友好的是这 3 款（已逐款确认适用肤质含干皮）：
+1. NARS 超方瓶粉底液 —— 400 - 450 元，自然光泽，妆感轻薄
+2. LAURA MERCIER Real Flawless 柔光粉底液 —— 490 - 550 元，自然光泽，干皮友好
+3. SHISEIDO Revitalessence Skin Glow 粉底液 —— 490 - 550 元，光泽感好
+再往下压预算就没有适合干皮的款了，所以小鱼没有继续往低推哦～
+[[PRODUCT:nars-light-reflecting]]
+[[PRODUCT:laura-mercier-real-flawless]]
+[[PRODUCT:shiseido-revitalessence]]
+[[CHIPS:详细介绍第一款|我想换个需求|重新开始]]
+
+【示例6 · 条件太严导致无解时（诚实说明，不要硬凑）】
+用户：500 元以内、要奶油肌、必须油皮
+小鱼：这个组合有点难哦——资料库里 500 元以内、奶油肌妆效的款，都不支持油皮。要不要放宽其中一个条件？比如把妆效换成柔雾，或者预算提到 500 - 600 元，小鱼马上帮你重新挑 ✨
+[[CHIPS:换成柔雾|预算提到600|都听你的]]
+${WEB_ON ? `
+【示例7 · 资料库外的品牌粉底液（联网给参考 + 推荐库内最接近的款 + 只给库内产品打标记）】
+用户：爱马仕的粉底液怎么样
+小鱼：爱马仕这款小鱼的资料库里没有收录哦～小鱼上网查了下：它是爱马仕推出的首款粉底液，主打柔雾透亮的裸妆感、中度遮瑕，色号分冷 / 中性 / 暖调（以上为网上信息，以官方为准）。如果想让小鱼从资料库里挑，和它妆感最接近的是这款柔焦质地的：
+[[PRODUCT:prada-reveal-skin]]
+[[CHIPS:详细介绍这款|帮我推荐粉底液|重新开始]]
+
+【示例8 · 库外话题（简短回答 + 拉回主题）】
+用户：今天上海天气怎么样
+小鱼：小鱼帮你查了下：上海今天多云，24-31℃（联网信息，出门前看一眼实时预报更准哦）。不过小鱼的主场是粉底液～要不要帮你挑一支夏天高温也不容易脱妆的？
+[[CHIPS:要持妆的|我是油皮|我是干皮]]
+` : ""}
+# 语气示例
+- "好的呀～已经记下你是干皮啦 ✨ 那你平时更喜欢什么样的妆效呢？"
+- ${WEB_ON ? "「这个不在资料库里哦～小鱼上网帮你查了查……」给出参考后再顺势拉回：'对了，要不要顺手从小鱼的资料库里挑一支粉底液？'" : "「抱歉哦，资料库里暂时没有收录口红～不过粉底液我很在行，要不要我帮你挑一支？」"}
+
+# 【产品资料库】共 ${PRODUCTS.length} 款粉底液
+${buildCatalogText()}`;
+}
+
+/* ============================================================
+ *  4. 智谱 API 调用（流式）
+ * ============================================================ */
+const DIRECT_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+const DIRECT_WEB_SEARCH_URL = "https://open.bigmodel.cn/api/paas/v4/tools";
+
+/* 运行模式判断：
+ *   - 通过「启动小鱼.bat」的本地服务打开（127.0.0.1 / localhost）→ 走同源转发，
+ *     由本地服务去访问智谱，浏览器不需要直连外网，绕开代理/插件拦截
+ *   - 直接双击 HTML 文件 → 保持原来的直连模式（file:// 下智谱已放行 Origin: null）
+ */
+const VIA_LOCAL_PROXY = /^https?:$/.test(location.protocol) &&
+  /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+
+const API_URL = VIA_LOCAL_PROXY ? "/proxy/chat" : DIRECT_API_URL;
+const WEB_SEARCH_URL = VIA_LOCAL_PROXY ? "/proxy/websearch" : DIRECT_WEB_SEARCH_URL;
+
+/* 统一的请求头：转发模式下若本地存在 server/key.txt，服务端会优先用它 */
+function apiHeaders() {
+  const h = { "Content-Type": "application/json" };
+  if (config.apiKey) h["Authorization"] = "Bearer " + config.apiKey;
+  return h;
+}
+
+/* ============================================================
+ *  4.5 🧠 永久记忆系统
+ *
+ *  三层记忆：
+ *    ① profile  结构化画像（肤质 / 妆效 / 场景 / 预算 / 品牌偏好 / 过敏…）
+ *    ② notes + summary  自由备注与对话要点
+ *    ③ turns + recs  最近对话上下文与推荐历史（避免重复推荐）
+ *
+ *  双通道持久化：
+ *    - 本地服务可用 → 落盘 server/memory/store.json（换浏览器也在）
+ *    - 纯双击打开   → 退回 localStorage
+ * ============================================================ */
+const MEM_LS_KEY = "fishtalk_memory_v1";
+const MEM_LIMIT = { notes: 40, summary: 8, recs: 30, turns: 12 };
+
+const MEM_FIELDS = {
+  skin:       "肤质",
+  finish:     "妆效偏好",
+  scene:      "使用场景",
+  budget:     "预算",
+  coverage:   "遮瑕需求",
+  brandLike:  "偏好的品牌",
+  brandAvoid: "想避开的品牌",
+  concerns:   "过敏 / 在意的问题"
+};
+const MEM_FIELD_KEYS = Object.keys(MEM_FIELDS);
+const MEM_MULTI_FIELDS = ["brandLike", "brandAvoid", "concerns"];
+
+function emptyMemory() {
+  return { version: 1, updatedAt: 0, profile: {}, notes: [], summary: [], recs: [], turns: [] };
+}
+
+let memory = emptyMemory();
+let memoryReady = false;
+let memSaveTimer = null;
+let memSavedToFile = null;   // null=未知 / true=已落盘到文件 / false=仅存浏览器
+
+/* ---------- 小工具 ---------- */
+function memId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function memText(s) { return String(s == null ? "" : s).replace(/\s+/g, " ").trim(); }
+function memAgo(at) {
+  if (!at) return "";
+  const d = Math.floor((Date.now() - at) / 86400000);
+  if (d <= 0) return "今天";
+  if (d === 1) return "昨天";
+  if (d < 30) return d + " 天前";
+  return Math.floor(d / 30) + " 个月前";
+}
+function memSplit(val) {
+  return String(val || "").split(/[、,，;；\/\|]/).map(s => s.trim()).filter(Boolean);
+}
+
+/* ---------- 结构规整 / 合并 ---------- */
+function normalizeMemory(raw) {
+  const m = emptyMemory();
+  if (!raw || typeof raw !== "object") return m;
+  m.updatedAt = Number(raw.updatedAt) || 0;
+
+  if (raw.profile && typeof raw.profile === "object") {
+    for (const k of MEM_FIELD_KEYS) {
+      const e = raw.profile[k];
+      if (!e) continue;
+      if (typeof e === "string") {
+        const v = memText(e);
+        if (v) m.profile[k] = { v, at: 0 };
+      } else if (typeof e === "object") {
+        const v = memText(e.v);
+        if (v) m.profile[k] = { v, at: Number(e.at) || 0 };
+      }
+    }
+  }
+
+  const arr = x => Array.isArray(x) ? x : [];
+  m.notes = arr(raw.notes)
+    .map(n => ({ id: (n && n.id) || memId(), text: memText(n && n.text), at: Number(n && n.at) || 0, src: memText(n && n.src) || "未知" }))
+    .filter(n => n.text).slice(-MEM_LIMIT.notes);
+  m.summary = arr(raw.summary)
+    .map(s => ({ text: memText(s && s.text), at: Number(s && s.at) || 0 }))
+    .filter(s => s.text).slice(-MEM_LIMIT.summary);
+  m.recs = arr(raw.recs)
+    .map(r => ({ productId: memText(r && r.productId), at: Number(r && r.at) || 0 }))
+    .filter(r => r.productId).slice(-MEM_LIMIT.recs);
+  m.turns = arr(raw.turns)
+    .map(t => ({ role: t && t.role === "user" ? "user" : "assistant", content: String((t && t.content) || "").slice(0, 1200), at: Number(t && t.at) || 0 }))
+    .filter(t => t.content).slice(-MEM_LIMIT.turns);
+  return m;
+}
+
+function mergeMemory(a, b) {
+  const A = normalizeMemory(a), B = normalizeMemory(b);
+  const out = emptyMemory();
+  out.updatedAt = Math.max(A.updatedAt || 0, B.updatedAt || 0);
+
+  // 画像：同一字段取更新时间较晚的一方
+  for (const k of MEM_FIELD_KEYS) {
+    const ea = A.profile[k], eb = B.profile[k];
+    if (ea && eb) out.profile[k] = (eb.at || 0) >= (ea.at || 0) ? eb : ea;
+    else out.profile[k] = ea || eb;
+  }
+
+  const uniqByText = list => {
+    const seen = new Set(), res = [];
+    for (const it of list) {
+      const key = memText(it.text).toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key); res.push(it);
+    }
+    return res;
+  };
+  out.notes = uniqByText([...A.notes, ...B.notes].sort((x, y) => (y.at || 0) - (x.at || 0)))
+    .slice(0, MEM_LIMIT.notes).sort((x, y) => (x.at || 0) - (y.at || 0));
+  out.summary = uniqByText([...A.summary, ...B.summary].sort((x, y) => (y.at || 0) - (x.at || 0)))
+    .slice(0, MEM_LIMIT.summary)
+    .sort((x, y) => (x.at || 0) - (y.at || 0));
+
+  // 推荐记录：同一产品保留最近一次
+  const recMap = new Map();
+  for (const r of [...A.recs, ...B.recs]) {
+    if (!r || !r.productId) continue;
+    const prev = recMap.get(r.productId);
+    if (!prev || (r.at || 0) > (prev.at || 0)) recMap.set(r.productId, r);
+  }
+  out.recs = [...recMap.values()].sort((x, y) => (x.at || 0) - (y.at || 0)).slice(-MEM_LIMIT.recs);
+
+  // 会话上下文：只取较新一侧，避免两份旧上下文混在一起
+  out.turns = ((B.updatedAt || 0) > (A.updatedAt || 0) ? B.turns : A.turns).slice(-MEM_LIMIT.turns);
+  return out;
+}
+
+/* ---------- 持久化 ---------- */
+function readMemoryLS() {
+  try {
+    return normalizeMemory(JSON.parse(localStorage.getItem(MEM_LS_KEY) || "null"));
+  } catch (e) {
+    console.warn("[memory] 本地读取失败：", e.message);
+    return emptyMemory();
+  }
+}
+function writeMemoryLS() {
+  try { localStorage.setItem(MEM_LS_KEY, JSON.stringify(memory)); return true; }
+  catch (e) { console.warn("[memory] 本地写入失败：", e.message); return false; }
+}
+async function fetchMemoryFromServer() {
+  if (!VIA_LOCAL_PROXY) return null;
+  try {
+    const r = await fetch("/memory", { cache: "no-store" });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j && j.store ? normalizeMemory(j.store) : null;
+  } catch (e) {
+    console.warn("[memory] 服务端读取失败（将只用浏览器存储）：", e.message);
+    return null;
+  }
+}
+async function pushMemoryToServer() {
+  if (!VIA_LOCAL_PROXY) return false;
+  try {
+    const r = await fetch("/memory", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(memory)
+    });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return true;
+  } catch (e) {
+    console.warn("[memory] 服务端保存失败：", e.message);
+    return false;
+  }
+}
+async function saveMemoryNow() {
+  memory.updatedAt = Date.now();
+  writeMemoryLS();
+  memSavedToFile = await pushMemoryToServer();
+  updateMemoryBadge();
+  if (document.getElementById("memPanel").classList.contains("show")) renderMemoryPanel();
+}
+function scheduleMemorySave() {
+  clearTimeout(memSaveTimer);
+  memSaveTimer = setTimeout(saveMemoryNow, 300);
+}
+
+/* 页面即将关闭：立刻同步写一份，避免防抖还没触发就丢了这一次的记忆 */
+function flushMemorySync() {
+  clearTimeout(memSaveTimer);
+  memSaveTimer = null;
+  memory.updatedAt = Date.now();
+  writeMemoryLS();
+  if (VIA_LOCAL_PROXY && navigator.sendBeacon) {
+    try {
+      navigator.sendBeacon("/memory", new Blob([JSON.stringify(memory)], { type: "application/json" }));
+    } catch (e) { /* 忽略，localStorage 里还有一份 */ }
+  }
+}
+window.addEventListener("pagehide", flushMemorySync);
+window.addEventListener("beforeunload", flushMemorySync);
+
+/* ---------- 启动加载 ---------- */
+async function initMemory() {
+  const local = readMemoryLS();
+  const remote = await fetchMemoryFromServer();
+  memory = remote ? mergeMemory(local, remote) : local;
+  memSavedToFile = remote ? true : false;
+  memoryReady = true;
+  applyMemoryToProfile();
+  writeMemoryLS();
+  if (remote) pushMemoryToServer();     // 把本地新增的补回文件
+  updateMemoryBadge();
+  updateWelcomeMemTip();
+}
+
+/* 记忆 → 会话内工作档案（供肤质校验等前端逻辑使用） */
+function applyMemoryToProfile() {
+  ["skin", "finish", "scene"].forEach(k => {
+    if (memory.profile[k] && memory.profile[k].v) userProfile[k] = memory.profile[k].v;
+  });
+}
+
+/* ---------- 写入 ---------- */
+function writeMemoryField(key, val, src) {
+  if (!MEM_FIELD_KEYS.includes(key)) return false;
+  const v = memText(val).slice(0, 60);
+  if (!v) return false;
+
+  let next = v;
+  const prev = memory.profile[key];
+  if (MEM_MULTI_FIELDS.includes(key) && prev) {         // 多值字段做追加去重
+    const parts = memSplit(prev.v);
+    for (const p of memSplit(v)) if (!parts.includes(p)) parts.push(p);
+    next = parts.slice(-8).join("、");
+  }
+  if (prev && prev.v === next) return false;            // 没变化就不写，避免时间戳乱跳
+
+  memory.profile[key] = { v: next, at: Date.now(), src: src || "对话" };
+  if (key === "skin") userProfile.skin = next;
+  if (key === "finish") userProfile.finish = next;
+  if (key === "scene") userProfile.scene = next;
+  return true;
+}
+
+function addMemoryNote(text, src) {
+  const t = memText(text).slice(0, 140);
+  if (!t) return false;
+  // 与已有备注重复（完全相同或互相包含）则跳过
+  if (memory.notes.some(n => n.text === t || n.text.includes(t) || t.includes(n.text))) return false;
+  memory.notes.push({ id: memId(), text: t, at: Date.now(), src: src || "对话" });
+  if (memory.notes.length > MEM_LIMIT.notes) memory.notes = memory.notes.slice(-MEM_LIMIT.notes);
+  return true;
+}
+
+function addMemorySummary(text) {
+  const t = memText(text).slice(0, 160);
+  if (!t) return false;
+  if (memory.summary.some(s => s.text === t)) return false;
+  memory.summary.push({ text: t, at: Date.now() });
+  if (memory.summary.length > MEM_LIMIT.summary) memory.summary = memory.summary.slice(-MEM_LIMIT.summary);
+  return true;
+}
+
+function addMemoryRecs(ids) {
+  const list = (ids || []).filter(Boolean);
+  if (!list.length) return false;
+  let changed = false;
+  const now = Date.now();
+  for (const id of list) {
+    const prev = memory.recs.find(r => r.productId === id);
+    if (prev) {
+      if (now - (prev.at || 0) > 6 * 3600000) { prev.at = now; changed = true; }  // 同款隔了半天以上再推，更新时间
+      continue;
+    }
+    memory.recs.push({ productId: id, at: now });
+    changed = true;
+  }
+  if (memory.recs.length > MEM_LIMIT.recs) memory.recs = memory.recs.slice(-MEM_LIMIT.recs);
+  if (changed) scheduleMemorySave();
+  return changed;
+}
+
+function addMemoryTurn(role, content) {
+  const c = String(content || "").trim();
+  if (!c) return false;
+  const last = memory.turns[memory.turns.length - 1];
+  if (last && last.role === role && last.content === c) return false;
+  memory.turns.push({ role, content: c.slice(0, 1200), at: Date.now() });
+  if (memory.turns.length > MEM_LIMIT.turns) memory.turns = memory.turns.slice(-MEM_LIMIT.turns);
+  return true;
+}
+
+/* ---------- 本地兜底抽取（模型没输出标记时也能记住） ---------- */
+function extractMemoryFromUser(text) {
+  const t = memText(text);
+  if (!t) return false;
+  let changed = false;
+
+  for (const s of SKIN_OPTIONS) if (t.includes(s)) changed = writeMemoryField("skin", s, "用户原话") || changed;
+  if (/大油皮/.test(t)) changed = writeMemoryField("skin", "油皮", "用户原话") || changed;
+  if (/大干皮/.test(t)) changed = writeMemoryField("skin", "干皮", "用户原话") || changed;
+
+  for (const f of FINISH_OPTIONS) if (t.includes(f)) changed = writeMemoryField("finish", f, "用户原话") || changed;
+  if (/水光|亮泽/.test(t)) changed = writeMemoryField("finish", "自然光泽", "用户原话") || changed;
+  if (/雾面/.test(t)) changed = writeMemoryField("finish", "柔雾", "用户原话") || changed;
+
+  for (const s of SCENE_OPTIONS) if (t.includes(s)) changed = writeMemoryField("scene", s, "用户原话") || changed;
+
+  if (/预算|价位|价格|便宜|贵|元|块/.test(t)) {
+    const m = t.match(/(\d{2,5})\s*(?:元|块|rmb|¥|以内|左右|上下|以下)/i) ||
+              t.match(/(?:预算|价位|价格)\D{0,4}(\d{2,5})/);
+    if (m) changed = writeMemoryField("budget", m[1] + " 元档", "用户原话") || changed;
+  }
+
+  // 只抓明确的过敏 / 不适 / 敏感表述，避免把"不要太贵"这种误记成避雷品牌
+  const allergy = t.match(/([\u4e00-\u9fa5A-Za-z·]{2,10})(?:过敏|不耐受|会闷痘|刺痛)/) ||
+                  t.match(/对\s*([\u4e00-\u9fa5A-Za-z·]{2,10})\s*(?:比较|很|有点|有些)?\s*敏感/);
+  if (allergy && allergy[1] && !/不|没|太|皮$/.test(allergy[1])) {
+    changed = writeMemoryField("concerns", allergy[1] + " 敏感/不适", "用户原话") || changed;
+  }
+  if (/敏感肌/.test(t)) changed = writeMemoryField("concerns", "敏感肌，需温和路线", "用户原话") || changed;
+
+  if (changed) scheduleMemorySave();
+  return changed;
+}
+
+/* ---------- 🧠 AI 抽取：规则抓不到的自由信息，交给大模型在后台补 ---------- */
+let aiExtractBusy = false;
+
+function shouldAiExtract(text) {
+  const t = memText(text);
+  if (t.length < 6) return false;
+  if (/^(直接推荐|重新开始|都行|随便|谢谢|好的|嗯+|是的|对)$/.test(t)) return false;
+  return /我|想|要|喜欢|讨厌|过敏|敏感|预算|价|送|买|肤|妆|场合|上班|约会|拍照|季节|油|干/.test(t);
+}
+
+function memoryDigestForExtract() {
+  const bits = [];
+  for (const k of MEM_FIELD_KEYS) if (memory.profile[k]) bits.push(`${k}=${memory.profile[k].v}`);
+  if (memory.notes.length) bits.push("notes=" + memory.notes.slice(-5).map(n => n.text).join("; "));
+  return bits.length ? bits.join(" | ") : "（暂无）";
+}
+
+/* 在回复结束后异步跑，不阻塞、不影响用户看到的回答 */
+async function aiExtractMemory(userText, botText) {
+  if (aiExtractBusy || !config.apiKey) return false;
+  if (!shouldAiExtract(userText)) return false;
+  aiExtractBusy = true;
+  try {
+    const sys = `你是一个「记忆抽取器」。从对话中提取值得长期记住的、关于用户本人的事实，只输出 JSON。
+格式：{"profile":{"skin":"","finish":"","scene":"","budget":"","coverage":"","brandLike":"","brandAvoid":"","concerns":""},"notes":[],"summary":""}
+规则：
+1. 只填本轮对话中**新出现**的信息，用户没说的一律留空字符串或空数组；
+2. 与「已有记忆」重复的不要再提取；
+3. skin 只能取：油皮 / 混油皮 / 干皮 / 混干皮 / 敏感肌；finish 只能取：哑光 / 柔雾 / 奶油肌 / 自然光泽；
+4. notes 最多 2 条，每条不超过 30 字，只记真正长期有用的（送礼目的、过敏源、在意的问题、购买计划等）；
+5. summary 用一句话概括本轮要点，没有就留空；
+6. 严格输出纯 JSON，不要 markdown 代码块，不要任何解释。`;
+
+    const userMsg = `已有记忆：${memoryDigestForExtract()}
+
+本轮对话：
+用户：${userText}
+小鱼：${String(botText || "").slice(0, 600)}`;
+
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        model: config.model,
+        messages: [{ role: "system", content: sys }, { role: "user", content: userMsg }],
+        stream: false,
+        temperature: 0.1,
+        max_tokens: 500
+      })
+    });
+    if (!res.ok) return false;
+    const j = await res.json();
+    const raw = j.choices?.[0]?.message?.content || "";
+    const jsonText = (raw.match(/\{[\s\S]*\}/) || [])[0];
+    if (!jsonText) return false;
+
+    let data;
+    try { data = JSON.parse(jsonText); } catch (e) { return false; }
+
+    let changed = false;
+    if (data.profile && typeof data.profile === "object") {
+      for (const k of MEM_FIELD_KEYS) {
+        const v = memText(data.profile[k]);
+        if (v && writeMemoryField(k, v, "AI 抽取")) changed = true;
+      }
+    }
+    if (Array.isArray(data.notes)) {
+      data.notes.slice(0, 2).forEach(n => { if (addMemoryNote(n, "AI 抽取")) changed = true; });
+    }
+    if (memText(data.summary) && addMemorySummary(data.summary)) changed = true;
+
+    if (changed) {
+      console.log("[memory] AI 抽取到新记忆 →", memoryDigestForExtract());
+      scheduleMemorySave();
+    }
+    return changed;
+  } catch (e) {
+    console.warn("[memory] AI 抽取失败（忽略）：", e.message);
+    return false;
+  } finally {
+    aiExtractBusy = false;
+  }
+}
+
+/* ---------- 模型标记解析 ---------- */
+const MEM_MARKER_RE = /\[\[(REMEMBER|NOTE|SUMMARY)\s*:\s*([^\]]+?)\s*\]\]/g;
+function applyMemoryMarkers(fullText) {
+  const src = String(fullText || "");
+  let changed = false;
+  MEM_MARKER_RE.lastIndex = 0;
+  let m;
+  while ((m = MEM_MARKER_RE.exec(src)) !== null) {
+    const kind = m[1], raw = m[2];
+    if (kind === "REMEMBER") {
+      const i = raw.indexOf("=");
+      if (i < 0) continue;
+      const key = memText(raw.slice(0, i));
+      const val = memText(raw.slice(i + 1));
+      if (writeMemoryField(key, val, "模型")) changed = true;
+    } else if (kind === "NOTE") {
+      if (addMemoryNote(raw, "模型")) changed = true;
+    } else if (kind === "SUMMARY") {
+      if (addMemorySummary(raw)) changed = true;
+    }
+  }
+  if (changed) scheduleMemorySave();
+  return changed;
+}
+
+/* ---------- 注入 system prompt ---------- */
+function buildMemoryBlock() {
+  const p = memory.profile;
+  const lines = [];
+  for (const k of MEM_FIELD_KEYS) {
+    if (p[k] && p[k].v) lines.push(`- ${MEM_FIELDS[k]}：${p[k].v}${p[k].at ? "（" + memAgo(p[k].at) + "记下）" : ""}`);
+  }
+  if (memory.notes.length) {
+    lines.push("- 其他备注：");
+    memory.notes.slice(-8).forEach(n => lines.push(`  · ${n.text}${n.at ? "（" + memAgo(n.at) + "）" : ""}`));
+  }
+  if (memory.recs.length) {
+    const names = memory.recs.slice(-8).map(r => {
+      const pr = PRODUCTS.find(x => x.id === r.productId);
+      return pr ? `${pr.brand} ${pr.name}` : null;
+    }).filter(Boolean);
+    if (names.length) lines.push(`- 已经推荐过的款式（除非用户主动要求看某款，否则优先换新的款式，不要重复推）：${names.join("、")}`);
+  }
+
+  const hasMemory = lines.length > 0 || memory.summary.length > 0;
+
+  const header = hasMemory
+    ? `# 🧠 关于这位用户的长期记忆（跨会话永久保留，必须使用）
+
+以下是你**之前就记住**的关于当前用户的信息：
+${lines.join("\n")}${memory.summary.length ? "\n\n以往对话的要点：\n" + memory.summary.map(s => "· " + s.text).join("\n") : ""}
+
+## 使用要求（重要）
+1. 上面**已经有的信息，绝对不要再问第二遍**，直接当作已知条件使用；
+2. 如果用户这次的说法与记忆不一致，**以用户这次的说法为准**，并输出标记更新它；
+3. 推荐时避开「已经推荐过的款式」，除非用户明确要求再看某款；
+4. 可以用自然的语气体现你记得他（例如"你上次说过是干皮，小鱼一直记着呢"），但不要生硬罗列记忆内容，也不要暴露记忆的实现方式。`
+    : `# 🧠 关于这位用户的长期记忆
+
+你对这位用户**还没有任何记忆**（第一次接触）。正常引导即可，并留意值得长期记住的信息。`;
+
+  return `${header}
+
+## 记忆写入协议（用户看不到这些标记，务必遵守）
+当你在本轮**新获知**值得长期记住的信息时，在回复的**最后单独成行**输出标记（同一轮最多 2 条；没有新信息就一条都不要输出）：
+
+[[REMEMBER:key=值]]
+key 只能取以下 8 个：
+skin=肤质 / finish=妆效偏好 / scene=使用场景 / budget=预算 / coverage=遮瑕需求 / brandLike=喜欢或想看的品牌 / brandAvoid=明确不想考虑的品牌 / concerns=过敏·敏感·在意的问题
+例：[[REMEMBER:skin=干皮]]  [[REMEMBER:budget=500 元以内]]  [[REMEMBER:concerns=对香精敏感]]
+
+需要记住自由描述时用：[[NOTE:一句话描述]]（例：[[NOTE:买来送妈妈，希望包装精致]])
+需要把一段对话压缩成要点时用：[[SUMMARY:一句话要点]]
+
+**绝对不能**在正文里提到、解释或暗示这些标记的存在；也不要把用户明确说过的信息重复记一遍。`;
+}
+
+/* 强制联网检索：web-search-pro 必定执行搜索，不依赖模型是否"愿意调工具" */
+async function callWebSearchPro(query, signal) {
+  const res = await fetch(WEB_SEARCH_URL, {
+    method: "POST",
+    headers: apiHeaders(),
+    body: JSON.stringify({
+      tool: "web-search-pro",
+      messages: [{ role: "user", content: query }],
+      stream: false
+    }),
+    signal
+  });
+  if (!res.ok) throw new Error(`搜索接口 HTTP ${res.status}`);
+  const j = await res.json();
+  const calls = j.choices?.[0]?.message?.tool_calls || [];
+  const hit = calls.find(c => c.type === "search_result");
+  const raw = (hit && hit.search_result) || [];
+  const seen = new Set();
+  return raw.map(r => ({
+    title: String(r.title || "").replace(/（发布时间[^）]*）\s*$/, "").trim(),
+    link: r.link || "",
+    content: String(r.content || "").replace(/\s+/g, " ").trim()
+  })).filter(r => {
+    if (!r.title || seen.has(r.title)) return false;
+    seen.add(r.title);
+    return true;
+  }).slice(0, 5);
+}
+
+/* 把检索结果包装成参考资料，作为额外 system 消息注入（只影响本次请求，不写入历史） */
+function buildWebContext(query, results) {
+  const body = results.map((r, i) =>
+    `【网页 ${i + 1}】${r.title}${r.content ? "\n" + r.content.slice(0, 500) : ""}`
+  ).join("\n\n");
+  return `# 🌐 实时联网检索结果（用户问题：${query}）
+
+以下是小鱼刚刚联网检索到的网页内容，请**基于这些内容**回答用户（属于网上信息，不是资料库内容）：
+
+${body}
+
+回答要求：
+1. 开头先说明资料库里是否收录了这类内容；
+2. 再基于上面的网页内容给出具体、有信息量的回答（不能只说「我去查一下」，也不能只反问用户）；
+3. 结尾视情况自然拉回粉底液主题；
+4. 涉及价格 / 活动时提醒以官方渠道为准；
+5. 不要编造上面网页里没有的具体信息，尤其是价格、色号、成分。`;
+}
+
+async function callZhipuStream(messages, onDelta, onDone, onError, signal) {
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        model: config.model,
+        messages,
+        stream: true,
+        temperature: Number(config.temperature) || 0.7,
+        max_tokens: 1600
+      }),
+      signal
+    });
+
+    if (!res.ok) {
+      let detail = "";
+      try { const j = await res.json(); detail = j.error?.message || j.message || ""; } catch (e) {}
+      throw new Error(`API ${res.status}${detail ? "：" + detail : ""}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buf = "";
+    let full = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split("\n");
+      buf = lines.pop();
+      for (const line of lines) {
+        const s = line.trim();
+        if (!s.startsWith("data:")) continue;
+        const dataStr = s.slice(5).trim();
+        if (dataStr === "[DONE]") continue;
+        try {
+          const json = JSON.parse(dataStr);
+          const delta = json.choices?.[0]?.delta?.content || "";
+          if (delta) { full += delta; onDelta(delta, full); }
+        } catch (e) { /* 忽略分片解析失败 */ }
+      }
+    }
+    onDone(full, {});
+  } catch (err) {
+    onError(err);
+  }
+}
+
+/* 同步测试连接 */
+async function testConnection() {
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        model: config.model,
+        messages: [{ role: "user", content: "回复：连接成功" }],
+        max_tokens: 20
+      })
+    });
+    if (!res.ok) {
+      let detail = "";
+      try { const j = await res.json(); detail = j.error?.message || j.message || ""; } catch (e) {}
+      return { ok: false, msg: `HTTP ${res.status} ${detail}` };
+    }
+    const j = await res.json();
+    const content = j.choices?.[0]?.message?.content || "";
+    const mode = VIA_LOCAL_PROXY ? "（本地服务转发）" : "（浏览器直连）";
+    return { ok: true, msg: `连接成功${mode} · 模型回复：「${content.slice(0,20)}」· 用量 ${j.usage?.total_tokens || "?"} tokens` };
+  } catch (e) {
+    if (e.name === "AbortError") {
+      return { ok: false, msg: "请求超时（15 秒无响应）。可能是网络较慢或代理不稳定，请稍后重试。" };
+    }
+    if (e.message && e.message.includes("Failed to fetch")) {
+      if (VIA_LOCAL_PROXY) {
+        return { ok: false, msg: "连不上本地转发服务（http://127.0.0.1:8787）。请确认「启动小鱼.bat」的窗口还开着；如果已关闭，重新双击它即可。" };
+      }
+      return { ok: false, msg: "请求根本没发出去（浏览器层面被拦）。建议直接双击项目里的「启动小鱼.bat」，用本地服务方式打开页面，可绕开代理 / 插件拦截。" };
+    }
+    return { ok: false, msg: "请求失败：" + e.message + "（检查网络 / Key / 是否被浏览器拦截）" };
+  }
+}
+
+/* ============================================================
+ *  5. 标记解析
+ * ============================================================ */
+function parseMarkers(text) {
+  const productIds = [];
+  const chips = [];
+
+  const prodRe = /\[\[PRODUCT:\s*([a-zA-Z0-9\-_]+)\s*\]\]/g;
+  let m;
+  while ((m = prodRe.exec(text)) !== null) {
+    if (!productIds.includes(m[1])) productIds.push(m[1]);
+  }
+  const chipRe = /\[\[CHIPS:\s*([^\]]+?)\s*\]\]/g;
+  while ((m = chipRe.exec(text)) !== null) {
+    m[1].split("|").map(s => s.trim()).filter(Boolean).forEach(c => chips.push(c));
+  }
+
+  // 移除所有完整标记
+  let display = text.replace(/\[\[[^\]]*\]\]/g, "");
+  display = cleanText(display);
+  return { display, productIds, chips };
+}
+
+/* 流式过程中隐藏未闭合的标记片段 */
+/* 流式渲染时隐藏协议标记：未闭合的整段隐藏，已闭合的直接删除（用户不该看到标记本体） */
+function stripPartialMarker(text) {
+  let out = text.replace(/\[\[[^\]]*\]\]/g, "");
+  const idx = out.lastIndexOf("[[");
+  if (idx !== -1) out = out.slice(0, idx);
+  return out.replace(/\n{3,}$/, "\n\n");
+}
+
+/* 文本清理：去掉多余空行 */
+function cleanText(t) {
+  return t.replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/* 模型未给 CHIPS 时，按回复内容推断当前阶段并生成兜底快捷选项 */
+function inferChipsByContext(displayText, productCount) {
+  const t = displayText || "";
+  const cnt = typeof productCount === "number" ? productCount : (productCount ? 1 : 0);
+
+  if (cnt >= 2) return ["详细介绍第一款", "详细介绍第二款", "这几款有什么区别", "重新开始"];
+  if (cnt === 1) return ["我想换个需求", "帮我推荐粉底液", "重新开始"];
+
+  // 关键：只看"最后一个问句"判断当前在问什么。
+  // 用整段文本匹配会被前文干扰（例如回复里既提了"奶油肌"又问"什么场合"）。
+  const segs = t.split(/[。！!；;？?\n]/).map(s => s.trim()).filter(Boolean);
+  const target = segs.length ? segs[segs.length - 1] : t;
+
+  if (/没有收录|帮不上|只负责|没有找到/.test(t)) return ["帮我推荐粉底液", "我是油皮", "我是干皮"];
+
+  if (/[？?]/.test(t)) {
+    if (/肤质|T\s*区|紧绷|泛红/.test(target) && !userProfile.skin) return SKIN_OPTIONS.concat(["我不太确定"]);
+    // 场景问句优先于妆效：问"什么场合"时按钮必须是场景
+    if (/场景|场合|什么时候用|什么情况用|什么时间用/.test(target)) return SCENE_OPTIONS.concat(["都行"]);
+    if (/妆效|哑光|柔雾|奶油肌|自然光泽/.test(target)) return FINISH_OPTIONS;
+    if (/预算|价位|价格/.test(target)) return ["300元以内", "500元左右", "不设预算"];
+  }
+
+  // 已收集过肤质 → 给推进型选项，不再重复问肤质
+  if (userProfile.skin) return ["帮我推荐粉底液", "我想换个预算", "重新开始"];
+  return ["我是油皮", "我是干皮", "我是混油皮", "帮我推荐粉底液"];
+}
+
+/* 用户档案：前端同步提取已确认的条件，用于校验推荐结果 */
+const userProfile = { skin: null, finish: null, scene: null, lastRecs: [] };
+
+/* 肤质相近关系：干皮↔混干皮、油皮↔混油皮 视为可参考，不算冲突 */
+const SKIN_ADJACENT = {
+  "干皮": ["混干皮"],
+  "混干皮": ["干皮"],
+  "油皮": ["混油皮"],
+  "混油皮": ["油皮"],
+  "敏感肌": []
+};
+/* 返回 match / adjacent / mismatch */
+function compareSkin(p) {
+  if (!userProfile.skin) return "match";
+  if (p.skins.includes(userProfile.skin)) return "match";
+  const adj = SKIN_ADJACENT[userProfile.skin] || [];
+  if (adj.some(s => p.skins.includes(s))) return "adjacent";
+  return "mismatch";
+}
+
+function extractProfile(text) {
+  const t = String(text || "");
+  for (const s of SKIN_OPTIONS) if (t.includes(s)) userProfile.skin = s;
+  if (/大油皮/.test(t)) userProfile.skin = "油皮";
+  if (/大干皮/.test(t)) userProfile.skin = "干皮";
+  for (const f of FINISH_OPTIONS) if (t.includes(f)) userProfile.finish = f;
+  if (!userProfile.finish) {
+    if (/水光|亮泽/.test(t)) userProfile.finish = "自然光泽";
+    if (/雾面/.test(t)) userProfile.finish = "柔雾";
+  }
+  for (const s of SCENE_OPTIONS) if (t.includes(s)) userProfile.scene = s;
+}
+
+/* 产品关键词表（品牌/别名 → 产品 id），用于兜底识别与本地检索 */
+const PRODUCT_KEYWORDS = [
+  ["超方瓶", "nars-light-reflecting"], ["nars", "nars-light-reflecting"],
+  ["雅诗兰黛", "estee-lauder-double-wear"], ["double wear", "estee-lauder-double-wear"],
+  ["阿玛尼", "armani-luminous-silk"], ["armani", "armani-luminous-silk"], ["大师粉底", "armani-luminous-silk"],
+  ["dior forever skin glow", "dior-forever-skin-glow"], ["迪奥", "dior-forever-skin-glow"], ["dior", "dior-forever-skin-glow"],
+  ["forever skin matte", "dior-forever-matte"],
+  ["ysl", "ysl-all-hours"], ["圣罗兰", "ysl-all-hours"], ["all hours", "ysl-all-hours"],
+  ["chanel", "chanel-les-beiges"], ["香奈儿", "chanel-les-beiges"], ["les beiges", "chanel-les-beiges"],
+  ["prada", "prada-reveal-skin"], ["普拉达", "prada-reveal-skin"],
+  ["givenchy", "givenchy-prisme-libre"], ["纪梵希", "givenchy-prisme-libre"],
+  ["lancome", "lancome-teint-idole"], ["兰蔻", "lancome-teint-idole"], ["teint idole", "lancome-teint-idole"],
+  ["studio fix", "mac-studio-fix"], ["m·a·c", "mac-studio-fix"], ["mac", "mac-studio-fix"],
+  ["bobbi brown", "bobbi-brown-weightless-skin"], ["芭比布朗", "bobbi-brown-weightless-skin"],
+  ["mufe", "mufe-hd-skin-foundation"], ["玫珂菲", "mufe-hd-skin-foundation"], ["make up for ever", "mufe-hd-skin-foundation"],
+  ["laura mercier", "laura-mercier-real-flawless"], ["罗拉玛斯", "laura-mercier-real-flawless"],
+  ["shiseido", "shiseido-revitalessence"], ["资生堂", "shiseido-revitalessence"],
+  ["cle de peau", "cle-de-peau-radiant-natural"], ["肌肤之钥", "cle-de-peau-radiant-natural"], ["cpb", "cle-de-peau-radiant-natural"],
+  ["suqqu", "suqqu-the-liquid"],
+  ["charlotte tilbury", "charlotte-tilbury-airbrush"], ["airbrush", "charlotte-tilbury-airbrush"],
+  ["fenty", "fenty-pro-filtr"],
+  ["hourglass", "hourglass-ambient-soft-glow"],
+  ["pat mcgrath", "pat-mcgrath-skin-fetish"]
+];
+
+/* 从文本中识别提到的产品（模型漏打标记时的兜底） */
+function detectProductsInText(text, existingIds) {
+  const found = [...(existingIds || [])];
+  if (found.length >= 3) return found;
+  const low = String(text || "").toLowerCase();
+  for (const [kw, id] of PRODUCT_KEYWORDS) {
+    if (found.length >= 3) break;
+    if (found.includes(id)) continue;
+    if (kw.length < 3) continue;            // 跳过 "ct"/"mac" 这类过短词，避免误判
+    if (low.includes(kw.toLowerCase())) found.push(id);
+  }
+  // 额外：MAC 单独处理（长度 3 但易误判，用词边界）
+  if (!found.includes("mac-studio-fix") && found.length < 3 && /mac\s|m·a·c/i.test(text)) found.push("mac-studio-fix");
+  return found.slice(0, 3);
+}
+
+/* 极简 Markdown → HTML（安全转义后，只处理粗体/标题/列表/换行） */
+function renderRichText(text) {
+  let html = escapeHtml(text);
+  html = html.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  return html.split("\n").map(line => {
+    let l = line.trim();
+    if (!l) return "";
+    l = l.replace(/^#{1,6}\s*/, "");          // 去掉 markdown 标题标记
+    l = l.replace(/^[-*+]\s+/, "· ");          // 无序列表统一成 ·
+    return `<p>${l}</p>`;
+  }).join("");
+}
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/* ============================================================
+ *  6. UI 渲染
+ * ============================================================ */
+const $messages = document.getElementById("messages");
+const $quick = document.getElementById("quick");
+const $input = document.getElementById("input");
+const $sendBtn = document.getElementById("sendBtn");
+const $connStatus = document.getElementById("connStatus");
+
+function scrollBottom() { $messages.scrollTop = $messages.scrollHeight; }
+
+function setStatus(text, cls) {
+  // 本地服务模式下加个后缀，方便一眼看出当前走的是哪条链路
+  if (VIA_LOCAL_PROXY && /^已连接/.test(text) && !/本地转发/.test(text)) {
+    text += " · 本地转发";
+  }
+  $connStatus.textContent = text;
+  $connStatus.className = "status" + (cls ? " " + cls : "");
+}
+
+function createMessageEl(who) {
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + (who === "user" ? "user" : "bot");
+  const ava = document.createElement("div");
+  ava.className = "ava";
+  ava.textContent = who === "user" ? "你" : "小鱼";
+  wrap.appendChild(ava);
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  wrap.appendChild(bubble);
+  $messages.appendChild(wrap);
+  scrollBottom();
+  return bubble;
+}
+
+function renderMessage({ who, text, products, chips }) {
+  const bubble = createMessageEl(who);
+  if (text) {
+    const div = document.createElement("div");
+    div.innerHTML = renderRichText(text);
+    bubble.appendChild(div);
+  }
+  if (products && products.length) {
+    products.forEach(p => bubble.appendChild(renderProductCard(p)));
+  }
+  if (chips && chips.length) renderChips(chips);
+  scrollBottom();
+}
+
+function renderProductCard(p) {
+  const card = document.createElement("div");
+  card.className = "product-card";
+  const shadesHtml = p.shades.slice(0, 4).map(s =>
+    `<span class="shade"><b>${escapeHtml(s.name)}</b> · ${escapeHtml(s.suitable)}</span>`
+  ).join("");
+  const metricsHtml = Object.entries(p.metrics).map(([k, v]) =>
+    `<div class="metric"><span>${escapeHtml(k)}</span><span class="bar">${
+      [1,2,3,4,5].map(i => `<i class="${i <= v ? "on" : ""}"></i>`).join("")
+    }</span></div>`
+  ).join("");
+
+  // 前端校验：仅在肤质明显冲突时提醒（相近肤质不提示）
+  const skinState = compareSkin(p);
+  let skinWarn = "";
+  if (skinState === "mismatch") {
+    skinWarn = `<div class="skin-warn">⚠️ 这款主要面向「${escapeHtml(p.skins.join(" / "))}」，和你的「${escapeHtml(userProfile.skin)}」不太匹配，建议优先看其他款</div>`;
+  } else if (skinState === "adjacent") {
+    skinWarn = `<div class="skin-note">💡 这款面向「${escapeHtml(p.skins.join(" / "))}」，与你的「${escapeHtml(userProfile.skin)}」接近，可以作为参考</div>`;
+  }
+
+  card.innerHTML = `
+    <div class="head">
+      <div class="thumb">💄</div>
+      <div class="meta">
+        <div class="brand">${escapeHtml(p.brand)}</div>
+        <div class="name">${escapeHtml(p.name)}</div>
+        <div class="tags">
+          <span class="tag">${escapeHtml(p.finish)}</span>
+          <span class="tag">遮瑕 ${escapeHtml(p.coverage)}</span>
+          <span class="tag">持妆 ${p.wear}h</span>
+          <span class="tag">${escapeHtml(p.priceLabel)}</span>
+          <span class="tag">★ ${p.rating}</span>
+        </div>
+      </div>
+    </div>
+    ${skinWarn}
+    <div class="body">
+      <b>描述：</b>${escapeHtml(p.note)}<br/>
+      <b>适用肤质：</b>${escapeHtml(p.skins.join(" / "))}<br/>
+      <b>推荐场景：</b>${escapeHtml(p.scenes.join(" / "))}<br/>
+      <b>优点：</b>${escapeHtml(p.pros.join(" · "))}<br/>
+      <b>注意：</b>${escapeHtml(p.cautions.join(" · "))}
+      <div class="shades">${shadesHtml}</div>
+      <div class="metrics">${metricsHtml}</div>
+    </div>`;
+  return card;
+}
+
+function renderChips(chips) {
+  $quick.innerHTML = "";
+  chips.slice(0, 6).forEach(c => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = c;
+    b.onclick = () => { $quick.innerHTML = ""; onUserInput(c); };
+    $quick.appendChild(b);
+  });
+}
+
+/* ============================================================
+ *  7. 对话主流程（大模型 + 规则兜底）
+ * ============================================================ */
+const chatHistory = [];   // {role, content} 仅存纯文本，供 API 使用
+let busy = false;
+let currentAbort = null;
+
+function pushHistory(role, content) {
+  chatHistory.push({ role, content });
+  // 只保留最近 12 轮，避免 token 膨胀
+  while (chatHistory.length > 24) chatHistory.shift();
+  // 🧠 同时写入长期记忆的「最近对话」，供下次打开时延续上下文
+  if (addMemoryTurn(role, content)) scheduleMemorySave();
+}
+
+/* 新会话开始时，把上次的最近几轮对话接回来，实现跨会话延续 */
+function restoreMemoryTurns() {
+  const recent = memory.turns.slice(-6);
+  for (const t of recent) {
+    if (t.role === "user" || t.role === "assistant") chatHistory.push({ role: t.role, content: t.content });
+  }
+  return recent.length;
+}
+
+/* 渲染机器人回复：文字 + 产品卡片 + 肤质更正 + 联网来源 + 快捷选项 */
+function renderBotReply(bubble, full, opts) {
+  const options = opts || {};
+  // 🧠 先悄悄把记忆标记落库（用户看不到这些标记），再解析展示层标记
+  try { applyMemoryMarkers(full); } catch (e) { console.warn("[memory] 标记解析失败：", e.message); }
+  const { display, productIds, chips } = parseMarkers(full);
+  bubble.innerHTML = "";
+  if (display) {
+    const div = document.createElement("div");
+    div.innerHTML = renderRichText(display);
+    bubble.appendChild(div);
+  }
+
+  const items = productIds.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+  // 兜底：模型提到产品但漏打标记时，前端自动补齐产品卡片
+  // （联网回答里提到"YSL / 汤姆福特"等品牌往往并非在推资料库产品，故跳过兜底以免误挂卡片）
+  if (items.length === 0 && !options.skipProductDetect) {
+    detectProductsInText(display, []).forEach(id => {
+      const p = PRODUCTS.find(x => x.id === id);
+      if (p && !items.includes(p)) items.push(p);
+    });
+  }
+  // 肤质不符的款式排到最后，避免模型把它们摆在首位误导用户
+  items.sort((a, b) => (compareSkin(a) === "mismatch" ? 1 : 0) - (compareSkin(b) === "mismatch" ? 1 : 0));
+  items.forEach(p => bubble.appendChild(renderProductCard(p)));
+
+  // 🧠 记下这次推荐过的款式，下次避免重复推
+  if (items.length) addMemoryRecs(items.map(p => p.id));
+
+  // 模型文字里可能"美化"了肤质不符的产品（例如把油皮专用的说成"适合干皮"），
+  // 这里用资料库事实直接更正，避免用户被误导。
+  const mismatched = items.filter(p => compareSkin(p) === "mismatch");
+  if (mismatched.length) {
+    const note = document.createElement("div");
+    note.className = "correction-note";
+    note.textContent =
+      `⚠️ 更正一下：上面 ${mismatched.map(p => p.brand).join("、")} 并不在「${userProfile.skin}」的适用范围内，请以其余款式为准～`;
+    bubble.appendChild(note);
+  }
+
+  // 🌐 联网来源提示：让用户能分辨信息来源
+  if (options.webSources && options.webSources.length) {
+    const note = document.createElement("div");
+    note.className = "web-note";
+    const trim = s => s.length > 22 ? s.slice(0, 22) + "…" : s;
+    const titles = options.webSources.slice(0, 3).map(s => escapeHtml(trim(s.title)));
+    const more = options.webSources.length > 3 ? ` 等 ${options.webSources.length} 篇` : "";
+    note.innerHTML = `🌐 以上信息来自联网搜索 · 来源：${titles.join("、")}${more}`;
+    bubble.appendChild(note);
+  } else if (options.webSearchUsed) {
+    // 本次走了联网通道，但接口没返回可用的网页结果（例如查询天气这类资讯检索覆盖不到的内容）
+    // 仍要提示信息边界，避免用户把模型自己的说法当成资料库权威信息
+    const note = document.createElement("div");
+    note.className = "web-note";
+    note.textContent = "🌐 该问题超出资料库范围；联网检索未返回有效网页，以上内容为通用知识，仅供参考";
+    bubble.appendChild(note);
+  }
+
+  scrollBottom();
+  pushHistory("assistant", stripMarkersForHistory(full));
+
+  // 快捷选项：优先用模型给的，没有则按上下文兜底推断
+  const finalChips = chips.length ? chips : inferChipsByContext(display, items.length);
+  if (finalChips.length) renderChips(finalChips);
+
+  return { display, items };
+}
+
+async function onUserInput(text, opts) {
+  text = String(text || "").trim();
+  if (!text || busy) return;
+
+  // 特殊指令：重新开始
+  if (/^(重新开始|重来一次|重置|reset|restart)$/i.test(text)) {
+    resetConversation();
+    return;
+  }
+
+  busy = true;
+  $sendBtn.disabled = true;
+  $quick.innerHTML = "";
+
+  renderMessage({ who: "user", text });
+
+  // 同步提取用户条件（用于前端校验推荐结果）+ 🧠 写入长期记忆
+  extractProfile(text);
+  extractMemoryFromUser(text);
+
+  // 把用户输入加入历史
+  pushHistory("user", text);
+
+  // 未配置 Key → 走本地规则引擎
+  if (!config.apiKey) {
+    busy = false; $sendBtn.disabled = false;
+    return localFallback(text);
+  }
+
+  // 创建机器人气泡 + 思考动画
+  const bubble = createMessageEl("bot");
+  const thinking = document.createElement("div");
+  thinking.className = "thinking";
+  thinking.innerHTML = "<i></i><i></i><i></i>";
+  bubble.appendChild(thinking);
+
+  let displayed = "";   // 已渲染的文本
+  let started = false;
+  let fullText = "";
+
+  // 判断是否需要联网：资料库里有答案的一律不联网，只有库外问题才上网
+  const useWeb = needsWebSearch(text);
+
+  currentAbort = new AbortController();
+  // 超时保护：联网检索比普通问答慢，给更长的等待；超时会自动中止并降级到本地引擎
+  const timeoutMs = useWeb ? 45000 : 25000;
+  const timeoutId = setTimeout(() => { try { currentAbort.abort(); } catch (e) {} }, timeoutMs);
+
+  // 联网路径：先强制检索（web-search-pro 必定执行搜索），再把结果作为参考资料注入
+  let webResults = [];
+  if (useWeb) {
+    setStatus("🌐 联网搜索中…", "web");
+    thinking.className = "web-thinking";
+    thinking.innerHTML = "<span>🌐</span>正在联网搜索…";
+    try {
+      webResults = await callWebSearchPro(text, currentAbort.signal);
+    } catch (e) {
+      console.warn("[WebSearch] 检索失败，退化为直接问答：", e.message);
+    }
+    if (webResults.length) {
+      setStatus("🌐 已找到 " + webResults.length + " 条相关资料，正在整理…", "web");
+      thinking.innerHTML = "<span>🌐</span>正在整理检索结果…";
+    }
+  }
+
+  const messages = [
+    { role: "system", content: buildSystemPrompt() },
+    ...chatHistory
+  ];
+  if (webResults.length) {
+    messages.push({ role: "system", content: buildWebContext(text, webResults) });
+  }
+
+  await callZhipuStream(messages,
+    (delta, full) => {
+      fullText = full;
+      if (!started) { bubble.innerHTML = ""; started = true; }
+      // 隐藏未闭合标记，实时渲染
+      const safe = stripPartialMarker(full);
+      if (safe !== displayed) {
+        displayed = safe;
+        bubble.innerHTML = renderRichText(safe) + '<span class="cursor"></span>';
+        scrollBottom();
+      }
+    },
+    (full, meta) => {
+      clearTimeout(timeoutId);
+      renderBotReply(bubble, full, { webSources: webResults, webSearchUsed: useWeb, skipProductDetect: useWeb });
+      setStatus(config.webSearch ? "已连接智谱 GLM · 联网已开启" : "已连接智谱 GLM", "");
+      busy = false; $sendBtn.disabled = false;
+      currentAbort = null;
+    },
+    (err) => {
+      clearTimeout(timeoutId);
+      console.error("[API Error]", err);
+      const isAbort = err && (err.name === "AbortError" || /abort/i.test(err.message || ""));
+      const isNetBlock = err && err.name !== "AbortError" && /failed to fetch|networkerror|load failed/i.test(err.message || "");
+      bubble.innerHTML = "";
+      const div = document.createElement("div");
+      div.innerHTML = isAbort
+        ? `<p>⏱ 这次请求等太久了（${useWeb ? "联网搜索" : "大模型"}没能在 ${timeoutMs / 1000} 秒内返回），小鱼先中断了它。</p><p>我用本地知识库来回答你～</p>`
+        : isNetBlock
+          ? (VIA_LOCAL_PROXY
+            ? `<p>😢 连不上本地转发服务。请确认「启动小鱼.bat」的窗口还开着，重新双击它即可。</p><p>我先用本地知识库来回答你～</p>`
+            : `<p>😢 请求没能发出去（可能被 VPN / 系统代理或浏览器插件拦截）。建议改用「启动小鱼.bat」打开页面，走本地转发可绕开这个限制。</p><p>我先用本地知识库来回答你～</p>`)
+          : `<p>😢 调用大模型时出了点问题：<b>${escapeHtml(err.message)}</b></p><p>我先用本地知识库来回答你～</p>`;
+      bubble.appendChild(div);
+      setStatus(isAbort ? "请求超时 · 已降级本地模式" : "大模型不可用 · 本地模式", "error");
+      busy = false; $sendBtn.disabled = false;
+      currentAbort = null;
+      // 兜底：本地规则引擎
+      localFallback(text, true);
+    },
+    currentAbort.signal
+  );
+
+  // 🧠 回复结束后，后台用大模型再抽取一次记忆（补规则抓不到的自由信息）
+  if (started && fullText) aiExtractMemory(text, fullText);
+}
+
+/* 历史里去掉 CHIPS 标记（UI 层信息），保留 PRODUCT 标记（便于模型知道推荐顺序） */
+function stripMarkersForHistory(t) {
+  return t.replace(/\[\[CHIPS:[^\]]*\]\]/g, "")
+          .replace(/\[\[(REMEMBER|NOTE|SUMMARY)\s*:[^\]]*\]\]/g, "")
+          .replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/* ============================================================
+ *  8. 本地规则引擎（API 不可用时的兜底）
+ * ============================================================ */
+function localFallback(text, append) {
+  const t = text.trim();
+
+  // 非粉底液品类
+  const nonCatalog = ["口红","唇釉","唇彩","气垫","遮瑕","散粉","粉饼","腮红","眼影","睫毛膏","眉笔","卸妆","防晒","妆前乳","粉底霜","粉底膏","粉霜","bb霜","cc霜","粉底棒","粉底刷"];
+  if (nonCatalog.some(k => t.includes(k))) {
+    renderMessage({ who: "bot", text: "抱歉呀～资料库里暂时没有收录这类产品 😅" + (config.webSearch ? "\n（联网搜索这次没能连上，网络恢复后小鱼可以帮你上网查～）" : "\n小鱼只能回答粉底液相关的内容哦～"), chips: ["推荐粉底液", "我是油皮", "我是干皮"] });
+    return;
+  }
+
+  // 问候 / 告别 / 致谢
+  if (/^(你好|您好|hi|hello|嗨|哈喽|哈啰|在吗)/i.test(t)) {
+    renderMessage({ who: "bot", text: "嗨～我是 **小鱼** ✨ yaspretty 的专属粉底液顾问。\n先告诉我你是什么肤质，小鱼就能帮你精准挑款啦～", chips: SKIN_OPTIONS.concat(["我不太确定"]) });
+    return;
+  }
+  if (/(再见|拜拜|bye|下次再聊)/i.test(t)) {
+    renderMessage({ who: "bot", text: "好呀～随时回来找小鱼挑粉底液哦，拜拜 👋", chips: ["帮我推荐粉底液", "重新开始"] });
+    return;
+  }
+  if (/(谢谢|感谢|thanks|thx)/i.test(t)) {
+    renderMessage({ who: "bot", text: "不客气～还有什么想问的尽管说 ✨", chips: ["帮我推荐粉底液", "重新开始"] });
+    return;
+  }
+
+  // 肤质
+  const skinMap = { "混油皮": "混油皮", "混干皮": "混干皮", "油皮": "油皮", "干皮": "干皮", "敏感肌": "敏感肌", "大油皮": "油皮", "大干皮": "干皮" };
+  let skin = null;
+  for (const k in skinMap) if (t.includes(k)) { skin = skinMap[k]; break; }
+
+  // 不清楚
+  if (/(不知道|不清楚|不太确定|不确定|怎么判断|分不清)/.test(t)) {
+    renderMessage({ who: "bot", text: "没关系～小鱼教你一个超简单的判断方法 👇\n\n洗完脸不涂任何东西，2 小时后观察 T 区和脸颊：\n· 全脸紧绷、可能起皮 → 干皮\n· T 区油、脸颊干 → 混干皮\n· 全脸明显油光 → 油皮\n· T 区油、脸颊微油 → 混油皮\n· 容易泛红刺痛 → 敏感肌", chips: SKIN_OPTIONS.concat(["我还是不确定"]) });
+    return;
+  }
+
+  // 妆效
+  let finish = null;
+  for (const f of FINISH_OPTIONS) if (t.includes(f)) { finish = f; break; }
+  if (!finish) {
+    if (/水光|亮泽/.test(t)) finish = "自然光泽";
+    if (/雾面/.test(t)) finish = "柔雾";
+    if (/奶油/.test(t)) finish = "奶油肌";
+  }
+
+  // 场景
+  let scene = null;
+  for (const s of SCENE_OPTIONS) if (t.includes(s)) { scene = s; break; }
+  if (!scene && /上班|日常/.test(t)) scene = "通勤";
+  if (!scene && /约会|出去玩/.test(t)) scene = "约会";
+
+  // 继承上文已确认的条件（本地引擎是逐条处理的，必须自己补上文）
+  if (!skin) skin = userProfile.skin;
+  if (!finish) finish = userProfile.finish;
+  if (!scene) scene = userProfile.scene;
+
+  // 追问某一款（第 N 款 / 详细介绍）
+  const pick = /第二款|第2款/.test(t) ? 1 : (/第三款|第3款/.test(t) ? 2 : (/详细介绍|第一款|第1款/.test(t) ? 0 : -1));
+  if (pick >= 0 && userProfile.lastRecs[pick]) {
+    renderMessage({ who: "bot", text: "这款的详细资料 👇", products: [userProfile.lastRecs[pick]], chips: pick === 0 ? ["看看第二款", "换个需求", "重新开始"] : ["换个需求", "重新开始"] });
+    return;
+  }
+
+  // 品牌/产品直接查询
+  const brandHit = findProductByKeyword(t);
+  if (brandHit) {
+    renderMessage({ who: "bot", text: "为你介绍这款 👇", products: [brandHit], chips: ["还有别的推荐吗", "重新开始"] });
+    return;
+  }
+
+  // 需要补信息：有肤质但还没说妆效 → 问妆效
+  if (skin && !finish && !/推荐|帮我选|哪款|随便|都行|有什么/.test(t)) {
+    renderMessage({ who: "bot", text: `好的呀～已经记下你是 **${skin}** 啦 ✨\n那你平时更喜欢什么样的**妆效**呢？`, chips: FINISH_OPTIONS });
+    return;
+  }
+
+  // 请求推荐但还不知道肤质 → 先问肤质
+  if (!skin && /推荐|帮我选|哪款|粉底液|有什么/.test(t)) {
+    renderMessage({ who: "bot", text: "先告诉我你的**肤质**，小鱼才能帮你精准挑款哦～\n如果不太确定，小鱼可以教你判断方法 ✨", chips: SKIN_OPTIONS.concat(["我不太确定"]) });
+    return;
+  }
+
+  // 换一批 / 还有别的
+  if (/还有别的|还有吗|换一批|其他推荐|看看其他|别的款/.test(t)) {
+    const pool = skin ? PRODUCTS.filter(p => p.skins.includes(skin)) : PRODUCTS.slice();
+    const rest = pool.filter(p => !userProfile.lastRecs.includes(p));
+    const recs = rest.slice(0, 3);
+    if (recs.length) {
+      userProfile.lastRecs = recs;
+      renderMessage({ who: "bot", text: "再给你换这几款试试（同样符合你的条件）👇", products: recs, chips: recs.length >= 2 ? ["详细介绍第一款", "换个需求", "重新开始"] : ["换个需求", "重新开始"] });
+    } else {
+      renderMessage({ who: "bot", text: `适合「${skin || "你"}」的款式小鱼都推荐过啦～\n要不要换个妆效或放宽预算再试试？`, chips: FINISH_OPTIONS.concat(["不设预算", "重新开始"]) });
+    }
+    return;
+  }
+
+  // 换个需求 → 问要调整什么
+  if (/换个需求|换条件|改一下|不满意/.test(t)) {
+    renderMessage({ who: "bot", text: "好呀～你想调整哪一项呢？", chips: FINISH_OPTIONS.concat(["预算500以内"]) });
+    return;
+  }
+
+  // 推荐
+  if (skin) {
+    const recs = localRecommend({ skin, finish, scene });
+    userProfile.lastRecs = recs;
+    const desc = [skin && "肤质 " + skin, finish && "妆效 " + finish, scene && "场景 " + scene].filter(Boolean).join("、");
+    renderMessage({
+      who: "bot",
+      text: `根据你的偏好（${desc}），小鱼为你挑了 ${recs.length} 款：`,
+      products: recs,
+      chips: recs.length >= 2 ? ["详细介绍第一款", "详细介绍第二款", "换个需求"] : ["换个需求", "重新开始"]
+    });
+    return;
+  }
+
+  // 兜底
+  renderMessage({ who: "bot", text: "小鱼暂时没太明白呢～\n可以这样问我：\n· 我是干皮，想要奶油肌的粉底液\n· 平价的通勤粉底液\n· NARS 超方瓶怎么样", chips: ["我是油皮", "我是干皮", "推荐粉底液"] });
+}
+
+function findProductByKeyword(t) {
+  const low = String(t || "").toLowerCase();
+  for (const [kw, id] of PRODUCT_KEYWORDS) {
+    if (low.includes(kw)) return PRODUCTS.find(p => p.id === id);
+  }
+  return null;
+}
+
+function localRecommend({ skin, finish, scene }) {
+  let list = PRODUCTS.slice();
+  if (skin) list = list.filter(p => p.skins.includes(skin));
+  if (!list.length) list = PRODUCTS.slice();
+  const scored = list.map(p => {
+    let s = p.rating * 0.5;
+    if (finish && p.finish === finish) s += 5;
+    if (scene && p.scenes.includes(scene)) s += 3;
+    return { p, s };
+  }).sort((a, b) => b.s - a.s);
+  return scored.slice(0, 3).map(x => x.p);
+}
+
+/* ============================================================
+ *  9. 开场白
+ * ============================================================ */
+function welcomeRound() {
+  const p = memory.profile;
+  const known = [];
+  if (p.skin) known.push(`**${p.skin.v}**`);
+  if (p.finish) known.push(`**${p.finish.v}**`);
+  if (p.scene) known.push(`**${p.scene.v}**`);
+  if (p.budget) known.push(`**${p.budget.v}**`);
+
+  // 🧠 有记忆 → 个性化开场，不再重复问已知信息
+  if (known.length) {
+    const extra = memory.notes.slice(-2).map(n => n.text);
+    renderMessage({
+      who: "bot",
+      text: `又见面啦～小鱼的记忆里还存着你的资料：${known.join(" · ")} ✨` +
+        (extra.length ? `\n（还记着：${extra.join("；")}）` : "") +
+        `\n\n要不要小鱼直接按这些条件挑几款？或者告诉我新的需求，我随时更新记忆～`,
+      chips: ["直接推荐", "我想换个预算", "我要改肤质", "重新说我的需求"]
+    });
+    return;
+  }
+
+  renderMessage({
+    who: "bot",
+    text: `嗨～我是 **小鱼** ✨ yaspretty 的专属粉底液顾问。\n我手上有一份资料库，里面有 **${PRODUCTS.length} 款粉底液**，可以陪你一步步挑到最合适的款式～${config.webSearch ? "\n（资料库之外的品类、行业新品、价格资讯这些，小鱼也能联网帮你查哦 🌐）" : ""}\n\n为了帮你精准匹配，先告诉我：你是什么**肤质**呢？`,
+    chips: SKIN_OPTIONS.concat(["我不太确定"])
+  });
+}
+
+function resetConversation() {
+  chatHistory.length = 0;
+  userProfile.lastRecs = [];
+  // 🧠 只清空「本次会话的短期上下文」，永久记忆（画像 / 备注 / 推荐历史）保留
+  if (memory.turns.length) { memory.turns = []; scheduleMemorySave(); }
+  $messages.innerHTML = "";
+  $quick.innerHTML = "";
+  welcomeRound();
+  const kept = Object.keys(memory.profile).length;
+  if (kept) setStatus(`已重置会话 · 记忆保留（${kept} 项）`, "");
+}
+
+/* ============================================================
+ *  10. 事件绑定
+ * ============================================================ */
+$sendBtn.onclick = () => { const v = $input.value; $input.value = ""; onUserInput(v); };
+$input.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); const v = $input.value; $input.value = ""; onUserInput(v); }
+});
+
+document.getElementById("startBtn").onclick = async () => {
+  document.getElementById("welcome").style.display = "none";
+  document.getElementById("app").classList.add("show");
+  setStatus(config.apiKey ? "已连接智谱 GLM" : "未配置 API Key · 本地模式", config.apiKey ? "" : "offline");
+  await ensureMemoryReady();                    // 🧠 先加载永久记忆，开场白才能用上
+  restoreMemoryTurns();                         // 接回上次的最近几轮对话，实现跨会话延续
+  welcomeRound();
+  const n = memoryCount();
+  if (n) setStatus(config.apiKey ? `已连接智谱 GLM · 已记住 ${n} 条` : `本地模式 · 已记住 ${n} 条`, config.apiKey ? "" : "offline");
+};
+
+document.getElementById("restartBtn").onclick = () => {
+  if (confirm("重新开始这次咨询？")) resetConversation();
+};
+
+/* 设置弹窗 */
+const $settings = document.getElementById("settings");
+function refreshModeTip() {
+  const tip = document.getElementById("modeTip");
+  if (!tip) return;
+  if (VIA_LOCAL_PROXY) {
+    tip.className = "mode-tip show";
+    tip.innerHTML = "✅ 当前运行模式：<b>本地服务转发</b>（http://127.0.0.1:8787）。请求由本地服务转发给智谱，不受浏览器代理 / 插件影响。" +
+      (config.apiKey ? "" : " 提示：页面未填 Key，服务端会使用 server/key.txt 中的密钥。");
+  } else {
+    tip.className = "mode-tip show";
+    tip.innerHTML = "ℹ️ 当前运行模式：<b>浏览器直连</b>（直接双击 HTML 打开）。如果「测试连接」报 Failed to fetch，请改用项目里的「启动小鱼.bat」打开，走本地转发可绕开代理 / 插件拦截。";
+  }
+}
+function openSettings() {
+  document.getElementById("apiKeyInput").value = config.apiKey || "";
+  document.getElementById("modelSelect").value = config.model || "glm-4-flash";
+  document.getElementById("tempInput").value = config.temperature ?? 0.7;
+  document.getElementById("webSearchToggle").checked = config.webSearch !== false;
+  document.getElementById("testResult").textContent = "";
+  refreshModeTip();
+  $settings.classList.add("show");
+}
+document.getElementById("settingsBtn").onclick = openSettings;
+document.getElementById("settingsBtnWelcome").onclick = openSettings;
+document.getElementById("cancelSettings").onclick = () => $settings.classList.remove("show");
+$settings.addEventListener("click", e => { if (e.target === $settings) $settings.classList.remove("show"); });
+
+/* ============================================================
+ *  11. 🧠 记忆面板
+ * ============================================================ */
+const $memPanel = document.getElementById("memPanel");
+
+let memInitPromise = null;
+function ensureMemoryReady() {
+  if (!memInitPromise) memInitPromise = initMemory();
+  return memInitPromise;
+}
+
+function memoryCount() {
+  return Object.keys(memory.profile).length + memory.notes.length + memory.summary.length;
+}
+
+function updateMemoryBadge() {
+  const n = memoryCount();
+  const btn = document.getElementById("memBtn");
+  if (btn) {
+    btn.classList.toggle("hasmem", n > 0);
+    btn.title = n ? `小鱼的记忆：${n} 条（点击查看）` : "小鱼的记忆：还是空的";
+  }
+  const wb = document.getElementById("memBtnWelcome");
+  if (wb) wb.textContent = n ? `🧠 记忆（${n}）` : "🧠 记忆";
+}
+
+function updateWelcomeMemTip() {
+  const el = document.getElementById("welcomeMemTip");
+  if (!el) return;
+  const n = memoryCount();
+  if (!n) { el.style.display = "none"; return; }
+  const p = memory.profile, bits = [];
+  if (p.skin) bits.push(p.skin.v);
+  if (p.finish) bits.push(p.finish.v);
+  if (p.scene) bits.push(p.scene.v);
+  el.style.display = "";
+  el.innerHTML = `🧠 小鱼记得你：${bits.length ? "<b>" + escapeHtml(bits.join(" · ")) + "</b>" : "共 <b>" + n + "</b> 条记忆"}`;
+}
+
+function renderMemoryPanel() {
+  const tip = document.getElementById("memStoreTip");
+  if (memSavedToFile) {
+    tip.className = "mem-store";
+    tip.innerHTML = "✅ 记忆已<b>永久保存到本机文件</b>（server/memory/store.json），换浏览器、清缓存都不会丢。";
+  } else if (VIA_LOCAL_PROXY) {
+    tip.className = "mem-store warn";
+    tip.innerHTML = "⚠️ 目前只能存在<b>浏览器本地</b>（写不进服务端文件）。请确认「启动小鱼.bat」的窗口还开着。";
+  } else {
+    tip.className = "mem-store warn";
+    tip.innerHTML = "⚠️ 当前是<b>浏览器直连</b>模式，记忆只存在浏览器里（清缓存会丢）。改用「启动小鱼.bat」打开页面，即可永久存成文件。";
+  }
+
+  const body = document.getElementById("memBody");
+  body.innerHTML = "";
+
+  /* ① 用户画像 */
+  const p = memory.profile;
+  const pkeys = MEM_FIELD_KEYS.filter(k => p[k] && p[k].v);
+  const pf = document.createElement("div");
+  pf.className = "mem-box";
+  pf.innerHTML = `<h3>① 用户画像 <span class="cnt">${pkeys.length} 项</span></h3>`;
+  if (pkeys.length) {
+    const card = document.createElement("div");
+    card.className = "mem-card";
+    pkeys.forEach(k => {
+      const row = document.createElement("div");
+      row.className = "mem-kv";
+      row.innerHTML = `<div class="k">${MEM_FIELDS[k]}</div><div class="v">${escapeHtml(p[k].v)}</div><div class="t">${p[k].at ? memAgo(p[k].at) : ""}</div>`;
+      card.appendChild(row);
+    });
+    pf.appendChild(card);
+  } else {
+    pf.insertAdjacentHTML("beforeend", '<div class="mem-empty">还没有画像信息，聊聊你的肤质吧～</div>');
+  }
+  body.appendChild(pf);
+
+  /* ② 备注与对话要点 */
+  const nf = document.createElement("div");
+  nf.className = "mem-box";
+  nf.innerHTML = `<h3>② 记忆备注 <span class="cnt">${memory.notes.length} 条</span></h3>`;
+  const noteList = memory.notes.slice().reverse();
+  if (noteList.length) {
+    const card = document.createElement("div");
+    card.className = "mem-card";
+    noteList.forEach(n => {
+      const item = document.createElement("div");
+      item.className = "mem-item";
+      const txt = document.createElement("div");
+      txt.className = "txt";
+      txt.innerHTML = `${escapeHtml(n.text)}<div class="meta">${escapeHtml(n.src || "对话")} · ${memAgo(n.at)}</div>`;
+      const x = document.createElement("button");
+      x.className = "x"; x.title = "删除这条"; x.textContent = "✕";
+      x.onclick = () => {
+        memory.notes = memory.notes.filter(z => z.id !== n.id);
+        scheduleMemorySave();
+        renderMemoryPanel();
+      };
+      item.appendChild(txt); item.appendChild(x);
+      card.appendChild(item);
+    });
+    nf.appendChild(card);
+  } else {
+    nf.insertAdjacentHTML("beforeend", '<div class="mem-empty">暂无备注</div>');
+  }
+  if (memory.summary.length) {
+    const sc = document.createElement("div");
+    sc.className = "mem-card";
+    sc.style.marginTop = "8px";
+    sc.innerHTML = `<div class="mem-kv"><div class="k">对话要点</div><div class="v" style="font-weight:400">${memory.summary.map(s => "· " + escapeHtml(s.text)).join("<br/>")}</div></div>`;
+    nf.appendChild(sc);
+  }
+  body.appendChild(nf);
+
+  /* ③ 推荐历史 */
+  const rf = document.createElement("div");
+  rf.className = "mem-box";
+  const recList = memory.recs.slice().reverse();
+  rf.innerHTML = `<h3>③ 已推荐过的款式 <span class="cnt">${recList.length} 款</span></h3>`;
+  if (recList.length) {
+    const card = document.createElement("div");
+    card.className = "mem-card";
+    recList.forEach(r => {
+      const pr = PRODUCTS.find(x => x.id === r.productId);
+      const row = document.createElement("div");
+      row.className = "mem-kv";
+      row.innerHTML = `<div class="v" style="font-weight:500">${escapeHtml(pr ? pr.brand + " " + pr.name : r.productId)}</div><div class="t">${memAgo(r.at)}</div>`;
+      card.appendChild(row);
+    });
+    rf.appendChild(card);
+  } else {
+    rf.insertAdjacentHTML("beforeend", '<div class="mem-empty">还没有推荐记录</div>');
+  }
+  body.appendChild(rf);
+}
+
+function openMemoryPanel() { renderMemoryPanel(); $memPanel.classList.add("show"); }
+function closeMemoryPanel() { $memPanel.classList.remove("show"); }
+
+document.getElementById("memBtn").onclick = openMemoryPanel;
+document.getElementById("memBtnWelcome").onclick = openMemoryPanel;
+document.getElementById("memClose").onclick = closeMemoryPanel;
+document.getElementById("openMemFromSettings").onclick = () => {
+  $settings.classList.remove("show");
+  openMemoryPanel();
+};
+$memPanel.addEventListener("click", e => { if (e.target === $memPanel) closeMemoryPanel(); });
+
+document.getElementById("memClear").onclick = async () => {
+  if (!confirm("确定清空小鱼关于你的全部记忆吗？\n（画像、备注、推荐历史都会删除，且无法恢复）")) return;
+  memory = emptyMemory();
+  ["skin", "finish", "scene"].forEach(k => { userProfile[k] = null; });
+  writeMemoryLS();
+  memSavedToFile = await pushMemoryToServer();
+  updateMemoryBadge();
+  updateWelcomeMemTip();
+  renderMemoryPanel();
+};
+
+document.getElementById("memExport").onclick = () => {
+  const blob = new Blob([JSON.stringify(memory, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "xiaoyu-memory-" + new Date().toISOString().slice(0, 10) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+};
+
+
+document.getElementById("testBtn").onclick = async () => {
+  // 用表单里的临时值测试
+  const tmpKey = document.getElementById("apiKeyInput").value.trim();
+  const tmpModel = document.getElementById("modelSelect").value;
+  const bak = { apiKey: config.apiKey, model: config.model };
+  config.apiKey = tmpKey; config.model = tmpModel;
+
+  const $r = document.getElementById("testResult");
+  $r.className = "testresult";
+  $r.textContent = "测试中...";
+  const r = await testConnection();
+  $r.className = "testresult " + (r.ok ? "ok" : "err");
+  $r.textContent = (r.ok ? "✅ " : "❌ ") + r.msg;
+
+  config.apiKey = bak.apiKey; config.model = bak.model;
+};
+
+document.getElementById("saveSettings").onclick = () => {
+  config.apiKey = document.getElementById("apiKeyInput").value.trim();
+  config.model = document.getElementById("modelSelect").value;
+  const t = parseFloat(document.getElementById("tempInput").value);
+  config.temperature = isNaN(t) ? 0.7 : Math.min(1, Math.max(0, t));
+  config.webSearch = document.getElementById("webSearchToggle").checked;
+  saveConfig(config);
+  setStatus(config.apiKey ? (config.webSearch ? "已连接智谱 GLM · 联网已开启" : "已连接智谱 GLM") : "未配置 API Key · 本地模式", config.apiKey ? "" : "offline");
+  $settings.classList.remove("show");
+  renderMessage({ who: "bot", text: `设置已保存 ✅\n当前模型：**${config.model}**（temperature ${config.temperature}）\n联网搜索：**${config.webSearch ? "已开启" : "已关闭"}**${config.apiKey ? "" : "\n注意：未填写 API Key，将使用本地模式。"}` });
+};
+
+/* 启动时提示配置状态 + 🧠 预加载永久记忆 */
+(function initStatus() {
+  if (!config.apiKey) {
+    setStatus("未配置 API Key · 本地模式", "offline");
+  } else {
+    setStatus(config.webSearch ? "已连接智谱 GLM · 联网已开启" : "已连接智谱 GLM", "");
+  }
+  ensureMemoryReady().then(updateWelcomeMemTip);
+})();
+</script>
+</body>
+</html>

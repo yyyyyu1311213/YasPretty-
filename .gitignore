@@ -1,0 +1,37 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+server/key.txt
+*.pem
+*.key
+
+# Local user data and runtime state
+server/memory/*.json
+server/memory/*.tmp
+server/memory/*.broken.json
+.workbuddy/
+
+# Browser and test artifacts
+chrome-qa*/
+playwright-report/
+test-results/
+screenshots/
+*.log
+npm-debug.log*
+
+# Raster assets must stay local until their source and authorization are recorded.
+public/product/
+public/brand/
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
