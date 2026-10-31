@@ -98,7 +98,7 @@ describe('YasPretty API gateway', () => {
   it('validates every catalog record against the stage 3 evidence fields', () => {
     expect(products).toHaveLength(35)
     products.forEach((item) => expect(productRecordSchema.parse(item)).toMatchObject({ id: item.id }))
-    expect(products.filter((item) => item.factVerificationStatus === 'verified')).toHaveLength(3)
+    expect(products.filter((item) => item.factVerificationStatus === 'verified')).toHaveLength(35)
     expect(products.filter((item) => item.verificationStatus === 'verified')).toHaveLength(0)
     expect(products.every((item) => item.image === `/products/${item.id}/cover.webp`)).toBe(true)
     expect(products.every((item) => item.imageSource.sourcePageUrl && item.imageSource.publicUseDecision === 'public_with_source_notice')).toBe(true)

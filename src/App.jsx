@@ -406,13 +406,15 @@ function ProductCard({ product, collection, onOpen, onFavorite, onRemoveFavorite
 
 function ProductProfileView({ product, collection, onBack, onFavorite, onRemoveFavorite }) {
   const verification = getProductVerification(product.id)
+  const reviewed = verification?.reviewedFacts
   const assessment = buildProductAssessment(product)
   const status = collection[product.id]
   const evidence = verification?.evidence.publicEvidence || []
   const parameterEvidence = evidence.filter((item) => item.kind === 'parameters')
   const productEvidence = evidence.filter((item) => item.kind === 'product_detail')
   const storeEvidence = evidence.filter((item) => item.kind === 'store_identity')
-  const factStatus = product.factVerificationStatus === 'verified' ? '来源已记录' : '待逐项核验'
+  const factStatus = product.factVerificationStatus === 'verified' ? '已核验' : '待逐项核验'
+  const originStatus = reviewed?.originStatus === 'verified_parameter_screenshot' ? '已核验' : '参数截图未列出'
 
   return (
     <article className="product-profile-page">
@@ -429,7 +431,7 @@ function ProductProfileView({ product, collection, onBack, onFavorite, onRemoveF
           <h1>{product.name}</h1>
           <p className="profile-summary">{assessment.summary}</p>
           <div className="profile-status-row">
-            <span className="status-pill pending">名称待负责人确认</span>
+            <span className={verification?.nameReviewStatus === 'verified' ? 'status-pill recorded' : 'status-pill pending'}>{verification?.nameReviewStatus === 'verified' ? '名称已核验' : '名称待负责人确认'}</span>
             <span className={product.factVerificationStatus === 'verified' ? 'status-pill recorded' : 'status-pill pending'}>{factStatus}</span>
             <span className="status-pill pending">图片授权待核验</span>
           </div>
@@ -441,7 +443,7 @@ function ProductProfileView({ product, collection, onBack, onFavorite, onRemoveF
         <section className="profile-section commerce-section">
           <div className="profile-section-heading"><div><p className="eyebrow">OFFICIAL CHANNEL</p><h2>淘宝 / 天猫官方商品链接</h2></div><Store size={22} /></div>
           {verification?.commerce.status === 'verified' && verification.commerce.productUrl ? (
-            <div className="commerce-ready"><div><strong>{verification.commerce.officialStoreName}</strong><p>链接核验于 {verification.commerce.verifiedAt}</p></div><a className="official-product-link" href={verification.commerce.productUrl} target="_blank" rel="noopener noreferrer">前往官方旗舰店商品页 <ExternalLink size={16} /></a></div>
+            <div className="commerce-ready"><div><strong>{verification.commerce.officialStoreName}</strong><p>{verification.commerce.officialMarkerType} · {verification.commerce.officialStoreFlag} · 链接核验于 {verification.commerce.verifiedAt}</p><p className="commerce-title">{reviewed?.marketplaceTitle}</p></div><a className="official-product-link" href={verification.commerce.productUrl} target="_blank" rel="noopener noreferrer">打开淘宝官方店商品链接 <ExternalLink size={16} /></a></div>
           ) : (
             <div className="commerce-pending"><div><strong>官方商品直达链接待核验</strong><p>{verification?.commerce.note}</p></div><span>{verification?.commerce.officialStoreName ? `现有截图记录：${verification.commerce.officialStoreName}` : '尚无店铺首页证据'}</span></div>
           )}
@@ -449,15 +451,19 @@ function ProductProfileView({ product, collection, onBack, onFavorite, onRemoveF
 
         <section className="profile-section">
           <div className="profile-section-heading"><div><p className="eyebrow">PARAMETERS</p><h2>产品参数与证据状态</h2></div><FileCheck2 size={22} /></div>
-          <p className="profile-section-note">参数值来自当前站内资料；“待核验”表示现有截图尚未完成逐字段人工复核，不能作为品牌承诺或独立实测结论。</p>
+          <p className="profile-section-note">商品名称、店铺、经营主体、规格、原价、链接和产地来自人工核验表及对应参数截图。妆效、遮瑕、肤质适配和持妆属于编辑解读或尚无独立实测。</p>
           <dl className="parameter-table">
+            <ParameterRow label="产品名称" value={reviewed?.productName || product.name} status={factStatus} />
             <ParameterRow label="产品类别" value={product.category} status={factStatus} />
-            <ParameterRow label="参考价格" value={`${product.priceLabel}${product.priceVerifiedAt ? ` · ${product.priceVerifiedAt}` : ''}`} status={product.priceVerifiedAt ? '来源已记录' : '待核验'} />
-            <ParameterRow label="实际生产地" value={product.madeIn} status={factStatus} />
-            <ParameterRow label="妆效方向" value={product.finish} status={factStatus} />
-            <ParameterRow label="遮瑕方向" value={product.coverage ? `${product.coverage}遮瑕` : '待核验'} status={factStatus} />
+            <ParameterRow label="官方店商品标题" value={reviewed?.marketplaceTitle || '待补充'} status={reviewed ? '已核验' : '待核验'} />
+            <ParameterRow label="商品规格" value={reviewed?.specification || '待补充'} status={reviewed ? '已核验' : '待核验'} />
+            <ParameterRow label="核验原价" value={reviewed ? `${reviewed.listPrice} 元 · ${reviewed.priceNote} · ${reviewed.verifiedAt}` : product.priceLabel} status={reviewed ? '已核验' : '待核验'} />
+            <ParameterRow label="实际生产地" value={reviewed?.origin || '参数截图未列出'} status={originStatus} />
+            <ParameterRow label="经营主体" value={reviewed?.companyName || '待补充'} status={reviewed ? '已核验' : '待核验'} />
+            <ParameterRow label="妆效方向" value={product.finish} status="编辑解读" />
+            <ParameterRow label="遮瑕方向" value={product.coverage ? `${product.coverage}遮瑕` : '待核验'} status="编辑解读" />
             <ParameterRow label="适用方向" value={product.skins.join(' / ')} status="编辑解读" />
-            <ParameterRow label="代表色号" value={product.shades.map((shade) => shade.name).join(' / ')} status={factStatus} />
+            <ParameterRow label="代表色号" value={product.shades.map((shade) => shade.name).join(' / ')} status="编辑整理" />
             <ParameterRow label="持妆与氧化" value="缺少统一测试方法时不作确定结论" status="待核验" />
           </dl>
         </section>
@@ -481,7 +487,7 @@ function ProductProfileView({ product, collection, onBack, onFavorite, onRemoveF
             <EvidenceGroup title="参数信息截图" items={parameterEvidence} product={product} emptyText="该产品目录未单独保存参数信息截图。" />
             <EvidenceGroup title="店铺身份截图" items={storeEvidence} product={product} emptyText="店铺首页截图缺失，官方身份仍待重新检索。" />
           </div>
-          <div className="business-evidence-row"><span>企业资质证据</span><strong>{verification?.evidence.businessQualification.status === 'archived_internal' ? '内部留档，未公开原图' : '缺失'}</strong><small>{verification?.evidence.businessQualification.fileName || '无对应文件'}</small></div>
+          <div className="business-evidence-row"><span>企业资质证据</span><strong>{reviewed?.companyName || '经营主体待补充'} · {verification?.evidence.businessQualification.status === 'archived_internal' ? '人工核验已完成，原图内部留档' : '证据缺失'}</strong><small>{verification?.evidence.businessQualification.fileName || '无对应文件'}</small></div>
         </section>
 
         {(verification?.issues.length || product.informationSources?.length) > 0 && (
@@ -499,7 +505,8 @@ function ProductProfileView({ product, collection, onBack, onFavorite, onRemoveF
 }
 
 function ParameterRow({ label, value, status }) {
-  return <div><dt>{label}</dt><dd>{value}</dd><span className={status === '来源已记录' ? 'parameter-status recorded' : 'parameter-status pending'}>{status}</span></div>
+  const isRecorded = status === '来源已记录' || status === '已核验'
+  return <div><dt>{label}</dt><dd>{value}</dd><span className={isRecorded ? 'parameter-status recorded' : 'parameter-status pending'}>{status}</span></div>
 }
 
 function assessmentStatusLabel(status) {
@@ -518,6 +525,8 @@ function EvidenceGroup({ title, items, product, emptyText = '暂无对应证据�
 }
 
 function DetailDrawer({ product, collection, onClose, onOpenProduct, onOpenFullProfile, onFavorite, onRemoveFavorite }) {
+  const verification = getProductVerification(product.id)
+  const reviewed = verification?.reviewedFacts
   const [shade, setShade] = useState(product.shades[0])
   useEffect(() => setShade(product.shades[0]), [product])
   const status = collection[product.id]
@@ -529,7 +538,7 @@ function DetailDrawer({ product, collection, onClose, onOpenProduct, onOpenFullP
         <button className="dialog-close" aria-label="关闭详情" title="关闭详情" onClick={onClose}><X size={20} /></button>
         <div className="detail-hero"><img src={shadeImage} alt={`${product.brand} ${product.name} ${shade.name} 产品图（图片授权待核验）`} /><div className="detail-hero-info"><p className="eyebrow">{product.category} / YASPRETTY FILE</p><p className="product-brand">{product.brand}</p><h2>{product.name}</h2><div className="detail-rating">{product.rating ? <><Star size={17} fill="currentColor" /> 编辑示例 {product.rating} <span>非用户统计</span></> : <span>官网资料，非用户统计</span>}</div><p>{product.note}</p><StatusControl productId={product.id} status={status} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} /></div></div>
         <div className="detail-body">
-          <section className="detail-section"><h3>基础信息</h3><p className="data-verification-note">{product.factVerificationStatus === 'verified' ? '名称、品类、色号和价格已按页面来源记录；产品图片来源已披露，授权状态仍为待核验。' : '价格、产地、色号和产品表现仍待来源核验；产品图片来源已单独披露。'}</p><dl className="facts-grid"><div><dt>品牌所属地区</dt><dd>{product.brandRegion}{product.factVerificationStatus === 'verified' ? '' : '（待核验）'}</dd></div><div><dt>实际生产地</dt><dd>{product.madeIn}{product.factVerificationStatus === 'verified' ? '' : '（待核验）'}</dd></div><div><dt>参考价格</dt><dd>{product.priceLabel}{product.priceVerifiedAt ? `（核验于 ${product.priceVerifiedAt}）` : '（价格待核验）'}</dd></div><div><dt>适合肤质</dt><dd>{product.skins.join(' / ')}{product.factVerificationStatus === 'verified' ? '（编辑适配维度）' : '（待核验）'}</dd></div><div><dt>妆效</dt><dd>{product.finish}{product.factVerificationStatus === 'verified' ? '（来源/编辑维度）' : '（待核验）'}</dd></div><div><dt>持妆参考</dt><dd>{product.wear ? `${product.wear} 小时+（待核验）` : '官网未提供可比持妆时长'}</dd></div></dl></section>
+          <section className="detail-section"><h3>基础信息</h3><p className="data-verification-note">{reviewed ? '名称、淘宝官方店商品、经营主体、规格、原价和链接已按人工核验表记录；妆效与适配属于编辑解读，图片授权仍待核验。' : '价格、产地、色号和产品表现仍待来源核验；产品图片来源已单独披露。'}</p><dl className="facts-grid"><div><dt>品牌所属地区</dt><dd>{product.brandRegion}</dd></div><div><dt>实际生产地</dt><dd>{reviewed?.origin || '参数截图未列出'}</dd></div><div><dt>核验原价</dt><dd>{reviewed ? `${reviewed.listPrice} 元（${reviewed.verifiedAt}）` : `${product.priceLabel}（价格待核验）`}</dd></div><div><dt>商品规格</dt><dd>{reviewed?.specification || '待补充'}</dd></div><div><dt>经营主体</dt><dd>{reviewed?.companyName || '待补充'}</dd></div><div><dt>妆效方向</dt><dd>{product.finish}（编辑解读）</dd></div></dl></section>
           <section className="detail-section shade-section"><h3>代表色号</h3><div className="shade-list">{product.shades.map((item, index) => <button key={item.name} className={shade.name === item.name ? 'shade-choice selected' : 'shade-choice'} onClick={() => setShade(item)}><span className={`shade-swatch shade-${index}`} /><b>{item.name}</b></button>)}</div><div className="shade-description"><span>{shade.tone}</span><span>{shade.lightness}</span><span>适合 {shade.suitable}</span></div></section>
           <section className="detail-section"><h3>分项评价</h3><div className="metric-grid">{Object.entries(product.metrics).map(([label, value]) => <Metric key={label} label={label} value={value} />)}</div></section>
           <section className="detail-section two-columns"><div><h3>喜欢它的理由</h3><ul className="detail-list">{product.pros.map((item) => <li key={item}><Check size={15} />{item}</li>)}</ul></div><div><h3>使用时注意</h3><ul className="detail-list caution-list">{product.cautions.map((item) => <li key={item}><span>•</span>{item}</li>)}</ul></div></section>

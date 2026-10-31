@@ -19,9 +19,14 @@ describe('product verification records', () => {
       expect(record).toBeTruthy()
       expect(record.evidence.sequence).toMatch(/^\d{2}$/)
       expect(record.evidence.publicEvidence.length).toBeGreaterThan(0)
+      expect(record.evidence.publicEvidence.some((item) => item.kind === 'parameters')).toBe(true)
       expect(record.evidence.businessQualification.status).toBe('archived_internal')
+      expect(record.reviewedFacts.source.sheet).toBe('淘宝人工核验')
+      expect(record.reviewedFacts.reviewStatus).toBe('verified')
+      expect(record.commerce.status).toBe('verified')
     })
     expect(evidenceSync.productCount).toBe(products.length)
+    expect(evidenceSync.sourceRange).toBe('A6:S40')
   })
 
   it('keeps generated evidence files present and hash-verifiable', () => {
@@ -33,11 +38,19 @@ describe('product verification records', () => {
         expect(hash).toBe(evidence.sha256)
       })
     })
+
+    const workbookPath = resolve(evidenceSync.sourceWorkbook.originalSourcePath)
+    expect(existsSync(workbookPath)).toBe(true)
+    const workbookHash = createHash('sha256').update(readFileSync(workbookPath)).digest('hex')
+    expect(workbookHash).toBe(evidenceSync.sourceWorkbook.sha256)
   })
 
-  it('only permits direct HTTPS product links from Tmall or Taobao', () => {
+  it('only permits verified-shape HTTPS product or share links from Tmall or Taobao', () => {
     expect(isAllowedOfficialProductUrl('https://detail.tmall.com/item.htm?id=123')).toBe(true)
     expect(isAllowedOfficialProductUrl('https://item.taobao.com/item.htm?id=123')).toBe(true)
+    expect(isAllowedOfficialProductUrl('https://e.tb.cn/h.example123?tk=abc123')).toBe(true)
+    expect(isAllowedOfficialProductUrl('https://e.tb.cn/h.example123')).toBe(false)
+    expect(isAllowedOfficialProductUrl('https://e.tb.cn/')).toBe(false)
     expect(isAllowedOfficialProductUrl('https://example.com/item.htm?id=123')).toBe(false)
     expect(isAllowedOfficialProductUrl('https://tmall.com/')).toBe(false)
     expect(isAllowedOfficialProductUrl('http://detail.tmall.com/item.htm?id=123')).toBe(false)
@@ -51,6 +64,20 @@ describe('product verification records', () => {
         expect(record.commerce.productUrl).toBeNull()
       }
     })
+    expect(Object.values(productVerificationRecords).filter((record) => record.commerce.status === 'verified')).toHaveLength(35)
+  })
+
+  it('uses reviewed prices and parameter origins without inventing missing origin evidence', () => {
+    products.forEach((product) => {
+      const reviewed = productVerificationRecords[product.id].reviewedFacts
+      expect(product.name).toBe(reviewed.productName)
+      expect(product.price).toBe(reviewed.listPrice)
+      expect(product.priceVerifiedAt).toBe(reviewed.verifiedAt)
+      expect(product.factVerificationStatus).toBe('verified')
+      if (reviewed.origin) expect(product.madeIn).toBe(reviewed.origin)
+    })
+    expect(productVerificationRecords['suqqu-the-liquid'].reviewedFacts.origin).toBeNull()
+    expect(productVerificationRecords['suqqu-the-liquid'].reviewedFacts.originStatus).toBe('not_listed_in_parameter_screenshot')
   })
 
   it('labels parameter-based assessments as editorial rather than independent tests', () => {
@@ -58,6 +85,7 @@ describe('product verification records', () => {
       const assessment = buildProductAssessment(product)
       expect(assessment.summary).toContain('不是独立人体实测结论')
       expect(assessment.limitations.length).toBeGreaterThan(0)
+      expect(assessment.dimensions.find((item) => item.label === '妆效方向')?.status).toBe('editorial_interpretation')
       expect(assessment.dimensions.find((item) => item.label === '持妆与氧化')?.status).toBe('pending')
     })
   })

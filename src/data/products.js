@@ -1,4 +1,5 @@
 import { productImageNotice, productImageSources } from './product-image-sources.js'
+import { reviewedProductFacts } from './product-verification.reviewed.js'
 
 export const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉', '眼影', '睫毛膏', '腮红', '唇妆']
 export const skinOptions = ['油皮', '混油皮', '干皮', '混干皮', '敏感肌']
@@ -21,11 +22,17 @@ function officialSource(title, url, supports) {
 
 function enrichProductRecord(product) {
   const collectedImageSource = productImageSources[product.id]
+  const reviewedFacts = reviewedProductFacts[product.id]
   return {
     ...product,
+    brand: reviewedFacts?.brand || product.brand,
+    name: reviewedFacts?.productName || product.name,
+    madeIn: reviewedFacts?.origin || product.madeIn,
+    price: reviewedFacts?.listPrice ?? product.price,
+    priceLabel: reviewedFacts ? `${reviewedFacts.listPrice} 元（淘宝官方店核验原价）` : product.priceLabel,
     image: `/products/${product.id}/cover.webp`,
     priceCurrency: product.priceCurrency || 'CNY',
-    priceVerifiedAt: product.priceVerifiedAt || null,
+    priceVerifiedAt: reviewedFacts?.verifiedAt || product.priceVerifiedAt || null,
     informationSources: product.informationSources || [],
     imageSource: collectedImageSource ? {
       ...collectedImageSource,
@@ -35,7 +42,7 @@ function enrichProductRecord(product) {
     } : product.imageSource || { url: null, authorizationStatus: 'pending', note: '图片来源待补充。' },
     imageAuthorizationStatus: collectedImageSource?.authorizationStatus || product.imageAuthorizationStatus || 'pending',
     verificationStatus: product.verificationStatus || 'pending',
-    factVerificationStatus: product.factVerificationStatus || 'pending',
+    factVerificationStatus: reviewedFacts?.reviewStatus || product.factVerificationStatus || 'pending',
     publicStatus: collectedImageSource ? 'public_with_source_notice_pending_authorization' : product.publicStatus || 'blocked_pending_product_evidence',
     recommendationReady: product.recommendationReady !== false,
   }
@@ -70,13 +77,13 @@ const stage3Products = [
     priceVerifiedAt: auditDate, verificationStatus: 'pending', factVerificationStatus: 'verified', publicStatus: 'blocked_image_authorization', recommendationReady: true,
   },
   {
-    id: 'loreal-paris-single-eyeshadow', brand: 'L’Oréal Paris', name: '纷泽口袋眼影', category: '眼影', brandRegion: '法国', madeIn: '以包装批次为准', price: null, priceLabel: '价格待核验',
+    id: 'loreal-paris-single-eyeshadow', brand: 'L’Oréal Paris', name: '纷泽口袋眼影', category: '眼影', brandRegion: '法国', madeIn: '中国', price: 120, priceLabel: '120 元（淘宝官方店核验原价）',
     image: productImages.compact, skins: ['油皮', '混油皮', '干皮', '混干皮', '敏感肌'], finish: '自然光泽', coverage: '低', wear: null, oxidation: null, rating: null,
     shades: [{ name: '官网色号未在本次记录中展开', tone: 'unknown', lightness: 'unknown', suitable: '先以自然光观察' }],
-    note: '官网可复核商品名称、品类和图片来源，但本次抓取未取得结构化价格与色号清单。', pros: ['作为眼妆品类资料入口'], cautions: ['价格、色号和表现待核验，当前不进入结构化商品推荐', '眼周出现刺痛、红肿或不适时立即停止使用'], scenes: ['日常', '通勤'], metrics: {},
+    note: '淘宝人工核验表已记录官方店商品、5*0.8g 规格和原价；色彩与妆效仍需按实际使用和光线判断。', pros: ['已补充淘宝官方店商品、规格和价格记录'], cautions: ['显色、持妆和飞粉表现未做独立实测', '眼周出现刺痛、红肿或不适时立即停止使用'], scenes: ['日常', '通勤'], metrics: {},
     informationSources: [officialSource('纷泽口袋眼影｜巴黎欧莱雅', 'https://www.lorealparis.com.cn/product/MU009/', ['品牌、名称、眼影品类'])],
     imageSource: { url: 'https://res-wxec-unipt.lorealchina.com/prod/pl/20200811/dc84d0fb-9571-4b49-b7b5-300de8b48a7b.jpg', authorizationStatus: 'pending', note: '官方页面图片仅作来源指向，未取得再利用授权。' },
-    priceVerifiedAt: null, verificationStatus: 'pending', publicStatus: 'blocked_missing_price_and_image_authorization', recommendationReady: false,
+    priceVerifiedAt: '2026-11-01', verificationStatus: 'pending', factVerificationStatus: 'verified', publicStatus: 'blocked_image_authorization', recommendationReady: true,
   },
 ]
 
@@ -125,7 +132,7 @@ const internationalFoundations = [
   createInternationalFoundation({ id: 'cle-de-peau-radiant-matte', brand: 'Clé de Peau Beauté', name: 'Radiant Fluid Foundation Matte 柔雾粉底液', brandRegion: '日本', madeIn: '日本（以包装批次为准）', price: 980, profile: 'matte', shades: ['O10', 'BF20', 'B30'], note: '柔雾中带一点皮肤感，适合追求精致妆面的人。', pros: ['毛孔修饰好', '妆面平整', '长时间妆感干净'], cautions: ['上妆前需要均匀保湿', '建议快速拍开'] }),
   createInternationalFoundation({ id: 'suqqu-the-liquid', brand: 'SUQQU', name: 'The Liquid Foundation 粉霜', brandRegion: '日本', madeIn: '日本（以包装批次为准）', price: 700, profile: 'natural', shades: ['105', '110', '120'], note: '粉质细腻，妆面是自然的奶油光泽。', pros: ['肤感舒适', '妆面柔和', '适合秋冬通勤'], cautions: ['大油皮需分区定妆', '色号需仔细对比'] }),
   createInternationalFoundation({ id: 'charlotte-tilbury-airbrush', brand: 'Charlotte Tilbury', name: 'Airbrush Flawless Foundation', brandRegion: '英国', madeIn: '意大利（以包装批次为准）', price: 490, profile: 'matte', shades: ['1 Neutral', '3 Neutral', '4 Warm'], note: '修饰力很清晰，呈现平整的柔雾妆面。', pros: ['遮瑕表现突出', '柔焦效果强', '适合正式场合'], cautions: ['取量从半泵开始', '干皮需搭配保湿底妆'] }),
-  createInternationalFoundation({ id: 'fenty-pro-filtr', brand: 'FENTY BEAUTY', name: "Fan's Red Carpet红毯气垫", brandRegion: '美国', madeIn: '美国（以包装批次为准）', price: 340, priceLabel: '旧记录，待重新核验', profile: 'matte', shades: ['110', '150', '210'], note: '当前除名称外仍沿用旧 Pro Filt’r 记录，价格、色号、妆效和来源均待按红毯气垫重新核验。', pros: ['产品资料待重新采集'], cautions: ['现有图片和来源页属于 Pro Filt’r 粉底液，不能作为红毯气垫证据', '完成重新核验前不要用于商品推荐'], recommendationReady: false }),
+  createInternationalFoundation({ id: 'fenty-pro-filtr', brand: 'FENTY BEAUTY', name: "Fan's Red Carpet红毯气垫", category: '气垫', brandRegion: '美国', madeIn: '中国大陆', price: 500, priceLabel: '500 元（淘宝官方店核验原价）', profile: 'natural', skins: ['油皮', '混油皮', '干皮', '混干皮', '敏感肌'], finish: '自然光泽', coverage: '中', wear: null, oxidation: null, shades: ['#01 瓷白色', '#02 自然色'], note: '淘宝人工核验表已记录对应商品、14g 规格、原价和产地；妆效与适配方向属于编辑解读。', pros: ['商品链接、规格和价格已有人工核验记录'], cautions: ['现有产品封面旧来源仍需替换', '品牌与店铺拼写按人工核验表原样披露'], recommendationReady: false }),
   createInternationalFoundation({ id: 'hourglass-ambient-soft-glow', brand: 'HOURGLASS', name: 'Ambient Soft Glow Foundation', brandRegion: '美国', madeIn: '美国（以包装批次为准）', price: 590, profile: 'glow', shades: ['1.5', '4', '6.5'], note: '妆面有温柔的柔光感，修饰度和透气感平衡。', pros: ['光泽自然', '肤色修饰均匀', '适合拍照'], cautions: ['高温天需控油定妆', '深瑕疵需遮瑕辅助'] }),
   createInternationalFoundation({ id: 'pat-mcgrath-skin-fetish', brand: 'PAT McGRATH LABS', name: 'Skin Fetish: Sublime Perfection Foundation', brandRegion: '英国', madeIn: '意大利（以包装批次为准）', price: 620, profile: 'glow', shades: ['Light 2', 'Light Medium 10', 'Medium 15'], note: '光泽精致但不张扬，适合想要高级皮肤质感的时候。', pros: ['通透显肤质', '妆感层次细', '适合精致妆容'], cautions: ['局部瑕疵需额外遮盖', '建议少量多次叠加'] }),
 ]
