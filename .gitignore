@@ -33,5 +33,6 @@ public/brand/
 .vscode/
 .idea/
 .DS_Store
+__MACOSX/
 Thumbs.db
 Desktop.ini

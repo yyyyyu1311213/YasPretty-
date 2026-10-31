@@ -1,3 +1,5 @@
+import { productImageNotice, productImageSources } from './product-image-sources.js'
+
 export const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉', '眼影', '睫毛膏', '腮红', '唇妆']
 export const skinOptions = ['油皮', '混油皮', '干皮', '混干皮', '敏感肌']
 export const finishOptions = ['哑光', '柔雾', '奶油肌', '自然光泽']
@@ -18,16 +20,23 @@ function officialSource(title, url, supports) {
 }
 
 function enrichProductRecord(product) {
+  const collectedImageSource = productImageSources[product.id]
   return {
     ...product,
+    image: `/products/${product.id}/cover.webp`,
     priceCurrency: product.priceCurrency || 'CNY',
     priceVerifiedAt: product.priceVerifiedAt || null,
     informationSources: product.informationSources || [],
-    imageSource: product.imageSource || { url: null, authorizationStatus: 'pending', note: '当前图片为内部演示占位，不代表对应商品实物图。' },
-    imageAuthorizationStatus: product.imageAuthorizationStatus || 'pending',
+    imageSource: collectedImageSource ? {
+      ...collectedImageSource,
+      url: collectedImageSource.sourcePageUrl,
+      note: productImageNotice,
+      publicUseDecision: 'public_with_source_notice',
+    } : product.imageSource || { url: null, authorizationStatus: 'pending', note: '图片来源待补充。' },
+    imageAuthorizationStatus: collectedImageSource?.authorizationStatus || product.imageAuthorizationStatus || 'pending',
     verificationStatus: product.verificationStatus || 'pending',
     factVerificationStatus: product.factVerificationStatus || 'pending',
-    publicStatus: product.publicStatus || 'blocked_pending_product_evidence',
+    publicStatus: collectedImageSource ? 'public_with_source_notice_pending_authorization' : product.publicStatus || 'blocked_pending_product_evidence',
     recommendationReady: product.recommendationReady !== false,
   }
 }
@@ -61,11 +70,11 @@ const stage3Products = [
     priceVerifiedAt: auditDate, verificationStatus: 'pending', factVerificationStatus: 'verified', publicStatus: 'blocked_image_authorization', recommendationReady: true,
   },
   {
-    id: 'loreal-paris-single-eyeshadow', brand: 'L’Oréal Paris', name: '单色眼影', category: '眼影', brandRegion: '法国', madeIn: '以包装批次为准', price: null, priceLabel: '价格待核验',
+    id: 'loreal-paris-single-eyeshadow', brand: 'L’Oréal Paris', name: '纷泽口袋眼影', category: '眼影', brandRegion: '法国', madeIn: '以包装批次为准', price: null, priceLabel: '价格待核验',
     image: productImages.compact, skins: ['油皮', '混油皮', '干皮', '混干皮', '敏感肌'], finish: '自然光泽', coverage: '低', wear: null, oxidation: null, rating: null,
     shades: [{ name: '官网色号未在本次记录中展开', tone: 'unknown', lightness: 'unknown', suitable: '先以自然光观察' }],
     note: '官网可复核商品名称、品类和图片来源，但本次抓取未取得结构化价格与色号清单。', pros: ['作为眼妆品类资料入口'], cautions: ['价格、色号和表现待核验，当前不进入结构化商品推荐', '眼周出现刺痛、红肿或不适时立即停止使用'], scenes: ['日常', '通勤'], metrics: {},
-    informationSources: [officialSource('单色眼影｜巴黎欧莱雅', 'https://www.lorealparis.com.cn/product/MU009/', ['品牌、名称、眼影品类'])],
+    informationSources: [officialSource('纷泽口袋眼影｜巴黎欧莱雅', 'https://www.lorealparis.com.cn/product/MU009/', ['品牌、名称、眼影品类'])],
     imageSource: { url: 'https://res-wxec-unipt.lorealchina.com/prod/pl/20200811/dc84d0fb-9571-4b49-b7b5-300de8b48a7b.jpg', authorizationStatus: 'pending', note: '官方页面图片仅作来源指向，未取得再利用授权。' },
     priceVerifiedAt: null, verificationStatus: 'pending', publicStatus: 'blocked_missing_price_and_image_authorization', recommendationReady: false,
   },
@@ -100,8 +109,8 @@ function createInternationalFoundation({ profile = 'natural', shades, note, pros
 }
 
 const internationalFoundations = [
-  createInternationalFoundation({ id: 'dior-forever-skin-glow', brand: 'Dior', name: 'Forever Skin Glow 恒久凝脂亮泽粉底液', brandRegion: '法国', madeIn: '法国（以包装批次为准）', price: 690, profile: 'glow', image: '/product/Dior Forever Skin Glow 恒久凝脂亮泽粉底液/Dior Forever Skin Glow 恒久凝脂亮泽粉底液 1W.webp', images: [{ shade: '0N', url: '/product/Dior Forever Skin Glow 恒久凝脂亮泽粉底液/Dior Forever Skin Glow 恒久凝脂亮泽粉底液 0N.webp' }, { shade: '1W', url: '/product/Dior Forever Skin Glow 恒久凝脂亮泽粉底液/Dior Forever Skin Glow 恒久凝脂亮泽粉底液 1W.webp' }, { shade: '2N', url: '/product/Dior Forever Skin Glow 恒久凝脂亮泽粉底液/Dior Forever Skin Glow 恒久凝脂亮泽粉底液 2N.webp' }], shades: ['0N', '1W', '2N'], note: '妆面有细腻的光泽感，薄层就能均匀肤色。', pros: ['光泽克制，不显油', '延展顺滑', '适合叠加遮瑕'], cautions: ['重度油皮建议定妆', '色号建议先线下试色'] }),
-  createInternationalFoundation({ id: 'dior-forever-matte', brand: 'Dior', name: 'Forever Skin Matte 恒久凝脂柔雾粉底液', brandRegion: '法国', madeIn: '法国（以包装批次为准）', price: 690, profile: 'matte', shades: ['0N', '1W', '2N'], note: '成膜后是干净的柔雾感，适合想要精致持妆的妆面。', pros: ['柔焦修饰力好', '出油后不易花妆', '遮瑕可叠加'], cautions: ['干皮需做好保湿', '少量分区上妆更均匀'] }),
+  createInternationalFoundation({ id: 'dior-forever-skin-glow', brand: 'Dior', name: '锁妆柔润亮泽粉底液', brandRegion: '法国', madeIn: '法国（以包装批次为准）', price: 690, profile: 'glow', image: '/product/Dior Forever Skin Glow 恒久凝脂亮泽粉底液/Dior Forever Skin Glow 恒久凝脂亮泽粉底液 1W.webp', images: [{ shade: '0N', url: '/product/Dior Forever Skin Glow 恒久凝脂亮泽粉底液/Dior Forever Skin Glow 恒久凝脂亮泽粉底液 0N.webp' }, { shade: '1W', url: '/product/Dior Forever Skin Glow 恒久凝脂亮泽粉底液/Dior Forever Skin Glow 恒久凝脂亮泽粉底液 1W.webp' }, { shade: '2N', url: '/product/Dior Forever Skin Glow 恒久凝脂亮泽粉底液/Dior Forever Skin Glow 恒久凝脂亮泽粉底液 2N.webp' }], shades: ['0N', '1W', '2N'], note: '妆面有细腻的光泽感，薄层就能均匀肤色。', pros: ['光泽克制，不显油', '延展顺滑', '适合叠加遮瑕'], cautions: ['重度油皮建议定妆', '色号建议先线下试色'] }),
+  createInternationalFoundation({ id: 'dior-forever-matte', brand: 'Dior', name: '锁妆柔雾哑光粉底液', brandRegion: '法国', madeIn: '法国（以包装批次为准）', price: 690, profile: 'matte', shades: ['0N', '1W', '2N'], note: '成膜后是干净的柔雾感，适合想要精致持妆的妆面。', pros: ['柔焦修饰力好', '出油后不易花妆', '遮瑕可叠加'], cautions: ['干皮需做好保湿', '少量分区上妆更均匀'] }),
   createInternationalFoundation({ id: 'ysl-all-hours', brand: 'YSL', name: 'All Hours 恒久无瑕粉底液', brandRegion: '法国', madeIn: '法国（以包装批次为准）', price: 630, profile: 'matte', shades: ['LN1', 'LN4', 'MN1'], note: '有修饰力但不会过分厚重，适合通勤到晚间的转换。', pros: ['肤色修饰均匀', '妆面细腻', '持妆表现稳定'], cautions: ['鼻翼部位需少量叠加', '偏干皮可搭配保湿妆前'] }),
   createInternationalFoundation({ id: 'chanel-les-beiges', brand: 'CHANEL', name: 'LES BEIGES 健康光泽粉底液', brandRegion: '法国', madeIn: '法国（以包装批次为准）', price: 680, profile: 'glow', shades: ['B10', 'BD21', 'B30'], note: '轻薄、透亮，保留皮肤本身的细微质感。', pros: ['自然光泽感', '妆感轻盈', '适合快速上妆'], cautions: ['瑕疵肌需配合遮瑕', '大油皮建议局部定妆'] }),
   createInternationalFoundation({ id: 'prada-reveal-skin', brand: 'PRADA BEAUTY', name: 'Reveal Skin 柔焦粉底液', brandRegion: '意大利', madeIn: '法国（以包装批次为准）', price: 720, profile: 'natural', shades: ['LC5', 'LN10', 'MN20'], note: '妆面像被柔焦过，保留皮肤光泽却不显厚。', pros: ['柔焦毛孔感', '自然奶油光', '叠加不易结块'], cautions: ['高遮瑕需求需另加遮瑕', '色号跨度建议试色'] }),
@@ -116,7 +125,7 @@ const internationalFoundations = [
   createInternationalFoundation({ id: 'cle-de-peau-radiant-matte', brand: 'Clé de Peau Beauté', name: 'Radiant Fluid Foundation Matte 柔雾粉底液', brandRegion: '日本', madeIn: '日本（以包装批次为准）', price: 980, profile: 'matte', shades: ['O10', 'BF20', 'B30'], note: '柔雾中带一点皮肤感，适合追求精致妆面的人。', pros: ['毛孔修饰好', '妆面平整', '长时间妆感干净'], cautions: ['上妆前需要均匀保湿', '建议快速拍开'] }),
   createInternationalFoundation({ id: 'suqqu-the-liquid', brand: 'SUQQU', name: 'The Liquid Foundation 粉霜', brandRegion: '日本', madeIn: '日本（以包装批次为准）', price: 700, profile: 'natural', shades: ['105', '110', '120'], note: '粉质细腻，妆面是自然的奶油光泽。', pros: ['肤感舒适', '妆面柔和', '适合秋冬通勤'], cautions: ['大油皮需分区定妆', '色号需仔细对比'] }),
   createInternationalFoundation({ id: 'charlotte-tilbury-airbrush', brand: 'Charlotte Tilbury', name: 'Airbrush Flawless Foundation', brandRegion: '英国', madeIn: '意大利（以包装批次为准）', price: 490, profile: 'matte', shades: ['1 Neutral', '3 Neutral', '4 Warm'], note: '修饰力很清晰，呈现平整的柔雾妆面。', pros: ['遮瑕表现突出', '柔焦效果强', '适合正式场合'], cautions: ['取量从半泵开始', '干皮需搭配保湿底妆'] }),
-  createInternationalFoundation({ id: 'fenty-pro-filtr', brand: 'FENTY BEAUTY', name: 'Pro Filt’r Soft Matte Longwear Foundation', brandRegion: '美国', madeIn: '美国（以包装批次为准）', price: 340, profile: 'matte', shades: ['110', '150', '210'], note: '柔雾妆面干净利落，色号体系丰富。', pros: ['色号覆盖广', '控油表现好', '遮瑕可叠加'], cautions: ['务必配合保湿妆前', '成膜较快需要分区上妆'] }),
+  createInternationalFoundation({ id: 'fenty-pro-filtr', brand: 'FENTY BEAUTY', name: "Fan's Red Carpet红毯气垫", brandRegion: '美国', madeIn: '美国（以包装批次为准）', price: 340, priceLabel: '旧记录，待重新核验', profile: 'matte', shades: ['110', '150', '210'], note: '当前除名称外仍沿用旧 Pro Filt’r 记录，价格、色号、妆效和来源均待按红毯气垫重新核验。', pros: ['产品资料待重新采集'], cautions: ['现有图片和来源页属于 Pro Filt’r 粉底液，不能作为红毯气垫证据', '完成重新核验前不要用于商品推荐'], recommendationReady: false }),
   createInternationalFoundation({ id: 'hourglass-ambient-soft-glow', brand: 'HOURGLASS', name: 'Ambient Soft Glow Foundation', brandRegion: '美国', madeIn: '美国（以包装批次为准）', price: 590, profile: 'glow', shades: ['1.5', '4', '6.5'], note: '妆面有温柔的柔光感，修饰度和透气感平衡。', pros: ['光泽自然', '肤色修饰均匀', '适合拍照'], cautions: ['高温天需控油定妆', '深瑕疵需遮瑕辅助'] }),
   createInternationalFoundation({ id: 'pat-mcgrath-skin-fetish', brand: 'PAT McGRATH LABS', name: 'Skin Fetish: Sublime Perfection Foundation', brandRegion: '英国', madeIn: '意大利（以包装批次为准）', price: 620, profile: 'glow', shades: ['Light 2', 'Light Medium 10', 'Medium 15'], note: '光泽精致但不张扬，适合想要高级皮肤质感的时候。', pros: ['通透显肤质', '妆感层次细', '适合精致妆容'], cautions: ['局部瑕疵需额外遮盖', '建议少量多次叠加'] }),
 ]
@@ -147,13 +156,13 @@ export const products = [
     note: '补妆时也不容易堆积，适合想要清爽底妆的日子。', pros: ['粉扑取粉均匀', '出油后妆感仍干净', '携带补妆方便'], cautions: ['鼻翼干皮需要先少量保湿', '色号偏亮可先试色'], scenes: ['通勤', '夏季', '补妆'], metrics: { 遮瑕度: 3, 持妆度: 4, 控油度: 5, 保湿度: 2, 毛孔修饰: 4, 氧化程度: 2, 卡粉风险: 3 }
   },
   {
-    id: 'clio-kill-cover', brand: 'CLIO', name: '杀手气垫 Founwear', category: '气垫', brandRegion: '韩国', madeIn: '韩国', price: 189, priceLabel: '160 - 210 元',
+    id: 'clio-kill-cover', brand: 'CLIO', name: '小磁铁气垫', category: '气垫', brandRegion: '韩国', madeIn: '韩国', price: 189, priceLabel: '160 - 210 元',
     image: productImages.compact, skins: ['油皮', '混油皮', '敏感肌'], finish: '柔雾', coverage: '高', wear: 10, oxidation: '中', rating: 4.3,
     shades: [{ name: '2 Lingerie', tone: '中性调', lightness: '白皙', suitable: '中性一白' }, { name: '3 Linen', tone: '暖调', lightness: '自然', suitable: '黄一白' }, { name: '4 Ginger', tone: '暖调', lightness: '自然', suitable: '黄二白' }],
     note: '遮盖力很有存在感，少量轻拍更像原生好皮肤。', pros: ['单层遮瑕度高', '柔雾妆面适合拍照', '性价比友好'], cautions: ['手法重会显妆感', '保湿妆前是关键'], scenes: ['通勤', '拍照', '夏季'], metrics: { 遮瑕度: 4, 持妆度: 5, 控油度: 4, 保湿度: 2, 毛孔修饰: 4, 氧化程度: 2, 卡粉风险: 3 }
   },
   {
-    id: 'ysl-touche-eclat', brand: 'YSL', name: '恒久完美柔雾气垫', category: '气垫', brandRegion: '法国', madeIn: '韩国', price: 630, priceLabel: '600 - 650 元',
+    id: 'ysl-touche-eclat', brand: 'YSL', name: '「真」皮气垫', category: '气垫', brandRegion: '法国', madeIn: '韩国', price: 630, priceLabel: '600 - 650 元',
     image: productImages.rose, skins: ['混油皮', '混干皮', '干皮'], finish: '奶油肌', coverage: '中', wear: 8, oxidation: '低', rating: 4.5,
     shades: [{ name: 'B10', tone: '冷调', lightness: '白皙', suitable: '冷白皮' }, { name: 'B20', tone: '中性调', lightness: '白皙', suitable: '中性一白' }, { name: 'BR20', tone: '暖调', lightness: '自然', suitable: '黄一白' }],
     note: '妆面有细腻的奶油光，午后补一次就很完整。', pros: ['贴肤且有修饰感', '粉质细，细纹处不易显干', '妆效自然精致'], cautions: ['重度油皮需要加散粉', '替换芯成本较高'], scenes: ['通勤', '约会', '秋冬'], metrics: { 遮瑕度: 3, 持妆度: 4, 控油度: 3, 保湿度: 4, 毛孔修饰: 4, 氧化程度: 1, 卡粉风险: 1 }
@@ -183,13 +192,13 @@ export const products = [
     note: '粉质像薄雾一样压住油光，底妆仍保有层次。', pros: ['细腻不易显粉感', '定妆后有柔焦效果', '压妆后妆面干净'], cautions: ['干皮可只定T区', '取粉需少量多次'], scenes: ['通勤', '长时间带妆', '拍照'], metrics: { 遮瑕度: 1, 持妆度: 4, 控油度: 4, 保湿度: 2, 毛孔修饰: 4, 氧化程度: 1, 卡粉风险: 2 }
   },
   {
-    id: 'make-up-for-ever-hd', brand: 'MAKE UP FOR EVER', name: 'HD Skin 柔雾散粉', category: '散粉', brandRegion: '法国', madeIn: '法国', price: 330, priceLabel: '300 - 350 元',
+    id: 'make-up-for-ever-hd', brand: 'MAKE UP FOR EVER', name: '轻烟蜜粉', category: '散粉', brandRegion: '法国', madeIn: '法国', price: 330, priceLabel: '300 - 350 元',
     image: productImages.powder, skins: ['油皮', '混油皮', '敏感肌'], finish: '哑光', coverage: '低', wear: 9, oxidation: '低', rating: 4.5,
     shades: [{ name: '1.0 Transparent', tone: '中性调', lightness: '透明', suitable: '大部分肤色' }, { name: '1.2 Banana', tone: '暖调', lightness: '自然', suitable: '黄皮提亮' }],
     note: '不抢底妆光泽，但把镜头下的毛孔感降得很稳。', pros: ['粉体轻，适合叠加', '妆感干净不泛白', '控油时长优秀'], cautions: ['干皮全脸烘焙会偏干', '透明款要避开过量'], scenes: ['夏季', '拍照', '油皮持妆'], metrics: { 遮瑕度: 1, 持妆度: 5, 控油度: 5, 保湿度: 1, 毛孔修饰: 4, 氧化程度: 1, 卡粉风险: 2 }
   },
   {
-    id: 'flower-knows-cloud', brand: '花知晓', name: '云朵轻盈蜜粉饼', category: '散粉', brandRegion: '中国', madeIn: '中国', price: 149, priceLabel: '130 - 160 元',
+    id: 'flower-knows-cloud', brand: '花知晓', name: '骑士独角兽云朵蜜粉', category: '散粉', brandRegion: '中国', madeIn: '中国', price: 149, priceLabel: '130 - 160 元',
     image: productImages.compact, skins: ['混油皮', '混干皮', '敏感肌'], finish: '奶油肌', coverage: '低', wear: 6, oxidation: '低', rating: 4.3,
     shades: [{ name: '01 透明雾', tone: '中性调', lightness: '透明', suitable: '自然定妆' }, { name: '02 微光肤', tone: '暖调', lightness: '自然', suitable: '黄皮柔焦' }],
     note: '带出门补妆很方便，压住鼻翼油光也不会显得干。', pros: ['饼状设计方便携带', '妆感保留柔和光泽', '价格易入手'], cautions: ['大油皮午后可能需要补一次', '粉扑要定期清洁'], scenes: ['通勤', '补妆', '平价底妆'], metrics: { 遮瑕度: 1, 持妆度: 3, 控油度: 3, 保湿度: 3, 毛孔修饰: 3, 氧化程度: 1, 卡粉风险: 1 }

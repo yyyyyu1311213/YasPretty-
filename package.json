@@ -7,6 +7,7 @@
     "dev": "concurrently -n WEB,AI \"vite --host 127.0.0.1 --port 5174 --strictPort\" \"node server/fishtalk-server.cjs --no-open\"",
     "dev:web": "vite --host 127.0.0.1 --port 5174 --strictPort",
     "dev:ai": "node server/fishtalk-server.cjs --no-open",
+    "sync:verification": "node scripts/sync-product-verification.mjs",
     "build": "vite build",
     "start": "node server/fishtalk-server.cjs --no-open",
     "preview": "node server/fishtalk-server.cjs --no-open",

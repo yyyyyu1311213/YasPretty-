@@ -1,8 +1,10 @@
 # YasPretty 产品数据准确性审计
 
-审计日期：2026-10-28（北京时间）
-审计范围：`src/data/products.js` 中当前导出的 35 条产品记录、页面展示字段和 `public/product/`、`public/brand/` 素材目录。
+初始审计日期：2026-10-28；最近补充：2026-11-01（北京时间）
+审计范围：`src/data/products.js` 中当前导出的 35 条产品记录、页面展示字段，以及 `public/product/` 旧色号图库、`public/products/` 新封面和 `public/brand/` 素材目录。
 审计原则：没有来源页面、访问时间、授权依据或可复核原始记录的字段，不得标记为已核验；本文件不补写猜测来源，不把代码里的数值当成外部事实。
+
+队员采集入口：`docs/product-data-collection-brief.md`。该任务单列出当前 35 条产品全量清单、字段提交格式和公开门禁；它不能替代本审计台账中的阶段证据记录。
 
 ## 台账使用规则
 
@@ -19,9 +21,33 @@
 | `AUDIT-2026-10-28-BASELINE` | 2026-10-28 | 阶段 0 | 建立 31 条产品记录、来源字段和图片授权缺口清单；未访问品牌官网、未取得授权 | 0/31 可公开；全部继承“待核验/禁止公开” | `d4f3750` |
 | `AUDIT-2026-10-28-GATEWAY` | 2026-10-28 | 阶段 1 | 本阶段未新增产品事实、价格或图片；网关 schema 不等于产品事实核验 | 无新增核验，继承上一结论 | `d4f3750` |
 | `AUDIT-2026-10-28-MAKEUP-PLAN` | 2026-10-28 | 阶段 2 | 结构化方案使用现有产品 ID 和参考值进行候选筛选；未新增官方来源、价格核验或图片授权 | 无新增核验；`CandidateEvidence` 只证明筛选过程，不证明商品事实 | `7ed400f` / `v0.3.0-stage-2` |
-| `AUDIT-2026-10-29-CATALOG-EXPANSION` | 2026-10-29 | 阶段 3 | 新增兰蔻液体腮红、兰蔻菁纯丝绒雾面唇膏、巴黎欧莱雅反重力睫毛膏 3 条官网来源记录；另登记巴黎欧莱雅单色眼影但未取得结构化价格。官方图片仅作来源指向，未取得再利用授权 | 3 条新增记录的 `factVerificationStatus` 为 `verified`、`priceVerifiedAt` 和 `informationSources` 已填；`verificationStatus` 仍为 `pending`，公开状态为图片授权阻断。眼影保持 `pending` 且不进入推荐 | `99b3ece66b165f74923f85b2c69659a3fa9a9512` / `v0.4.0-stage-3` |
+| `AUDIT-2026-10-29-CATALOG-EXPANSION` | 2026-10-29 | 阶段 3 | 新增兰蔻液体腮红、兰蔻菁纯丝绒雾面唇膏、巴黎欧莱雅反重力睫毛膏 3 条官网来源记录；另登记巴黎欧莱雅纷泽口袋眼影但未取得结构化价格。官方图片仅作来源指向，未取得再利用授权 | 3 条新增记录的 `factVerificationStatus` 为 `verified`、`priceVerifiedAt` 和 `informationSources` 已填；`verificationStatus` 仍为 `pending`，公开状态为图片授权阻断。眼影保持 `pending` 且不进入推荐 | `99b3ece66b165f74923f85b2c69659a3fa9a9512` / `v0.4.0-stage-3` |
+| `AUDIT-2026-10-29-STAGE3-IMAGES` | 2026-10-29 | 阶段 3 补充 | 35 张产品封面按稳定 ID 转换为 WebP 并接入；逐张记录来源页、权利人、采集日期和授权状态。负责人确认采用来源披露与联系删除策略公开参赛 | 35/35 图片来源可追溯，35/35 授权仍为 `pending`；`publicStatus` 为 `public_with_source_notice_pending_authorization`，不等于已授权或产品事实已核验 | `YAS-2026-0004`；工作树待提交，SHA/tag 待补 |
+| `AUDIT-2026-10-30-CLIO-NAME` | 2026-10-30 | 阶段 3 数据修正 | 项目负责人将 `clio-kill-cover` 的站内展示名称统一修正为“CLIO 小磁铁气垫”；稳定 ID、品类、价格参考值、图片文件和来源网址均未改变 | 仅修正名称口径；产品事实、价格和图片授权继续保持 `pending`，未新增外部核验证据 | `YAS-2026-0005`；工作树待提交，SHA/tag 待补 |
+| `AUDIT-2026-10-30-YSL-NAME` | 2026-10-30 | 阶段 3 数据修正 | 项目负责人将 `ysl-touche-eclat` 的站内展示名称统一修正为“YSL「真」皮气垫”；稳定 ID、品类、价格参考值、图片文件和来源网址均未改变 | 仅修正名称口径；产品事实、价格和图片授权继续保持 `pending`，未新增外部核验证据 | `YAS-2026-0006`；工作树待提交，SHA/tag 待补 |
+| `AUDIT-2026-10-30-MUFE-POWDER-NAME` | 2026-10-30 | 阶段 3 数据修正 | 项目负责人将 `make-up-for-ever-hd` 的站内展示名称统一修正为“MAKE UP FOR EVER 轻烟蜜粉”；稳定 ID、品类、价格参考值、图片文件和来源网址均未改变 | 仅修正名称口径；产品事实、价格和图片授权继续保持 `pending`，未新增外部核验证据 | `YAS-2026-0007`；工作树待提交，SHA/tag 待补 |
+| `AUDIT-2026-10-30-FLOWER-KNOWS-POWDER-NAME` | 2026-10-30 | 阶段 3 数据修正 | 项目负责人将 `flower-knows-cloud` 的站内展示名称统一修正为“花知晓 骑士独角兽云朵蜜粉”；稳定 ID、品类、价格参考值、图片文件和来源网址均未改变 | 仅修正名称口径；产品事实、价格和图片授权继续保持 `pending`，未新增外部核验证据 | `YAS-2026-0008`；工作树待提交，SHA/tag 待补 |
+| `AUDIT-2026-10-30-DIOR-FOUNDATION-NAMES` | 2026-10-30 | 阶段 3 数据修正 | 项目负责人将 `dior-forever-skin-glow` 和 `dior-forever-matte` 的站内展示名称分别统一修正为“Dior 锁妆柔润亮泽粉底液”和“Dior 锁妆柔雾哑光粉底液”；稳定 ID、品类、价格参考值、图片文件和来源网址均未改变 | 仅修正名称口径；产品事实、价格和图片授权继续保持 `pending`，未新增外部核验证据 | `YAS-2026-0009`；工作树待提交，SHA/tag 待补 |
+| `AUDIT-2026-10-31-LOREAL-EYESHADOW-NAME` | 2026-10-31 | 阶段 3 数据修正 | 项目负责人将 `loreal-paris-single-eyeshadow` 的站内展示名称统一修正为“L’Oréal Paris 纷泽口袋眼影”；稳定 ID、品类、价格状态、图片文件和来源网址均未改变 | 仅修正名称口径；产品事实和图片授权继续保持 `pending`，结构化价格仍缺失，未新增外部核验证据 | `YAS-2026-0010`；工作树待提交，SHA/tag 待补 |
+| `AUDIT-2026-10-31-FENTY-CUSHION-NAME` | 2026-10-31 | 阶段 3 数据修正 | 项目负责人将第 29 项展示名称修正为“FENTY BEAUTY Fan's Red Carpet红毯气垫”；现有稳定 ID、图片、价格、色号和来源仍属于 Pro Filt'r 粉底液，不是同一商品 | 仅采用新名称；旧来源不得作为红毯气垫证据，`recommendationReady: false`，产品事实、价格和图片均需重新采集核验 | `YAS-2026-0011`；工作树待提交，SHA/tag 待补 |
+| `AUDIT-2026-11-01-PRODUCT-EVIDENCE` | 2026-11-01 | 阶段 3 核验档案补充 | 将 35 个商品详情目录、75 个详情/参数文件和 35 张店铺截图映射到稳定产品 ID；生成 111 个网页证据文件、原始路径、大小和 SHA-256；35 个企业资质文件只保留内部索引 | 证据可定位不等于事实已核验；0/35 淘宝或天猫官方旗舰店商品直达链接通过核验，所有购买入口保持 `pending`；名称仍待负责人逐项确认 | `YAS-2026-0012`；工作树待提交，SHA/tag 待补 |
 
 后续阶段必须在本表追加新行，并在下方逐产品台账或对应证据文件中展开变更。没有证据的字段继续保持待核验，不得因为阶段功能已完成而自动解锁公开状态。
+
+## 阶段 3 核验档案补充（YAS-2026-0012）
+
+审计日期：2026-11-01（北京时间）。本次只把项目负责人提供的核验材料建立成可重复生成、可定位和可校验哈希的网页档案，没有访问或确认淘宝/天猫商品直达链接，也没有把截图中的字段批量改成已核验事实。
+
+- `scripts/sync-product-verification.mjs` 按产品编号与稳定 ID 同步证据，并生成 `src/data/product-verification.generated.js` 和 `public/verification/manifest.json`。
+- 35/35 条产品存在商品详情证据；其中 27/35 具有单独命名的参数截图，另有部分参数包含在详情截图中但尚未人工转录。
+- 35/35 条产品存在店铺首页截图；编号 18 和 19 的补充截图已于本次复验纳入清单。
+- 35/35 条企业资质证据仅保留原始相对路径和文件名索引，网页不公开资质原图。
+- `suqqu-the-liquid` 的企业资质文件名指向 SHISEIDO 产品；`fenty-pro-filtr` 的品牌拼写和旧产品来源冲突；两项均作为阻断问题展示。
+- 两款 NARS 产品在既有文档中存在名称口径差异；所有 `nameReviewStatus` 保持 `pending_owner_confirmation`，等待项目负责人只对标准名称作最终确认。
+- 所有 `commerce.productUrl`、`storeUrl` 和 `verifiedAt` 为空，`commerce.status` 为 `pending`。链接校验函数只接受带商品 `id` 的 HTTPS `detail.tmall.com` 或 `item.taobao.com` 直达链接；店铺截图或店名不能自动升级链接状态。
+- 参数评价由现有结构化字段确定性生成，统一标记为编辑解读或待核验，并明确说明不是独立人体实测；持妆和氧化在没有统一样本、环境和方法时不作确定结论。
+
+公开门禁不变：产品事实、官方旗舰店身份、商品链接和图片授权必须分别由证据推动状态；本次接入没有新增 `verificationStatus: verified`，也没有新增可展示购买按钮。
 
 ## 阶段 3 证据展开（YAS-2026-0003）
 
@@ -32,11 +58,11 @@
 | `lancome-is-me-liquid-blush` | [兰蔻是我液体腮红](https://www.lancome.com.cn/product/LAN00316/) | 名称、腮红品类、#50/#40/#30 等色号、290 CNY 参考价；访问日期 2026-10-29 | 图片再利用授权、持妆时长、用户评分；禁止把官网文案改写成绝对功效 |
 | `lancome-pure-matte-lipstick` | [兰蔻菁纯丝绒雾面唇膏](https://www.lancome.com.cn/product/LAN00295/) | 名称、唇部品类、#196/#296/#316 等色号、380 CNY 参考价；访问日期 2026-10-29 | 图片再利用授权、脱色/持妆统计、用户评分；色彩仍需结合唇色和光线复核 |
 | `loreal-paris-anti-gravity-mascara` | [反重力睫毛膏](https://www.lorealparis.com.cn/product/MU0111/) | 名称、睫毛膏品类、9.9ml 规格、144 CNY 参考价；访问日期 2026-10-29 | 图片再利用授权、刷头/晕染/防水表现的独立证据、用户评分 |
-| `loreal-paris-single-eyeshadow` | [单色眼影](https://www.lorealparis.com.cn/product/MU009/) | 名称、眼影品类和官方页面来源；访问日期 2026-10-29 | 本次未取得结构化价格和完整色号清单，`recommendationReady: false`，不进入方案商品推荐；图片授权也未取得 |
+| `loreal-paris-single-eyeshadow` | [纷泽口袋眼影](https://www.lorealparis.com.cn/product/MU009/) | 名称、眼影品类和官方页面来源；访问日期 2026-10-29 | 本次未取得结构化价格和完整色号清单，`recommendationReady: false`，不进入方案商品推荐；图片授权也未取得 |
 
 本阶段的 3 条可推荐记录使用现有通用占位图，不使用官方图片文件；界面持续显示“图片授权待核验”。新增记录的肤质、场景、质地和注意事项属于 YasPretty 编辑/规则维度，不冒充品牌官网或用户统计。
 
-## 结论
+## 阶段 3 原始结论（历史保留）
 
 当前产品数据可以支持旧版页面的筛选和本地演示，但不能称为“已完成数据准确性验收”。
 
@@ -54,7 +80,22 @@
 
 因此当前公开门禁结论是：**0 / 35 条产品达到公开事实与素材验收标准**。3 条阶段 3 新增商品的官网事实可复核，但图片再利用授权未取得；这不是说每条产品事实必然错误，而是当前仓库仍不能把“未完成公开门禁”说成“已准确可公开”。
 
-## 当前代码字段审计
+## 阶段 3 图片接入补充后的当前结论（YAS-2026-0004）
+
+项目负责人于 2026-10-29 明确调整产品图片公开策略：允许来源可追溯但授权待核验的网络产品图片用于公开参赛版本，条件是逐张披露来源、保留 `pending` 状态、显示统一版权说明并提供可用的联系删除入口。该决策不改变历史审计事实，也不把图片状态提升为 `verified`。
+
+| 检查项 | 当前结果 | 结论 |
+| --- | ---: | --- |
+| 本地封面 | 35 / 35 | `public/products/<产品 ID>/cover.webp`，长边不超过 1200 px |
+| 图片来源记录 | 35 / 35 | 23 张品牌官网、11 张零售商、1 张媒体；均有来源页、权利人和采集日期 |
+| 图片授权状态 | 35 / 35 `pending` | 来源披露不等于取得再利用授权 |
+| 页面披露 | 35 / 35 | 详情页显示来源、权利人、日期和授权待核验状态；页脚显示统一版权说明 |
+| 删除联系入口 | 1 个统一入口 | 指向项目 GitHub 新建 Issue 页面 |
+| 产品事实核验 | 仍未整体完成 | 图片接入不改变价格、产地、体验、评分等字段的证据状态 |
+
+当前公开状态是：**35 / 35 张产品封面可以按负责人确认的“来源披露 + 授权待核验 + 联系删除”策略用于参赛展示，但 0 / 35 张取得了明确再利用授权，0 / 35 条产品达到完整事实核验标准。** 参赛材料必须使用这组分层表述，不能简写成“图片已授权”或“产品数据全部准确”。
+
+## 阶段 0 原始代码字段审计（历史保留）
 
 当前记录包含 `id`、品牌、名称、类别、品牌所属地区、生产地、价格、价格区间、图片路径、肤质、妆效、遮瑕、持妆、氧化、评分、色号、编辑说明、优点、注意事项、场景和 metrics。它们满足现有旧页面渲染，但缺少公开版本必须有的证据字段：
 
@@ -64,7 +105,7 @@
 - `verificationStatus`：例如 `pending`、`verified`、`rejected`，并且需要对应审核记录。
 - 评分证据：样本量、来源、统计方法和时间窗口；没有这些资料不能使用“用户评分”“口碑统计”等表述。
 
-## 逐产品台账
+## 阶段 0 逐产品台账（历史保留）
 
 下面的价格是当前代码中的参考值，只用于定位待核验记录，**不是已核实价格**。`本地产品路径` 只说明代码引用了本地路径，不代表图片已获授权；`通用/远程路径` 也不代表它是对应商品实物图。
 
@@ -74,16 +115,16 @@
 | `estee-lauder-double-wear` | Estée Lauder | 持妆粉底液 | 粉底液 | 520 | 本地产品路径 | 待核验 | 待核验 | 禁止公开 |
 | `armani-luminous-silk` | GIORGIO ARMANI | 大师粉底液 | 粉底液 | 690 | 本地产品路径 | 待核验 | 待核验 | 禁止公开 |
 | `laneige-neo-matte` | LANEIGE | NEO 小方块气垫（哑光） | 气垫 | 295 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
-| `clio-kill-cover` | CLIO | 杀手气垫 Founwear | 气垫 | 189 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
-| `ysl-touche-eclat` | YSL | 恒久完美柔雾气垫 | 气垫 | 630 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
+| `clio-kill-cover` | CLIO | 小磁铁气垫 | 气垫 | 189 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
+| `ysl-touche-eclat` | YSL | 「真」皮气垫 | 气垫 | 630 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `nars-radiant-creamy` | NARS | 亮采柔滑遮瑕蜜 | 遮瑕 | 320 | 本地产品路径 | 待核验 | 待核验 | 禁止公开 |
 | `tarte-shape-tape` | tarte | Shape Tape 遮瑕液 | 遮瑕 | 260 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `the-saem-tip-concealer` | the SAEM | 得鲜经典遮瑕液 | 遮瑕 | 45 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `laura-mercier-translucent` | LAURA MERCIER | 柔光透明散粉 | 散粉 | 420 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
-| `make-up-for-ever-hd` | MAKE UP FOR EVER | HD Skin 柔雾散粉 | 散粉 | 330 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
-| `flower-knows-cloud` | 花知晓 | 云朵轻盈蜜粉饼 | 散粉 | 149 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
-| `dior-forever-skin-glow` | Dior | Forever Skin Glow 恒久凝脂亮泽粉底液 | 粉底液 | 690 | 本地产品路径 | 待核验 | 待核验 | 禁止公开 |
-| `dior-forever-matte` | Dior | Forever Skin Matte 恒久凝脂柔雾粉底液 | 粉底液 | 690 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
+| `make-up-for-ever-hd` | MAKE UP FOR EVER | 轻烟蜜粉 | 散粉 | 330 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
+| `flower-knows-cloud` | 花知晓 | 骑士独角兽云朵蜜粉 | 散粉 | 149 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
+| `dior-forever-skin-glow` | Dior | 锁妆柔润亮泽粉底液 | 粉底液 | 690 | 本地产品路径 | 待核验 | 待核验 | 禁止公开 |
+| `dior-forever-matte` | Dior | 锁妆柔雾哑光粉底液 | 粉底液 | 690 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `ysl-all-hours` | YSL | All Hours 恒久无瑕粉底液 | 粉底液 | 630 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `chanel-les-beiges` | CHANEL | LES BEIGES 健康光泽粉底液 | 粉底液 | 680 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `prada-reveal-skin` | PRADA BEAUTY | Reveal Skin 柔焦粉底液 | 粉底液 | 720 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
@@ -98,7 +139,7 @@
 | `cle-de-peau-radiant-matte` | Clé de Peau Beauté | Radiant Fluid Foundation Matte 柔雾粉底液 | 粉底液 | 980 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `suqqu-the-liquid` | SUQQU | The Liquid Foundation 粉霜 | 粉底液 | 700 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `charlotte-tilbury-airbrush` | Charlotte Tilbury | Airbrush Flawless Foundation | 粉底液 | 490 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
-| `fenty-pro-filtr` | FENTY BEAUTY | Pro Filt’r Soft Matte Longwear Foundation | 粉底液 | 340 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
+| `fenty-pro-filtr` | FENTY BEAUTY | Fan's Red Carpet红毯气垫 | 粉底液（旧记录待替换） | 340（旧记录） | 现有图片不匹配 | 待重新核验 | 待重新核验 | 禁止公开 |
 | `hourglass-ambient-soft-glow` | HOURGLASS | Ambient Soft Glow Foundation | 粉底液 | 590 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 | `pat-mcgrath-skin-fetish` | PAT McGRATH LABS | Skin Fetish: Sublime Perfection Foundation | 粉底液 | 620 | 通用/远程路径 | 待核验 | 待核验 | 禁止公开 |
 

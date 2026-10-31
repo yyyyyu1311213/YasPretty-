@@ -1,19 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  ArrowLeft,
   ArrowDownUp,
   Check,
   ChevronDown,
   ChevronRight,
   CircleX,
+  ExternalLink,
+  FileCheck2,
   Heart,
   Menu,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   Star,
+  Store,
   X,
 } from 'lucide-react'
 import { categoryOptions, finishOptions, products, quickFilters, skinOptions } from './data/products'
+import { imageRightsContactUrl, productImageNotice } from './data/product-image-sources'
+import { buildProductAssessment, evidenceSync, getProductVerification } from './data/product-verification'
 import XiaoYAssistant from './components/XiaoYAssistant'
 
 const STORAGE_KEY = 'base-archive-collection'
@@ -61,12 +68,21 @@ function productMatches(product, filters) {
   return true
 }
 
+function productFromPathname(pathname = '') {
+  const match = pathname.match(/^\/products\/([^/]+)\/?$/)
+  if (!match) return null
+  return products.find((product) => product.id === decodeURIComponent(match[1])) || null
+}
+
 function App() {
-  const [view, setView] = useState('home')
+  const initialProfileProduct = typeof window === 'undefined' ? null : productFromPathname(window.location.pathname)
+  const [view, setView] = useState(initialProfileProduct ? 'product' : 'home')
   const [filters, setFilters] = useState(emptyFilters)
   const [sort, setSort] = useState('recommended')
   const [collection, setCollection] = useState(getStoredCollection)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [profileProduct, setProfileProduct] = useState(initialProfileProduct)
+  const [profileReturnView, setProfileReturnView] = useState('library')
   const [filterPanelOpen, setFilterPanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -83,6 +99,17 @@ function App() {
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [])
+
+  useEffect(() => {
+    const syncProfileRoute = () => {
+      const product = productFromPathname(window.location.pathname)
+      setProfileProduct(product)
+      setView(product ? 'product' : 'home')
+      setSelectedProduct(null)
+    }
+    window.addEventListener('popstate', syncProfileRoute)
+    return () => window.removeEventListener('popstate', syncProfileRoute)
   }, [])
 
   const filteredProducts = useMemo(() => {
@@ -130,15 +157,33 @@ function App() {
   }
 
   function navigate(nextView) {
+    if (window.location.pathname !== '/') window.history.pushState({}, '', '/')
+    setProfileProduct(null)
     setView(nextView)
     setMobileMenuOpen(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function openProductProfile(product) {
+    setProfileReturnView(view === 'product' ? 'library' : view)
+    setProfileProduct(product)
+    setSelectedProduct(null)
+    setView('product')
+    window.history.pushState({ productId: product.id }, '', `/products/${encodeURIComponent(product.id)}`)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function closeProductProfile() {
+    if (window.location.pathname !== '/') window.history.pushState({}, '', '/')
+    setProfileProduct(null)
+    setView(profileReturnView === 'product' ? 'library' : profileReturnView)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
     <div className="app-shell">
       <Header
-        activeView={view}
+        activeView={view === 'product' ? 'library' : view}
         favoriteCount={favoriteCount}
         mobileMenuOpen={mobileMenuOpen}
         onNavigate={navigate}
@@ -185,6 +230,15 @@ function App() {
             onNavigate={navigate}
           />
         )}
+        {view === 'product' && profileProduct && (
+          <ProductProfileView
+            product={profileProduct}
+            collection={collection}
+            onBack={closeProductProfile}
+            onFavorite={setStatus}
+            onRemoveFavorite={removeFavorite}
+          />
+        )}
       </main>
 
       <Footer />
@@ -194,6 +248,7 @@ function App() {
           collection={collection}
           onClose={() => setSelectedProduct(null)}
           onOpenProduct={setSelectedProduct}
+          onOpenFullProfile={openProductProfile}
           onFavorite={setStatus}
           onRemoveFavorite={removeFavorite}
         />
@@ -349,24 +404,137 @@ function ProductCard({ product, collection, onOpen, onFavorite, onRemoveFavorite
   )
 }
 
-function DetailDrawer({ product, collection, onClose, onOpenProduct, onFavorite, onRemoveFavorite }) {
+function ProductProfileView({ product, collection, onBack, onFavorite, onRemoveFavorite }) {
+  const verification = getProductVerification(product.id)
+  const assessment = buildProductAssessment(product)
+  const status = collection[product.id]
+  const evidence = verification?.evidence.publicEvidence || []
+  const parameterEvidence = evidence.filter((item) => item.kind === 'parameters')
+  const productEvidence = evidence.filter((item) => item.kind === 'product_detail')
+  const storeEvidence = evidence.filter((item) => item.kind === 'store_identity')
+  const factStatus = product.factVerificationStatus === 'verified' ? '来源已记录' : '待逐项核验'
+
+  return (
+    <article className="product-profile-page">
+      <div className="product-profile-toolbar">
+        <button className="profile-back-button" onClick={onBack}><ArrowLeft size={17} /> 返回</button>
+        <span>档案编号 {verification?.evidence.sequence || '--'} · 证据同步于 {evidenceSync.syncedAt}</span>
+      </div>
+
+      <header className="product-profile-hero">
+        <div className="product-profile-media"><img src={product.image} alt={`${product.brand} ${product.name} 产品图（图片授权待核验）`} /></div>
+        <div className="product-profile-heading">
+          <p className="eyebrow">{product.category} / VERIFIED PRODUCT FILE</p>
+          <p className="product-brand">{product.brand}</p>
+          <h1>{product.name}</h1>
+          <p className="profile-summary">{assessment.summary}</p>
+          <div className="profile-status-row">
+            <span className="status-pill pending">名称待负责人确认</span>
+            <span className={product.factVerificationStatus === 'verified' ? 'status-pill recorded' : 'status-pill pending'}>{factStatus}</span>
+            <span className="status-pill pending">图片授权待核验</span>
+          </div>
+          <StatusControl productId={product.id} status={status} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} />
+        </div>
+      </header>
+
+      <div className="product-profile-content">
+        <section className="profile-section commerce-section">
+          <div className="profile-section-heading"><div><p className="eyebrow">OFFICIAL CHANNEL</p><h2>淘宝 / 天猫官方商品链接</h2></div><Store size={22} /></div>
+          {verification?.commerce.status === 'verified' && verification.commerce.productUrl ? (
+            <div className="commerce-ready"><div><strong>{verification.commerce.officialStoreName}</strong><p>链接核验于 {verification.commerce.verifiedAt}</p></div><a className="official-product-link" href={verification.commerce.productUrl} target="_blank" rel="noopener noreferrer">前往官方旗舰店商品页 <ExternalLink size={16} /></a></div>
+          ) : (
+            <div className="commerce-pending"><div><strong>官方商品直达链接待核验</strong><p>{verification?.commerce.note}</p></div><span>{verification?.commerce.officialStoreName ? `现有截图记录：${verification.commerce.officialStoreName}` : '尚无店铺首页证据'}</span></div>
+          )}
+        </section>
+
+        <section className="profile-section">
+          <div className="profile-section-heading"><div><p className="eyebrow">PARAMETERS</p><h2>产品参数与证据状态</h2></div><FileCheck2 size={22} /></div>
+          <p className="profile-section-note">参数值来自当前站内资料；“待核验”表示现有截图尚未完成逐字段人工复核，不能作为品牌承诺或独立实测结论。</p>
+          <dl className="parameter-table">
+            <ParameterRow label="产品类别" value={product.category} status={factStatus} />
+            <ParameterRow label="参考价格" value={`${product.priceLabel}${product.priceVerifiedAt ? ` · ${product.priceVerifiedAt}` : ''}`} status={product.priceVerifiedAt ? '来源已记录' : '待核验'} />
+            <ParameterRow label="实际生产地" value={product.madeIn} status={factStatus} />
+            <ParameterRow label="妆效方向" value={product.finish} status={factStatus} />
+            <ParameterRow label="遮瑕方向" value={product.coverage ? `${product.coverage}遮瑕` : '待核验'} status={factStatus} />
+            <ParameterRow label="适用方向" value={product.skins.join(' / ')} status="编辑解读" />
+            <ParameterRow label="代表色号" value={product.shades.map((shade) => shade.name).join(' / ')} status={factStatus} />
+            <ParameterRow label="持妆与氧化" value="缺少统一测试方法时不作确定结论" status="待核验" />
+          </dl>
+        </section>
+
+        <section className="profile-section">
+          <div className="profile-section-heading"><div><p className="eyebrow">EDITORIAL ASSESSMENT</p><h2>YasPretty 参数解读</h2></div><ShieldCheck size={22} /></div>
+          <p className="profile-section-note">{assessment.sourceLabel}。以下内容用于选购初筛，不构成功效保证或独立实测。</p>
+          <div className="assessment-grid">
+            {assessment.dimensions.map((dimension) => <div key={dimension.label}><span>{dimension.label}</span><strong>{dimension.value}</strong><small>{assessmentStatusLabel(dimension.status)}</small></div>)}
+          </div>
+          <div className="assessment-columns">
+            <div><h3>可参考的方向</h3><ul>{assessment.strengths.map((item) => <li key={item}><Check size={15} />{item}</li>)}</ul></div>
+            <div><h3>使用与判断边界</h3><ul>{[...assessment.cautions, ...assessment.limitations].map((item) => <li key={item}><span>•</span>{item}</li>)}</ul></div>
+          </div>
+        </section>
+
+        <section className="profile-section">
+          <div className="profile-section-heading"><div><p className="eyebrow">EVIDENCE</p><h2>商品详情与参数证据</h2></div><span>{evidence.length} 份公开证据</span></div>
+          <div className="evidence-groups">
+            <EvidenceGroup title="商品详情页截图" items={productEvidence} product={product} />
+            <EvidenceGroup title="参数信息截图" items={parameterEvidence} product={product} emptyText="该产品目录未单独保存参数信息截图。" />
+            <EvidenceGroup title="店铺身份截图" items={storeEvidence} product={product} emptyText="店铺首页截图缺失，官方身份仍待重新检索。" />
+          </div>
+          <div className="business-evidence-row"><span>企业资质证据</span><strong>{verification?.evidence.businessQualification.status === 'archived_internal' ? '内部留档，未公开原图' : '缺失'}</strong><small>{verification?.evidence.businessQualification.fileName || '无对应文件'}</small></div>
+        </section>
+
+        {(verification?.issues.length || product.informationSources?.length) > 0 && (
+          <section className="profile-section provenance-section">
+            <div className="profile-section-heading"><div><p className="eyebrow">TRACEABILITY</p><h2>来源与待处理问题</h2></div></div>
+            {verification?.issues.length > 0 && <div className="verification-issues"><h3>当前阻断项</h3><ul>{verification.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul></div>}
+            {product.informationSources?.length > 0 && <div className="auxiliary-sources"><h3>辅助资料来源（非购买入口）</h3><ul>{product.informationSources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer">{source.title} <ExternalLink size={13} /></a><span>{source.publisher} · 访问于 {source.accessedAt} · 支持 {source.supports.join('、')}</span></li>)}</ul></div>}
+            <p className="profile-source-notice">{productImageNotice}</p>
+            <a className="source-contact-link" href={imageRightsContactUrl} target="_blank" rel="noopener noreferrer">权利人联系删除 <ChevronRight size={15} /></a>
+          </section>
+        )}
+      </div>
+    </article>
+  )
+}
+
+function ParameterRow({ label, value, status }) {
+  return <div><dt>{label}</dt><dd>{value}</dd><span className={status === '来源已记录' ? 'parameter-status recorded' : 'parameter-status pending'}>{status}</span></div>
+}
+
+function assessmentStatusLabel(status) {
+  if (status === 'source_recorded') return '来源字段'
+  if (status === 'editorial_interpretation') return '编辑解读'
+  return '待核验'
+}
+
+function EvidenceGroup({ title, items, product, emptyText = '暂无对应证据。' }) {
+  return (
+    <div className="evidence-group">
+      <h3>{title}</h3>
+      {items.length ? <div className="evidence-grid">{items.map((item) => <a key={item.publicPath} className="evidence-item" href={item.publicPath} target="_blank" rel="noopener noreferrer"><img src={item.publicPath} alt={`${product.brand} ${product.name} ${item.label}`} loading="lazy" /><span><strong>{item.label}</strong><small>SHA-256 {item.sha256.slice(0, 12)}… · {Math.round(item.sizeBytes / 1024)} KB</small></span><ExternalLink size={15} /></a>)}</div> : <p className="evidence-empty">{emptyText}</p>}
+    </div>
+  )
+}
+
+function DetailDrawer({ product, collection, onClose, onOpenProduct, onOpenFullProfile, onFavorite, onRemoveFavorite }) {
   const [shade, setShade] = useState(product.shades[0])
   useEffect(() => setShade(product.shades[0]), [product])
   const status = collection[product.id]
   const recommendations = products.filter((item) => item.id !== product.id && (item.category === product.category || item.finish === product.finish)).slice(0, 3)
-  const shadeImage = product.images?.find((item) => item.shade === shade.name)?.url || product.image
+  const shadeImage = product.image
   return (
     <div className="dialog-backdrop" onMouseDown={onClose}>
       <aside className="detail-drawer" role="dialog" aria-modal="true" aria-label={`${product.brand} ${product.name} 产品详情`} onMouseDown={(event) => event.stopPropagation()}>
         <button className="dialog-close" aria-label="关闭详情" title="关闭详情" onClick={onClose}><X size={20} /></button>
         <div className="detail-hero"><img src={shadeImage} alt={`${product.brand} ${product.name} ${shade.name} 产品图（图片授权待核验）`} /><div className="detail-hero-info"><p className="eyebrow">{product.category} / YASPRETTY FILE</p><p className="product-brand">{product.brand}</p><h2>{product.name}</h2><div className="detail-rating">{product.rating ? <><Star size={17} fill="currentColor" /> 编辑示例 {product.rating} <span>非用户统计</span></> : <span>官网资料，非用户统计</span>}</div><p>{product.note}</p><StatusControl productId={product.id} status={status} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} /></div></div>
         <div className="detail-body">
-          <section className="detail-section"><h3>基础信息</h3><p className="data-verification-note">{product.factVerificationStatus === 'verified' ? '名称、品类、色号和价格已按页面来源记录；图片再利用授权仍待核验，不能作为公开商品素材。' : '价格、图片、产地、色号和产品表现仍待来源核验；以下仅为当前资料库参考。'}</p><dl className="facts-grid"><div><dt>品牌所属地区</dt><dd>{product.brandRegion}{product.factVerificationStatus === 'verified' ? '' : '（待核验）'}</dd></div><div><dt>实际生产地</dt><dd>{product.madeIn}{product.factVerificationStatus === 'verified' ? '' : '（待核验）'}</dd></div><div><dt>参考价格</dt><dd>{product.priceLabel}{product.priceVerifiedAt ? `（核验于 ${product.priceVerifiedAt}）` : '（价格待核验）'}</dd></div><div><dt>适合肤质</dt><dd>{product.skins.join(' / ')}{product.factVerificationStatus === 'verified' ? '（编辑适配维度）' : '（待核验）'}</dd></div><div><dt>妆效</dt><dd>{product.finish}{product.factVerificationStatus === 'verified' ? '（来源/编辑维度）' : '（待核验）'}</dd></div><div><dt>持妆参考</dt><dd>{product.wear ? `${product.wear} 小时+（待核验）` : '官网未提供可比持妆时长'}</dd></div></dl></section>
+          <section className="detail-section"><h3>基础信息</h3><p className="data-verification-note">{product.factVerificationStatus === 'verified' ? '名称、品类、色号和价格已按页面来源记录；产品图片来源已披露，授权状态仍为待核验。' : '价格、产地、色号和产品表现仍待来源核验；产品图片来源已单独披露。'}</p><dl className="facts-grid"><div><dt>品牌所属地区</dt><dd>{product.brandRegion}{product.factVerificationStatus === 'verified' ? '' : '（待核验）'}</dd></div><div><dt>实际生产地</dt><dd>{product.madeIn}{product.factVerificationStatus === 'verified' ? '' : '（待核验）'}</dd></div><div><dt>参考价格</dt><dd>{product.priceLabel}{product.priceVerifiedAt ? `（核验于 ${product.priceVerifiedAt}）` : '（价格待核验）'}</dd></div><div><dt>适合肤质</dt><dd>{product.skins.join(' / ')}{product.factVerificationStatus === 'verified' ? '（编辑适配维度）' : '（待核验）'}</dd></div><div><dt>妆效</dt><dd>{product.finish}{product.factVerificationStatus === 'verified' ? '（来源/编辑维度）' : '（待核验）'}</dd></div><div><dt>持妆参考</dt><dd>{product.wear ? `${product.wear} 小时+（待核验）` : '官网未提供可比持妆时长'}</dd></div></dl></section>
           <section className="detail-section shade-section"><h3>代表色号</h3><div className="shade-list">{product.shades.map((item, index) => <button key={item.name} className={shade.name === item.name ? 'shade-choice selected' : 'shade-choice'} onClick={() => setShade(item)}><span className={`shade-swatch shade-${index}`} /><b>{item.name}</b></button>)}</div><div className="shade-description"><span>{shade.tone}</span><span>{shade.lightness}</span><span>适合 {shade.suitable}</span></div></section>
           <section className="detail-section"><h3>分项评价</h3><div className="metric-grid">{Object.entries(product.metrics).map(([label, value]) => <Metric key={label} label={label} value={value} />)}</div></section>
           <section className="detail-section two-columns"><div><h3>喜欢它的理由</h3><ul className="detail-list">{product.pros.map((item) => <li key={item}><Check size={15} />{item}</li>)}</ul></div><div><h3>使用时注意</h3><ul className="detail-list caution-list">{product.cautions.map((item) => <li key={item}><span>•</span>{item}</li>)}</ul></div></section>
           <section className="detail-section"><h3>适合场景</h3><div className="scene-row">{product.scenes.map((scene) => <span key={scene}>{scene}</span>)}</div></section>
-          <section className="detail-section"><h3>来源与公开状态</h3><p className="data-verification-note">{product.imageSource?.note || '图片来源状态待补充。'}</p>{product.informationSources?.length ? <ul className="detail-list source-list">{product.informationSources.map((source) => <li key={source.url}><Check size={15} /><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a><small>{source.publisher} · 访问于 {source.accessedAt}</small></li>)}</ul> : <p className="data-verification-note">当前没有可复核的外部来源记录。</p>}</section>
+          <section className="detail-section"><h3>来源与公开状态</h3><p className="data-verification-note">{product.imageSource?.note || productImageNotice}</p>{product.imageSource?.sourcePageUrl && <ul className="detail-list source-list"><li><Check size={15} /><a href={product.imageSource.sourcePageUrl} target="_blank" rel="noreferrer">查看产品图片来源页</a><small>{product.imageSource.rightsholder} · 采集于 {product.imageSource.acquiredAt} · 授权待核验</small></li></ul>}{product.informationSources?.length ? <ul className="detail-list source-list">{product.informationSources.map((source) => <li key={source.url}><Check size={15} /><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a><small>{source.publisher} · 访问于 {source.accessedAt}</small></li>)}</ul> : <p className="data-verification-note">产品事实来源仍待逐项补充；图片来源记录不等于产品事实已经核验。</p>}<button className="full-profile-action" onClick={() => onOpenFullProfile(product)}>查看完整核验档案 <ChevronRight size={16} /></button><a className="source-contact-link" href={imageRightsContactUrl} target="_blank" rel="noreferrer">权利人联系删除 <ChevronRight size={15} /></a></section>
           <section className="detail-section recommendations"><div className="detail-section-title"><h3>相似产品</h3><span>继续对比</span></div><div className="recommendation-list">{recommendations.map((item) => <button key={item.id} onClick={() => onOpenProduct(item)}><img src={item.image} alt="" /><span><b>{item.brand}</b>{item.name}<small>{item.finish} · {item.coverage}遮瑕</small></span><ChevronRight size={16} /></button>)}</div></section>
         </div>
       </aside>
@@ -427,7 +595,7 @@ function EmptyResults({ onClear }) {
 }
 
 function Footer() {
-  return <footer className="site-footer"><div><span className="footer-wordmark">YasPretty</span></div><p>产品信息与评价为示例内容，正式发布前需核验产品产地、图片授权及实际使用体验。</p></footer>
+  return <footer className="site-footer"><div><span className="footer-wordmark">YasPretty</span></div><p>{productImageNotice} 产品信息与编辑评价仍需结合详情页来源状态判断。</p><a className="source-contact-link" href={imageRightsContactUrl} target="_blank" rel="noreferrer">权利人联系删除 <ChevronRight size={15} /></a></footer>
 }
 
 export default App

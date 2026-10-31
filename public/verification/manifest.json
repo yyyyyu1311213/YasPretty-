@@ -1,0 +1,1306 @@
+{
+  "version": 1,
+  "syncedAt": "2026-11-01",
+  "products": {
+    "nars-light-reflecting": {
+      "sequence": "01",
+      "sourceProductFolder": "产品核验信息/商品详情页/01 NARS超方瓶粉底液",
+      "storeDisplayName": "NARS官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/nars-light-reflecting/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/01 NARS超方瓶粉底液/51ee173a4ec78b6e33f18489311f4de5.jpg",
+          "sha256": "d5795bd4c15787b78a821fc8cd9edf71e46e8ee585f9a65a7a1b451780f87da5",
+          "sizeBytes": 251321
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/nars-light-reflecting/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/01 NARS超方瓶粉底液/bc3a4454b23d70b6965b5f708c52140b.jpg",
+          "sha256": "9ff7dac45a64cad31e153e6e156255f805716652915c2587c542d5a373656aca",
+          "sizeBytes": 172124
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/nars-light-reflecting/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/01 NARS超方瓶粉底液/参数信息.png",
+          "sha256": "94caec0f1c8d7acddcabf64d106dca4dc48b0721df46178999496fc9bddb6165",
+          "sizeBytes": 216831
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/nars-light-reflecting/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/01NARS官方旗舰店.jpg",
+          "sha256": "6add40d91c68fed3fe165a01eb7e455e07999b989c9a090995cd29eb640c22eb",
+          "sizeBytes": 61285
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/01资生堂（中国）投资有限公司（NARS超方瓶粉底液）.png",
+        "fileName": "01资生堂（中国）投资有限公司（NARS超方瓶粉底液）.png"
+      }
+    },
+    "estee-lauder-double-wear": {
+      "sequence": "02",
+      "sourceProductFolder": "产品核验信息/商品详情页/02 Estée Lauder持妆粉底液",
+      "storeDisplayName": "Estee Lauder雅诗兰黛官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/estee-lauder-double-wear/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/02 Estée Lauder持妆粉底液/24754be7a39fbd9431fef063f42685d7.jpg",
+          "sha256": "502fdafdbed2149c5651a891448f9fb22b15457f1fac7281289144354e8c8a0d",
+          "sizeBytes": 176345
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/estee-lauder-double-wear/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/02 Estée Lauder持妆粉底液/ca88ff54f600e50f9662eebe67e43843.jpg",
+          "sha256": "3f181b52814b602f90efacce86d3f880c13c2f081ad78680d3cd012b29283a33",
+          "sizeBytes": 198956
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/estee-lauder-double-wear/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/02 Estée Lauder持妆粉底液/参数信息.png",
+          "sha256": "b79a49968eef074b24a49af8eeb968dd1d92276ffda469925a6b82d2b19ed4f3",
+          "sizeBytes": 309218
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/estee-lauder-double-wear/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/02Estee Lauder雅诗兰黛官方旗舰店.jpg",
+          "sha256": "a0f066858624feea65eebf3c10fd043c88dd94c6c425cd95577851c5e730ddd0",
+          "sizeBytes": 60631
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/02雅诗兰黛(上海)商贸有限公司（Estée Lauder持妆粉底液）.png",
+        "fileName": "02雅诗兰黛(上海)商贸有限公司（Estée Lauder持妆粉底液）.png"
+      }
+    },
+    "armani-luminous-silk": {
+      "sequence": "03",
+      "sourceProductFolder": "产品核验信息/商品详情页/03 GIORGIO ARMANI大师粉底液",
+      "storeDisplayName": "GIORGIO ARMANI阿玛尼美妆官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/armani-luminous-silk/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/03 GIORGIO ARMANI大师粉底液/02cc53360ce644894059c422e91dd07e.jpg",
+          "sha256": "fcf4af6bdbb8b0f9873c9d0ff647e690e555d97495b9ce31f9df8ce1e3a80220",
+          "sizeBytes": 90328
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/armani-luminous-silk/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/03 GIORGIO ARMANI大师粉底液/5645d619bf32bfc731f4fb09747eb8e1.jpg",
+          "sha256": "8ad86169e1687b4416b4730e868ac28e4a230669c58a06d2c26ad2b53e029fbb",
+          "sizeBytes": 105761
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/armani-luminous-silk/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/03 GIORGIO ARMANI大师粉底液/参数信息.png",
+          "sha256": "e3b97e1d1f936e6939c814bbea72326eae226a9e2c2cd013c83db7b45581ca30",
+          "sizeBytes": 198177
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/armani-luminous-silk/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/03GIORGIO ARMANI阿玛尼美妆官方旗舰店.jpg",
+          "sha256": "2aca460522aeb9948372a7addda9fe7be184067cdb91346b2f123eb0ff76c04d",
+          "sizeBytes": 64656
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/03欧莱雅(中国)有限公司 （GIORGIO ARMANI大师粉底液）.png",
+        "fileName": "03欧莱雅(中国)有限公司 （GIORGIO ARMANI大师粉底液）.png"
+      }
+    },
+    "laneige-neo-matte": {
+      "sequence": "04",
+      "sourceProductFolder": "产品核验信息/商品详情页/04 LANEIGENEO 小方块气垫（哑光）",
+      "storeDisplayName": "兰芝官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/laneige-neo-matte/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/04 LANEIGENEO 小方块气垫（哑光）/3fc30b90a320d0011d59021f71ee47b2.jpg",
+          "sha256": "ea0fc76f37cd8dc5e9d99c916a1106575f72a41ae83feb4f30b7c5ac6e3d5c15",
+          "sizeBytes": 244755
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/laneige-neo-matte/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/04 LANEIGENEO 小方块气垫（哑光）/参数信息.png",
+          "sha256": "346eb87f97b58a98ef9094246cbcad19e8310c95b8c60a613c1aa3415c23c343",
+          "sizeBytes": 145251
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/laneige-neo-matte/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/04兰芝官方旗舰店.jpg",
+          "sha256": "db4899db30e615dfa38f5bebefdbcfccb0be3e10c736fd0dc2ae277bfbec85fb",
+          "sizeBytes": 56807
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/04爱茉莉太平洋贸易有限公司（NEO 小方块气垫（哑光））.png",
+        "fileName": "04爱茉莉太平洋贸易有限公司（NEO 小方块气垫（哑光））.png"
+      }
+    },
+    "clio-kill-cover": {
+      "sequence": "05",
+      "sourceProductFolder": "产品核验信息/商品详情页/05 CLIO小磁铁气垫",
+      "storeDisplayName": "clio珂莱欧官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/clio-kill-cover/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/05 CLIO小磁铁气垫/4e1f09788c9adea4a10eb479a6170ba0.jpg",
+          "sha256": "6db3238a126ea487bf05052e4a1307d1a7660f83b221f79b5907af2332f86615",
+          "sizeBytes": 181557
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/clio-kill-cover/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/05 CLIO小磁铁气垫/参数信息.png",
+          "sha256": "2073682b8504a6eb7764c841355d08072541e68d1fba37a4d7818c5acebf601b",
+          "sizeBytes": 124129
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/clio-kill-cover/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/05clio珂莱欧官方旗舰店.jpg",
+          "sha256": "72ced4aa419f7bf80423437893901e5bc6c91c27480069345d4724ece56e2707",
+          "sizeBytes": 75265
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/05丽人丽妆(上海)电子商务有限公司（CLIO小磁铁气垫）.png",
+        "fileName": "05丽人丽妆(上海)电子商务有限公司（CLIO小磁铁气垫）.png"
+      }
+    },
+    "ysl-touche-eclat": {
+      "sequence": "06",
+      "sourceProductFolder": "产品核验信息/商品详情页/06 YSL「真」皮气垫",
+      "storeDisplayName": "YSL圣罗兰美妆官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/ysl-touche-eclat/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/06 YSL「真」皮气垫/4389df3a536660e9870c82a9b8c0d945.jpg",
+          "sha256": "70c14c7160eac1e433462295e7653fa2d8f443fb8dfd6d4d3530d26315816fbd",
+          "sizeBytes": 187395
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/ysl-touche-eclat/product-detail-02.png",
+          "originalSourcePath": "产品核验信息/商品详情页/06 YSL「真」皮气垫/bb23a38d616e44499b49ed4fd3961bc2.png",
+          "sha256": "a9b20c187e0216f38479ce4be379d53f8df0a2e0d7a713706855f8f0214caf38",
+          "sizeBytes": 180125
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/ysl-touche-eclat/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/06YSL圣罗兰美妆官方旗舰店.jpg",
+          "sha256": "60faba059300568686e365662cac54d18bfc4bb97b77a91e821555f46326a224",
+          "sizeBytes": 61484
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/06欧莱雅(中国)有限公司（「真」皮气垫）.png",
+        "fileName": "06欧莱雅(中国)有限公司（「真」皮气垫）.png"
+      }
+    },
+    "nars-radiant-creamy": {
+      "sequence": "07",
+      "sourceProductFolder": "产品核验信息/商品详情页/07 NARS亮采柔滑遮瑕蜜",
+      "storeDisplayName": "NARS官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/nars-radiant-creamy/product-detail-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/07 NARS亮采柔滑遮瑕蜜/1ad2e72497191b8ae441acf3315ab0e9.png",
+          "sha256": "d66132ec4ed39aceb607399d1fe2d0a8bd54d885487240cb3237f35590790f55",
+          "sizeBytes": 198682
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/nars-radiant-creamy/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/07 NARS亮采柔滑遮瑕蜜/fe1608f14976a041d1a4f6d4cec9c31a.jpg",
+          "sha256": "dc6480d3ca137264e87fb28d80cfd0264071f163cda70924882b6abb53102b1d",
+          "sizeBytes": 89073
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/nars-radiant-creamy/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/07NARS官方旗舰店 .jpg",
+          "sha256": "6add40d91c68fed3fe165a01eb7e455e07999b989c9a090995cd29eb640c22eb",
+          "sizeBytes": 61285
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/07资生堂（中国）投资有限公司（NARS亮彩柔滑遮瑕蜜）.png",
+        "fileName": "07资生堂（中国）投资有限公司（NARS亮彩柔滑遮瑕蜜）.png"
+      }
+    },
+    "tarte-shape-tape": {
+      "sequence": "08",
+      "sourceProductFolder": "产品核验信息/商品详情页/08 tarteShape Tape 遮瑕液",
+      "storeDisplayName": "Tarte海外旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/tarte-shape-tape/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/08 tarteShape Tape 遮瑕液/82579dbc4eec03766a143ff3b88ae64c.jpg",
+          "sha256": "7319426f6e3de12dfd27a8d20463e137d7cbb3704c23b91b089bc7b67c012c24",
+          "sizeBytes": 107469
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/tarte-shape-tape/product-detail-02.png",
+          "originalSourcePath": "产品核验信息/商品详情页/08 tarteShape Tape 遮瑕液/713129cd4cda63a4d3ed259e03f5002d.png",
+          "sha256": "c5d691d86ae06ff8a02bd814401a70c5d65a8ba956ef9be460fd355d4381fb58",
+          "sizeBytes": 200367
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/tarte-shape-tape/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/08Tarte海外旗舰店.jpg",
+          "sha256": "a444621a308077539fc95cdc27b51d6590d45ba150b2d9de1682b5b689b7b81b",
+          "sizeBytes": 73018
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/08TARTE,INC.（tarte Shape Tape 遮瑕液）.png",
+        "fileName": "08TARTE,INC.（tarte Shape Tape 遮瑕液）.png"
+      }
+    },
+    "the-saem-tip-concealer": {
+      "sequence": "09",
+      "sourceProductFolder": "产品核验信息/商品详情页/09 the SAEM得鲜经典遮瑕液",
+      "storeDisplayName": "thesaem得鲜化妆品旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/the-saem-tip-concealer/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/09 the SAEM得鲜经典遮瑕液/ab2603051eaed70176278a097bf3a2c8.jpg",
+          "sha256": "9508ea13db33a38928fa99006b2210ea9b1fbb75a3ceda7a57a42e5de892822e",
+          "sizeBytes": 85609
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/the-saem-tip-concealer/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/09 the SAEM得鲜经典遮瑕液/df3b8893541b92cc594041dcd06f7cf6.jpg",
+          "sha256": "f1782f84c4fdd81a55a8dc5bad011fa4bfb30f008141c78b3bd53d48c3bd3c6e",
+          "sizeBytes": 315946
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/the-saem-tip-concealer/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/09 the SAEM得鲜经典遮瑕液/参数信息.png",
+          "sha256": "d9a23a9b3574b64aaa84c4d56b2d388a6e8cd6e33bee5ad520548f6575a4f42c",
+          "sizeBytes": 227571
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/the-saem-tip-concealer/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/09thesaem得鲜化妆品旗舰店.jpg",
+          "sha256": "77a5f3eaa65efc1252cd50aaec0101d6e3a05185aaf29caaf128c66d8b341b9c",
+          "sizeBytes": 73831
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/09杭州寻鹿品牌管理有限公司 (the SAEM 得鲜经典遮瑕液）.png",
+        "fileName": "09杭州寻鹿品牌管理有限公司 (the SAEM 得鲜经典遮瑕液）.png"
+      }
+    },
+    "laura-mercier-translucent": {
+      "sequence": "10",
+      "sourceProductFolder": "产品核验信息/商品详情页/10 LAURA MERCIER柔光透明散粉",
+      "storeDisplayName": "LAURA MERCIER罗拉玛希官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/laura-mercier-translucent/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/10 LAURA MERCIER柔光透明散粉/fa21dca796499bbc3b49cbe45d0e22f0.jpg",
+          "sha256": "e9691dac55b791dfeb99fa7c7b23704f414991d133a5c3eb30108718c2d597fb",
+          "sizeBytes": 112515
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/laura-mercier-translucent/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/10 LAURA MERCIER柔光透明散粉/参数信息.png",
+          "sha256": "5567fc1c554d80208cdcc0f8a8885074ddd78b69db3037ce51a4ef58b118cd39",
+          "sizeBytes": 115805
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/laura-mercier-translucent/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/10LAURA MERCIER罗拉玛希官方旗舰店.jpg",
+          "sha256": "faa6ff606cb5cda1cc50a8123cc5d9c9aa7106d489f2e2e129bbd6717482bb22",
+          "sizeBytes": 60243
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/10上海颖通化妆品有限公司（LAURA MERCIER 柔光透明散粉）.png",
+        "fileName": "10上海颖通化妆品有限公司（LAURA MERCIER 柔光透明散粉）.png"
+      }
+    },
+    "make-up-for-ever-hd": {
+      "sequence": "11",
+      "sourceProductFolder": "产品核验信息/商品详情页/11 MAKE UP FOR EVER轻烟蜜粉",
+      "storeDisplayName": "MAKE UPFOREVER玫珂菲官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/make-up-for-ever-hd/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/11 MAKE UP FOR EVER轻烟蜜粉/c99f4425c11e9b53882d13af19eeb733.jpg",
+          "sha256": "3e0faeadf098a38c3d0af87d22b95dfebe97c353de71b5fd568d4297cc9502f7",
+          "sizeBytes": 51512
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/make-up-for-ever-hd/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/11 MAKE UP FOR EVER轻烟蜜粉/参数信息.png",
+          "sha256": "216de8532cdd32cf913cc7a90aa24c73927cc999b4267e88e3c7927bffe9d57c",
+          "sizeBytes": 136149
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/make-up-for-ever-hd/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/11MAKE UPFOREVER玫珂菲官方旗舰店.jpg",
+          "sha256": "e28e2702faf998f1e2b42d1c61c1d077cafc62005769176370099497cabad047",
+          "sizeBytes": 64045
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/11路威酩轩香水化妆品商贸(上海)有限公司(MAKE UP FOR EVER轻烟蜜粉）.png",
+        "fileName": "11路威酩轩香水化妆品商贸(上海)有限公司(MAKE UP FOR EVER轻烟蜜粉）.png"
+      }
+    },
+    "flower-knows-cloud": {
+      "sequence": "12",
+      "sourceProductFolder": "产品核验信息/商品详情页/12 花知晓骑士独角兽云朵蜜粉",
+      "storeDisplayName": "花知晓旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/flower-knows-cloud/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/12 花知晓骑士独角兽云朵蜜粉/6beaa47ebb8cf6458847bcd0c949f4ca.jpg",
+          "sha256": "303d17e6a8ed89cd0b7bfd5af7f65b4194520bfc6f8eed145bfe850e13583841",
+          "sizeBytes": 104547
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/flower-knows-cloud/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/12 花知晓骑士独角兽云朵蜜粉/参数信息.png",
+          "sha256": "5d438c3e1db1be07d3ffe8e52f4ca71b772303be8d5f21ef6c5ebbd3706f7dfe",
+          "sizeBytes": 175513
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/flower-knows-cloud/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/12花知晓旗舰店.jpg",
+          "sha256": "145ad02a9aefef6c98e57a5a5fd25bb34230a4f435a82f61fe063f4772f899d1",
+          "sizeBytes": 73162
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/12杭州花知晓电子商务有限公司（花知晓 骑士独角兽云朵蜜粉）.png",
+        "fileName": "12杭州花知晓电子商务有限公司（花知晓 骑士独角兽云朵蜜粉）.png"
+      }
+    },
+    "dior-forever-skin-glow": {
+      "sequence": "13",
+      "sourceProductFolder": "产品核验信息/商品详情页/13 Dior锁妆柔润亮泽粉底液",
+      "storeDisplayName": "DIOR迪奥官方旗舰店 香水与美容",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/dior-forever-skin-glow/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/13 Dior锁妆柔润亮泽粉底液/3503eb5318ac971626b5afdb2b218809.jpg",
+          "sha256": "89ab7ce95d16e77a89d4187b2b4b8570d02a192aca7ceb33f6b01b1a1ac4362a",
+          "sizeBytes": 75123
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/dior-forever-skin-glow/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/13 Dior锁妆柔润亮泽粉底液/参数信息.png",
+          "sha256": "0d63ef06b451caf2244b133632620be81b8338840caad4ab9c92c95f590741e8",
+          "sizeBytes": 224755
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/dior-forever-skin-glow/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/13DIOR迪奥官方旗舰店 香水与美容.jpg",
+          "sha256": "fde80b687da02e4b32964c75a10e46f6443792daafc30251aa99272c6bfce077",
+          "sizeBytes": 74412
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/13路威酩轩香水化妆品商贸(上海)有限公司(Dior锁妆柔润亮泽粉底液）.png",
+        "fileName": "13路威酩轩香水化妆品商贸(上海)有限公司(Dior锁妆柔润亮泽粉底液）.png"
+      }
+    },
+    "dior-forever-matte": {
+      "sequence": "14",
+      "sourceProductFolder": "产品核验信息/商品详情页/14 Dior锁妆柔雾哑光粉底液",
+      "storeDisplayName": "DIOR迪奥官方旗舰店 香水与美容",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/dior-forever-matte/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/14 Dior锁妆柔雾哑光粉底液/2d45fde4c3844b9bad30ccf78aae961d.jpg",
+          "sha256": "fc89245fceba61ac11d97e6da8292f02e8c51d218760cb274a6f68bd51246e8a",
+          "sizeBytes": 73654
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/dior-forever-matte/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/14 Dior锁妆柔雾哑光粉底液/参数信息.png",
+          "sha256": "4f3ef650054b507493c48c78ce123a43e21dbad89532df1c2d5131659ba7cff1",
+          "sizeBytes": 226161
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/dior-forever-matte/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/14DIOR迪奥官方旗舰店 香水与美容.jpg",
+          "sha256": "fde80b687da02e4b32964c75a10e46f6443792daafc30251aa99272c6bfce077",
+          "sizeBytes": 74412
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/14路威酩轩香水化妆品商贸(上海)有限公司(Dior迪奥锁妆柔雾哑光粉底液）.png",
+        "fileName": "14路威酩轩香水化妆品商贸(上海)有限公司(Dior迪奥锁妆柔雾哑光粉底液）.png"
+      }
+    },
+    "ysl-all-hours": {
+      "sequence": "15",
+      "sourceProductFolder": "产品核验信息/商品详情页/15 YSLAll Hours 恒久无瑕粉底液",
+      "storeDisplayName": "YSL圣罗兰美妆官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/ysl-all-hours/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/15 YSLAll Hours 恒久无瑕粉底液/c4c897f54ba0083af715abd75cf95426.jpg",
+          "sha256": "8a42d0b0971c3782eb3e10b830c31e373e63cb91678309d5cb96d602ef5659a4",
+          "sizeBytes": 197126
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/ysl-all-hours/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/15 YSLAll Hours 恒久无瑕粉底液/参数信息.png",
+          "sha256": "1a531ef1b9b5dc501ef16f0c446bd139ea5e2ba7e0f52af9ee02b77b94deac11",
+          "sizeBytes": 137496
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/ysl-all-hours/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/15YSL圣罗兰美妆官方旗舰店.jpg",
+          "sha256": "60faba059300568686e365662cac54d18bfc4bb97b77a91e821555f46326a224",
+          "sizeBytes": 61484
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/15欧莱雅(中国)有限公司（YSL All Hours 恒久无瑕粉底液).png",
+        "fileName": "15欧莱雅(中国)有限公司（YSL All Hours 恒久无瑕粉底液).png"
+      }
+    },
+    "chanel-les-beiges": {
+      "sequence": "16",
+      "sourceProductFolder": "产品核验信息/商品详情页/16 CHANELLES BEIGES 健康光泽粉底液",
+      "storeDisplayName": "CHANEL 香奈儿官方旗舰店 香水与美容品",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/chanel-les-beiges/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/16 CHANELLES BEIGES 健康光泽粉底液/e8bae6fd54b93c1f147b67047f47fea8.jpg",
+          "sha256": "8e697155a79d8e8a4a4846e8a0b49b34421efe5615acb454b57fe5831abbbf80",
+          "sizeBytes": 101150
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/chanel-les-beiges/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/16 CHANELLES BEIGES 健康光泽粉底液/参数信息.png",
+          "sha256": "0643607c8321e09684a68be9c532387464d1a9649b8e109ecd2ca9e85ffd1bc5",
+          "sizeBytes": 140005
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/chanel-les-beiges/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/16CHANEL 香奈儿官方旗舰店 香水与美容品.jpg",
+          "sha256": "3507d2e40827ee8b98512206ef401bee33f053141c8f019a08519679a5c2bb20",
+          "sizeBytes": 43000
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/16香奈儿（中国）贸易有限公司（CHANEL LES BEIGES 健康光泽粉底液）.png",
+        "fileName": "16香奈儿（中国）贸易有限公司（CHANEL LES BEIGES 健康光泽粉底液）.png"
+      }
+    },
+    "prada-reveal-skin": {
+      "sequence": "17",
+      "sourceProductFolder": "产品核验信息/商品详情页/17 PRADA BEAUTYReveal Skin 柔焦粉底液",
+      "storeDisplayName": "PRADA普拉达香水美妆官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/prada-reveal-skin/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/17 PRADA BEAUTYReveal Skin 柔焦粉底液/48026bbd7ad226de8d3f9baa0cc024ed.jpg",
+          "sha256": "e699ec67385f1b569ff8d868a203c725ca2f99baeade381c8cec7037baa0125b",
+          "sizeBytes": 206550
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/prada-reveal-skin/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/17 PRADA BEAUTYReveal Skin 柔焦粉底液/参数信息.png",
+          "sha256": "fc60855853070505d1cd6323e680f45dfd9fee15742a4919f2ccdc6589649df5",
+          "sizeBytes": 169421
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/prada-reveal-skin/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/17PRADA普拉达香水美妆官方旗舰店.jpg",
+          "sha256": "9ee0f51589b3c1b5f2ace49b6204ad94f5ba6085700187c3d47cf993ec7adf73",
+          "sizeBytes": 76757
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/17欧莱雅(中国)有限公司 （PRADA BEAUTY Reveal Skin 柔焦粉底液）.png",
+        "fileName": "17欧莱雅(中国)有限公司 （PRADA BEAUTY Reveal Skin 柔焦粉底液）.png"
+      }
+    },
+    "givenchy-prisme-libre": {
+      "sequence": "18",
+      "sourceProductFolder": "产品核验信息/商品详情页/18 GIVENCHYPrisme Libre Skin-Caring Glow 粉底液",
+      "storeDisplayName": "GIVENCHY纪梵希官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/givenchy-prisme-libre/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/18 GIVENCHYPrisme Libre Skin-Caring Glow 粉底液/e6795769d919aeb6cb953e63c98d9453.jpg",
+          "sha256": "075bd1ef8c16daa4cda0c303193d34b9773cf37fae635e645aedef7d2aed2afd",
+          "sizeBytes": 115875
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/givenchy-prisme-libre/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/18 GIVENCHYPrisme Libre Skin-Caring Glow 粉底液/参数信息.png",
+          "sha256": "929cdea6222be7ee0ea67fdf9dbe09559aa7001f85961692d230f56896ee4e9a",
+          "sizeBytes": 172879
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/givenchy-prisme-libre/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/18GIVENCHY纪梵希官方旗舰店.jpg",
+          "sha256": "a79182aa1fd6dfa225fde440004b8cfb6d6fecebffc695613afb1053d00871ad",
+          "sizeBytes": 76011
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/18路威酩轩香水化妆品商贸(上海)有限公司(GIVENCHY Prisme Libre Skin-Caring Glow 粉底液）.png",
+        "fileName": "18路威酩轩香水化妆品商贸(上海)有限公司(GIVENCHY Prisme Libre Skin-Caring Glow 粉底液）.png"
+      }
+    },
+    "lancome-teint-idole": {
+      "sequence": "19",
+      "sourceProductFolder": "产品核验信息/商品详情页/19 LANCÔMETeint Idole Ultra Wear 持妆粉底液",
+      "storeDisplayName": "Lancome兰蔻官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/lancome-teint-idole/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/19 LANCÔMETeint Idole Ultra Wear 持妆粉底液/7930eee7c54ef43a2d348691ef701fd0.jpg",
+          "sha256": "ef27229a3f02a502490242f7e722e254cac88bccd22b26f5a8a7f81e148e7710",
+          "sizeBytes": 306741
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/lancome-teint-idole/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/19 LANCÔMETeint Idole Ultra Wear 持妆粉底液/参数信息.png",
+          "sha256": "3f99f0d3c639f9d03fc2405fac86505796aae010609fad6fc8ca2b318914ca0a",
+          "sizeBytes": 154620
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/lancome-teint-idole/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/19Lancome兰蔻官方旗舰店.jpg",
+          "sha256": "5969a5eae41212e03f274932f5ca5b075c391277b30e1a1da51a6652906f0126",
+          "sizeBytes": 60284
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/19欧莱雅(中国)有限公司 （LANCÔME Teint Idole Ultra Wear 持妆粉底液）.png",
+        "fileName": "19欧莱雅(中国)有限公司 （LANCÔME Teint Idole Ultra Wear 持妆粉底液）.png"
+      }
+    },
+    "mac-studio-fix": {
+      "sequence": "20",
+      "sourceProductFolder": "产品核验信息/商品详情页/20 M·A·CStudio Fix Fluid 柔雾持妆粉底液",
+      "storeDisplayName": "MAC魅可官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/mac-studio-fix/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/20 M·A·CStudio Fix Fluid 柔雾持妆粉底液/82c6c012eda68203e4ca7af3ffebcbc4.jpg",
+          "sha256": "02ced33510fd62a69ccd1188da9419ee8eefc97385e1a141694878e90e885929",
+          "sizeBytes": 353138
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/mac-studio-fix/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/20 M·A·CStudio Fix Fluid 柔雾持妆粉底液/参数信息.png",
+          "sha256": "0e3dc2c99b060a34bba856f0d110bc669c319abd8721864a4bbcd4991b5c41db",
+          "sizeBytes": 223300
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/mac-studio-fix/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/20MAC魅可官方旗舰店.jpg",
+          "sha256": "be2f5e32c3cc6b24681000b6abe4cdf429fe2518f25e625211a6ce81f70900f3",
+          "sizeBytes": 56036
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/20雅诗兰黛(上海)商贸有限公司（M·A·C Studio Fix Fluid 柔雾持妆粉底液）.png",
+        "fileName": "20雅诗兰黛(上海)商贸有限公司（M·A·C Studio Fix Fluid 柔雾持妆粉底液）.png"
+      }
+    },
+    "bobbi-brown-weightless-skin": {
+      "sequence": "21",
+      "sourceProductFolder": "产品核验信息/商品详情页/21 BOBBI BROWNWeightless Skin 无感持妆粉底液",
+      "storeDisplayName": "BOBBIBROWN芭比波朗官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/bobbi-brown-weightless-skin/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/21 BOBBI BROWNWeightless Skin 无感持妆粉底液/04eb351604560109ceed7fdb46f55998.jpg",
+          "sha256": "1e789c52b7bc7ce6863159e863a47c95cb3e869e1be76e7153df1a5c60771be3",
+          "sizeBytes": 247247
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/bobbi-brown-weightless-skin/product-detail-02.png",
+          "originalSourcePath": "产品核验信息/商品详情页/21 BOBBI BROWNWeightless Skin 无感持妆粉底液/571597c88fb9f8d94eb9bd7f9e857601.png",
+          "sha256": "ff657d2b19e22dfc6c79b925bd164d41c0218c435f3ce282561a84a483223bc0",
+          "sizeBytes": 279787
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/bobbi-brown-weightless-skin/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/21BOBBIBROWN芭比波朗官方旗舰店.jpg",
+          "sha256": "e3f6370422785a6c046f16e66de43088896594a55f96f31ca18b3d02b7b11eb4",
+          "sizeBytes": 83898
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/21雅诗兰黛(上海)商贸有限公司（BOBBI BROWN Weightless Skin 无感持妆粉底液）.png",
+        "fileName": "21雅诗兰黛(上海)商贸有限公司（BOBBI BROWN Weightless Skin 无感持妆粉底液）.png"
+      }
+    },
+    "mufe-hd-skin-foundation": {
+      "sequence": "22",
+      "sourceProductFolder": "产品核验信息/商品详情页/22 MAKE UP FOR EVERHD Skin 高清持妆粉底液",
+      "storeDisplayName": "MAKE UPFOREVER玫珂菲官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/mufe-hd-skin-foundation/product-detail-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/22 MAKE UP FOR EVERHD Skin 高清持妆粉底液/45df7337690d55a08ba61a378a9d7721.png",
+          "sha256": "20ac777e9196d6f4727668c19606aae1a530e3118da6a8f11a6bef5dcf4130b2",
+          "sizeBytes": 226797
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/mufe-hd-skin-foundation/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/22 MAKE UP FOR EVERHD Skin 高清持妆粉底液/92861c67e27813c791e5e15e182bfe50.jpg",
+          "sha256": "956a2e1baf5b8cf975598d79851f8e4974ea2328168ad2573e7ca33857bb4733",
+          "sizeBytes": 279817
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/mufe-hd-skin-foundation/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/22MAKE UPFOREVER玫珂菲官方旗舰店 .jpg",
+          "sha256": "e28e2702faf998f1e2b42d1c61c1d077cafc62005769176370099497cabad047",
+          "sizeBytes": 64045
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/22路威酩轩香水化妆品商贸(上海)有限公司(MAKE UP FOR EVER HD Skin 高清持妆粉底液）.png",
+        "fileName": "22路威酩轩香水化妆品商贸(上海)有限公司(MAKE UP FOR EVER HD Skin 高清持妆粉底液）.png"
+      }
+    },
+    "laura-mercier-real-flawless": {
+      "sequence": "23",
+      "sourceProductFolder": "产品核验信息/商品详情页/23 LAURA MERCIERReal Flawless 柔光粉底液",
+      "storeDisplayName": "LAURA MERCIER罗拉玛希官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/laura-mercier-real-flawless/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/23 LAURA MERCIERReal Flawless 柔光粉底液/71cdcdcbbfe3ca2132f58fcaeba3613e.jpg",
+          "sha256": "cd9b91b0345025d6fa57c6e7b1e748e2a66c0c4fba8fbd94d6acb2f285882014",
+          "sizeBytes": 348107
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/laura-mercier-real-flawless/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/23 LAURA MERCIERReal Flawless 柔光粉底液/参数信息.png",
+          "sha256": "8fb2e6b6268f557481a0bd8a2f02c2d5feca2dabe322cfb3546829cef6ad3b7e",
+          "sizeBytes": 165228
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/laura-mercier-real-flawless/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/23LAURA MERCIER罗拉玛希官方旗舰店 .jpg",
+          "sha256": "faa6ff606cb5cda1cc50a8123cc5d9c9aa7106d489f2e2e129bbd6717482bb22",
+          "sizeBytes": 60243
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/23上海颖通化妆品有限公司（LAURA MERCIER Real Flawless 柔光粉底液）.png",
+        "fileName": "23上海颖通化妆品有限公司（LAURA MERCIER Real Flawless 柔光粉底液）.png"
+      }
+    },
+    "shiseido-revitalessence": {
+      "sequence": "24",
+      "sourceProductFolder": "产品核验信息/商品详情页/24 SHISEIDORevitalessence Skin Glow 粉底液",
+      "storeDisplayName": "SHISEIDO资生堂官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/shiseido-revitalessence/product-detail-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/24 SHISEIDORevitalessence Skin Glow 粉底液/06b76fb5ad50d2fedebf09a01e9c7c46.png",
+          "sha256": "e01ee0a4c3210e7c0bf0b0cd029f57dbef98a1ffd96f0e1422dfb99246838abf",
+          "sizeBytes": 122995
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/shiseido-revitalessence/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/24 SHISEIDORevitalessence Skin Glow 粉底液/9c0858d3b55d5aa57c2cb1d63ce9bbca.jpg",
+          "sha256": "80dbc9f31c1dc4a4ff40b70d74a68c26ab65754e06f9803803a5cb4d479c466e",
+          "sizeBytes": 176120
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/shiseido-revitalessence/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/24SHISEIDO资生堂官方旗舰店.jpg",
+          "sha256": "eb2633836e7916c8820c70a168ee18b7087d04eca05042822e413dbf1a28b64d",
+          "sizeBytes": 72946
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/24资生堂（中国）投资有限公司（SHISEIDO Revitalessence Skin Glow 粉底液）.png",
+        "fileName": "24资生堂（中国）投资有限公司（SHISEIDO Revitalessence Skin Glow 粉底液）.png"
+      }
+    },
+    "cle-de-peau-radiant-natural": {
+      "sequence": "25",
+      "sourceProductFolder": "产品核验信息/商品详情页/25 Clé de Peau BeautéRadiant Fluid Foundation Natural 光润粉底液",
+      "storeDisplayName": "肌肤之钥官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/cle-de-peau-radiant-natural/product-detail-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/25 Clé de Peau BeautéRadiant Fluid Foundation Natural 光润粉底液/1f91da63ec95fc63725c1e3acffadead.png",
+          "sha256": "2299615bc40f92d0fc8a9b83c6957ae530c54caf500c8201b74bbcf11734b67d",
+          "sizeBytes": 306479
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/cle-de-peau-radiant-natural/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/25 Clé de Peau BeautéRadiant Fluid Foundation Natural 光润粉底液/89391a18d713224306f05615c0b4863c.jpg",
+          "sha256": "f739f6741033f186fb384b501ec372ab47de063258354717b832948b267c5a1d",
+          "sizeBytes": 205686
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/cle-de-peau-radiant-natural/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/25肌肤之钥官方旗舰店.jpg",
+          "sha256": "98a7bfb3f0fce7ec34cf9df9f3c1bd12ede6e4f78c8d53adf1f8ba5954f208ec",
+          "sizeBytes": 76109
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/25资生堂（中国）投资有限公司（ Clé de Peau Beauté Radiant Fluid Foundation Natural 光润粉底液）.png",
+        "fileName": "25资生堂（中国）投资有限公司（ Clé de Peau Beauté Radiant Fluid Foundation Natural 光润粉底液）.png"
+      }
+    },
+    "cle-de-peau-radiant-matte": {
+      "sequence": "26",
+      "sourceProductFolder": "产品核验信息/商品详情页/26 Clé de Peau BeautéRadiant Fluid Foundation Matte 柔雾粉底液",
+      "storeDisplayName": "肌肤之钥官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/cle-de-peau-radiant-matte/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/26 Clé de Peau BeautéRadiant Fluid Foundation Matte 柔雾粉底液/5805f25c59b7d3ffa6be111399784ac0.jpg",
+          "sha256": "9682ad95752f0f59baac1101504bdd79f24a30e0873f0e77938a484dfb50a98b",
+          "sizeBytes": 210821
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/cle-de-peau-radiant-matte/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/26 Clé de Peau BeautéRadiant Fluid Foundation Matte 柔雾粉底液/参数信息.png",
+          "sha256": "8441f1ed8e31f692ba8a42726380fde67b1546bcb7ff2acad79b4c7d12378f5f",
+          "sizeBytes": 292078
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/cle-de-peau-radiant-matte/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/26肌肤之钥官方旗舰店 .jpg",
+          "sha256": "98a7bfb3f0fce7ec34cf9df9f3c1bd12ede6e4f78c8d53adf1f8ba5954f208ec",
+          "sizeBytes": 76109
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/26资生堂（中国）投资有限公司（Clé de Peau Beauté Radiant Fluid Foundation Matte 柔雾粉底液).png",
+        "fileName": "26资生堂（中国）投资有限公司（Clé de Peau Beauté Radiant Fluid Foundation Matte 柔雾粉底液).png"
+      }
+    },
+    "suqqu-the-liquid": {
+      "sequence": "27",
+      "sourceProductFolder": "产品核验信息/商品详情页/27 SUQQUThe Liquid Foundation 粉霜",
+      "storeDisplayName": "SUQQU斯珂旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/suqqu-the-liquid/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/27 SUQQUThe Liquid Foundation 粉霜/3681eddcdb0e4a7f5221e3377e83ad97.jpg",
+          "sha256": "23cd07a22a3339016e98c35f7b58a41ed9eff57cc20dfaaf2bc340e5f0097e15",
+          "sizeBytes": 211445
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/suqqu-the-liquid/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/27 SUQQUThe Liquid Foundation 粉霜/参数信息.png",
+          "sha256": "d75886459a5046b0dcebb4e306112c827db3ea77065347c2edf134744d990727",
+          "sizeBytes": 97663
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/suqqu-the-liquid/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/27SUQQU斯珂旗舰店.jpg",
+          "sha256": "965607c978c0d2dcc90c46bf79b8431138ef57931caf3498d18eed9014331bcb",
+          "sizeBytes": 73663
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/27上海深屹实业集团股份有限公司（SHISEIDO Revitalessence Skin Glow 粉底液）.png",
+        "fileName": "27上海深屹实业集团股份有限公司（SHISEIDO Revitalessence Skin Glow 粉底液）.png"
+      }
+    },
+    "charlotte-tilbury-airbrush": {
+      "sequence": "28",
+      "sourceProductFolder": "产品核验信息/商品详情页/28 Charlotte TilburyAirbrush Flawless Foundation",
+      "storeDisplayName": "CT夏洛特蒂铂丽官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/charlotte-tilbury-airbrush/product-detail-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/28 Charlotte TilburyAirbrush Flawless Foundation/2b48ccda87248875f00682e3680659df.png",
+          "sha256": "0a46d0c806ca92396c2523fd3f45632759980635c8d997dd4337904d413b115f",
+          "sizeBytes": 207115
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/charlotte-tilbury-airbrush/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/28 Charlotte TilburyAirbrush Flawless Foundation/fdc9808697a1b488baae9f1d1ea3c6d1.jpg",
+          "sha256": "0a9a2deb1fe078fd6303fce9b7b4ae51904837f3a4db93d4339cedd28f079adb",
+          "sizeBytes": 80786
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/charlotte-tilbury-airbrush/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/28CT夏洛特蒂铂丽官方旗舰店.jpg",
+          "sha256": "752197601e5abc67edda087a76be6fbb18fff22c3c8d744a0d2561570c95b1ff",
+          "sizeBytes": 64053
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/28夏洛特蒂铂丽(上海)化妆品有限公司（Charlotte Tilbury Airbrush Flawless Foundation）.png",
+        "fileName": "28夏洛特蒂铂丽(上海)化妆品有限公司（Charlotte Tilbury Airbrush Flawless Foundation）.png"
+      }
+    },
+    "fenty-pro-filtr": {
+      "sequence": "29",
+      "sourceProductFolder": "产品核验信息/商品详情页/29 FENTY BEAUTYFan's Red Carpet红毯气垫",
+      "storeDisplayName": "FANBEAUTY官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/fenty-pro-filtr/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/29 FENTY BEAUTYFan's Red Carpet红毯气垫/2e71265a5b255ee2d3480cbb8f9d08e3.jpg",
+          "sha256": "80bbb3b9d388465a1f26512d00cc236b7efef2f2374935e8f9406d02ade23061",
+          "sizeBytes": 79350
+        },
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 2",
+          "publicPath": "/verification/fenty-pro-filtr/product-detail-02.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/29 FENTY BEAUTYFan's Red Carpet红毯气垫/8feb7076a5a9cb607b3847c85e3baf8e.jpg",
+          "sha256": "0fe85cad045891d334fb04d829205753a01dd24c49e5a417e5b00d51f678074f",
+          "sizeBytes": 72307
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/fenty-pro-filtr/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/29 FENTY BEAUTYFan's Red Carpet红毯气垫/参数信息.png",
+          "sha256": "ff90021fbdc74d568f41d94e32c4f6929a45a82a6987c588e5974831e4d20841",
+          "sizeBytes": 129426
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/fenty-pro-filtr/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/29FANBEAUTY官方旗舰店.jpg",
+          "sha256": "2429a4d243bd5b32ee6b854dcd2efb4391b58336d4b0c7322955978ab0f77fe8",
+          "sizeBytes": 60083
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/29杭州清瀚化妆品有限公司（ENTY BEAUTY Fan's Red Carpet红毯气垫）.png",
+        "fileName": "29杭州清瀚化妆品有限公司（ENTY BEAUTY Fan's Red Carpet红毯气垫）.png"
+      }
+    },
+    "hourglass-ambient-soft-glow": {
+      "sequence": "30",
+      "sourceProductFolder": "产品核验信息/商品详情页/30 HOURGLASSAmbient Soft Glow Foundation",
+      "storeDisplayName": "HOURGLASS官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/hourglass-ambient-soft-glow/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/30 HOURGLASSAmbient Soft Glow Foundation/1c8b0ebab8a827c71fe53f9ab36b3140.jpg",
+          "sha256": "17aabe05c912c12927506b0ead1ccfd5858fc1ae3f36d4e0a6fad2645eb11c53",
+          "sizeBytes": 274296
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/hourglass-ambient-soft-glow/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/30 HOURGLASSAmbient Soft Glow Foundation/参数信息.png",
+          "sha256": "ed8e62921ec3782177e693d3d9f8a4302a1545a2ce5060f6388078ac01c7d6a4",
+          "sizeBytes": 177256
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/hourglass-ambient-soft-glow/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/30HOURGLASS官方旗舰店.jpg",
+          "sha256": "33b9764f8126a50ba38ba1740a86b496d903bfb860c0504b000807b866bf8961",
+          "sizeBytes": 60605
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/30优彼利(上海)贸易有限公司（HOURGLASS Ambient Soft Glow Foundation）.png",
+        "fileName": "30优彼利(上海)贸易有限公司（HOURGLASS Ambient Soft Glow Foundation）.png"
+      }
+    },
+    "pat-mcgrath-skin-fetish": {
+      "sequence": "31",
+      "sourceProductFolder": "产品核验信息/商品详情页/31 PAT McGRATH LABSSkin Fetish： Sublime Perfection Foundation",
+      "storeDisplayName": "patmcgrathlabs海外旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/pat-mcgrath-skin-fetish/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/31 PAT McGRATH LABSSkin Fetish： Sublime Perfection Foundation/a3b85f6ffbe90ee8b63ac5bad0e4d5a4.jpg",
+          "sha256": "f2cff51db41458c73a8fa38ad721daff347126909917c707149b2c934484bd62",
+          "sizeBytes": 184442
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/pat-mcgrath-skin-fetish/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/31 PAT McGRATH LABSSkin Fetish： Sublime Perfection Foundation/参数信息.png",
+          "sha256": "9a5d3a9af5620b53594772bd6021f5e91881469a1a583a6c447c4bf16b3bc9ae",
+          "sizeBytes": 124109
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/pat-mcgrath-skin-fetish/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/31patmcgrathlabs海外旗舰店.jpg",
+          "sha256": "30073dab7ac0ead9dd2e89b61f2ca292357f96ca613a052f21c95d3ee82daf17",
+          "sizeBytes": 75963
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/31ABLEVIEW BRANDS LIMITED（PAT McGRATH LABS Skin Fetish Sublime Perfection Foundation）.jpg",
+        "fileName": "31ABLEVIEW BRANDS LIMITED（PAT McGRATH LABS Skin Fetish Sublime Perfection Foundation）.jpg"
+      }
+    },
+    "lancome-is-me-liquid-blush": {
+      "sequence": "32",
+      "sourceProductFolder": "产品核验信息/商品详情页/32 Lancôme是我液体腮红",
+      "storeDisplayName": "Lancome兰蔻官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/lancome-is-me-liquid-blush/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/32 Lancôme是我液体腮红/7e31c7205f28ddc3a5e6cf19cb2faf3f.jpg",
+          "sha256": "d51fbead0e93b18778fb4a79991b82ffc845915e9ece0deac640d8cfb6d2dc76",
+          "sizeBytes": 102093
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/lancome-is-me-liquid-blush/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/32 Lancôme是我液体腮红/参数信息.png",
+          "sha256": "d8b7205bcded7a4038b7da8ff832f984d6a0ca5c32f236ba24f0668d0824a95b",
+          "sizeBytes": 107080
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/lancome-is-me-liquid-blush/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/32Lancome兰蔻官方旗舰店.jpg",
+          "sha256": "5969a5eae41212e03f274932f5ca5b075c391277b30e1a1da51a6652906f0126",
+          "sizeBytes": 60284
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/32欧莱雅(中国)有限公司 （ Lancôme 是我液体腮红）.png",
+        "fileName": "32欧莱雅(中国)有限公司 （ Lancôme 是我液体腮红）.png"
+      }
+    },
+    "lancome-pure-matte-lipstick": {
+      "sequence": "33",
+      "sourceProductFolder": "产品核验信息/商品详情页/33 Lancôme菁纯丝绒雾面唇膏",
+      "storeDisplayName": "Lancome兰蔻官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/lancome-pure-matte-lipstick/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/33 Lancôme菁纯丝绒雾面唇膏/748d0a6edc36705b8e0881dee13c4266.jpg",
+          "sha256": "b6f016633390c6020c8935a5c56de26f2cdb145d917c076e2972acff6adc56dc",
+          "sizeBytes": 129965
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/lancome-pure-matte-lipstick/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/33 Lancôme菁纯丝绒雾面唇膏/参数信息.png",
+          "sha256": "4d36faf86481e523ccf8f32e158ad88158a34da6367e4fbf438052822f046ee4",
+          "sizeBytes": 336553
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/lancome-pure-matte-lipstick/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/33Lancome兰蔻官方旗舰店.jpg",
+          "sha256": "5969a5eae41212e03f274932f5ca5b075c391277b30e1a1da51a6652906f0126",
+          "sizeBytes": 60284
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/33欧莱雅（中国）有限公司（Lancôme 菁纯丝绒雾面唇膏）.png",
+        "fileName": "33欧莱雅（中国）有限公司（Lancôme 菁纯丝绒雾面唇膏）.png"
+      }
+    },
+    "loreal-paris-anti-gravity-mascara": {
+      "sequence": "34",
+      "sourceProductFolder": "产品核验信息/商品详情页/34 L’Oréal Paris反重力睫毛膏",
+      "storeDisplayName": "欧莱雅彩妆官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/loreal-paris-anti-gravity-mascara/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/34 L’Oréal Paris反重力睫毛膏/16c3590eca150f8f9b08bd199d7bc58b.jpg",
+          "sha256": "6973dc0ff27951f330e0031f5f0f57cb108360db952143d8b5d335161fdaff54",
+          "sizeBytes": 69491
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/loreal-paris-anti-gravity-mascara/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/34 L’Oréal Paris反重力睫毛膏/参数信息.png",
+          "sha256": "768adf92de6982c97f8db02d15b28f24bfd14e9d775c6e0ea916a129aa9aa0dc",
+          "sizeBytes": 72898
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/loreal-paris-anti-gravity-mascara/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/34欧莱雅彩妆官方旗舰店.jpg",
+          "sha256": "83c00fb141a3ce8b574b7914314f2d0e595f9caba60806e5fdb827498f7a1c6d",
+          "sizeBytes": 75874
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/34欧莱雅(中国)有限公司苏州分公司（ L’Oréal Paris 反重力睫毛膏）.png",
+        "fileName": "34欧莱雅(中国)有限公司苏州分公司（ L’Oréal Paris 反重力睫毛膏）.png"
+      }
+    },
+    "loreal-paris-single-eyeshadow": {
+      "sequence": "35",
+      "sourceProductFolder": "产品核验信息/商品详情页/35 L’Oréal Paris纷泽口袋眼影",
+      "storeDisplayName": "欧莱雅彩妆官方旗舰店",
+      "publicEvidence": [
+        {
+          "kind": "product_detail",
+          "label": "商品详情证据 1",
+          "publicPath": "/verification/loreal-paris-single-eyeshadow/product-detail-01.jpg",
+          "originalSourcePath": "产品核验信息/商品详情页/35 L’Oréal Paris纷泽口袋眼影/bd7da50a8fb0e52d553e6169b4bca858.jpg",
+          "sha256": "4c6ad498eead013c7a954e03e538b50922da7ab6df1143b66619abb6e52f49d4",
+          "sizeBytes": 209039
+        },
+        {
+          "kind": "parameters",
+          "label": "参数信息证据 1",
+          "publicPath": "/verification/loreal-paris-single-eyeshadow/parameters-01.png",
+          "originalSourcePath": "产品核验信息/商品详情页/35 L’Oréal Paris纷泽口袋眼影/参数信息.png",
+          "sha256": "386aeb94844a60a6f9d9e5d529ddd20cb53ab06962ab8fa1752dcc467c293dba",
+          "sizeBytes": 125937
+        },
+        {
+          "kind": "store_identity",
+          "label": "店铺首页身份线索",
+          "publicPath": "/verification/loreal-paris-single-eyeshadow/store-home.jpg",
+          "originalSourcePath": "产品核验信息/店铺首页截图/35欧莱雅彩妆官方旗舰店.jpg",
+          "sha256": "83c00fb141a3ce8b574b7914314f2d0e595f9caba60806e5fdb827498f7a1c6d",
+          "sizeBytes": 75874
+        }
+      ],
+      "businessQualification": {
+        "status": "archived_internal",
+        "originalSourcePath": "产品核验信息/企业工商资质/35欧莱雅(中国)有限公司苏州分公司（ L’Oréal Paris 纷泽口袋眼影）.png",
+        "fileName": "35欧莱雅(中国)有限公司苏州分公司（ L’Oréal Paris 纷泽口袋眼影）.png"
+      }
+    }
+  }
+}

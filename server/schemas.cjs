@@ -52,7 +52,12 @@ const productRecordSchema = z.object({
   informationSources: z.array(productSourceSchema).max(8),
   imageSource: z.object({
     url: z.string().url().nullable(),
+    sourcePageUrl: z.string().url().max(2000),
+    rightsholder: z.string().trim().min(1).max(200),
     authorizationStatus: z.enum(['pending', 'verified', 'rejected']),
+    acquiredAt: z.string().date(),
+    sourcePriority: z.enum(['brand_official', 'retailer', 'media']),
+    publicUseDecision: z.literal('public_with_source_notice'),
     note: z.string().trim().min(1).max(300),
   }).strict(),
   imageAuthorizationStatus: z.enum(['pending', 'verified', 'rejected']),
