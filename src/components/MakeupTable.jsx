@@ -162,7 +162,6 @@ function BloomProduct({ product, index, total, onOpenProduct }) {
     </button>
   )
 }
-
 export default function MakeupTable({ openingReady = false, onOpenProduct, onViewCategory }) {
   const groups = useMemo(() => getCategoryGroups(), [])
   const [reducedMotion, setReducedMotion] = useState(false)

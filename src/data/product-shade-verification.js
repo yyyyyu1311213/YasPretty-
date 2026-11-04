@@ -237,4 +237,3 @@ export const reviewedProductShades = {
   }),
   'loreal-paris-single-eyeshadow': record(35, [shade('金橘'), shade('暗红')]),
 }
-

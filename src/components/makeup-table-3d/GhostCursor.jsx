@@ -871,4 +871,3 @@ const GhostCursor = ({
 };
 
 export default GhostCursor;
-

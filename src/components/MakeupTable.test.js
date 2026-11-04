@@ -22,4 +22,3 @@ describe('化妆桌品类数据', () => {
     expect(MAX_BLOOM_ITEMS).toBe(5)
   })
 })
-

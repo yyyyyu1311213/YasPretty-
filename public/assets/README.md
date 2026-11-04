@@ -29,4 +29,3 @@ This folder contains the first original brand asset set derived from the project
 - The wordmark SVG uses a system serif stack and does not redistribute a font file.
 - Product cutouts are intentionally excluded. They must be made from individually verified real product images and retain source and authorization records.
 - No generic editorial imagery is included. Add a new image only when it has a specific page role and approved visual direction.
-
