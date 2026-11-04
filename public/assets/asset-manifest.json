@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "brand": "Yas Pretty",
+  "createdAt": "2026-11-03T18:44:35+08:00",
+  "designSource": {
+    "path": "Yas_Pretty 视觉设计素材.docx",
+    "workspacePath": "D:/VScode/yaspretty/Yas_Pretty 视觉设计素材.docx",
+    "sha256": "1A47D7DF075B62CB5F7611A61353BCEEB3E855354029306AA787026771410A0F"
+  },
+  "palette": {
+    "warmIvory": "#F8F3F0",
+    "mistNudePink": "#EAD4D3",
+    "dustyRose": "#D6B9B7",
+    "milkCoffeeBrown": "#B59A8C",
+    "deepCocoa": "#5B4A43"
+  },
+  "provenance": {
+    "originType": "project-original",
+    "creationMethod": "code-authored SVG and deterministic raster export",
+    "thirdPartyVisualSource": null,
+    "authorizationStatus": "self-created",
+    "generator": "OpenAI Codex",
+    "notes": "No third-party logo, illustration, photograph or product packaging was copied. System font fallbacks are referenced but no font file is distributed."
+  },
+  "assets": [
+    {
+      "id": "logo-wordmark-dark",
+      "files": ["logo/yaspretty-wordmark-dark.svg", "logo/yaspretty-wordmark-dark.png"],
+      "type": "logo",
+      "status": "ready"
+    },
+    {
+      "id": "logo-wordmark-light",
+      "files": ["logo/yaspretty-wordmark-light.svg", "logo/yaspretty-wordmark-light.png"],
+      "type": "logo",
+      "status": "ready"
+    },
+    {
+      "id": "logo-monogram",
+      "files": ["logo/yaspretty-monogram.svg", "logo/yaspretty-monogram.png"],
+      "type": "logo",
+      "status": "ready"
+    },
+    {
+      "id": "doodles",
+      "files": [
+        "doodles/lipstick.svg",
+        "doodles/lip-print.svg",
+        "doodles/lip-brush.svg",
+        "doodles/lip-pencil.svg",
+        "doodles/compact.svg",
+        "doodles/powder-puff.svg",
+        "doodles/foundation.svg",
+        "doodles/makeup-brush.svg",
+        "doodles/eye.svg",
+        "doodles/lashes.svg",
+        "doodles/eyeshadow.svg",
+        "doodles/eyeliner.svg",
+        "doodles/petal.svg",
+        "doodles/mirror.svg",
+        "doodles/sparkle.svg",
+        "doodles/brush-swoosh.svg"
+      ],
+      "rasterVariant": "Each SVG has a transparent 1000 x 1000 PNG with the same basename.",
+      "type": "illustration-set",
+      "status": "ready"
+    },
+    {
+      "id": "hero-desktop",
+      "files": ["hero/hero-desktop.svg", "hero/hero-desktop.png", "hero/hero-desktop.jpg"],
+      "dimensions": "2400x1500",
+      "type": "hero-illustration",
+      "status": "ready"
+    },
+    {
+      "id": "hero-mobile",
+      "files": ["hero/hero-mobile.svg", "hero/hero-mobile.png", "hero/hero-mobile.jpg"],
+      "dimensions": "1200x1600",
+      "type": "hero-illustration",
+      "status": "ready"
+    },
+    {
+      "id": "share-cover",
+      "files": ["social/share-cover.svg", "social/share-cover.png"],
+      "dimensions": "1200x630",
+      "type": "social-cover",
+      "status": "ready"
+    },
+    {
+      "id": "verified-product-cutouts",
+      "files": [],
+      "type": "product-cutout",
+      "status": "pending",
+      "reason": "Must be derived from individually verified product images without changing real packaging or product facts."
+    }
+  ]
+}

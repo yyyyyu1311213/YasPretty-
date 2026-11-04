@@ -1,0 +1,184 @@
+{
+  "generatedAt": "2026-11-03T19:11:30.289Z",
+  "sourceCount": 22,
+  "contactSheet": "public/assets/asset-contact-sheet.png",
+  "exports": [
+    {
+      "svg": "public/assets/doodles/brush-swoosh.svg",
+      "png": "public/assets/doodles/brush-swoosh.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/compact.svg",
+      "png": "public/assets/doodles/compact.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/eye.svg",
+      "png": "public/assets/doodles/eye.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/eyeliner.svg",
+      "png": "public/assets/doodles/eyeliner.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/eyeshadow.svg",
+      "png": "public/assets/doodles/eyeshadow.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/foundation.svg",
+      "png": "public/assets/doodles/foundation.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/lashes.svg",
+      "png": "public/assets/doodles/lashes.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/lip-brush.svg",
+      "png": "public/assets/doodles/lip-brush.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/lip-pencil.svg",
+      "png": "public/assets/doodles/lip-pencil.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/lip-print.svg",
+      "png": "public/assets/doodles/lip-print.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/lipstick.svg",
+      "png": "public/assets/doodles/lipstick.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/makeup-brush.svg",
+      "png": "public/assets/doodles/makeup-brush.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/mirror.svg",
+      "png": "public/assets/doodles/mirror.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/petal.svg",
+      "png": "public/assets/doodles/petal.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/powder-puff.svg",
+      "png": "public/assets/doodles/powder-puff.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/doodles/sparkle.svg",
+      "png": "public/assets/doodles/sparkle.png",
+      "width": 1000,
+      "height": 1000,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/hero/hero-desktop.svg",
+      "png": "public/assets/hero/hero-desktop.png",
+      "width": 2400,
+      "height": 1500,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/hero/hero-mobile.svg",
+      "png": "public/assets/hero/hero-mobile.png",
+      "width": 1200,
+      "height": 1600,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/logo/yaspretty-monogram.svg",
+      "png": "public/assets/logo/yaspretty-monogram.png",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/logo/yaspretty-wordmark-dark.svg",
+      "png": "public/assets/logo/yaspretty-wordmark-dark.png",
+      "width": 920,
+      "height": 240,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/logo/yaspretty-wordmark-light.svg",
+      "png": "public/assets/logo/yaspretty-wordmark-light.png",
+      "width": 920,
+      "height": 240,
+      "channels": 4,
+      "hasAlpha": true
+    },
+    {
+      "svg": "public/assets/social/share-cover.svg",
+      "png": "public/assets/social/share-cover.png",
+      "width": 1200,
+      "height": 630,
+      "channels": 4,
+      "hasAlpha": true
+    }
+  ],
+  "allPngsRgba": true
+}

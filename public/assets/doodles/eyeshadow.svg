@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate hand-drawn eyeshadow palette</title>
+  <g stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M201 264C198 230 226 202 260 202H741C775 202 802 230 799 264L764 783C762 817 733 842 699 842H302C268 842 239 817 236 783Z" fill="#F8F3F0" stroke-width="13"/>
+    <path d="M263 309H696V748H263Z" fill="#F8F3F0" stroke="#B59A8C" stroke-width="7"/>
+    <rect x="296" y="342" width="161" height="161" rx="12" fill="#EAD4D3" fill-opacity=".55" stroke-width="8"/>
+    <rect x="503" y="342" width="161" height="161" rx="12" fill="#D6B9B7" fill-opacity=".62" stroke-width="8"/>
+    <rect x="296" y="548" width="161" height="161" rx="12" fill="#B59A8C" fill-opacity=".62" stroke-width="8"/>
+    <rect x="503" y="548" width="161" height="161" rx="12" fill="#66514A" fill-opacity=".82" stroke-width="8"/>
+    <path d="M313 369C351 354 393 353 431 366M522 369C560 354 603 353 639 366M315 575C352 561 394 560 431 574" fill="none" stroke="#F8F3F0" stroke-width="7" opacity=".55"/>
+    <path d="M737 344V699M716 615L751 590L766 633L727 660Z" fill="#EAD4D3" fill-opacity=".7" stroke-width="8"/>
+  </g>
+</svg>

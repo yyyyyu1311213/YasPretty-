@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate hand-drawn lip brush</title>
+  <g fill="none" stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M217 810L642 385" stroke-width="13"/>
+    <path d="M171 850L218 803L284 869L237 916C210 939 150 880 171 850Z" fill="#B59A8C" fill-opacity=".78" stroke-width="13"/>
+    <path d="M642 385L702 325L773 396L713 456Z" fill="#D6B9B7" fill-opacity=".62" stroke-width="13"/>
+    <path d="M702 325C739 258 792 181 853 137C839 218 810 315 773 396" fill="#EAD4D3" fill-opacity=".62" stroke-width="13"/>
+    <path d="M726 325C760 273 800 220 835 185M251 785C357 707 462 602 569 480" stroke="#B59A8C" stroke-width="5" opacity=".6"/>
+    <path d="M132 446C250 345 352 337 466 405C553 456 608 455 681 414" stroke="#D6B9B7" stroke-width="15" opacity=".45"/>
+    <path d="M135 469C251 375 349 370 453 429" stroke="#B59A8C" stroke-width="5" opacity=".58"/>
+  </g>
+</svg>

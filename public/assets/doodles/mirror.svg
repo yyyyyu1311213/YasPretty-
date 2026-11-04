@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate ribbon hand mirror</title>
+  <g fill="none" stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="500" cy="346" rx="216" ry="251" fill="#F8F3F0" stroke-width="13"/>
+    <ellipse cx="500" cy="346" rx="183" ry="215" fill="#EAD4D3" fill-opacity=".12" stroke="#B59A8C" stroke-width="7"/>
+    <path d="M500 598V793C500 830 470 858 434 858H414" stroke-width="13"/>
+    <path d="M500 774C437 731 379 734 354 779C387 817 439 821 500 789C561 821 613 817 646 779C621 734 563 731 500 774Z" fill="#EAD4D3" fill-opacity=".5" stroke-width="11"/>
+    <path d="M500 791C470 851 440 887 406 904M500 791C529 851 560 887 594 904" stroke-width="10"/>
+    <path d="M376 251C418 197 478 171 543 177M345 343C376 272 423 225 482 199" stroke="#D6B9B7" stroke-width="6" opacity=".6"/>
+    <path d="M717 519C746 503 774 505 800 521" stroke="#B59A8C" stroke-width="5" opacity=".5"/>
+  </g>
+</svg>

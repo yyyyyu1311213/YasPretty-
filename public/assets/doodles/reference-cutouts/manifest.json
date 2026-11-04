@@ -1,0 +1,699 @@
+{
+  "generatedAt": "2026-11-03T22:34:31.279047+08:00",
+  "folder": "public/assets/doodles/reference-cutouts",
+  "sourceNote": "Cutouts made from four user-provided reference sheets. Source permission and reuse status remain pending.",
+  "count": 46,
+  "contactSheet": "public/assets/doodles/reference-cutouts/contact-sheet.png",
+  "assets": [
+    {
+      "id": "catalog-lipstick",
+      "file": "public/assets/doodles/reference-cutouts/catalog-lipstick.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        90,
+        53,
+        161,
+        143
+      ],
+      "width": 71,
+      "height": 90,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-lip-liner",
+      "file": "public/assets/doodles/reference-cutouts/catalog-lip-liner.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        178,
+        51,
+        278,
+        143
+      ],
+      "width": 100,
+      "height": 92,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-lip-tint",
+      "file": "public/assets/doodles/reference-cutouts/catalog-lip-tint.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        293,
+        52,
+        378,
+        143
+      ],
+      "width": 85,
+      "height": 91,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-lips",
+      "file": "public/assets/doodles/reference-cutouts/catalog-lips.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        394,
+        53,
+        494,
+        143
+      ],
+      "width": 100,
+      "height": 90,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-foundation",
+      "file": "public/assets/doodles/reference-cutouts/catalog-foundation.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        88,
+        163,
+        163,
+        263
+      ],
+      "width": 71,
+      "height": 100,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-powder",
+      "file": "public/assets/doodles/reference-cutouts/catalog-powder.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        181,
+        164,
+        275,
+        263
+      ],
+      "width": 94,
+      "height": 99,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-brush",
+      "file": "public/assets/doodles/reference-cutouts/catalog-brush.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        297,
+        163,
+        376,
+        263
+      ],
+      "width": 74,
+      "height": 100,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-base-swatch",
+      "file": "public/assets/doodles/reference-cutouts/catalog-base-swatch.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        394,
+        172,
+        492,
+        257
+      ],
+      "width": 98,
+      "height": 85,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-mascara",
+      "file": "public/assets/doodles/reference-cutouts/catalog-mascara.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        88,
+        275,
+        164,
+        375
+      ],
+      "width": 76,
+      "height": 100,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-eyeshadow",
+      "file": "public/assets/doodles/reference-cutouts/catalog-eyeshadow.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        181,
+        280,
+        276,
+        375
+      ],
+      "width": 95,
+      "height": 95,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-eyeliner",
+      "file": "public/assets/doodles/reference-cutouts/catalog-eyeliner.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        296,
+        274,
+        378,
+        376
+      ],
+      "width": 82,
+      "height": 102,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-eye-look",
+      "file": "public/assets/doodles/reference-cutouts/catalog-eye-look.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        394,
+        280,
+        495,
+        373
+      ],
+      "width": 101,
+      "height": 89,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-star",
+      "file": "public/assets/doodles/reference-cutouts/catalog-star.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        87,
+        397,
+        174,
+        474
+      ],
+      "width": 87,
+      "height": 77,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-flower",
+      "file": "public/assets/doodles/reference-cutouts/catalog-flower.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        180,
+        395,
+        280,
+        475
+      ],
+      "width": 94,
+      "height": 80,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-heart",
+      "file": "public/assets/doodles/reference-cutouts/catalog-heart.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        297,
+        396,
+        382,
+        473
+      ],
+      "width": 80,
+      "height": 74,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "catalog-y-logo",
+      "file": "public/assets/doodles/reference-cutouts/catalog-y-logo.png",
+      "source": "codex-clipboard-3d9191ef-4c92-48db-a4cf-8a2ccb929eff.png",
+      "crop": [
+        402,
+        392,
+        497,
+        474
+      ],
+      "width": 91,
+      "height": 76,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-brush",
+      "file": "public/assets/doodles/reference-cutouts/tools-brush.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        76,
+        48,
+        330,
+        377
+      ],
+      "width": 250,
+      "height": 326,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-mirror",
+      "file": "public/assets/doodles/reference-cutouts/tools-mirror.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        362,
+        42,
+        704,
+        382
+      ],
+      "width": 285,
+      "height": 332,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-powder-puff",
+      "file": "public/assets/doodles/reference-cutouts/tools-powder-puff.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        691,
+        42,
+        1003,
+        372
+      ],
+      "width": 292,
+      "height": 260,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-blotting-paper",
+      "file": "public/assets/doodles/reference-cutouts/tools-blotting-paper.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        64,
+        392,
+        323,
+        671
+      ],
+      "width": 256,
+      "height": 260,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-eyelash-curler",
+      "file": "public/assets/doodles/reference-cutouts/tools-eyelash-curler.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        381,
+        388,
+        645,
+        680
+      ],
+      "width": 257,
+      "height": 285,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-sponge",
+      "file": "public/assets/doodles/reference-cutouts/tools-sponge.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        701,
+        389,
+        1000,
+        681
+      ],
+      "width": 281,
+      "height": 261,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-bottle",
+      "file": "public/assets/doodles/reference-cutouts/tools-bottle.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        83,
+        677,
+        288,
+        1017
+      ],
+      "width": 205,
+      "height": 297,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-lipstick",
+      "file": "public/assets/doodles/reference-cutouts/tools-lipstick.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        399,
+        675,
+        645,
+        1017
+      ],
+      "width": 246,
+      "height": 342,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "tools-perfume",
+      "file": "public/assets/doodles/reference-cutouts/tools-perfume.png",
+      "source": "codex-clipboard-cc9d913f-c56c-4130-b41b-b40d01cc754b.jpg",
+      "crop": [
+        734,
+        678,
+        1011,
+        1017
+      ],
+      "width": 274,
+      "height": 309,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-rose",
+      "file": "public/assets/doodles/reference-cutouts/mood-rose.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        58,
+        37,
+        313,
+        383
+      ],
+      "width": 242,
+      "height": 321,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-branch",
+      "file": "public/assets/doodles/reference-cutouts/mood-branch.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        382,
+        28,
+        650,
+        389
+      ],
+      "width": 234,
+      "height": 360,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-coffee",
+      "file": "public/assets/doodles/reference-cutouts/mood-coffee.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        700,
+        40,
+        991,
+        365
+      ],
+      "width": 268,
+      "height": 313,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-open-book",
+      "file": "public/assets/doodles/reference-cutouts/mood-open-book.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        30,
+        418,
+        350,
+        661
+      ],
+      "width": 320,
+      "height": 216,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-ribbon",
+      "file": "public/assets/doodles/reference-cutouts/mood-ribbon.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        360,
+        405,
+        694,
+        664
+      ],
+      "width": 326,
+      "height": 250,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-candle",
+      "file": "public/assets/doodles/reference-cutouts/mood-candle.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        735,
+        397,
+        1003,
+        686
+      ],
+      "width": 251,
+      "height": 254,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-vase",
+      "file": "public/assets/doodles/reference-cutouts/mood-vase.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        50,
+        671,
+        304,
+        1007
+      ],
+      "width": 223,
+      "height": 308,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-window",
+      "file": "public/assets/doodles/reference-cutouts/mood-window.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        366,
+        672,
+        663,
+        1007
+      ],
+      "width": 278,
+      "height": 310,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "mood-scarf",
+      "file": "public/assets/doodles/reference-cutouts/mood-scarf.png",
+      "source": "codex-clipboard-73c9e911-c472-44a9-a44e-ca922312d6b1.png",
+      "crop": [
+        683,
+        680,
+        1012,
+        1016
+      ],
+      "width": 303,
+      "height": 289,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-sparkles",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-sparkles.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        53,
+        137,
+        223,
+        322
+      ],
+      "width": 167,
+      "height": 180,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-heart",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-heart.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        287,
+        143,
+        472,
+        333
+      ],
+      "width": 162,
+      "height": 169,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-bow",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-bow.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        523,
+        120,
+        758,
+        354
+      ],
+      "width": 230,
+      "height": 206,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-pearl-necklace",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-pearl-necklace.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        764,
+        126,
+        1008,
+        337
+      ],
+      "width": 202,
+      "height": 196,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-brush-stroke",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-brush-stroke.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        25,
+        402,
+        265,
+        602
+      ],
+      "width": 225,
+      "height": 190,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-swoosh",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-swoosh.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        270,
+        414,
+        510,
+        621
+      ],
+      "width": 231,
+      "height": 183,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-blush-blobs",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-blush-blobs.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        523,
+        405,
+        751,
+        632
+      ],
+      "width": 209,
+      "height": 209,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-powder-cloud",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-powder-cloud.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        766,
+        397,
+        1014,
+        638
+      ],
+      "width": 224,
+      "height": 197,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-dots",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-dots.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        56,
+        662,
+        260,
+        863
+      ],
+      "width": 162,
+      "height": 196,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-scribble",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-scribble.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        264,
+        679,
+        520,
+        900
+      ],
+      "width": 248,
+      "height": 112,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-flower",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-flower.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        526,
+        649,
+        789,
+        920
+      ],
+      "width": 208,
+      "height": 230,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    },
+    {
+      "id": "ornaments-rings",
+      "file": "public/assets/doodles/reference-cutouts/ornaments-rings.png",
+      "source": "codex-clipboard-f5b59b6c-f12c-49d8-a7ae-821f12a4ac48.png",
+      "crop": [
+        765,
+        648,
+        1010,
+        916
+      ],
+      "width": 212,
+      "height": 212,
+      "channels": 4,
+      "authorizationStatus": "pending-user-provided-reference"
+    }
+  ]
+}

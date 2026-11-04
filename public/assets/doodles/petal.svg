@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate blush flower</title>
+  <g stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M487 814C492 678 494 552 498 430" fill="none" stroke-width="11"/>
+    <path d="M492 647C409 610 342 563 294 501C394 483 462 525 497 600" fill="#B59A8C" fill-opacity=".25" stroke-width="9"/>
+    <path d="M496 717C577 679 645 631 696 567C596 552 531 594 496 669" fill="#B59A8C" fill-opacity=".25" stroke-width="9"/>
+    <path d="M500 439C392 415 336 327 373 236C452 248 494 301 500 375C506 301 550 248 629 237C664 330 607 414 500 439Z" fill="#EAD4D3" fill-opacity=".58" stroke-width="11"/>
+    <path d="M500 438C421 480 331 451 290 373C351 318 421 326 478 380C446 307 471 236 538 200C604 264 590 354 500 438Z" fill="#EAD4D3" fill-opacity=".42" stroke-width="11"/>
+    <path d="M500 437C574 486 667 462 714 389C659 328 584 329 521 381" fill="#D6B9B7" fill-opacity=".36" stroke-width="11"/>
+    <circle cx="500" cy="435" r="27" fill="#B59A8C" stroke-width="8"/>
+    <path d="M397 267C424 292 444 328 454 369M603 269C575 294 555 329 545 369M346 384C385 390 420 405 451 430" fill="none" stroke="#B59A8C" stroke-width="5" opacity=".52"/>
+  </g>
+</svg>

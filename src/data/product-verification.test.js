@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { products } from './products.js'
+import { reviewedProductShades } from './product-shade-verification.js'
 import {
   buildProductAssessment,
   evidenceSync,
@@ -78,6 +79,49 @@ describe('product verification records', () => {
     })
     expect(productVerificationRecords['suqqu-the-liquid'].reviewedFacts.origin).toBeNull()
     expect(productVerificationRecords['suqqu-the-liquid'].reviewedFacts.originStatus).toBe('not_listed_in_parameter_screenshot')
+  })
+
+  it('uses normalized parameter-screenshot shades only when product identity is not conflicted', () => {
+    expect(Object.keys(reviewedProductShades)).toHaveLength(35)
+
+    products.forEach((product) => {
+      const reviewed = reviewedProductShades[product.id]
+      expect(reviewed).toBeTruthy()
+      expect(reviewed.sequence).toMatch(/^\d{2}$/)
+      expect(reviewed.reviewedAt).toBe('2026-11-03')
+      expect(reviewed.source.workbookSheet).toBe('淘宝人工核验')
+      expect(reviewed.source.workbookNameCell).toMatch(/^C(?:[6-9]|[1-3]\d|40)$/)
+      expect(reviewed.shades.length).toBeGreaterThan(0)
+      expect(new Set(reviewed.shades.map((shade) => shade.name)).size).toBe(reviewed.shades.length)
+      expect(product.shadeRecommendationReady).toBe(reviewed.status === 'verified_parameter_screenshot')
+      expect(productVerificationRecords[product.id].reviewedShades.evidence.length).toBeGreaterThan(0)
+
+      if (reviewed.applyToCatalog) {
+        expect(product.shades).toEqual(reviewed.shades)
+      } else {
+        expect(reviewed.status).toBe('product_identity_conflict')
+        expect(reviewed.issues.length).toBeGreaterThan(0)
+      }
+    })
+
+    expect(Object.values(reviewedProductShades).filter((item) => item.status === 'product_identity_conflict')).toHaveLength(0)
+    expect(Object.values(reviewedProductShades).filter((item) => item.status === 'verified_parameter_screenshot')).toHaveLength(32)
+    expect(Object.values(reviewedProductShades).filter((item) => item.status === 'marketplace_variant_only')).toHaveLength(3)
+    expect(Object.values(reviewedProductShades).every((item) => item.applyToCatalog)).toBe(true)
+    expect(reviewedProductShades['loreal-paris-anti-gravity-mascara'].shades[0].verificationStatus).toBe('not_listed_in_parameter_screenshot')
+    expect(reviewedProductShades['loreal-paris-anti-gravity-mascara'].status).toBe('marketplace_variant_only')
+    expect(reviewedProductShades['laura-mercier-translucent'].status).toBe('marketplace_variant_only')
+    expect(reviewedProductShades['make-up-for-ever-hd'].status).toBe('marketplace_variant_only')
+  })
+
+  it('assigns swatch colors to Chinese-labeled shades only', () => {
+    const allShades = Object.values(reviewedProductShades).flatMap((item) => item.shades)
+    const chineseShades = allShades.filter((shade) => /[\u3400-\u9fff]/.test(shade.name) && shade.verificationStatus === 'verified_parameter_screenshot')
+    const nonChineseShades = allShades.filter((shade) => !/[\u3400-\u9fff]/.test(shade.name))
+
+    expect(chineseShades.length).toBeGreaterThan(0)
+    expect(chineseShades.every((shade) => shade.swatchColor)).toBe(true)
+    expect(nonChineseShades.every((shade) => !shade.swatchColor)).toBe(true)
   })
 
   it('labels parameter-based assessments as editorial rather than independent tests', () => {

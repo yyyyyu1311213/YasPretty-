@@ -12,10 +12,8 @@ const {
   assistantRequestSchema,
   makeupPlanRequestSchema,
   makeupPlanResponseSchema,
-  weatherQuerySchema,
 } = require('./schemas.cjs')
 const { createZhipuProvider } = require('./providers/zhipu-provider.cjs')
-const { createOpenMeteoProvider } = require('./providers/open-meteo-provider.cjs')
 const { createAssistantService } = require('./services/assistant-service.cjs')
 const { createMakeupPlanService } = require('./services/makeup-plan-service.cjs')
 
@@ -107,9 +105,6 @@ async function buildApp(options = {}) {
     model: config.zhipuModel,
     timeoutMs: config.upstreamTimeoutMs,
   })
-  const weatherProvider = options.providers?.weather || createOpenMeteoProvider({
-    timeoutMs: config.upstreamTimeoutMs,
-  })
   const assistantService = createAssistantService({ zhipuProvider, products })
   const makeupPlanService = createMakeupPlanService({ zhipuProvider, products })
   const dailyQuota = createDailyQuota(config.aiDailyLimit)
@@ -168,17 +163,8 @@ async function buildApp(options = {}) {
     status: 'ready',
     services: {
       assistant: Boolean(zhipuProvider.configured),
-      weather: true,
     },
   }))
-
-  app.get('/api/weather', {
-    config: { rateLimit: { max: config.apiRateLimitMax, timeWindow: '1 minute' } },
-  }, async (request) => {
-    const { city } = parseInput(weatherQuerySchema, request.query)
-    const weather = await weatherProvider.lookup(city)
-    return { ok: true, ...weather }
-  })
 
   app.post('/api/assistant', {
     config: { rateLimit: { max: config.aiRateLimitMax, timeWindow: '1 minute' } },

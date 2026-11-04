@@ -1,6 +1,6 @@
 # YasPretty 提交、版本与问题追踪规范
 
-最后更新：2026-10-28（北京时间）
+最后更新：2026-11-02（北京时间）
 
 ## 目的
 
@@ -46,58 +46,30 @@ release/2026-10-28-stage-2
 
 ## 提交信息规范
 
-采用 Conventional Commits，并要求正文说明范围和验证：
+自 2026-11-02 本规范更新后，所有新提交标题统一使用以下单行格式：
 
 ```text
-<type>(<scope>): <短句>
-
-Why:
-- 为什么需要这次改动。
-
-What:
-- 实际修改了哪些模块。
-
-Verification:
-- 运行了什么命令或手工验证。
-- 结果是什么。
-
-Risk:
-- 未实现内容、降级行为和剩余风险。
+【问题】{问题描述} 【修改】{变更内容}
 ```
 
-允许的 `type`：
+字段要求：
 
-| type | 用途 |
-| --- | --- |
-| `feat` | 新增用户可用能力 |
-| `fix` | 修复已确认的问题 |
-| `docs` | 只修改文档或记录 |
-| `test` | 新增或修正测试 |
-| `refactor` | 不改变外部行为的结构调整 |
-| `chore` | 工具、依赖和工程维护 |
-| `security` | 密钥、隐私、权限或安全边界修正 |
+- `【问题】` 只客观描述 bug、隐患、缺陷、数据冲突、体验问题或不合理之处，不在该字段提前写解决方案。
+- `【修改】` 只说明本次代码、数据或文档实际改变了什么，并与前面的一个问题直接对应。
+- 一个提交只解决一个完整问题；无关修改必须拆分提交。
+- 文档、测试、数据、样式、安全和配置修改同样使用这一格式，不加 `feat:`、`fix:`、`docs:`、`chore:` 或英文 scope。
+- 没有完成的能力不得使用“完成”“上线”“全部修复”等表述，应准确写成“增加门禁”“标记待核验”“接入本地降级”等实际动作。
+- 提交标题必须与 `git diff --cached` 一致，不写入暂存区没有包含的变更。
 
 示例：
 
 ```text
-feat(stage-2): add validated makeup plan fallback
-
-Why:
-- 让没有模型 Key 时仍能生成完整的本地方案。
-
-What:
-- 新增 UserProfile、MakeupRequest、MakeupPlan schema。
-- 增加候选 evidence 和 7 步本地模板。
-
-Verification:
-- npm run check
-- POST /api/makeup-plans 返回 7 步方案。
-
-Risk:
-- 产品价格、图片和外部事实仍待核验。
+【问题】模型不可用时结构化妆容方案无法生成 【修改】增加候选证据校验和七步本地降级模板
+【问题】产品信息缺少来源和核验状态 【修改】补充产品来源字段、核验日期和公开状态
+【问题】产品购买链接来源不统一 【修改】增加淘宝天猫官方旗舰店链接门禁
 ```
 
-一次提交只解决一个完整问题。不要把“数据核验、UI 重做、依赖升级和无关重构”混成一个不可审查的大提交。
+历史提交中已经存在 Conventional Commits 和英文标题。它们作为真实历史保留，不通过 rebase、force push 或改写提交伪造旧记录；新格式只约束本规范生效后的提交。
 
 ## 提交前门禁
 
@@ -202,7 +174,7 @@ npm audit --registry=https://registry.npmjs.org
 git add .
 git diff --cached --stat
 git diff --cached --name-only
-git commit -m "chore(repo): establish auditable project baseline"
+git commit -m "【问题】项目缺少可恢复的代码基线 【修改】建立阶段二可审计代码基线"
 git tag -a v0.3.0-stage-2 -m "YasPretty stage 2 structured makeup plan baseline"
 ```
 

@@ -7,15 +7,16 @@ YasPretty 是一个面向普通消费者的个性化美妆决策项目。当前�
 ## 当前真实能力
 
 - React + Vite 单页主站。
+- 首页使用项目原创本地 Hero、字标与一次性品牌开幕；品牌开幕结束后提供可操作的 3D 化妆桌，WebGL 不可用时回退到 2D 品类桌，并支持跳过和减少动效偏好。
 - 35 条彩妆资料：22 款粉底液、3 款气垫、3 款遮瑕、3 款散粉，以及阶段 3 新增的腮红、唇妆、睫毛膏和眼影资料。
 - 35 张按稳定产品 ID 落位的 WebP 封面图；详情页展示逐张来源、权利人、采集日期、授权待核验状态和联系删除入口。
 - 35 个可深链接访问的完整产品核验档案；111 份商品详情、参数和店铺截图按产品 ID 映射并记录 SHA-256，企业资质原图仅作内部留档。
 - 搜索、肤质/妆效/遮瑕力/价格等筛选、排序和产品详情。
 - 浏览器本地收藏及“想买 / 正在用 / 会回购”状态。
 - 集成在主站中的小Y页面。
-- 小Y的本地规则推荐、Open-Meteo 天气查询，以及由服务端编排的可选智谱对话和联网搜索。
+- 小Y的本地规则推荐，以及由服务端 `intentRouter` 编排的智谱对话和联网搜索；产品库之外的问题统一从 `/api/assistant` 路由，不再单列天气模块。
 - Fastify API 网关：服务端密钥、Zod schema、64 KiB 请求限制、超时、有限重试、每 IP 限流、单进程每日额度、安全头和脱敏日志。
-- 32 项 Vitest 测试，覆盖小Y规则、网关、智谱 provider、结构化方案、阶段 3 品类候选、产品证据文件、人工核验字段与淘宝/天猫商品链接门禁。
+- 47 项 Vitest 测试，覆盖小Y规则、统一意图路由、网关、智谱 provider、结构化方案、阶段 3 品类候选、产品证据文件、人工核验字段、淘宝/天猫商品链接门禁、品牌开幕、导航历史和 3D 化妆桌性能档位，并验证独立天气接口已下线。
 - Windows 启动脚本和可通过的 Vite 生产构建。
 
 以下能力尚未实现，不能在参赛材料或演示中描述为已完成：
@@ -28,11 +29,11 @@ YasPretty 是一个面向普通消费者的个性化美妆决策项目。当前�
 
 ## 数据与素材状态
 
-当前 35 条产品数据均已补齐图片来源状态字段，封面统一位于 `public/products/<产品 ID>/cover.webp`。23 张来源于品牌官网页面、11 张来源于零售商页面、1 张来源于媒体页面；全部 `authorizationStatus` 仍为 `pending`。根据项目负责人 2026-10-29 确认的参赛策略，代码将公开状态记录为 `public_with_source_notice_pending_authorization`，页面同时展示来源与联系删除说明；这不等于已经取得授权。
+当前 35 条产品封面统一位于 `public/products/<产品 ID>/cover.webp`，且全部 `authorizationStatus` 仍为 `pending`。截至 2026-11-02，33 张保留原始网页来源并按“来源披露、授权待核验”策略展示；FENTY BEAUTY 红毯气垫和 L’Oréal Paris 纷泽口袋眼影的替换图由项目负责人通过本地附件提供，但未附原始网页 URL，因此状态为 `blocked_missing_original_image_source`，只作内部核验展示。来源备注与联系删除机制不等于取得授权。
 
 产品核验档案将 `产品核验信息/` 中的商品详情、参数和店铺截图同步到 `public/verification/<产品 ID>/`，生成文件清单、原始相对路径、大小和 SHA-256。当前 35/35 条产品具有详情证据、参数证据组和店铺截图，35/35 企业资质文件保持内部索引。`YasPretty-35款产品淘宝人工核验表.xlsx` 的 `淘宝人工核验!A6:S40` 已记录并完成复核：35/35 产品名称、官方或海外旗舰店身份、公司、商品匹配、规格、原价、淘宝商品链接、核验日期和完成状态已导入；工作簿没有店铺首页 URL，代码没有猜测或补造该字段。
 
-页面中的 `rating` 是编辑示例维度，没有真实用户样本或统计来源，不得表述为用户评分、口碑统计或平台大数据。35/35 条人工核验记录已提供商品原价与规格，34/35 条参数截图可确认产地；SUQQU 参数截图未列产地，因此该字段继续明确显示为未核验。肤质、妆效、遮瑕、持妆、氧化和推荐评价仍是 YasPretty 编辑判断或待独立实测，不得冒充品牌结论或人体测试结果。首页仍使用 Unsplash 通用美妆背景图，正式公开前同样需要保留来源与许可证说明。
+页面中的 `rating` 是编辑示例维度，没有真实用户样本或统计来源，不得表述为用户评分、口碑统计或平台大数据。35/35 条人工核验记录已提供商品原价与规格，34/35 条参数截图可确认产地；SUQQU 参数截图未列产地，因此该字段继续明确显示为未核验。肤质、妆效、遮瑕、持妆、氧化和推荐评价仍是 YasPretty 编辑判断或待独立实测，不得冒充品牌结论或人体测试结果。首页 Hero、字标和手绘装饰来自 `public/assets/` 的项目原创素材集，创建方式与状态记录在 `asset-manifest.json`。
 
 详见 [阶段交付与测试报告](docs/stage-delivery-test-report.md)、[阶段 0 基线](docs/phase-0-baseline.md) 和 [产品图片采集规则](docs/product-image-collection.md)。
 
@@ -75,7 +76,7 @@ npm start
 
 `.env.example` 只提供无密钥模板。需要启用智谱能力时，在本机创建被 Git 忽略的 `.env`，由维护者配置 `ZHIPU_API_KEY`；普通用户界面不会显示或接收第三方 Key。模型、超时、每分钟限制和每日额度也由服务端环境变量控制。
 
-`server/key.txt` 和浏览器 Authorization 兼容路径已经退出主流程。小Y首次加载时会删除两个旧版本的浏览器 AI 配置键，避免遗留 Key 继续保存在 `localStorage`。没有服务端 Key 时，健康检查会将 AI 标为未配置，产品浏览、本地规则推荐和天气查询仍可使用；智谱对话和联网检索返回明确降级错误。
+`server/key.txt` 和浏览器 Authorization 兼容路径已经退出主流程。小Y首次加载时会删除两个旧版本的浏览器 AI 配置键，避免遗留 Key 继续保存在 `localStorage`。没有服务端 Key 时，健康检查会将 AI 标为未配置，产品浏览和本地规则推荐仍可使用；产品库之外的通用问题和联网检索返回明确降级错误。
 
 仓库曾发现一枚写在旧版 HTML 中的凭据，现已从文件移除。项目负责人仍须在智谱控制台吊销并轮换它，因为从工作区删除不能证明该凭据从未被复制或使用。
 
@@ -92,6 +93,7 @@ npm start
 
 ```text
 src/App.jsx                       主站、产品库、详情与收藏
+src/components/BrandOpening.jsx  一次性品牌开幕、跳过与减少动效处理
 src/components/XiaoYAssistant.jsx 小Y界面、本地规则与 YasPretty API 调用
 src/lib/xiaoy-storage.js          版本化匿名画像、对话与旧 Key 清理
 src/data/products.js              当前 35 条受控彩妆资料与来源状态
@@ -100,11 +102,12 @@ src/data/product-verification.js 产品核验状态、链接门禁和参数解�
 src/data/product-verification.generated.js 核验证据路径、大小与 SHA-256 生成清单
 src/data/product-verification.reviewed.js 人工核验表的规范化商品事实与单元格追溯
 public/products/                  按稳定产品 ID 存放的 WebP 产品封面
+public/assets/                    项目原创字标、Hero 和手绘素材及来源清单
 public/verification/              按稳定产品 ID 存放的网页证据副本和清单
 scripts/sync-product-verification.mjs 从原始核验目录重复生成网页证据
 server/fishtalk-server.cjs        Fastify 网关启动入口
 server/app.cjs                    API、安全控制、限流与同源静态服务
-server/providers/                 智谱和 Open-Meteo 适配器
+server/providers/                 智谱和外部检索适配器
 server/services/                  服务端智能体编排
 docs/phase-0-baseline.md          安全扫描、功能与构建基线
 docs/phase-1-ai-gateway.md        阶段 1 架构、测试与风险记录
@@ -116,10 +119,14 @@ beauty-assistant.html             旧独立页备份，不继续扩展
 ## 第三方能力披露
 
 - React、React DOM、Vite、Lucide React 和 concurrently。
+- 交互式化妆桌使用 Three.js、React Three Fiber、Drei、GSAP 与 Framer Motion；Three.js/R3F/Drei/Framer Motion 为 MIT，GSAP 使用 Standard "no charge" license。3D 场景按需加载，全部妆具由基础几何体生成，不包含 GLB、远程贴图或第三方产品模型。
 - Fastify、Zod、`@fastify/helmet`、`@fastify/rate-limit`、`@fastify/static`、dotenv 和 Vitest；除 dotenv 为 BSD-2-Clause 外，其余这些新增依赖为 MIT 许可证。
 - 智谱 GLM 与 `web-search-pro`：可选的语言模型和联网检索，只通过服务端 provider 调用。
-- Open-Meteo：天气与地理编码。
-- Unsplash：首页通用美妆背景图来源；产品卡不再使用 Unsplash 占位图。
+- 外部检索：通过智谱 `web-search-pro` 按意图路由按需调用并披露来源。
+- 笔画文字动效：参考 React Bits `StrokeText` 的 SVG 分层结构（[源码](https://github.com/DavidHDev/react-bits/tree/main/src/content/TextAnimations/StrokeText)，[许可证](https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md)，MIT + Commons Clause，检索于 2026-11-04）；`src/components/StrokeText.jsx` 为不依赖 GSAP 的本地 CSS/IntersectionObserver 适配，未引入 React Bits 的运行时依赖。
+- 化妆桌幽灵光标：使用 React Bits `GhostCursor` 的 WebGL 烟雾实现（[组件说明与源码](https://reactbits.dev/components/ghost-cursor)，[上游仓库](https://github.com/DavidHDev/react-bits)，[许可证](https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md)，MIT + Commons Clause，代码接入于 2026-11-04）；本地仅调整颜色、粒子预算、移动端性能参数和化妆桌显示生命周期，源码位于 `src/components/makeup-table-3d/GhostCursor.jsx`。
+- YasPretty 原创品牌素材：首页 Hero、字标和手绘元素由项目视觉规范衍生并以代码绘制，来源与创建方式见 `public/assets/asset-manifest.json`。
+- 3D 化妆桌视觉参考：项目负责人于 2026-11-04 提供两张粉色手绘妆台/妆具参考图，仅用于构图、品类与色彩方向；原图不进入生产包，不作为产品图片，也不宣称由项目创作或已获再利用授权。
 - 产品封面：23 张来自品牌官网页面、11 张来自零售商页面、1 张来自媒体页面；逐张链接见产品详情，授权状态均为待核验。
 - MediaPipe：规划中的浏览器端视觉能力，当前尚未接入。
 
@@ -132,6 +139,8 @@ beauty-assistant.html             旧独立页备份，不继续扩展
 产品核验档案补充复验（2026-11-01，北京时间，`YAS-2026-0012`）：`npm test` 为 4 个测试文件、31/31 通过；`npm run build` 通过，Vite 转换 1791 个模块。桌面 1440px 和手机 390px 已检查产品深链接、参数表、编辑解读和证据列表。淘宝/天猫商品链接仍为 0/35 已核验，产品事实与图片授权状态没有因本次接入而升级。
 
 人工核验表导入复验（2026-11-01，北京时间，`YAS-2026-0013`）：`npm run check` 通过，包含 4 个测试文件、32/32 项和 Vite 生产构建，构建转换 1792 个模块；`git diff --check` 通过。35/35 条核验表记录已导入名称、店铺身份、公司、商品匹配、规格、价格、商品链接、日期和状态，34/35 条产地由参数截图确认。Chrome 桌面 1440 × 3000、手机 390 × 3000 和产品深链接 HTTP 200 已复验。SUQQU 产地、FENTY 封面来源匹配及全部产品图片授权仍保留为可见风险。
+
+GitHub 同步前复验（2026-11-04，北京时间，`YAS-2026-0024`）：`npm run check` 通过，包含 8 个测试文件、47/47 项和 Vite 生产构建，构建转换 2789 个模块；`git diff --check` 通过。构建仍提示 3D 异步块约 1.21 MB，`npm audit` 仍报告 `@fastify/static -> glob/minimatch` 依赖链中的 3 个中等级漏洞；两项均已记录为后续风险，不表述为已解决。
 
 旧 `server/test-memory.cjs` 已归档，它会清空本地记忆且依赖已退出主流程的 `/memory`，不属于当前测试套件。
 

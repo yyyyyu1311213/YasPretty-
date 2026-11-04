@@ -1,0 +1,114 @@
+.stroke-text {
+  --stroke-color: currentColor;
+  --fill-color: currentColor;
+  --stroke-width: 1.4;
+  --draw-duration: 1.6s;
+  --fill-delay: .2s;
+  --stroke-start-delay: 0s;
+  --stagger: .05s;
+  --stroke-ease: cubic-bezier(.22, 1, .36, 1);
+  display: block;
+  width: 100%;
+  line-height: 0;
+  opacity: 0;
+}
+
+.stroke-text__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.stroke-text__fill,
+.stroke-text__stroke {
+  font-family: inherit;
+  user-select: none;
+}
+
+.stroke-text__fill {
+  fill: var(--fill-color);
+  stroke: none;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.stroke-text__stroke {
+  fill: none;
+  stroke: var(--stroke-color);
+  stroke-width: var(--stroke-width);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.stroke-text__stroke tspan {
+  stroke-dashoffset: 900;
+}
+
+.stroke-text--active {
+  opacity: 1;
+}
+
+.stroke-text--active .stroke-text__stroke tspan {
+  animation: stroke-text-draw var(--draw-duration) var(--stroke-ease) calc(var(--stroke-start-delay) + (var(--char-index) * var(--stagger))) both;
+}
+
+.stroke-text--active .stroke-text__fill {
+  animation: stroke-text-fill var(--draw-duration) var(--stroke-ease) calc(var(--stroke-start-delay) + var(--draw-duration) + var(--fill-delay)) both;
+}
+
+.stroke-text--no-fill .stroke-text__fill {
+  display: none;
+}
+
+.stroke-text--hover {
+  cursor: pointer;
+}
+
+.stroke-text--hover:not(.stroke-text--active) .stroke-text__stroke tspan {
+  stroke-dashoffset: 900;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stroke-text {
+    opacity: 1;
+  }
+
+  .stroke-text__stroke tspan {
+    stroke-dashoffset: 0;
+  }
+
+  .stroke-text__fill {
+    opacity: 1;
+    clip-path: none;
+  }
+}
+
+.stroke-text--reduced {
+  opacity: 1;
+}
+
+.stroke-text--reduced .stroke-text__stroke tspan {
+  stroke-dashoffset: 0;
+}
+
+.stroke-text--reduced .stroke-text__fill {
+  opacity: 1;
+  clip-path: none;
+}
+
+@keyframes stroke-text-draw {
+  from { stroke-dashoffset: 900; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes stroke-text-fill {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@media (max-width: 520px) {
+  .stroke-text__svg { min-height: 52px; }
+}

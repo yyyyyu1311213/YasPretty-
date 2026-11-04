@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Yas Pretty handwritten y seal</title>
+  <desc id="desc">A warm wax impression of a handwritten y and a small heart with delicate white dashed embossing.</desc>
+  <path d="M257 62C302 59 346 72 379 100C412 128 433 171 437 216C441 262 427 307 398 341C369 376 327 397 281 405C235 412 188 404 149 382C110 359 83 322 75 279C66 234 75 187 102 147C131 105 185 67 257 62Z" fill="#D6B9B7" stroke="#594743" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M132 223C135 185 153 151 181 126C209 103 243 92 278 95C315 98 348 115 373 142C397 169 408 203 405 238C402 271 387 302 363 325" fill="none" stroke="#EAD4D3" stroke-width="5" stroke-linecap="round" opacity=".82"/>
+  <path d="M143 349C169 370 200 382 233 386M286 386C319 381 348 366 370 345" fill="none" stroke="#B59A8C" stroke-width="3" stroke-linecap="round" opacity=".72"/>
+  <path d="M174 91C193 82 212 76 231 73M282 73C302 76 321 82 339 91M91 178C84 196 81 215 81 233M431 179C437 197 440 216 439 234" fill="none" stroke="#B59A8C" stroke-width="3" stroke-linecap="round" opacity=".58"/>
+  <path d="M144 142C168 119 197 105 229 99M286 99C319 104 348 119 370 143" fill="none" stroke="#F8F3F0" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 12" opacity=".88"/>
+  <path d="M119 292C131 319 151 341 177 355M338 355C363 341 382 319 394 293" fill="none" stroke="#F8F3F0" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10" opacity=".76"/>
+  <g fill="none" stroke="#594743" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M145 167C165 145 187 145 195 164C203 184 185 217 166 241C148 264 153 283 175 279C207 273 234 227 257 190C278 157 300 141 316 153C334 166 324 194 306 221C282 254 251 283 230 311C209 339 207 365 224 378C242 392 270 380 296 350C318 326 335 300 353 273" stroke-width="13"/>
+    <path d="M167 241C181 262 198 273 217 270" stroke="#B59A8C" stroke-width="5" opacity=".78"/>
+    <path d="M221 300C230 284 239 270 250 257" stroke="#EAD4D3" stroke-width="4" opacity=".9"/>
+    <path d="M177 278C187 282 198 283 209 280" stroke="#F8F3F0" stroke-width="3" stroke-dasharray="1 8" opacity=".82"/>
+    <path d="M367 155C378 144 393 146 396 158C399 169 386 181 373 190C363 181 355 170 358 160C360 151 369 147 378 155" stroke-width="8"/>
+  </g>
+</svg>

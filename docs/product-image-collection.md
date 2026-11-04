@@ -8,6 +8,8 @@
 
 2026-10-29 阶段 3 图片接入补充已完成 35 张封面落位：23 张来源于品牌官网页面、11 张来源于零售商页面、1 张来源于媒体页面。35 张图片授权状态均为 `pending`；根据项目负责人确认的参赛策略，允许在逐张来源可追溯、页面显示授权待核验状态和联系删除入口的前提下用于公开参赛版本，但不得表述为已经取得授权。
 
+2026-11-02，`fenty-pro-filtr` 与 `loreal-paris-single-eyeshadow` 的封面由项目负责人提供的本地附件替换。两张附件未附原始网页 URL 或图片直链，因此虽然已进入本地产品库用于核对，仍不满足公开来源门禁；代码将其标记为 `blocked_missing_original_image_source`。旧封面只保留在原始采集目录的 `legacy-*.jpg` 中，不再作为页面封面。
+
 ## 粉底液
 
 | 产品 id | 品牌与产品 | 官方图片检索入口 |
@@ -31,7 +33,6 @@
 | `cle-de-peau-radiant-matte` | Clé de Peau Beauté Radiant Fluid Foundation Matte | [检索](https://www.bing.com/images/search?q=Cle+de+Peau+Radiant+Fluid+Foundation+Matte+official+product) |
 | `suqqu-the-liquid` | SUQQU The Liquid Foundation 粉霜 | [检索](https://www.bing.com/images/search?q=SUQQU+The+Liquid+Foundation+official+product) |
 | `charlotte-tilbury-airbrush` | Charlotte Tilbury Airbrush Flawless Foundation | [检索](https://www.bing.com/images/search?q=Charlotte+Tilbury+Airbrush+Flawless+Foundation+official+product) |
-| `fenty-pro-filtr` | FENTY BEAUTY Fan's Red Carpet红毯气垫 | [重新采集](https://www.bing.com/images/search?q=Fenty+Beauty+Fans+Red+Carpet+Cushion+official+product)（现有 Pro Filt'r 图片不匹配） |
 | `hourglass-ambient-soft-glow` | HOURGLASS Ambient Soft Glow Foundation | [检索](https://www.bing.com/images/search?q=Hourglass+Ambient+Soft+Glow+Foundation+official+product) |
 | `pat-mcgrath-skin-fetish` | PAT McGRATH LABS Skin Fetish: Sublime Perfection Foundation | [检索](https://www.bing.com/images/search?q=Pat+McGrath+Skin+Fetish+Sublime+Perfection+Foundation+official+product) |
 
@@ -42,6 +43,7 @@
 | `laneige-neo-matte` | LANEIGE NEO 小方块气垫（哑光） | [检索](https://www.bing.com/images/search?q=Laneige+Neo+Cushion+Matte+official+product) |
 | `clio-kill-cover` | CLIO 小磁铁气垫 | [检索](https://www.bing.com/images/search?q=Clio+Kill+Cover+Founwear+Cushion+official+product) |
 | `ysl-touche-eclat` | YSL「真」皮气垫 | [检索](https://www.bing.com/images/search?q=YSL+Touche+Eclat+Cushion+official+product) |
+| `fenty-pro-filtr` | FENTY BEAUTY Fan's Red Carpet红毯气垫 | 2026-11-02 项目负责人提供本地附件；原始网页和品牌归属待补证，仅作内部核验展示 |
 
 ## 遮瑕
 
@@ -66,7 +68,7 @@
 | `lancome-is-me-liquid-blush` | Lancôme 是我液体腮红 | 品牌官网页面，授权待核验 |
 | `lancome-pure-matte-lipstick` | Lancôme 菁纯丝绒雾面唇膏 | 品牌官网页面，授权待核验 |
 | `loreal-paris-anti-gravity-mascara` | L’Oréal Paris 反重力睫毛膏 | 品牌官网页面，授权待核验 |
-| `loreal-paris-single-eyeshadow` | L’Oréal Paris 纷泽口袋眼影 | 品牌官网页面，授权待核验 |
+| `loreal-paris-single-eyeshadow` | L’Oréal Paris 纷泽口袋眼影 | 2026-11-02 项目负责人提供本地附件；图片可见品牌与产品文案，原始网页待补，仅作内部核验展示 |
 
 ## 图片验收
 

@@ -54,7 +54,7 @@ function scoreCandidate(product, profile, request) {
     score += Math.round(budgetRatio * 5)
     matchedConditions.push(`参考价 ${product.price} 元在预算内`)
   }
-  if (profile.undertone !== 'unknown' && product.shades.some((shade) => shade.tone === profile.undertone)) {
+  if (product.shadeRecommendationReady !== false && profile.undertone !== 'unknown' && product.shades.some((shade) => shade.tone === profile.undertone)) {
     score += 5
     matchedConditions.push(`有${profile.undertone}代表色号`)
   }
@@ -220,14 +220,12 @@ function buildLocalPlan(selection, fallbackReason = '当前使用本地规则模
     '部分站内产品的价格、评分、外部事实或图片授权仍待核验；带有官网来源的新增彩妆也不等于已获得素材再利用授权。',
     '不上传照片也可以完成本方案；本阶段没有进行人脸分析或医疗判断。',
   ]
-  if (makeupRequest.weatherEnabled) limitations.push('已开启天气选项，但本次没有提供天气上下文，未将实时天气因素写入方案。')
-
   return makeupPlanSchema.parse({
     id: `plan-${Date.now().toString(36)}`,
     title: `${makeupRequest.scene}${makeupRequest.style}妆容方案`,
     summary: `根据${userProfile.skinType === 'unknown' ? '当前自述条件' : userProfile.skinType}、${makeupRequest.scene}和${makeupRequest.style}偏好，先用少量底妆建立均匀度，再按需要局部遮瑕、定妆和补足眉眼腮红唇色。`,
     inputsSnapshot: { userProfile, makeupRequest },
-    weatherAdjustment: makeupRequest.weatherEnabled ? '未取得实时天气，暂不调整配方或持妆建议。' : '用户未启用天气调整。',
+    externalContextSummary: '本次未调用外部上下文；方案仅依据用户自述、场景和站内产品资料生成。',
     steps,
     recommendedProductIds,
     candidateEvidence,
@@ -242,7 +240,7 @@ function buildLocalPlan(selection, fallbackReason = '当前使用本地规则模
 const modelDraftSchema = makeupPlanSchema.pick({
   title: true,
   summary: true,
-  weatherAdjustment: true,
+  externalContextSummary: true,
   steps: true,
   recommendedProductIds: true,
   confidence: true,
@@ -288,7 +286,7 @@ function buildPlanPrompt(selection) {
 妆容需求：${JSON.stringify(selection.makeupRequest)}
 候选产品和确定性 evidence：${JSON.stringify(productDigest(selection.candidates))}
 
-JSON 必须包含：title、summary、weatherAdjustment、steps、recommendedProductIds、confidence、limitations。每个 step 必须包含 id、category、goal、technique、texture、colorDirection、primaryProductId、alternativeProductIds、reasons、cautions。`
+JSON 必须包含：title、summary、externalContextSummary、steps、recommendedProductIds、confidence、limitations。每个 step 必须包含 id、category、goal、technique、texture、colorDirection、primaryProductId、alternativeProductIds、reasons、cautions。`
 }
 
 function validateModelDraft(draft, selection, products) {

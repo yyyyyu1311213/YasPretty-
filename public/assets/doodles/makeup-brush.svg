@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate fluffy makeup brush</title>
+  <g fill="none" stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M313 843L600 556" stroke-width="13"/>
+    <path d="M253 897L313 837L378 902L318 962C285 988 226 929 253 897Z" fill="#B59A8C" fill-opacity=".78" stroke-width="13"/>
+    <path d="M600 556L659 497L746 584L687 643Z" fill="#EAD4D3" fill-opacity=".62" stroke-width="13"/>
+    <path d="M659 497C663 364 724 171 824 80C837 217 806 430 746 584Z" fill="#EAD4D3" fill-opacity=".34" stroke-width="13"/>
+    <path d="M683 486C700 355 753 202 813 107M713 510C747 373 787 231 820 107M746 532C784 390 813 240 826 105" stroke="#B59A8C" stroke-width="5" opacity=".62"/>
+    <path d="M131 590C253 482 376 460 493 520" stroke="#D6B9B7" stroke-width="16" opacity=".45"/>
+    <path d="M151 617C266 527 373 514 467 553" stroke="#B59A8C" stroke-width="5" opacity=".48"/>
+  </g>
+</svg>

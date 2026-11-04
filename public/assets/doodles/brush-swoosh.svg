@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate watercolor brush flourish</title>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M113 625C227 494 366 445 507 487C647 528 739 504 872 383" stroke="#EAD4D3" stroke-width="74" opacity=".58"/>
+    <path d="M109 622C229 506 362 468 500 505C646 544 748 509 884 368" stroke="#66514A" stroke-width="11"/>
+    <path d="M150 680C275 572 394 542 516 568C648 596 750 566 833 490" stroke="#B59A8C" stroke-width="6" opacity=".62"/>
+    <path d="M793 338L884 368L852 460" stroke="#66514A" stroke-width="10"/>
+    <path d="M247 393C324 336 398 323 471 353" stroke="#D6B9B7" stroke-width="13" opacity=".45"/>
+    <path d="M674 718C730 691 786 693 838 718" stroke="#B59A8C" stroke-width="5" opacity=".46"/>
+  </g>
+</svg>

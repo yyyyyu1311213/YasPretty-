@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate glass foundation bottle</title>
+  <g stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M317 819L345 366H655L683 819C588 841 411 841 317 819Z" fill="#F8F3F0" stroke-width="13"/>
+    <path d="M365 777L386 424H614L636 777C566 791 435 791 365 777Z" fill="#EAD4D3" fill-opacity=".48" stroke="#B59A8C" stroke-width="6"/>
+    <path d="M405 366V237H596V366" fill="#B59A8C" fill-opacity=".56" stroke-width="13"/>
+    <path d="M438 237V159H566V237M566 166H706C731 166 746 185 746 211M706 166V219" fill="none" stroke-width="13"/>
+    <path d="M405 574C463 545 536 545 595 574" fill="none" stroke="#D6B9B7" stroke-width="22" opacity=".58"/>
+    <path d="M393 456L379 718M426 439L413 688M607 441L622 705" fill="none" stroke="#B59A8C" stroke-width="4" opacity=".4"/>
+    <path d="M741 780C780 767 816 768 850 782" fill="none" stroke="#D6B9B7" stroke-width="8" opacity=".45"/>
+  </g>
+</svg>

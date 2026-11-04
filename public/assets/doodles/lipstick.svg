@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate hand-drawn lipstick</title>
+  <g stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M391 790L408 408H592L612 790Z" fill="#EAD4D3" fill-opacity=".5" stroke-width="13"/>
+    <path d="M410 408L427 309H574L592 408" fill="#F8F3F0" stroke-width="13"/>
+    <path d="M448 309L452 174C455 127 490 92 539 95C572 97 594 119 594 151L574 309Z" fill="#D6B9B7" fill-opacity=".58" stroke-width="13"/>
+    <path d="M453 174C499 163 548 139 588 113" fill="none" stroke-width="11"/>
+    <path d="M391 790C455 803 548 803 612 790M422 441C478 453 536 453 586 441" fill="none" stroke-width="7" opacity=".58"/>
+    <path d="M438 745C467 758 515 760 546 752M464 204C482 188 502 179 525 174" fill="none" stroke="#B59A8C" stroke-width="5" opacity=".72"/>
+    <path d="M683 724C719 708 752 709 781 724M692 746C726 733 758 734 786 747" fill="none" stroke="#D6B9B7" stroke-width="9" opacity=".48"/>
+  </g>
+</svg>

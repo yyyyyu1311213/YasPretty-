@@ -1,6 +1,7 @@
 /* 小Y智能选妆 */
-.assistant-entry-button { display: inline-flex; align-items: center; gap: 7px; margin: -9px 0 25px; border: 1px solid rgba(255, 245, 236, .72); border-radius: 2px; padding: 10px 13px; color: #fffaf5; background: rgba(75, 47, 43, .52); font-size: 12px; font-weight: 600; }
-.assistant-entry-button:hover { border-color: #fff2e8; background: rgba(75, 47, 43, .72); }
+.assistant-entry-button { display: inline-flex; align-items: center; gap: 7px; margin: -2px 0 23px; border: 1px solid var(--yp-rose-deep); border-radius: var(--yp-radius-control); padding: 11px 14px; color: #fffaf5; background: var(--yp-rose-deep); font-size: 12px; font-weight: 600; transition: background var(--yp-motion-fast) var(--yp-ease-standard), transform var(--yp-motion-fast) var(--yp-ease-standard); }
+.assistant-entry-button:hover { background: #744b49; transform: translateY(-1px); }
+.assistant-entry-button:active { transform: translateY(0); }
 .xiaoy-page { min-height: 720px; padding: 61px 0 92px; }
 .xiaoy-heading { display: flex; align-items: end; justify-content: space-between; gap: 32px; padding-bottom: 31px; border-bottom: 1px solid #d8d1ca; }
 .xiaoy-heading h1 { max-width: 760px; margin-bottom: 13px; font-size: 38px; line-height: 1.3; }
@@ -69,7 +70,7 @@
 .xiaoy-composer button { display: grid; flex: 0 0 auto; width: 40px; height: 40px; place-items: center; border: 0; border-radius: 50%; color: #fff; background: #744b49; }
 .xiaoy-composer button:disabled { cursor: not-allowed; opacity: .42; }
 .xiaoy-disclaimer { margin: 0; border-top: 1px solid #e1dad3; padding: 8px 17px; color: #9a9088; background: #faf7f3; font-size: 9px; text-align: center; }
-.makeup-workbench { margin-top: 25px; border: 1px solid #d9d1c9; padding: 24px; background: #f8f3ee; }
+.makeup-workbench { margin-top: 25px; border: 1px solid var(--yp-line); padding: 24px; background: #f8f3ee; }
 .makeup-workbench-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 19px; }
 .makeup-workbench-heading h2 { margin: 7px 0 7px; color: #403936; font-size: 22px; }
 .makeup-workbench-heading p:last-child { margin: 0; color: #81766e; font-size: 11px; line-height: 1.7; }
@@ -83,9 +84,8 @@
 .makeup-workbench-form fieldset { grid-column: span 2; border: 0; padding: 0; }
 .makeup-workbench-form legend { padding: 0; }
 .makeup-priority-list { display: flex; flex-wrap: wrap; gap: 7px 13px; }
-.makeup-priority-list label, .makeup-weather-toggle { display: inline-flex; align-items: center; gap: 6px; color: #786e67; font-size: 10px; font-weight: 500; }
+.makeup-priority-list label { display: inline-flex; align-items: center; gap: 6px; color: #786e67; font-size: 10px; font-weight: 500; }
 .makeup-workbench-form input[type='checkbox'] { accent-color: #744b49; }
-.makeup-weather-toggle { align-self: center; min-height: 37px; }
 .makeup-plan-submit { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 39px; border: 1px solid #744b49; border-radius: 2px; padding: 8px 12px; color: #fffaf5; background: #744b49; font-size: 11px; font-weight: 600; }
 .makeup-plan-submit:hover { background: #5f3d3b; }
 .makeup-plan-submit:disabled { cursor: wait; opacity: .6; }
@@ -191,3 +191,15 @@
   .makeup-workbench-form fieldset { grid-column: auto; }
   .makeup-plan-submit { width: 100%; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .xiaoy-message.loading svg, .makeup-plan-submit svg { animation: none; }
+}
+
+/* Keep the assistant and workbench inside the same paper, rose and sage system. */
+.xiaoy-page { color: var(--yp-ink); background: var(--yp-paper); }
+.xiaoy-panel, .makeup-workbench, .xiaoy-settings { border-color: var(--yp-line); background: var(--yp-surface); }
+.assistant-entry-button, .makeup-plan-submit, .xiaoy-composer button { border-color: var(--yp-rose-deep); background: var(--yp-rose-deep); }
+.assistant-entry-button:hover, .makeup-plan-submit:hover, .xiaoy-composer button:hover { background: #744b49; }
+.xiaoy-prompts button, .makeup-workbench-form select, .makeup-workbench-form input[type='number'], .xiaoy-settings input, .xiaoy-settings select { border-color: var(--yp-line); color: var(--yp-ink); background: var(--yp-surface); }
+.xiaoy-message.success, .makeup-plan-source.local { border-color: rgba(117, 141, 130, .42); color: #46655a; background: rgba(237, 244, 240, .8); }

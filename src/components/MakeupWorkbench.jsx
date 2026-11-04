@@ -17,7 +17,6 @@ const DEFAULT_FORM = {
   style: '自然',
   wearHours: 8,
   timeOfDay: '白天',
-  weatherEnabled: false,
   priorities: ['轻薄'],
 }
 
@@ -49,7 +48,6 @@ function toPlanPayload(form) {
       style: form.style,
       wearHours: Number(form.wearHours),
       timeOfDay: form.timeOfDay,
-      weatherEnabled: form.weatherEnabled,
       photoEnabled: false,
       priorities: form.priorities,
     },
@@ -62,7 +60,7 @@ function PlanProduct({ id, onOpenProduct }) {
   return (
     <button type="button" className="makeup-plan-product" onClick={() => onOpenProduct(product)}>
       <span><b>{product.brand}</b>{product.name}</span>
-      <small>{product.category} · {product.finish} · {product.price == null ? '价格待核验' : product.priceVerifiedAt ? `参考价 ${product.price} 元（核验于 ${product.priceVerifiedAt}）` : `参考价 ${product.price} 元（价格待核验）`}</small>
+      <small>{product.category} · {product.finish} · {product.price == null ? '价格暂无' : `参考价 ${product.price} 元`}</small>
       <ChevronRight size={15} />
     </button>
   )
@@ -79,7 +77,7 @@ function PlanResult({ plan, onOpenProduct }) {
         <div><p className="eyebrow"><Check size={14} /> PLAN READY</p><h2>{plan.title}</h2><p>{plan.summary}</p></div>
         <span className={`makeup-plan-source ${plan.sourceMode}`}>{plan.sourceMode === 'model' ? '结构化模型' : '本地规则降级'}</span>
       </div>
-      <div className="makeup-plan-meta"><span>方案置信度 {Math.round(plan.confidence * 100)}%</span><span>{plan.inputsSnapshot.makeupRequest.scene} · {plan.inputsSnapshot.makeupRequest.wearHours} 小时带妆</span><span>{plan.weatherAdjustment}</span></div>
+      <div className="makeup-plan-meta"><span>方案置信度 {Math.round(plan.confidence * 100)}%</span><span>{plan.inputsSnapshot.makeupRequest.scene} · {plan.inputsSnapshot.makeupRequest.wearHours} 小时带妆</span><span>{plan.externalContextSummary}</span></div>
       <div className="makeup-plan-steps">
         {plan.steps.map((step, index) => (
           <article className="makeup-plan-step" key={step.id}>
@@ -157,7 +155,6 @@ export default function MakeupWorkbench({ profile, onOpenProduct }) {
         <label>预计带妆<select value={form.wearHours} onChange={(event) => update('wearHours', event.target.value)}>{[4, 6, 8, 10, 12].map((item) => <option key={item} value={item}>{item} 小时</option>)}</select></label>
         <label>熟练度<select value={form.skillLevel} onChange={(event) => update('skillLevel', event.target.value)}><option>新手</option><option>熟练</option><option>进阶</option></select></label>
         <fieldset><legend>优先目标</legend><div className="makeup-priority-list">{PRIORITIES.map((item) => <label key={item}><input type="checkbox" checked={form.priorities.includes(item)} onChange={() => togglePriority(item)} />{item}</label>)}</div></fieldset>
-        <label className="makeup-weather-toggle"><input type="checkbox" checked={form.weatherEnabled} onChange={(event) => update('weatherEnabled', event.target.checked)} />生成时保留天气调整位</label>
         <button className="makeup-plan-submit" type="submit" disabled={status === 'loading'}>{status === 'loading' ? <LoaderCircle size={17} /> : <Sparkles size={17} />}创建我的妆容方案</button>
       </form>
       {status === 'error' && <div className="makeup-plan-error" role="alert"><CircleAlert size={16} />{error}</div>}

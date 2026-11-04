@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate open powder compact</title>
+  <g stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="500" cy="337" rx="236" ry="211" fill="#F8F3F0" stroke-width="13"/>
+    <ellipse cx="500" cy="337" rx="191" ry="170" fill="#EAD4D3" fill-opacity=".18" stroke="#B59A8C" stroke-width="7"/>
+    <path d="M262 551C269 444 369 392 500 392C631 392 730 445 738 551" fill="#F8F3F0" stroke-width="13"/>
+    <path d="M212 573C319 530 680 530 788 573C748 735 643 828 500 828C356 828 251 736 212 573Z" fill="#EAD4D3" fill-opacity=".55" stroke-width="13"/>
+    <ellipse cx="500" cy="627" rx="212" ry="71" fill="#F8F3F0" stroke="#B59A8C" stroke-width="7"/>
+    <path d="M361 313C409 265 469 242 542 245M338 345C389 286 453 259 525 258" fill="none" stroke="#D6B9B7" stroke-width="6" opacity=".55"/>
+    <path d="M307 710C352 766 414 791 482 797M552 797C613 784 662 756 700 713" fill="none" stroke="#B59A8C" stroke-width="5" opacity=".5"/>
+  </g>
+</svg>

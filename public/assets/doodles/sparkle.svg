@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate watercolor sparkles</title>
+  <g stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M500 114C518 321 602 414 806 485C603 538 519 635 500 862C478 641 393 543 188 485C396 420 479 323 500 114Z" fill="#EAD4D3" fill-opacity=".52" stroke-width="11"/>
+    <path d="M215 220C225 307 267 348 355 374C267 397 225 439 214 534C204 441 163 400 75 374C164 349 204 308 215 220Z" fill="#F8F3F0" stroke-width="9"/>
+    <path d="M777 598C787 687 829 728 918 755C829 778 787 820 776 915C766 822 725 781 636 755C726 729 766 688 777 598Z" fill="#D6B9B7" fill-opacity=".46" stroke-width="9"/>
+    <path d="M470 265C478 343 512 387 573 423M459 704C471 756 488 794 511 822" fill="none" stroke="#B59A8C" stroke-width="5" opacity=".5"/>
+  </g>
+</svg>

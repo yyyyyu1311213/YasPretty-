@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate hand-drawn eyelashes</title>
+  <g fill="none" stroke="#66514A" stroke-linecap="round">
+    <path d="M117 584C295 397 497 369 880 504" stroke-width="13"/>
+    <path d="M182 527L116 438M260 470L215 361M348 430L321 303M440 406L430 270M535 404L548 266M628 420L662 292M718 449L774 335M798 483L872 390" stroke-width="9"/>
+    <path d="M145 631C328 507 564 500 835 593" stroke="#D6B9B7" stroke-width="14" opacity=".48"/>
+    <path d="M163 651C350 550 558 548 788 616" stroke="#B59A8C" stroke-width="5" opacity=".46"/>
+    <path d="M691 706C740 684 789 685 838 705" stroke="#D6B9B7" stroke-width="7" opacity=".45"/>
+  </g>
+</svg>

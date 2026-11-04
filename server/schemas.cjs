@@ -22,10 +22,6 @@ const assistantRequestSchema = z.object({
   profile: profileSchema.default({}),
 }).strict()
 
-const weatherQuerySchema = z.object({
-  city: z.string().trim().min(1).max(40),
-}).strict()
-
 const sourceSchema = z.object({
   title: z.string().trim().min(1).max(300),
   url: z.string().url().max(2000),
@@ -52,12 +48,12 @@ const productRecordSchema = z.object({
   informationSources: z.array(productSourceSchema).max(8),
   imageSource: z.object({
     url: z.string().url().nullable(),
-    sourcePageUrl: z.string().url().max(2000),
+    sourcePageUrl: z.string().url().max(2000).nullable(),
     rightsholder: z.string().trim().min(1).max(200),
     authorizationStatus: z.enum(['pending', 'verified', 'rejected']),
     acquiredAt: z.string().date(),
-    sourcePriority: z.enum(['brand_official', 'retailer', 'media']),
-    publicUseDecision: z.literal('public_with_source_notice'),
+    sourcePriority: z.enum(['brand_official', 'retailer', 'media', 'project_owner_provided']),
+    publicUseDecision: z.enum(['public_with_source_notice', 'internal_review_pending_source']),
     note: z.string().trim().min(1).max(300),
   }).strict(),
   imageAuthorizationStatus: z.enum(['pending', 'verified', 'rejected']),
@@ -91,7 +87,6 @@ const makeupRequestSchema = z.object({
   style: z.string().trim().min(1).max(40).default('自然'),
   wearHours: z.number().int().min(1).max(24).default(8),
   timeOfDay: z.enum(['早晨', '白天', '夜晚', 'unknown']).default('unknown'),
-  weatherEnabled: z.boolean().default(false),
   photoEnabled: z.boolean().default(false),
   priorities: z.array(z.string().trim().min(1).max(30)).max(6).default([]),
 }).strict()
@@ -124,7 +119,7 @@ const makeupPlanSchema = z.object({
     userProfile: userProfileSchema,
     makeupRequest: makeupRequestSchema,
   }).strict(),
-  weatherAdjustment: z.string().trim().min(1).max(500),
+  externalContextSummary: z.string().trim().min(1).max(500),
   steps: z.array(planStepSchema).min(5).max(8),
   recommendedProductIds: z.array(z.string().trim().min(1).max(120)).max(6),
   candidateEvidence: z.array(candidateEvidenceSchema).max(12),
@@ -156,5 +151,4 @@ module.exports = {
   planStepSchema,
   productRecordSchema,
   userProfileSchema,
-  weatherQuerySchema,
 }

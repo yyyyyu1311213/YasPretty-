@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 240" role="img" aria-labelledby="title desc">
+  <title id="title">Yas Pretty dark wordmark</title>
+  <desc id="desc">A restrained serif Yas Pretty wordmark with a hand-drawn cosmetic stroke.</desc>
+  <g fill="#985968">
+    <text x="44" y="158" font-family="Georgia, 'Times New Roman', serif" font-size="128" font-weight="700">Yas Pretty</text>
+  </g>
+  <path d="M46 190C170 174 276 210 410 188C545 166 675 183 872 160" fill="none" stroke="#E7B6C1" stroke-width="10" stroke-linecap="round"/>
+  <path d="M719 161C757 151 806 150 866 160" fill="none" stroke="#C98A95" stroke-width="4" stroke-linecap="round"/>
+</svg>

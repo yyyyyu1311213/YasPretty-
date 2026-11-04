@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Yas Pretty share cover</title>
+  <desc id="desc">A restrained editorial social cover for Yas Pretty.</desc>
+  <rect width="1200" height="630" fill="#F8F3F0"/>
+  <path d="M775 0H1200V630H660C704 480 743 258 775 0Z" fill="#EAD4D3"/>
+  <path d="M986 0H1200V630H1034C1003 436 990 230 986 0Z" fill="#D6B9B7" opacity=".74"/>
+  <text x="84" y="270" fill="#5B4A43" font-family="Georgia, 'Times New Roman', serif" font-size="106" font-weight="700">Yas Pretty</text>
+  <text x="91" y="337" fill="#B59A8C" font-family="Arial, sans-serif" font-size="24">PERSONALIZED MAKEUP PLANNING</text>
+  <path d="M88 375C254 349 408 399 602 362" fill="none" stroke="#D6B9B7" stroke-width="13" stroke-linecap="round"/>
+  <g stroke="#5B4A43" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M815 535L841 253H1003L1030 535Z" fill="#F8F3F0"/>
+    <path d="M862 253V170H982V253" fill="#B59A8C"/>
+    <path d="M887 170V116H957V170" fill="#5B4A43"/>
+    <path d="M1057 527H1161L1152 348H1068Z" fill="#D6B9B7"/>
+    <path d="M1075 348L1084 280H1140L1150 348" fill="#B59A8C"/>
+    <path d="M1094 279V218C1094 185 1116 165 1142 170C1158 173 1166 188 1163 208L1140 279" fill="#EAD4D3"/>
+  </g>
+</svg>

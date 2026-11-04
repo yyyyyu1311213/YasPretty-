@@ -1,9 +1,10 @@
 import { evidenceSync, generatedProductEvidence } from './product-verification.generated.js'
+import { reviewedProductShades } from './product-shade-verification.js'
 import { reviewedProductFacts } from './product-verification.reviewed.js'
 
 const knownIssues = {
   'suqqu-the-liquid': ['现有企业资质文件名指向 SHISEIDO 产品，与本产品不一致，不能作为通过证据。'],
-  'fenty-pro-filtr': ['人工核验表记录品牌为 FENTY BEAUTY、店铺为 FANBEAUTY官方旗舰店；网页按表内已完成状态展示，拼写原样保留。现有产品封面旧来源仍需替换。'],
+  'fenty-pro-filtr': ['人工核验表记录品牌为 FENTY BEAUTY、店铺为 FANBEAUTY官方旗舰店；网页按表内已完成状态展示，拼写原样保留。新封面由项目负责人提供，但附件只显示 Fan\'s Red Carpet，原始网页来源和品牌归属仍待补证。'],
 }
 
 export const productVerificationRecords = Object.fromEntries(
@@ -22,8 +23,12 @@ export const productVerificationRecords = Object.fromEntries(
       note: reviewedProductFacts[productId] ? '链接、店铺身份和对应商品已在人工核验表中标记为已完成；价格以实际结算页为准。' : '尚未取得可复核的淘宝或天猫品牌官方旗舰店商品链接。',
     },
     reviewedFacts: reviewedProductFacts[productId] || null,
+    reviewedShades: reviewedProductShades[productId] ? {
+      ...reviewedProductShades[productId],
+      evidence: evidence.publicEvidence.filter((item) => item.kind === 'parameters'),
+    } : null,
     evidence,
-    issues: knownIssues[productId] || [],
+    issues: [...(knownIssues[productId] || []), ...(reviewedProductShades[productId]?.issues || [])],
   }]),
 )
 

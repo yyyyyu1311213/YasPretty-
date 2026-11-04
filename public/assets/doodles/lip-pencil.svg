@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate hand-drawn lip pencil</title>
+  <g fill="none" stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M258 824L696 386L777 467L338 906Z" fill="#EAD4D3" fill-opacity=".52" stroke-width="13"/>
+    <path d="M696 386L818 264L871 228L839 283L777 467Z" fill="#B59A8C" fill-opacity=".7" stroke-width="13"/>
+    <path d="M818 264L870 229L840 285" fill="#66514A" stroke-width="10"/>
+    <path d="M258 824L208 934L338 906" fill="#F8F3F0" stroke-width="13"/>
+    <path d="M649 433L730 514M615 468L696 548" stroke="#B59A8C" stroke-width="5" opacity=".62"/>
+    <path d="M141 546C250 429 354 395 489 431C577 454 637 445 702 404" stroke="#D6B9B7" stroke-width="15" opacity=".44"/>
+    <path d="M153 570C270 470 377 449 495 471" stroke="#B59A8C" stroke-width="5" opacity=".54"/>
+  </g>
+</svg>

@@ -15,7 +15,6 @@ import MakeupWorkbench from './MakeupWorkbench'
 
 const SCENE_OPTIONS = ['通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
 const ASSISTANT_ENDPOINT = '/api/assistant'
-const WEATHER_ENDPOINT = '/api/weather'
 
 const welcomeMessage = {
   id: 'welcome',
@@ -26,19 +25,10 @@ const welcomeMessage = {
 
 const quickPrompts = [
   '我是混油皮，想要柔雾通勤底妆',
-  '今天石家庄天气怎么样',
+  '请介绍一个美妆库里没有的护肤成分问题',
   '预算 400 元以内，想要高遮瑕',
   '帮我比较 NARS 超方瓶和雅诗兰黛持妆粉底液',
 ]
-
-const WEATHER_LABELS = {
-  0: '晴', 1: '大部晴朗', 2: '多云', 3: '阴', 45: '有雾', 48: '雾凇',
-  51: '小毛毛雨', 53: '毛毛雨', 55: '较强毛毛雨', 56: '轻微冻雨', 57: '冻雨',
-  61: '小雨', 63: '中雨', 65: '大雨', 66: '轻微冻雨', 67: '强冻雨',
-  71: '小雪', 73: '中雪', 75: '大雪', 77: '米雪',
-  80: '小阵雨', 81: '阵雨', 82: '强阵雨', 85: '小阵雪', 86: '强阵雪',
-  95: '雷暴', 96: '雷暴伴小冰雹', 99: '雷暴伴冰雹',
-}
 
 function createMessage(role, content, productIds = [], sources = []) {
   return {
@@ -51,57 +41,19 @@ function createMessage(role, content, productIds = [], sources = []) {
 }
 
 function detectIntent(text, profile = {}) {
-  if (/(天气|气温|温度|下雨|降雨|下雪|刮风|湿度|冷不冷|热不热)/.test(text) || (profile.city && /(今天|明天|后天).*(呢|怎么样|如何)?/.test(text))) return 'weather'
-  if (findMentionedProducts(text).length || /(推荐|选什么|怎么选|哪个好|对比|区别|粉底|底妆|气垫|遮瑕|散粉|肤质|油皮|干皮|妆效|持妆|色号|卡粉|脱妆|预算)/.test(text)) return 'catalog'
-  if (/^(你好|嗨|hello|hi|在吗)[！!。？?\s]*$/i.test(text)) return 'greeting'
-  return 'general'
+  const mentioned = findMentionedProducts(text)
+  if (mentioned.length && /(对比|区别|哪个好|哪个更)/.test(text)) return 'product_comparison'
+  if (/(妆容方案|完整妆容|化妆步骤|怎么化|妆面规划|设计(?:一个)?妆|(?:约会|通勤|日常|晚宴)妆)/.test(text)) return 'makeup_plan'
+  if (mentioned.length || /(推荐|选什么|怎么选|哪个好|粉底|底妆|气垫|遮瑕|散粉|肤质|油皮|干皮|妆效|持妆|色号|卡粉|脱妆|预算)/.test(text)) return 'catalog_recommendation'
+  if (/^(你好|嗨|hello|hi|在吗)[！!。？?\s]*$/i.test(text)) return 'greeting_help'
+  return 'external_question'
 }
 
 function needsOnlineResearch(text, intent) {
-  if (intent === 'general') return true
+  if (intent === 'external_question' || intent === 'external_research' || intent === 'product_fact') return true
   if (/(最新|最近|现在|目前|今年|2026|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买)/.test(text)) return true
   if (/(口红|唇釉|眼影|腮红|高光|修容|睫毛膏|眉笔|香水|护肤|面霜|精华|防晒)/.test(text)) return true
   return false
-}
-
-function extractWeatherCity(text) {
-  const cleaned = text
-    .replace(/今天|明天|后天|现在|当前|实时|最近|当地/g, ' ')
-    .replace(/天气预报|天气|气温|温度|湿度|下雨|降雨|下雪|刮风|冷不冷|热不热/g, ' ')
-    .replace(/帮我|麻烦|请问|查询|查一下|看一下|看看|怎么样|怎样|如何|多少度|会不会|有没有|情况/g, ' ')
-    .replace(/[，。！？、,.!?：:；;的呢吗呀啊哦]/g, ' ')
-  const candidates = cleaned.match(/[\u4e00-\u9fa5]{2,12}/g) || []
-  return candidates.sort((a, b) => b.length - a.length)[0]?.replace(/(市|县)$/g, '') || ''
-}
-
-function weatherDayOffset(text) {
-  if (text.includes('后天')) return 2
-  if (text.includes('明天')) return 1
-  return 0
-}
-
-function weatherTip(maxTemperature, humidity, rainChance) {
-  if (rainChance >= 50 || maxTemperature >= 28) return '如果今天需要带妆，建议优先轻薄、耐汗的底妆，并加强 T 区定妆。'
-  if (humidity < 40 || maxTemperature <= 12) return '空气偏干或温度较低，上妆前可以加强保湿，底妆少量分区叠加。'
-  return '天气条件相对温和，按日常肤质和妆效偏好选择底妆即可。'
-}
-
-async function requestWeather(city, offset) {
-  const response = await fetch(`${WEATHER_ENDPOINT}?city=${encodeURIComponent(city)}`)
-  const data = await response.json()
-  if (!response.ok || !data.ok) throw new Error(data.error || `天气查询失败（${response.status}）`)
-  const index = Math.min(offset, Math.max(0, (data.daily?.time?.length || 1) - 1))
-  const dayName = index === 0 ? '今天' : index === 1 ? '明天' : '后天'
-  const max = Math.round(data.daily.temperature_2m_max[index])
-  const min = Math.round(data.daily.temperature_2m_min[index])
-  const rainChance = Math.round(data.daily.precipitation_probability_max[index] || 0)
-  const code = data.daily.weather_code[index]
-  const place = [data.location.name, data.location.admin1].filter(Boolean).join('，')
-  const details = index === 0
-    ? `当前 ${Math.round(data.current.temperature_2m)}℃，体感 ${Math.round(data.current.apparent_temperature)}℃，湿度 ${Math.round(data.current.relative_humidity_2m)}%，风速 ${Math.round(data.current.wind_speed_10m)} km/h。`
-    : ''
-  const humidity = index === 0 ? Number(data.current.relative_humidity_2m || 50) : 50
-  return `${place}${dayName}${WEATHER_LABELS[code] || '天气有变化'}，预计 ${min}～${max}℃，最高降水概率 ${rainChance}%。${details}\n\n${weatherTip(max, humidity, rainChance)}\n\n数据来源：${data.source}，更新时间 ${data.current.time || data.daily.time[index]}（${data.location.timezone}）。`
 }
 
 function extractProfile(text, current = {}) {
@@ -131,6 +83,7 @@ function extractProfile(text, current = {}) {
 }
 
 function pickShade(product, profile) {
+  if (!product.shadeRecommendationReady) return { name: '参数色号待确认' }
   return product.shades.find((shade) => profile.tone && shade.tone === profile.tone)
     || product.shades.find((shade) => /白皙|一白/.test(shade.lightness || shade.suitable || ''))
     || product.shades[0]
@@ -261,7 +214,7 @@ function AssistantProduct({ product, profile, onOpenProduct }) {
       <span className="xiaoy-product-copy">
         <small>{product.brand}</small>
         <b>{product.name}</b>
-        <i>{shade.name} · {product.finish} · {product.priceLabel}（价格待核验）</i>
+        <i>{shade.name} · {product.finish} · {product.priceLabel}</i>
       </span>
       <ChevronRight size={17} />
     </button>
@@ -322,23 +275,7 @@ export default function XiaoYAssistant({ onOpenProduct }) {
     setBusy(true)
 
     try {
-      if (intent === 'weather') {
-        setActivity('正在连接实时天气服务...')
-        const city = extractWeatherCity(text) || nextProfile.city
-        if (!city) {
-          setMessages((current) => [...current, createMessage('assistant', '你想查询哪个城市？例如可以直接问“今天石家庄天气怎么样”。')])
-          setMode('tool')
-          return
-        }
-        nextProfile = { ...nextProfile, city }
-        setProfile(nextProfile)
-        const result = await requestWeather(city, weatherDayOffset(text))
-        setMessages((current) => [...current, createMessage('assistant', result)])
-        setMode('tool')
-        return
-      }
-
-      if (intent === 'catalog' || intent === 'greeting') {
+      if (intent === 'catalog_recommendation' || intent === 'product_comparison' || intent === 'greeting_help') {
         if (onlineResearch) {
           setActivity('正在联网检索相关资料...')
           const result = await requestAssistant({ text, messages, profile: nextProfile })
@@ -357,13 +294,8 @@ export default function XiaoYAssistant({ onOpenProduct }) {
       setMessages((current) => [...current, createMessage('assistant', result.text, result.productIds, result.sources)])
       setMode(result.sources.length ? 'web' : 'ai')
     } catch (error) {
-      if (intent === 'general') {
-        setMessages((current) => [...current, createMessage('assistant', `智能服务当前不可用：${error.message}。实时天气和站内产品推荐仍可正常使用。`)])
-        setMode('error')
-        return
-      }
-      if (intent === 'weather') {
-        setMessages((current) => [...current, createMessage('assistant', `天气查询暂时失败：${error.message}。请稍后重试，或换成完整城市名。`)])
+      if (intent === 'external_question') {
+        setMessages((current) => [...current, createMessage('assistant', `智能服务当前不可用：${error.message}。站内产品浏览和本地推荐仍可正常使用。`)])
         setMode('error')
         return
       }

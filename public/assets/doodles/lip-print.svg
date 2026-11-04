@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+  <title id="title">Delicate watercolor lips</title>
+  <g stroke="#66514A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M146 514C249 369 367 342 497 429C619 344 750 375 857 516C749 665 624 724 500 727C371 725 248 667 146 514Z" fill="#EAD4D3" fill-opacity=".48" stroke-width="13"/>
+    <path d="M151 515C257 489 376 485 497 503C618 484 742 490 852 515C741 550 623 564 500 556C376 565 257 551 151 515Z" fill="#F8F3F0" stroke-width="10"/>
+    <path d="M274 409C321 422 364 447 399 477M604 476C646 441 691 419 737 410" fill="none" stroke="#B59A8C" stroke-width="6" opacity=".6"/>
+    <path d="M247 580C347 647 468 666 584 638M330 389C368 400 401 414 432 439M602 421C634 397 671 387 709 390" fill="none" stroke="#D6B9B7" stroke-width="16" opacity=".28"/>
+    <path d="M203 680C278 712 345 724 406 724" fill="none" stroke="#B59A8C" stroke-width="5" opacity=".45"/>
+  </g>
+</svg>

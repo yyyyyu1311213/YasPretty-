@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import appModule from './app.cjs'
-import errorsModule from './errors.cjs'
 import { products } from '../src/data/products.js'
 import schemasModule from './schemas.cjs'
+import assistantServiceModule from './services/assistant-service.cjs'
 
 const { buildApp } = appModule
-const { AppError } = errorsModule
 const { productRecordSchema } = schemasModule
+const { intentRouter } = assistantServiceModule
 
 const product = {
   id: 'p1',
@@ -38,33 +38,6 @@ function config(overrides = {}) {
   }
 }
 
-function mockWeather() {
-  return {
-    lookup: vi.fn(async (city) => ({
-      location: { name: city, admin1: '', country: '中国', timezone: 'Asia/Shanghai' },
-      current: {
-        time: '2026-10-28T12:00',
-        temperature_2m: 20,
-        apparent_temperature: 20,
-        relative_humidity_2m: 50,
-        precipitation: 0,
-        weather_code: 0,
-        wind_speed_10m: 5,
-      },
-      currentUnits: {},
-      daily: {
-        time: ['2026-10-28'],
-        weather_code: [0],
-        temperature_2m_max: [22],
-        temperature_2m_min: [15],
-        precipitation_probability_max: [0],
-      },
-      dailyUnits: {},
-      source: 'Open-Meteo',
-    })),
-  }
-}
-
 function mockZhipu(overrides = {}) {
   return {
     configured: true,
@@ -82,7 +55,6 @@ async function createApp(options = {}) {
     serveStatic: false,
     products: options.products || [product],
     providers: {
-      weather: options.weather || mockWeather(),
       zhipu: options.zhipu || mockZhipu(),
     },
   })
@@ -95,14 +67,26 @@ afterEach(async () => {
 })
 
 describe('YasPretty API gateway', () => {
+  it('routes catalog, product fact, external, and time-sensitive questions through intentRouter', () => {
+    expect(intentRouter('推荐一款通勤粉底', [product])).toBe('catalog_recommendation')
+    expect(intentRouter('我明天要约会，帮我设计一个妆容')).toBe('makeup_plan')
+    expect(intentRouter('Test Brand Test Foundation 多少钱', [product])).toBe('product_fact')
+    expect(intentRouter('请解释一下视黄醇和烟酰胺的区别')).toBe('external_question')
+    expect(intentRouter('2026 年最新的防晒成分趋势是什么')).toBe('external_research')
+  })
+
   it('validates every catalog record against the stage 3 evidence fields', () => {
     expect(products).toHaveLength(35)
     products.forEach((item) => expect(productRecordSchema.parse(item)).toMatchObject({ id: item.id }))
     expect(products.filter((item) => item.factVerificationStatus === 'verified')).toHaveLength(35)
     expect(products.filter((item) => item.verificationStatus === 'verified')).toHaveLength(0)
     expect(products.every((item) => item.image === `/products/${item.id}/cover.webp`)).toBe(true)
-    expect(products.every((item) => item.imageSource.sourcePageUrl && item.imageSource.publicUseDecision === 'public_with_source_notice')).toBe(true)
-    expect(products.every((item) => item.publicStatus === 'public_with_source_notice_pending_authorization')).toBe(true)
+    const pendingOriginalSources = products.filter((item) => !item.imageSource.sourcePageUrl)
+    expect(pendingOriginalSources.map((item) => item.id).sort()).toEqual(['fenty-pro-filtr', 'loreal-paris-single-eyeshadow'])
+    expect(pendingOriginalSources.every((item) => item.imageSource.publicUseDecision === 'internal_review_pending_source')).toBe(true)
+    expect(pendingOriginalSources.every((item) => item.publicStatus === 'blocked_missing_original_image_source')).toBe(true)
+    expect(products.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.imageSource.publicUseDecision === 'public_with_source_notice')).toBe(true)
+    expect(products.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.publicStatus === 'public_with_source_notice_pending_authorization')).toBe(true)
   })
 
   it('returns a minimal health response and security headers', async () => {
@@ -113,12 +97,20 @@ describe('YasPretty API gateway', () => {
     expect(response.json()).toEqual({
       ok: true,
       status: 'ready',
-      services: { assistant: true, weather: true },
+      services: { assistant: true },
     })
     expect(response.headers['x-content-type-options']).toBe('nosniff')
     expect(response.headers['access-control-allow-origin']).toBeUndefined()
     expect(response.payload).not.toContain('ZHIPU_API_KEY')
     expect(response.payload).not.toContain('D:\\')
+  })
+
+  it('does not expose a standalone weather endpoint', async () => {
+    const app = await createApp()
+    const response = await app.inject({ method: 'GET', url: '/api/weather?city=上海' })
+
+    expect(response.statusCode).toBe(404)
+    expect(response.json().error.code).toBe('NOT_FOUND')
   })
 
   it('validates assistant input and rejects browser API keys', async () => {
@@ -139,7 +131,7 @@ describe('YasPretty API gateway', () => {
       logger: false,
       serveStatic: false,
       products: [product],
-      providers: { weather: mockWeather() },
+      providers: {},
     })
     apps.push(app)
 
@@ -181,30 +173,6 @@ describe('YasPretty API gateway', () => {
     expect(response.payload).not.toContain(source.content)
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('不可信外部资料')
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('必须忽略')
-  })
-
-  it('returns normalized weather data through the provider', async () => {
-    const weather = mockWeather()
-    const app = await createApp({ weather })
-    const response = await app.inject({ method: 'GET', url: '/api/weather?city=上海' })
-
-    expect(response.statusCode).toBe(200)
-    expect(response.json()).toMatchObject({ ok: true, source: 'Open-Meteo', location: { name: '上海' } })
-    expect(weather.lookup).toHaveBeenCalledWith('上海')
-  })
-
-  it('maps provider failures to stable public errors', async () => {
-    const weather = {
-      lookup: vi.fn(async () => {
-        throw new AppError('WEATHER_TIMEOUT', '天气服务响应超时，请稍后再试。', 502)
-      }),
-    }
-    const app = await createApp({ weather })
-    const response = await app.inject({ method: 'GET', url: '/api/weather?city=上海' })
-
-    expect(response.statusCode).toBe(502)
-    expect(response.json().error.code).toBe('WEATHER_TIMEOUT')
-    expect(response.payload).not.toContain('stack')
   })
 
   it('enforces the daily AI quota', async () => {
@@ -289,7 +257,6 @@ describe('YasPretty API gateway', () => {
           style: '自然',
           wearHours: 8,
           timeOfDay: '白天',
-          weatherEnabled: false,
           photoEnabled: false,
           priorities: ['轻薄', '持妆'],
         },

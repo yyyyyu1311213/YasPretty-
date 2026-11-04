@@ -11,17 +11,18 @@ import {
 import { legacyToForm, toPlanPayload } from './MakeupWorkbench'
 
 describe('小Y本地规则', () => {
-  it('routes weather, catalog, greeting, and general intents', () => {
-    expect(detectIntent('今天上海天气怎么样')).toBe('weather')
-    expect(detectIntent('推荐一款通勤粉底')).toBe('catalog')
-    expect(detectIntent('你好')).toBe('greeting')
-    expect(detectIntent('给我介绍一下巴黎时装周')).toBe('general')
+  it('routes external questions, catalog, and greeting intents', () => {
+    expect(detectIntent('今天上海天气怎么样')).toBe('external_question')
+    expect(detectIntent('推荐一款通勤粉底')).toBe('catalog_recommendation')
+    expect(detectIntent('我明天要约会，帮我设计一个妆容')).toBe('makeup_plan')
+    expect(detectIntent('你好')).toBe('greeting_help')
+    expect(detectIntent('给我介绍一下巴黎时装周')).toBe('external_question')
   })
 
   it('requires online research for timely or out-of-catalog facts', () => {
-    expect(needsOnlineResearch('这款现在官网多少钱', 'catalog')).toBe(true)
-    expect(needsOnlineResearch('推荐一款油皮粉底', 'catalog')).toBe(false)
-    expect(needsOnlineResearch('推荐一支口红', 'catalog')).toBe(true)
+    expect(needsOnlineResearch('这款现在官网多少钱', 'catalog_recommendation')).toBe(true)
+    expect(needsOnlineResearch('推荐一款油皮粉底', 'catalog_recommendation')).toBe(false)
+    expect(needsOnlineResearch('推荐一支口红', 'catalog_recommendation')).toBe(true)
   })
 
   it('extracts the supported profile fields', () => {

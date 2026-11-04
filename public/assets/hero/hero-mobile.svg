@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1600" role="img" aria-labelledby="title desc">
+  <title id="title">Yas Pretty mobile hero visual</title>
+  <desc id="desc">A restrained vanity still life in the lower half with generous clear space for live page copy.</desc>
+  <rect width="1200" height="1600" fill="#F8F3F0"/>
+  <path d="M153 1363C401 1258 748 1267 1064 1350" fill="none" stroke="#EAD4D3" stroke-width="70" stroke-linecap="round" opacity=".72"/>
+  <ellipse cx="720" cy="1021" rx="281" ry="353" fill="none" stroke="#D6B9B7" stroke-width="11" opacity=".68"/>
+  <path d="M720 1375V1434M600 1490C626 1453 665 1434 720 1434C775 1434 816 1453 840 1490" fill="none" stroke="#D6B9B7" stroke-width="11" stroke-linecap="round"/>
+  <g stroke="#5B4A43" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M271 1456L306 1038H525L560 1456Z" fill="#F8F3F0"/>
+    <path d="M339 1038V928H493V1038" fill="#B59A8C"/>
+    <path d="M373 928V857H459V928" fill="#5B4A43"/>
+    <path d="M362 1250C406 1223 457 1223 496 1247" fill="none" stroke="#D6B9B7" stroke-width="25"/>
+    <path d="M739 1456V1278C739 1261 753 1247 770 1247H898C915 1247 929 1261 929 1278V1456Z" fill="#F8F3F0"/>
+    <path d="M768 1247V1190C768 1177 779 1166 792 1166H867C880 1166 891 1177 891 1190V1247Z" fill="#B59A8C"/>
+    <path d="M783 1166V1074C783 1056 796 1041 813 1036L843 1027C859 1022 873 1034 873 1050V1166Z" fill="#D6B9B7"/>
+    <path d="M783 1079C809 1075 837 1063 873 1040" fill="none" stroke="#5B4A43" stroke-width="8"/>
+    <path d="M801 1054C818 1049 834 1043 850 1035" fill="none" stroke="#F8F3F0" stroke-width="5" opacity=".72"/>
+    <path d="M190 1465H980" fill="none"/>
+  </g>
+</svg>
