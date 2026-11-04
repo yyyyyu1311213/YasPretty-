@@ -81,7 +81,6 @@ function getCategoryMeta(category) {
     className: 'other',
   }
 }
-
 export function getCategoryGroups(productList = products) {
   return categoryOptions
     .map((category) => ({
