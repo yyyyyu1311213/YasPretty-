@@ -283,4 +283,3 @@ export default function MakeupTable({ openingReady = false, onOpenProduct, onVie
     </section>
   )
 }
-
