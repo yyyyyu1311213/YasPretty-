@@ -396,12 +396,17 @@ export default function XiaoYAssistant({ onOpenProduct }) {
       setActivity(onlineResearch ? '正在联网检索相关资料...' : '小Y正在组织回答...')
       const result = await requestAssistant({ text, messages, profile: nextProfile })
       setMessages((current) => [...current, createMessage('assistant', result.text, result.productIds, result.sources)])
-      setMode(result.sources.some((source) => source.kind === 'web') ? 'web' : result.answerMode === 'clarification' ? 'ready' : result.sources.length ? 'knowledge' : 'ai')
+      setMode(result.answerMode === 'weather' || result.sources.some((source) => source.kind === 'weather')
+        ? 'weather'
+        : result.sources.some((source) => source.kind === 'web') ? 'web' : result.answerMode === 'clarification' ? 'ready' : result.sources.length ? 'knowledge' : 'ai')
       setActiveModel(result.model)
     } catch (error) {
       const errorMessage = cleanErrorMessage(error.message)
       if (intent === 'external_question') {
-        setMessages((current) => [...current, createMessage('assistant', `智能服务当前不可用：${errorMessage}。站内产品浏览和本地推荐仍可正常使用。`)])
+        const message = error.code === 'WEATHER_PROVIDER_UNAVAILABLE'
+          ? `天气数据暂时不可用：${errorMessage}。我不会用猜测或旧资料代替实时天气；站内产品浏览和本地推荐仍可正常使用。`
+          : `智能服务当前不可用：${errorMessage}。站内产品浏览和本地推荐仍可正常使用。`
+        setMessages((current) => [...current, createMessage('assistant', message)])
         setMode('error')
         setActiveModel('')
         return
@@ -444,7 +449,7 @@ export default function XiaoYAssistant({ onOpenProduct }) {
           <p>从肤质、妆效、场景和预算出发，只推荐资料库中能够说明依据的产品。</p>
         </div>
         <div className="xiaoy-heading-actions">
-          <span className={`xiaoy-mode ${mode}`}>{mode === 'web' ? '联网思考' : mode === 'knowledge' ? activeModel ? `${activeModel} · 知识库` : '知识库参考' : mode === 'ai' ? activeModel || 'AI 对话' : mode === 'local' ? '资料库推荐' : mode === 'tool' ? '实时工具' : mode === 'error' ? '连接异常' : '已就绪'}</span>
+          <span className={`xiaoy-mode ${mode}`}>{mode === 'weather' ? '天气数据' : mode === 'web' ? '联网思考' : mode === 'knowledge' ? activeModel ? `${activeModel} · 知识库` : '知识库参考' : mode === 'ai' ? activeModel || 'AI 对话' : mode === 'local' ? '资料库推荐' : mode === 'tool' ? '实时工具' : mode === 'error' ? '连接异常' : '已就绪'}</span>
           <button onClick={resetConversation} aria-label="重新开始" title="重新开始"><RefreshCw size={18} /></button>
         </div>
       </div>

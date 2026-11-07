@@ -1200,6 +1200,14 @@
 
 本地验证：`Get-ChildItem netlify/functions` 仅列出 `api.cjs`；`npm run check` 通过，Vitest 11 个文件、69/69 项通过，Vite 构建通过并保留既有 3D 大分块警告。待将修复推送并触发 Netlify 部署后，再复验函数部署、`/api/health`、小Y对话和失败降级。当前没有新增依赖、产品数据或用户数据处理；本次编码环境的 `git diff --check` 另受工作树中既有 `promo-yaspretty/public/audio/ATTRIBUTION.md` 尾随空格影响，该文件未由本次修改产生。
 
+## 阶段 5 增量：专门天气数据源与确定性回答（YAS-2026-0051）
+
+2026-11-07（北京时间）根据石家庄天气截图复现：旧天气链路依赖智谱 Web Search 摘要后再让模型组织数字，回答会出现“根据不可信外部资料”等内部措辞，且来源之间的温度、降雨和风力口径可能混杂。现已在统一 `/api/assistant` 路由内接入 `server/providers/weather-provider.cjs`，使用 Open-Meteo 地理编码和预报接口；没有新增天气页面或独立天气 API，也不要求用户提供第二个 Key。
+
+天气请求现在按北京时间解析今天/明天/后天和显式城市；显式城市优先于旧画像城市。服务端校验城市、日期、天气代码、最高/最低温、降雨概率和风力后直接生成回答，GLM 不参与天气数字改写。响应新增 `answerMode: weather` 和 `source.kind: weather`，显示 Open-Meteo 来源 URL、北京时间获取时间及预报更新限制。天气源超时、城市不存在或返回字段不完整时返回稳定 `WEATHER_PROVIDER_UNAVAILABLE`，前端明确提示数据不可用，不用旧搜索摘要或模型记忆补齐。
+
+实际修改：`server/providers/weather-provider.cjs`、`server/services/assistant-service.cjs`、`server/app.cjs`、`server/schemas.cjs`、`src/components/XiaoYAssistant.jsx`、`server/providers/weather-provider.test.js` 和 `server/app.test.js`；更新 README 与数据审计说明。验证结果：天气 provider 和网关定向测试 25/25 通过；完整 Vitest 12 个文件、73/73 项通过；Vite 生产构建通过，保留既有 3D 大分块警告。真实本机请求于 2026-11-07 22:46（北京时间）通过 Open-Meteo 地理编码和预报接口取得石家庄市 2026-11-07 数据：小雨、4.9～9.7℃、降雨概率 100%、北风约 11.6 km/h；来源接口为 `https://geocoding-api.open-meteo.com/v1/search` 和 `https://api.open-meteo.com/v1/forecast`，结果只作为本次天气回答证据，不写入产品数据或用户画像。公网部署后仍需用石家庄、上海和无城市请求复验冷启动、来源显示、超时降级和移动端布局。
+
 ## 阶段 5 修复：Netlify ESM 函数入口（YAS-2026-0050）
 
 2026-11-07（北京时间）根据公网函数错误复现：Netlify 将 CommonJS 入口打包为 `/var/task/api.js`，而仓库 `package.json` 声明了 `type: module`，运行时按 ESM 加载 `module.exports`，导致 `ReferenceError: module is not defined in ES module scope`。入口已改为 `netlify/functions/api.js`，使用 ESM `export async function handler`，通过静态 ESM 导入复用既有 CommonJS Fastify 网关，并保留显式 ESM 产品目录导入。

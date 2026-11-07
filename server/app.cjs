@@ -14,6 +14,7 @@ const {
   makeupPlanResponseSchema,
 } = require('./schemas.cjs')
 const { createZhipuProvider } = require('./providers/zhipu-provider.cjs')
+const { createWeatherProvider } = require('./providers/weather-provider.cjs')
 const { createAssistantService } = require('./services/assistant-service.cjs')
 const { createMakeupPlanService } = require('./services/makeup-plan-service.cjs')
 
@@ -107,7 +108,10 @@ async function buildApp(options = {}) {
     maxTokens: config.zhipuMaxTokens,
     timeoutMs: config.upstreamTimeoutMs,
   })
-  const assistantService = createAssistantService({ zhipuProvider, products })
+  const weatherProvider = options.providers?.weather || createWeatherProvider({
+    timeoutMs: Math.min(config.upstreamTimeoutMs, 8000),
+  })
+  const assistantService = createAssistantService({ zhipuProvider, weatherProvider, products })
   const makeupPlanService = createMakeupPlanService({ zhipuProvider, products })
   const dailyQuota = createDailyQuota(config.aiDailyLimit)
 

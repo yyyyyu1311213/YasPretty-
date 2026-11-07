@@ -49,6 +49,29 @@ function mockZhipu(overrides = {}) {
   }
 }
 
+function mockWeather(overrides = {}) {
+  return {
+    configured: true,
+    providerName: 'Open-Meteo',
+    forecast: vi.fn(async ({ city, date }) => ({
+      city,
+      date,
+      condition: '多云',
+      temperature: { min: 4, max: 10 },
+      precipitationProbability: 30,
+      wind: { direction: '东北风', speed: 12 },
+      current: { temperature: 8 },
+      source: {
+        publisher: 'Open-Meteo',
+        url: 'https://api.open-meteo.com/v1/forecast?test=1',
+        retrievedAt: '2026-11-07T00:00:00.000Z',
+      },
+      limitations: ['天气预报会随时间更新；如遇气象灾害，请以当地气象部门预警为准。'],
+    })),
+    ...overrides,
+  }
+}
+
 const apps = []
 async function createApp(options = {}) {
   const app = await buildApp({
@@ -58,6 +81,7 @@ async function createApp(options = {}) {
     products: options.products || [product],
     providers: {
       zhipu: options.zhipu || mockZhipu(),
+      weather: options.weather || mockWeather(),
     },
   })
   apps.push(app)
@@ -83,6 +107,7 @@ describe('YasPretty API gateway', () => {
     expect(extractWeatherLocation('今天天气怎么样', '')).toBe('')
     expect(extractWeatherLocation('上海今天天气怎么样', '')).toBe('上海')
     expect(extractWeatherLocation('昆明天气怎么样', '')).toBe('昆明')
+    expect(extractWeatherLocation('北京天气怎么样', '上海')).toBe('北京')
     expect(buildSearchRequest('昆明天气怎么样', {}, new Date('2026-11-06T02:00:00.000Z'))).toMatchObject({
       query: '2026年11月6日 昆明 今日天气 实时气温 最高温 最低温',
       options: { count: 10, recency: 'oneDay', contentSize: 'high' },
@@ -214,7 +239,7 @@ describe('YasPretty API gateway', () => {
       sources: [{ title: source.title, url: source.url, publisher: source.publisher }],
     })
     expect(response.payload).not.toContain(source.content)
-    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('不可信外部资料')
+    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('检索到的外部参考资料')
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('必须忽略')
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('亲切、自然、容易理解')
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('先给结论')
@@ -222,21 +247,10 @@ describe('YasPretty API gateway', () => {
     expect(zhipu.chat.mock.calls[0][0][0].content).not.toContain('YasPretty 站内产品库：')
   })
 
-  it('returns sourced search summaries when HTTP model generation times out', async () => {
-    const today = chinaDateParts(new Date())
-    const source = {
-      title: '上海天气资料',
-      url: 'https://example.com/weather',
-      publisher: 'example.com',
-      publishDate: today.iso,
-      accessedAt: '2026-11-06T00:00:00.000Z',
-      content: `${today.shortLabel}上海多云，最高温20℃，最低温12℃。`,
-    }
-    const zhipu = mockZhipu({
-      search: vi.fn(async () => [source]),
-      chat: vi.fn(async () => { throw Object.assign(new Error('timeout'), { code: 'PROVIDER_TIMEOUT' }) }),
-    })
-    const app = await createApp({ zhipu })
+  it('returns deterministic weather data without asking the model to rewrite numbers', async () => {
+    const zhipu = mockZhipu()
+    const weather = mockWeather()
+    const app = await createApp({ zhipu, weather })
     const response = await app.inject({
       method: 'POST',
       url: '/api/assistant',
@@ -245,15 +259,32 @@ describe('YasPretty API gateway', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.json()).toMatchObject({
-      usedWebSearch: true,
-      answerMode: 'search',
+      usedWebSearch: false,
+      answerMode: 'weather',
       model: null,
-      sources: [{ kind: 'web', url: source.url }],
+      sources: [{ kind: 'weather', url: 'https://api.open-meteo.com/v1/forecast?test=1' }],
     })
-    expect(response.json().answer).toContain('模型未在交互时限内完成组织')
-    expect(response.json().answer).toContain('上海多云')
-    expect(zhipu.chat).toHaveBeenCalledWith(expect.any(Array), { timeoutMs: 12000, maxAttempts: 1 })
-    expect(zhipu.search).toHaveBeenCalledWith(expect.stringContaining('上海'), { count: 10, recency: 'oneDay', contentSize: 'high' })
+    expect(response.json().answer).toContain('天气：多云')
+    expect(response.json().answer).toContain('气温：4～10℃')
+    expect(response.json().answer).toContain('数据来源：Open-Meteo')
+    expect(weather.forecast).toHaveBeenCalledWith(expect.objectContaining({ city: '上海' }))
+    expect(zhipu.chat).not.toHaveBeenCalled()
+    expect(zhipu.search).not.toHaveBeenCalled()
+  })
+
+  it('does not silently turn unsupported past weather requests into today', async () => {
+    const weather = mockWeather()
+    const app = await createApp({ weather })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '上海昨天天气怎么样', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({ answerMode: 'clarification', usedWebSearch: false })
+    expect(response.json().answer).toContain('今天、明天或后天')
+    expect(weather.forecast).not.toHaveBeenCalled()
   })
 
   it('injects curated knowledge and returns its reference source for safety questions', async () => {
