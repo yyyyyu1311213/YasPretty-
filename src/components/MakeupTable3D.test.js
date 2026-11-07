@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { COSMETIC_ITEMS, categoryForCosmetic } from './makeup-table-3d/cosmetics'
 import { getScenePerformanceProfile } from './makeup-table-3d/performance-profile'
+import { AUTO_BLOOM_DELAY_MS, SCENE_READY_TIMEOUT_MS } from './MakeupTable3D'
 
 describe('3D 化妆桌受控数据', () => {
   it('只包含八件具有唯一 ID 的品类符号', () => {
@@ -33,7 +34,7 @@ describe('3D 化妆桌受控数据', () => {
     })
   })
 
-  it('桌面高性能档限制像素倍率并保留短时引导效果', () => {
+  it('桌面高性能档限制像素倍率并保留持续指针效果', () => {
     expect(getScenePerformanceProfile({ width: 1440, devicePixelRatio: 2, hardwareConcurrency: 12, deviceMemory: 16 })).toEqual({
       constrained: false,
       dpr: 1.25,
@@ -41,5 +42,15 @@ describe('3D 化妆桌受控数据', () => {
       contactShadowResolution: 256,
       showGhostCursor: true,
     })
+  })
+
+  it('场景未就绪时使用有限等待后回退', () => {
+    expect(SCENE_READY_TIMEOUT_MS).toBeGreaterThanOrEqual(4000)
+    expect(SCENE_READY_TIMEOUT_MS).toBeLessThanOrEqual(8000)
+  })
+
+  it('视角推进完成后再自动触发花瓣陈列', () => {
+    expect(AUTO_BLOOM_DELAY_MS).toBeGreaterThanOrEqual(1080)
+    expect(AUTO_BLOOM_DELAY_MS).toBeLessThanOrEqual(1400)
   })
 })

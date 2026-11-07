@@ -103,6 +103,8 @@ async function buildApp(options = {}) {
   const zhipuProvider = options.providers?.zhipu || createZhipuProvider({
     apiKey: config.zhipuApiKey,
     model: config.zhipuModel,
+    searchEngine: config.zhipuSearchEngine,
+    maxTokens: config.zhipuMaxTokens,
     timeoutMs: config.upstreamTimeoutMs,
   })
   const assistantService = createAssistantService({ zhipuProvider, products })

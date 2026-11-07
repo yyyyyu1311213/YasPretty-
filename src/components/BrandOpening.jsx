@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import StrokeText from './StrokeText'
 
@@ -67,6 +67,11 @@ export default function BrandOpening({ onComplete }) {
   const [reduced, setReduced] = useState(prefersReducedMotion)
   const [closing, setClosing] = useState(false)
   const [skipping, setSkipping] = useState(false)
+  const skipTimerRef = useRef(null)
+
+  useEffect(() => () => {
+    if (skipTimerRef.current !== null) window.clearTimeout(skipTimerRef.current)
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
@@ -92,7 +97,11 @@ export default function BrandOpening({ onComplete }) {
   function skip() {
     setSkipping(true)
     setClosing(true)
-    window.setTimeout(onComplete, reduced ? 0 : 120)
+    if (skipTimerRef.current !== null) window.clearTimeout(skipTimerRef.current)
+    skipTimerRef.current = window.setTimeout(() => {
+      skipTimerRef.current = null
+      onComplete()
+    }, reduced ? 0 : 120)
   }
 
   return (

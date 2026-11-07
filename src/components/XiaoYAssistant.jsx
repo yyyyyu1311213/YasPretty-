@@ -11,10 +11,11 @@ import {
 } from 'lucide-react'
 import { categoryOptions, finishOptions, products, skinOptions } from '../data/products'
 import { xiaoyStorage } from '../lib/xiaoy-storage'
-import MakeupWorkbench from './MakeupWorkbench'
+import MakeupWorkbench, { legacyToForm, toPlanPayload } from './MakeupWorkbench'
 
 const SCENE_OPTIONS = ['通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
 const ASSISTANT_ENDPOINT = '/api/assistant'
+const PLAN_ENDPOINT = '/api/makeup-plans'
 
 const welcomeMessage = {
   id: 'welcome',
@@ -43,15 +44,16 @@ function createMessage(role, content, productIds = [], sources = []) {
 function detectIntent(text, profile = {}) {
   const mentioned = findMentionedProducts(text)
   if (mentioned.length && /(对比|区别|哪个好|哪个更)/.test(text)) return 'product_comparison'
-  if (/(妆容方案|完整妆容|化妆步骤|怎么化|妆面规划|设计(?:一个)?妆|(?:约会|通勤|日常|晚宴)妆)/.test(text)) return 'makeup_plan'
+  if (/(妆容方案|完整妆容|妆容教程|妆教|化妆教程|化妆步骤|怎么化|如何画|教我画|妆面规划|设计(?:一个)?妆|(?:韩女|水光|拍照|秋日|落叶|约会|通勤|日常|晚宴)妆容?)/.test(text)) return 'makeup_plan'
+  if (/肤质/.test(text) && /(判断|分辨|怎么看|怎么知道|测试|自测|属于|是什么)/.test(text)) return 'external_question'
   if (mentioned.length || /(推荐|选什么|怎么选|哪个好|粉底|底妆|气垫|遮瑕|散粉|肤质|油皮|干皮|妆效|持妆|色号|卡粉|脱妆|预算)/.test(text)) return 'catalog_recommendation'
   if (/^(你好|嗨|hello|hi|在吗)[！!。？?\s]*$/i.test(text)) return 'greeting_help'
   return 'external_question'
 }
 
 function needsOnlineResearch(text, intent) {
-  if (intent === 'external_question' || intent === 'external_research' || intent === 'product_fact') return true
-  if (/(最新|最近|现在|目前|今年|2026|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买)/.test(text)) return true
+  if (intent === 'external_research' || intent === 'product_fact') return true
+  if (/(今天|明天|天气|最新|最近|现在|目前|今年|2026|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买)/.test(text)) return true
   if (/(口红|唇釉|眼影|腮红|高光|修容|睫毛膏|眉笔|香水|护肤|面霜|精华|防晒)/.test(text)) return true
   return false
 }
@@ -161,6 +163,72 @@ function localReply(text, profile) {
   }
 }
 
+function planPayloadFromConversation(text, profile) {
+  const form = legacyToForm(profile)
+  const wearMatch = text.match(/(\d{1,2})\s*(?:小时|h)/i)
+  const style = /水光|清透|韩女/.test(text)
+    ? '清透'
+    : /氛围|浓妆/.test(text)
+      ? '氛围'
+      : /精致/.test(text)
+        ? '精致'
+        : /柔雾|哑光/.test(text)
+          ? '柔雾'
+          : '自然'
+  const priorities = [
+    /轻薄|水光|清透/.test(text) && '轻薄',
+    /持妆|长时间/.test(text) && '持妆',
+    /遮瑕/.test(text) && '遮瑕',
+    /控油|油皮/.test(text) && '控油',
+    /保湿|水光|干皮/.test(text) && '保湿',
+    /快速|通勤/.test(text) && '快速完成',
+  ].filter(Boolean).slice(0, 4)
+
+  return toPlanPayload({
+    ...form,
+    scene: profile.scene || SCENE_OPTIONS.find((item) => text.includes(item)) || form.scene,
+    style,
+    wearHours: wearMatch ? Math.min(24, Math.max(1, Number(wearMatch[1]))) : form.wearHours,
+    priorities: priorities.length ? priorities : form.priorities,
+  })
+}
+
+function formatPlanReply(plan) {
+  const steps = plan.steps.map((step, index) => (
+    `${index + 1}. ${step.category}：${step.technique}${step.colorDirection && step.colorDirection !== '不涉及颜色' ? `\n颜色方向：${step.colorDirection}` : ''}`
+  ))
+  const modeNote = plan.sourceMode === 'local'
+    ? '这是本地规则方案；补充肤质、预算和场景后可以再生成。'
+    : '模型方案已通过结构和产品 ID 校验。'
+
+  return {
+    text: `${plan.title}\n\n${plan.summary}\n\n${steps.join('\n\n')}\n\n${modeNote}`,
+    productIds: [...new Set(plan.recommendedProductIds)].slice(0, 3),
+    sources: [],
+    sourceMode: plan.sourceMode,
+  }
+}
+
+function localMakeupReply(text, profile) {
+  const waterGlow = /水光|亮泽|清透|韩女/.test(text)
+  const baseProducts = recommendProducts({ ...profile, category: '粉底液' }, '底妆').slice(0, 2)
+  const finish = waterGlow ? '清透水光' : (profile.finish || '自然')
+  return {
+    text: `${finish}妆容可以先按这 7 步完成：
+
+1. 妆前：分区薄涂保湿，等表面不黏后再上底妆。
+2. 底妆：从面中向外少量铺开，需要遮盖的位置分次叠加，不用厚涂制造光泽。
+3. 遮瑕：只点涂眼下、鼻翼或局部瑕疵，边缘轻拍晕开。
+4. 定妆：只在容易移位的位置少量按压散粉，保留面中和颧骨的自然光泽。
+5. 眉眼：用低饱和棕色轻填眉毛与睫毛根部，眼尾少量加深。
+6. 腮红：选择低饱和裸粉或杏桃方向，从颧骨高点向外少量晕开。
+7. 唇妆：先薄涂裸粉、豆沙或柔和珊瑚色，再按整体冷暖调整。
+
+这是本地基础方案，没有使用照片分析或联网资料。光泽会受灯光、肤质和用量影响；如有刺痛、红肿或不适，请停止使用。补充肤质、预算和场景后，可以生成更贴合的方案。`,
+    products: baseProducts,
+  }
+}
+
 function parseAssistantResult(raw) {
   const ids = [...raw.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)]
     .map((match) => match[1].trim())
@@ -182,9 +250,33 @@ async function requestAssistant({ text, messages, profile }) {
     }),
   })
   const data = await response.json().catch(() => null)
-  if (!response.ok) throw new Error(data?.error?.message || `请求失败（${response.status}）`)
+  if (!response.ok) {
+    const error = new Error(data?.error?.message || `请求失败（${response.status}）`)
+    error.code = data?.error?.code || 'REQUEST_FAILED'
+    throw error
+  }
   if (!data?.answer) throw new Error('智能服务没有返回内容')
-  return { ...parseAssistantResult(data.answer), sources: data.sources || [] }
+  return {
+    ...parseAssistantResult(data.answer),
+    sources: data.sources || [],
+    answerMode: data.answerMode || 'model',
+    model: data.model || '',
+  }
+}
+
+function cleanErrorMessage(message) {
+  return String(message || '服务暂时不可用').trim().replace(/[。.!！?？]+$/u, '')
+}
+
+async function requestMakeupPlan({ text, profile }) {
+  const response = await fetch(PLAN_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(planPayloadFromConversation(text, profile)),
+  })
+  const data = await response.json().catch(() => null)
+  if (!response.ok || !data?.plan) throw new Error(data?.error?.message || `方案生成失败（${response.status}）`)
+  return formatPlanReply(data.plan)
 }
 
 function ProfileSummary({ profile }) {
@@ -225,7 +317,7 @@ function SourceList({ sources }) {
   if (!sources?.length) return null
   return (
     <div className="xiaoy-sources">
-      <span>联网来源</span>
+      <span>参考来源</span>
       {sources.map((source, index) => (
         <a key={`${source.url}-${index}`} href={source.url} target="_blank" rel="noreferrer">
           <b>[{index + 1}]</b>{source.title}<ChevronRight size={14} />
@@ -241,6 +333,7 @@ export default function XiaoYAssistant({ onOpenProduct }) {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [mode, setMode] = useState('ready')
+  const [activeModel, setActiveModel] = useState('')
   const [activity, setActivity] = useState('小Y正在识别需求并查询...')
   const messageEndRef = useRef(null)
 
@@ -275,38 +368,61 @@ export default function XiaoYAssistant({ onOpenProduct }) {
     setBusy(true)
 
     try {
+      if (intent === 'makeup_plan' && !onlineResearch) {
+        setActivity('正在生成可调整的妆容方案...')
+        const result = await requestMakeupPlan({ text, profile: nextProfile })
+        setMessages((current) => [...current, createMessage('assistant', result.text, result.productIds)])
+        setMode(result.sourceMode === 'model' ? 'ai' : 'local')
+        setActiveModel(result.sourceMode === 'model' ? 'glm-5.3-flash' : '')
+        return
+      }
+
       if (intent === 'catalog_recommendation' || intent === 'product_comparison' || intent === 'greeting_help') {
         if (onlineResearch) {
           setActivity('正在联网检索相关资料...')
           const result = await requestAssistant({ text, messages, profile: nextProfile })
           setMessages((current) => [...current, createMessage('assistant', result.text, result.productIds, result.sources)])
           setMode('web')
+          setActiveModel(result.model)
           return
         }
         const result = localReply(text, nextProfile)
         setMessages((current) => [...current, createMessage('assistant', result.text, result.products.map((product) => product.id))])
         setMode('local')
+        setActiveModel('')
         return
       }
 
-      setActivity('正在联网检索相关资料...')
+      setActivity(onlineResearch ? '正在联网检索相关资料...' : '小Y正在组织回答...')
       const result = await requestAssistant({ text, messages, profile: nextProfile })
       setMessages((current) => [...current, createMessage('assistant', result.text, result.productIds, result.sources)])
-      setMode(result.sources.length ? 'web' : 'ai')
+      setMode(result.sources.some((source) => source.kind === 'web') ? 'web' : result.answerMode === 'clarification' ? 'ready' : result.sources.length ? 'knowledge' : 'ai')
+      setActiveModel(result.model)
     } catch (error) {
+      const errorMessage = cleanErrorMessage(error.message)
       if (intent === 'external_question') {
-        setMessages((current) => [...current, createMessage('assistant', `智能服务当前不可用：${error.message}。站内产品浏览和本地推荐仍可正常使用。`)])
+        setMessages((current) => [...current, createMessage('assistant', `智能服务当前不可用：${errorMessage}。站内产品浏览和本地推荐仍可正常使用。`)])
         setMode('error')
+        setActiveModel('')
         return
       }
       if (onlineResearch) {
-        setMessages((current) => [...current, createMessage('assistant', `联网检索当前不可用：${error.message}。我不会用未经检索的信息冒充实时结果；你仍可询问不依赖实时信息的站内产品推荐。`)])
+        setMessages((current) => [...current, createMessage('assistant', `联网检索当前不可用：${errorMessage}。我不会用未经检索的信息冒充实时结果；你仍可询问不依赖实时信息的站内产品推荐。`)])
         setMode('error')
+        setActiveModel('')
+        return
+      }
+      if (intent === 'makeup_plan') {
+        const result = localMakeupReply(text, nextProfile)
+        setMessages((current) => [...current, createMessage('assistant', result.text, result.products.map((product) => product.id))])
+        setMode('local')
+        setActiveModel('')
         return
       }
       const result = localReply(text, nextProfile)
       setMessages((current) => [...current, createMessage('assistant', result.text, result.products.map((product) => product.id))])
       setMode('local')
+      setActiveModel('')
     } finally {
       setBusy(false)
     }
@@ -316,6 +432,7 @@ export default function XiaoYAssistant({ onOpenProduct }) {
     setMessages([welcomeMessage])
     setProfile({})
     setMode('ready')
+    setActiveModel('')
   }
 
   return (
@@ -327,7 +444,7 @@ export default function XiaoYAssistant({ onOpenProduct }) {
           <p>从肤质、妆效、场景和预算出发，只推荐资料库中能够说明依据的产品。</p>
         </div>
         <div className="xiaoy-heading-actions">
-          <span className={`xiaoy-mode ${mode}`}>{mode === 'web' ? '联网思考' : mode === 'ai' ? 'AI 对话' : mode === 'local' ? '资料库推荐' : mode === 'tool' ? '实时工具' : mode === 'error' ? '连接异常' : '已就绪'}</span>
+          <span className={`xiaoy-mode ${mode}`}>{mode === 'web' ? '联网思考' : mode === 'knowledge' ? activeModel ? `${activeModel} · 知识库` : '知识库参考' : mode === 'ai' ? activeModel || 'AI 对话' : mode === 'local' ? '资料库推荐' : mode === 'tool' ? '实时工具' : mode === 'error' ? '连接异常' : '已就绪'}</span>
           <button onClick={resetConversation} aria-label="重新开始" title="重新开始"><RefreshCw size={18} /></button>
         </div>
       </div>
@@ -379,10 +496,14 @@ export default function XiaoYAssistant({ onOpenProduct }) {
 }
 
 export {
+  cleanErrorMessage,
   detectIntent,
   extractProfile,
   localReply,
+  localMakeupReply,
   needsOnlineResearch,
   parseAssistantResult,
+  planPayloadFromConversation,
+  formatPlanReply,
   recommendProducts,
 }

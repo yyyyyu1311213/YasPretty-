@@ -23,6 +23,7 @@ const assistantRequestSchema = z.object({
 }).strict()
 
 const sourceSchema = z.object({
+  kind: z.enum(['web', 'knowledge']).default('web'),
   title: z.string().trim().min(1).max(300),
   url: z.string().url().max(2000),
   publisher: z.string().trim().max(200).default(''),
@@ -65,8 +66,10 @@ const productRecordSchema = z.object({
 
 const assistantResponseSchema = z.object({
   answer: z.string().trim().min(1).max(20000),
-  sources: z.array(sourceSchema).max(5),
+  sources: z.array(sourceSchema).max(8),
   usedWebSearch: z.boolean(),
+  answerMode: z.enum(['model', 'knowledge', 'search', 'clarification']),
+  model: z.string().trim().min(1).max(80).nullable(),
 }).strict()
 
 const userProfileSchema = z.object({

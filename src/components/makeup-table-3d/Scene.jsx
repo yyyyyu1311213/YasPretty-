@@ -32,23 +32,48 @@ function CameraRig({ exploded, introFocus, reducedMotion, controlsRef }) {
   return null
 }
 
+function StudioBackdrop() {
+  return (
+    <group name="studio-backdrop">
+      <mesh position={[0, 4.2, -5.4]} receiveShadow>
+        <planeGeometry args={[40, 16]} />
+        <meshBasicMaterial color="#fbefea" />
+      </mesh>
+      <mesh position={[0, -3.42, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[40, 40]} />
+        <meshBasicMaterial color="#eadbd5" />
+      </mesh>
+      <mesh position={[0, -3.12, -5.16]} receiveShadow>
+        <boxGeometry args={[40, .18, .16]} />
+        <meshBasicMaterial color="#ddbeb6" />
+      </mesh>
+      <mesh position={[0, -2.92, -5.07]}>
+        <boxGeometry args={[40, .035, .035]} />
+        <meshBasicMaterial color="#fff5ef" />
+      </mesh>
+    </group>
+  )
+}
+
 function World({ exploded, introFocus, reducedMotion, quality, onItemClick }) {
   const controlsRef = useRef(null)
   const itemRefs = useMemo(() => COSMETIC_ITEMS.map(() => createRef()), [])
   return (
     <>
-      <fog attach="fog" args={['#fff5ee', 16, 36]} />
-      <ambientLight intensity={1.82} />
-      <directionalLight position={[5, 9, 7]} intensity={2.42} color="#fff0d8" />
-      <directionalLight position={[-5, 4, 2]} intensity={.82} color="#ffd9e2" />
+      <fog attach="fog" args={['#f7ebe6', 18, 42]} />
+      <StudioBackdrop />
+      <hemisphereLight args={['#fff8f2', '#ead1cc', .5]} />
+      <ambientLight intensity={1.62} />
+      <directionalLight position={[5, 9, 7]} intensity={1.95} color="#fff0d8" />
+      <directionalLight position={[-5, 4, 2]} intensity={.58} color="#ffd9e2" />
+      <pointLight position={[0, 4.5, 4]} intensity={.42} distance={18} color="#fff7f1" />
 
       <DressingTable />
       {COSMETIC_ITEMS.map((item, index) => (
         <CosmeticItem key={item.id} ref={itemRefs[index]} item={item} index={index} exploded={exploded} reducedMotion={reducedMotion} onClick={onItemClick} />
       ))}
       <ParticleBurst active={exploded} reducedMotion={reducedMotion} />
-      <ContactShadows position={[0, -3.35, 0]} opacity={.2} scale={14} blur={3.8} far={8} resolution={quality.contactShadowResolution} color="#b98180" />
-      <mesh position={[0, -3.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><planeGeometry args={[28, 28]} /><meshStandardMaterial color="#fff5ee" roughness={1} /></mesh>
+      <ContactShadows position={[0, -3.35, 0]} opacity={.18} scale={16} blur={4.6} far={7} resolution={quality.contactShadowResolution} color="#a87372" />
 
       <OrbitControls ref={controlsRef} makeDefault enablePan={false} enableDamping dampingFactor={.075} minDistance={8.4} maxDistance={26} minPolarAngle={Math.PI * .22} maxPolarAngle={Math.PI * .48} minAzimuthAngle={-Math.PI * .3} maxAzimuthAngle={Math.PI * .3} />
       <CameraRig exploded={exploded} introFocus={introFocus} reducedMotion={reducedMotion} controlsRef={controlsRef} />

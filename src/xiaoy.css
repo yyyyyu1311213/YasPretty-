@@ -1,6 +1,6 @@
 /* 小Y智能选妆 */
-.assistant-entry-button { display: inline-flex; align-items: center; gap: 7px; margin: -2px 0 23px; border: 1px solid var(--yp-rose-deep); border-radius: var(--yp-radius-control); padding: 11px 14px; color: #fffaf5; background: var(--yp-rose-deep); font-size: 12px; font-weight: 600; transition: background var(--yp-motion-fast) var(--yp-ease-standard), transform var(--yp-motion-fast) var(--yp-ease-standard); }
-.assistant-entry-button:hover { background: #744b49; transform: translateY(-1px); }
+.assistant-entry-button { display: inline-flex; align-items: center; gap: 7px; margin: -2px 0 23px; border: 1px solid var(--yp-hero-button); border-radius: var(--yp-radius-control); padding: 11px 14px; color: #5b4a43; background: var(--yp-hero-button); font-size: 12px; font-weight: 600; transition: background var(--yp-motion-fast) var(--yp-ease-standard), transform var(--yp-motion-fast) var(--yp-ease-standard); }
+.assistant-entry-button:hover { background: var(--yp-hero-button-hover); transform: translateY(-1px); }
 .assistant-entry-button:active { transform: translateY(0); }
 .xiaoy-page { min-height: 720px; padding: 61px 0 92px; }
 .xiaoy-heading { display: flex; align-items: end; justify-content: space-between; gap: 32px; padding-bottom: 31px; border-bottom: 1px solid #d8d1ca; }
@@ -199,7 +199,9 @@
 /* Keep the assistant and workbench inside the same paper, rose and sage system. */
 .xiaoy-page { color: var(--yp-ink); background: var(--yp-paper); }
 .xiaoy-panel, .makeup-workbench, .xiaoy-settings { border-color: var(--yp-line); background: var(--yp-surface); }
-.assistant-entry-button, .makeup-plan-submit, .xiaoy-composer button { border-color: var(--yp-rose-deep); background: var(--yp-rose-deep); }
-.assistant-entry-button:hover, .makeup-plan-submit:hover, .xiaoy-composer button:hover { background: #744b49; }
+.assistant-entry-button { border-color: var(--yp-hero-button); color: #5b4a43; background: var(--yp-hero-button); }
+.assistant-entry-button:hover { background: var(--yp-hero-button-hover); }
+.makeup-plan-submit, .xiaoy-composer button { border-color: var(--yp-rose-deep); background: var(--yp-rose-deep); }
+.makeup-plan-submit:hover, .xiaoy-composer button:hover { background: #744b49; }
 .xiaoy-prompts button, .makeup-workbench-form select, .makeup-workbench-form input[type='number'], .xiaoy-settings input, .xiaoy-settings select { border-color: var(--yp-line); color: var(--yp-ink); background: var(--yp-surface); }
 .xiaoy-message.success, .makeup-plan-source.local { border-color: rgba(117, 141, 130, .42); color: #46655a; background: rgba(237, 244, 240, .8); }

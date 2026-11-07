@@ -1,6 +1,6 @@
 import { Component, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Info, Maximize2, RotateCcw, Sparkles } from 'lucide-react'
+import { Info, Maximize2, RotateCcw } from 'lucide-react'
 import LegacyMakeupTable from './MakeupTable'
 import Scene from './makeup-table-3d/Scene'
 import { COSMETIC_ITEMS } from './makeup-table-3d/cosmetics'
@@ -8,7 +8,8 @@ import GhostCursor from './makeup-table-3d/GhostCursor'
 import { readScenePerformanceProfile } from './makeup-table-3d/performance-profile'
 import './MakeupTable3D.css'
 
-const GHOST_LIFETIME_MS = 3200
+export const SCENE_READY_TIMEOUT_MS = 6000
+export const AUTO_BLOOM_DELAY_MS = 1180
 
 function canUseWebGL() {
   try {
@@ -81,10 +82,10 @@ export default function MakeupTable3D(props) {
   const [webGLAvailable] = useState(canUseWebGL)
   const [ready, setReady] = useState(false)
   const [sceneMounted, setSceneMounted] = useState(false)
-  const [ghostVisible, setGhostVisible] = useState(false)
-  const [ghostDismissed, setGhostDismissed] = useState(false)
+  const [sceneUnavailable, setSceneUnavailable] = useState(false)
   const [exploded, setExploded] = useState(false)
   const [introFocus, setIntroFocus] = useState(false)
+  const [autoBloomPlayed, setAutoBloomPlayed] = useState(false)
   const reducedMotion = useReducedMotionPreference()
   const performanceProfile = useScenePerformanceProfile()
   const fallback = useMemo(() => <LegacyMakeupTable {...props} />, [props])
@@ -92,13 +93,21 @@ export default function MakeupTable3D(props) {
   useEffect(() => {
     if (!openingReady) {
       setSceneMounted(false)
+      setSceneUnavailable(false)
       setReady(false)
-      setGhostDismissed(false)
+      setExploded(false)
+      setAutoBloomPlayed(false)
       return undefined
     }
     const frame = window.requestAnimationFrame(() => setSceneMounted(true))
     return () => window.cancelAnimationFrame(frame)
   }, [openingReady])
+
+  useEffect(() => {
+    if (!sceneMounted || ready) return undefined
+    const timer = window.setTimeout(() => setSceneUnavailable(true), SCENE_READY_TIMEOUT_MS)
+    return () => window.clearTimeout(timer)
+  }, [ready, sceneMounted])
 
   useEffect(() => {
     setIntroFocus(false)
@@ -111,19 +120,15 @@ export default function MakeupTable3D(props) {
   }, [openingReady, reducedMotion])
 
   useEffect(() => {
-    if (!ready || reducedMotion || exploded || ghostDismissed || !performanceProfile.showGhostCursor) {
-      setGhostVisible(false)
-      return undefined
-    }
-    const showTimer = window.setTimeout(() => setGhostVisible(true), 180)
-    const hideTimer = window.setTimeout(() => setGhostVisible(false), GHOST_LIFETIME_MS)
-    return () => {
-      window.clearTimeout(showTimer)
-      window.clearTimeout(hideTimer)
-    }
-  }, [exploded, ghostDismissed, performanceProfile.showGhostCursor, ready, reducedMotion])
+    if (!ready || !introFocus || autoBloomPlayed) return undefined
+    const timer = window.setTimeout(() => {
+      setAutoBloomPlayed(true)
+      setExploded(true)
+    }, reducedMotion ? 0 : AUTO_BLOOM_DELAY_MS)
+    return () => window.clearTimeout(timer)
+  }, [autoBloomPlayed, introFocus, ready, reducedMotion])
 
-  if (!webGLAvailable) return fallback
+  if (!webGLAvailable || sceneUnavailable) return fallback
 
   function handleItemClick(item) {
     onViewCategory(item.category)
@@ -133,16 +138,21 @@ export default function MakeupTable3D(props) {
     onViewCategory(item.category)
   }
 
+  function handleCollapse() {
+    setAutoBloomPlayed(true)
+    setExploded(false)
+  }
+
   return (
     <SceneErrorBoundary fallback={fallback}>
       <section className="makeup-3d-section content-section" aria-labelledby="makeup-3d-title">
         <h2 id="makeup-3d-title" className="makeup-3d-sr-title">交互式化妆桌</h2>
 
         <motion.div className="makeup-3d-stage" initial={{ opacity: 0, y: 24 }} animate={openingReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }} transition={{ duration: reducedMotion ? .01 : .72, ease: [.2, .8, .2, 1] }}>
-          <div className="makeup-3d-canvas" role="img" aria-label={exploded ? '八件化妆品以花瓣形悬浮展开的三维化妆桌' : '摆放八件化妆品的三维粉色化妆桌'} onPointerDown={() => { setGhostDismissed(true); setGhostVisible(false) }}>
-            {sceneMounted && <Scene exploded={exploded} introFocus={introFocus} reducedMotion={reducedMotion} quality={performanceProfile} onItemClick={handleItemClick} onBackgroundClick={() => setExploded(false)} onReady={() => setReady(true)} />}
+          <div className="makeup-3d-canvas" role="img" aria-label={exploded ? '八件化妆品以花瓣形悬浮展开的三维化妆桌' : '摆放八件化妆品的三维粉色化妆桌'}>
+            {sceneMounted && <Scene exploded={exploded} introFocus={introFocus} reducedMotion={reducedMotion} quality={performanceProfile} onItemClick={handleItemClick} onBackgroundClick={handleCollapse} onReady={() => setReady(true)} />}
           </div>
-          {ghostVisible && !exploded && <div className="makeup-3d-ghost-layer" aria-hidden="true"><GhostCursor color="#f6d3f6" size={56} trailLength={24} inertia={0.42} turbulence={0.42} drift={-0.1} detail={0.68} brightness={0.94} bloomStrength={0.3} bloomRadius={0.58} bloomThreshold={0.05} grainIntensity={0.012} theme="light" mixBlendMode="normal" intro fadeDelayMs={620} fadeDurationMs={900} maxDevicePixelRatio={1.25} targetPixels={220000} zIndex={2} /><div className="makeup-3d-ghost-particles">{GHOST_PARTICLES.map((particle, index) => <i key={index} style={{ '--particle-x': particle.x, '--particle-y': particle.y, '--particle-size': `${particle.size}px`, '--particle-delay': particle.delay, '--particle-duration': particle.duration, '--particle-drift': particle.drift }} />)}</div></div>}
+          {ready && !reducedMotion && !exploded && performanceProfile.showGhostCursor && <div className="makeup-3d-ghost-layer" aria-hidden="true"><GhostCursor color="#f6d3f6" size={56} trailLength={24} inertia={0.42} turbulence={0.42} drift={-0.1} detail={0.68} brightness={0.94} bloomStrength={0.3} bloomRadius={0.58} bloomThreshold={0.05} grainIntensity={0.012} theme="light" mixBlendMode="normal" intro fadeDelayMs={620} fadeDurationMs={900} maxDevicePixelRatio={1.25} targetPixels={220000} zIndex={2} /><div className="makeup-3d-ghost-particles">{GHOST_PARTICLES.map((particle, index) => <i key={index} style={{ '--particle-x': particle.x, '--particle-y': particle.y, '--particle-size': `${particle.size}px`, '--particle-delay': particle.delay, '--particle-duration': particle.duration, '--particle-drift': particle.drift }} />)}</div></div>}
 
           <AnimatePresence>
             {!ready && <motion.div className="makeup-3d-loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><span />正在准备妆台</motion.div>}
@@ -150,15 +160,7 @@ export default function MakeupTable3D(props) {
 
           <div className="makeup-3d-status makeup-3d-stage-label" aria-live="polite"><span>{exploded ? '花瓣陈列' : '桌面全景'}</span><small>{exploded ? '8 件妆具已展开' : '点击妆具进入对应产品品类'}</small></div>
           <div className="makeup-3d-tools">
-            <button type="button" className={`makeup-3d-bloom-toggle${exploded ? ' is-active' : ''}`} aria-label={exploded ? '收拢花瓣陈列' : '展开花瓣陈列'} aria-pressed={exploded} title={exploded ? '收拢花瓣陈列' : '展开花瓣陈列'} onClick={() => setExploded((current) => !current)}><Sparkles size={17} /></button>
-            <button type="button" className="makeup-3d-reset" aria-label="恢复默认视角并收拢妆具" title="恢复默认视角" onClick={() => setExploded(false)}><RotateCcw size={18} /></button>
-          </div>
-          <div className={`makeup-3d-bloom-guide${exploded ? ' is-hidden' : ''}`} aria-label="点击右上角闪光按钮查看花瓣展开效果">
-            <span>点击这里 会有奇妙效果哦</span>
-            <svg viewBox="0 0 250 105" aria-hidden="true">
-              <path d="M108 92 C91 80 92 61 107 53 C123 45 137 53 133 67 C129 80 111 80 107 66 C102 45 132 29 160 25 C191 21 216 15 244 10" />
-              <path d="M235 3 L244 10 L235 17" />
-            </svg>
+            <button type="button" className="makeup-3d-reset" aria-label="恢复默认视角并收拢妆具" title="恢复默认视角" onClick={handleCollapse}><RotateCcw size={18} /></button>
           </div>
 
           <nav className="makeup-3d-category-rail" aria-label="化妆桌品类">

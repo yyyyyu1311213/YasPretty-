@@ -23,6 +23,7 @@ chrome-qa*/
 playwright-report/
 test-results/
 screenshots/
+promo-yaspretty/.chrome-profile/
 *.log
 npm-debug.log*
 

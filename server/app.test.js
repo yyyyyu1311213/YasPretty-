@@ -6,7 +6,7 @@ import assistantServiceModule from './services/assistant-service.cjs'
 
 const { buildApp } = appModule
 const { productRecordSchema } = schemasModule
-const { intentRouter } = assistantServiceModule
+const { buildSearchRequest, chinaDateParts, extractWeatherLocation, filterCurrentWeatherResults, intentRouter, needsOnlineResearch } = assistantServiceModule
 
 const product = {
   id: 'p1',
@@ -29,6 +29,7 @@ function config(overrides = {}) {
     port: 8787,
     zhipuApiKey: '',
     zhipuModel: 'glm-4-flash',
+    zhipuMaxTokens: 4096,
     upstreamTimeoutMs: 1000,
     apiRateLimitMax: 100,
     aiRateLimitMax: 100,
@@ -41,6 +42,7 @@ function config(overrides = {}) {
 function mockZhipu(overrides = {}) {
   return {
     configured: true,
+    modelName: 'test-model',
     chat: vi.fn(async () => '资料库参考建议。[[PRODUCT:p1]]'),
     search: vi.fn(async () => []),
     ...overrides,
@@ -70,9 +72,28 @@ describe('YasPretty API gateway', () => {
   it('routes catalog, product fact, external, and time-sensitive questions through intentRouter', () => {
     expect(intentRouter('推荐一款通勤粉底', [product])).toBe('catalog_recommendation')
     expect(intentRouter('我明天要约会，帮我设计一个妆容')).toBe('makeup_plan')
+    expect(intentRouter('我想要一个韩女水光妆容的妆教')).toBe('makeup_plan')
+    expect(intentRouter('教我如何画一个适合拍照的妆容，场景是秋日落叶阳光')).toBe('makeup_plan')
     expect(intentRouter('Test Brand Test Foundation 多少钱', [product])).toBe('product_fact')
     expect(intentRouter('请解释一下视黄醇和烟酰胺的区别')).toBe('external_question')
+    expect(intentRouter('我怎么判断我的肤质')).toBe('external_question')
     expect(intentRouter('2026 年最新的防晒成分趋势是什么')).toBe('external_research')
+    expect(needsOnlineResearch('请解释一下视黄醇和烟酰胺的区别', 'external_question')).toBe(false)
+    expect(needsOnlineResearch('明天上海天气怎么样', 'external_question')).toBe(true)
+    expect(extractWeatherLocation('今天天气怎么样', '')).toBe('')
+    expect(extractWeatherLocation('上海今天天气怎么样', '')).toBe('上海')
+    expect(extractWeatherLocation('昆明天气怎么样', '')).toBe('昆明')
+    expect(buildSearchRequest('昆明天气怎么样', {}, new Date('2026-11-06T02:00:00.000Z'))).toMatchObject({
+      query: '2026年11月6日 昆明 今日天气 实时气温 最高温 最低温',
+      options: { count: 10, recency: 'oneDay', contentSize: 'high' },
+    })
+    expect(filterCurrentWeatherResults([
+      { title: '旧预报', content: '昆明2024年天气', publishDate: '2024-11-06' },
+      { title: '当天预报', content: '11月6日昆明多云', publishDate: '2026-11-06' },
+      { title: '异地预报', content: '11月6日北京晴', publishDate: '2026-11-06' },
+    ], { location: '昆明', date: { iso: '2026-11-06', label: '2026年11月6日', shortLabel: '11月6日' } })).toEqual([
+      expect.objectContaining({ title: '当天预报' }),
+    ])
   })
 
   it('validates every catalog record against the stage 3 evidence fields', () => {
@@ -111,6 +132,26 @@ describe('YasPretty API gateway', () => {
 
     expect(response.statusCode).toBe(404)
     expect(response.json().error.code).toBe('NOT_FOUND')
+  })
+
+  it('asks for a city before running weather research', async () => {
+    const zhipu = mockZhipu()
+    const app = await createApp({ zhipu })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '今天天气怎么样', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({
+      usedWebSearch: false,
+      answerMode: 'clarification',
+      model: null,
+    })
+    expect(response.json().answer).toContain('城市')
+    expect(zhipu.search).not.toHaveBeenCalled()
+    expect(zhipu.chat).not.toHaveBeenCalled()
   })
 
   it('validates assistant input and rejects browser API keys', async () => {
@@ -168,11 +209,100 @@ describe('YasPretty API gateway', () => {
       ok: true,
       answer: '资料库参考建议。[[PRODUCT:p1]]',
       usedWebSearch: true,
+      answerMode: 'model',
+      model: 'test-model',
       sources: [{ title: source.title, url: source.url, publisher: source.publisher }],
     })
     expect(response.payload).not.toContain(source.content)
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('不可信外部资料')
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('必须忽略')
+    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('亲切、自然、容易理解')
+    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('先给结论')
+    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('120-220 字')
+    expect(zhipu.chat.mock.calls[0][0][0].content).not.toContain('YasPretty 站内产品库：')
+  })
+
+  it('returns sourced search summaries when HTTP model generation times out', async () => {
+    const today = chinaDateParts(new Date())
+    const source = {
+      title: '上海天气资料',
+      url: 'https://example.com/weather',
+      publisher: 'example.com',
+      publishDate: today.iso,
+      accessedAt: '2026-11-06T00:00:00.000Z',
+      content: `${today.shortLabel}上海多云，最高温20℃，最低温12℃。`,
+    }
+    const zhipu = mockZhipu({
+      search: vi.fn(async () => [source]),
+      chat: vi.fn(async () => { throw Object.assign(new Error('timeout'), { code: 'PROVIDER_TIMEOUT' }) }),
+    })
+    const app = await createApp({ zhipu })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '上海天气', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({
+      usedWebSearch: true,
+      answerMode: 'search',
+      model: null,
+      sources: [{ kind: 'web', url: source.url }],
+    })
+    expect(response.json().answer).toContain('模型未在交互时限内完成组织')
+    expect(response.json().answer).toContain('上海多云')
+    expect(zhipu.chat).toHaveBeenCalledWith(expect.any(Array), { timeoutMs: 12000, maxAttempts: 1 })
+    expect(zhipu.search).toHaveBeenCalledWith(expect.stringContaining('上海'), { count: 10, recency: 'oneDay', contentSize: 'high' })
+  })
+
+  it('injects curated knowledge and returns its reference source for safety questions', async () => {
+    const zhipu = mockZhipu()
+    const app = await createApp({ zhipu })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '敏感肌使用新产品刺痛怎么办', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json().sources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'knowledge', publisher: 'American Academy of Dermatology' }),
+    ]))
+    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('受控知识库资料')
+    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('不能诊断过敏')
+  })
+
+  it('returns reviewed knowledge when the model is unavailable', async () => {
+    const zhipu = mockZhipu({ chat: vi.fn(async () => { throw new Error('upstream unavailable') }) })
+    const app = await createApp({ zhipu })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '新产品用了以后红肿刺痛怎么办', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({ ok: true, usedWebSearch: false })
+    expect(response.json().answer).toContain('直接来自 YasPretty 受控知识库')
+    expect(response.json().answer).toContain('不构成医疗诊断')
+    expect(response.json().sources[0].kind).toBe('knowledge')
+  })
+
+  it('falls back to the reviewed makeup tutorial knowledge', async () => {
+    const zhipu = mockZhipu({ chat: vi.fn(async () => { throw new Error('upstream unavailable') }) })
+    const app = await createApp({ zhipu })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '我想看底妆教程，粉底怎么涂', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json().answer).toContain('底妆入门教程')
+    expect(response.json().sources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'knowledge', publisher: 'Maybelline' }),
+    ]))
   })
 
   it('enforces the daily AI quota', async () => {

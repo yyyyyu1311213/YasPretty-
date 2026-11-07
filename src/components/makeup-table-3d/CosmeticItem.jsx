@@ -34,13 +34,16 @@ function Foundation({ item }) {
 }
 
 function Eyeshadow({ item }) {
-  const pans = [[-.28, .15, '#e8c4c0'], [.28, .15, '#b7797e'], [-.28, -.22, '#d9a89d'], [.28, -.22, '#805154']]
+  const pans = [[-.29, .17, '#e8c4c0'], [.29, .17, '#b7797e'], [-.29, -.21, '#d9a89d'], [.29, -.21, '#805154']]
   return (
     <group>
-      <RoundedBox args={[1.28, .18, .92]} radius={.11} smoothness={5} position={[0, .16, 0]} castShadow><ProductMaterial color="#c6a06f" metalness={.32} roughness={.28} /></RoundedBox>
-      <RoundedBox args={[1.13, .13, .77]} radius={.08} smoothness={4} position={[0, .27, 0]}><ProductMaterial color="#f3ded5" roughness={.65} /></RoundedBox>
-      {pans.map(([x, z, color]) => <mesh key={`${x}-${z}`} position={[x, .355, z]} rotation={[-Math.PI / 2, 0, 0]}><cylinderGeometry args={[.19, .19, .045, 32]} /><ProductMaterial color={color} roughness={.76} /></mesh>)}
-      <mesh position={[0, .37, -.43]}><boxGeometry args={[.32, .025, .025]} /><GoldMaterial color={item.accent} /></mesh>
+      <RoundedBox args={[1.38, .18, 1.02]} radius={.13} smoothness={5} position={[0, .16, 0]} castShadow><ProductMaterial color="#c6a06f" metalness={.32} roughness={.28} /></RoundedBox>
+      <RoundedBox args={[1.24, .11, .88]} radius={.09} smoothness={4} position={[0, .27, 0]}><ProductMaterial color="#f3ded5" roughness={.65} /></RoundedBox>
+      {pans.map(([x, z, color]) => <RoundedBox key={`${x}-${z}`} args={[.46, .065, .34]} radius={.07} smoothness={4} position={[x, .365, z]}><ProductMaterial color={color} roughness={.76} /></RoundedBox>)}
+      <RoundedBox args={[1.24, .88, .055]} radius={.09} smoothness={4} position={[0, .73, -.46]} castShadow><GlassMaterial color="#f0c7c2" opacity={.42} /></RoundedBox>
+      <RoundedBox args={[1.12, .76, .018]} radius={.07} smoothness={4} position={[0, .73, -.495]}><GlassMaterial color="#eadcda" opacity={.56} /></RoundedBox>
+      <RoundedBox args={[.24, .025, .1]} radius={.025} smoothness={3} position={[0, .36, .46]}><GoldMaterial color={item.accent} roughness={.24} /></RoundedBox>
+      <mesh position={[0, .37, -.43]}><boxGeometry args={[.34, .025, .025]} /><GoldMaterial color={item.accent} /></mesh>
     </group>
   )
 }
@@ -53,6 +56,88 @@ function Compact({ item, blush = false }) {
       <mesh position={[0, .32, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[.46, 48]} /><ProductMaterial color={blush ? item.color : '#f0d9ce'} roughness={.72} /></mesh>
       <mesh position={[0, .34, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[.18, .22, 40]} /><ProductMaterial color={blush ? '#edb1b7' : '#f9ede7'} roughness={.78} /></mesh>
       <mesh position={[0, .05, -.61]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[.045, .045, .2, 16]} /><GoldMaterial /></mesh>
+    </group>
+  )
+}
+
+function Cushion({ item }) {
+  return (
+    <group>
+      <mesh position={[0, .17, 0]} castShadow>
+        <cylinderGeometry args={[.62, .66, .22, 64]} />
+        <ProductMaterial color="#dca9a8" metalness={.12} roughness={.3} />
+      </mesh>
+      <mesh position={[0, .3, 0]}>
+        <cylinderGeometry args={[.55, .57, .08, 64]} />
+        <GoldMaterial color={item.accent} roughness={.28} />
+      </mesh>
+      <mesh position={[0, .35, 0]}>
+        <cylinderGeometry args={[.48, .5, .07, 64]} />
+        <ProductMaterial color="#f0d7cf" roughness={.72} />
+      </mesh>
+      <mesh position={[0, .405, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[.43, 64]} />
+        <ProductMaterial color="#e9c1ba" roughness={.78} />
+      </mesh>
+      <mesh position={[0, .418, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[.31, .39, 64]} />
+        <ProductMaterial color="#d99a9b" roughness={.72} />
+      </mesh>
+      <mesh position={[0, .78, -.4]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[.57, .57, .08, 64]} />
+        <ProductMaterial color="#e7b7b5" metalness={.1} roughness={.34} />
+      </mesh>
+      <mesh position={[0, .78, -.445]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[.47, .47, .025, 64]} />
+        <GlassMaterial color="#f4d9d3" opacity={.52} />
+      </mesh>
+    </group>
+  )
+}
+
+function BlushCompact({ item }) {
+  return (
+    <group>
+      <mesh position={[0, .16, 0]} castShadow>
+        <cylinderGeometry args={[.61, .67, .24, 64]} />
+        <ProductMaterial color="#c99391" metalness={.16} roughness={.34} />
+      </mesh>
+      <mesh position={[0, .3, 0]}>
+        <cylinderGeometry args={[.56, .58, .08, 64]} />
+        <GoldMaterial color={item.accent} roughness={.32} />
+      </mesh>
+      <mesh position={[0, .35, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[.49, 64]} />
+        <ProductMaterial color={item.color} roughness={.82} />
+      </mesh>
+      <mesh position={[0, .362, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[.32, .39, 64]} />
+        <ProductMaterial color="#d77f8b" roughness={.74} />
+      </mesh>
+      <mesh position={[0, .37, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[.15, .22, 64]} />
+        <ProductMaterial color="#efb0b4" roughness={.78} />
+      </mesh>
+      <mesh position={[0, .38, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[.045, .075, 48]} />
+        <ProductMaterial color="#f4c7c5" roughness={.76} />
+      </mesh>
+      <mesh position={[.37, .39, .04]} rotation={[-Math.PI / 2, 0, .28]}>
+        <boxGeometry args={[.32, .018, .026]} />
+        <ProductMaterial color="#fff0e7" roughness={.44} />
+      </mesh>
+      <mesh position={[0, .03, -.63]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[.052, .052, .22, 24]} />
+        <GoldMaterial color="#c99a67" roughness={.24} />
+      </mesh>
+      <mesh position={[0, .78, -.4]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[.61, .61, .075, 64]} />
+        <ProductMaterial color="#d9aaa8" metalness={.1} roughness={.34} />
+      </mesh>
+      <mesh position={[0, .78, -.445]} rotation={[Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[.51, 64]} />
+        <GlassMaterial color="#eadcda" opacity={.56} />
+      </mesh>
     </group>
   )
 }
@@ -82,12 +167,17 @@ function Concealer({ item }) {
 
 function Powder({ item }) {
   return (
-    <group>
-      <mesh position={[0, .34, 0]} castShadow><cylinderGeometry args={[.57, .61, .6, 48]} /><GlassMaterial color="#ebc8c4" opacity={.61} /></mesh>
-      <mesh position={[0, .31, 0]}><cylinderGeometry args={[.48, .5, .48, 48]} /><ProductMaterial color="#e7cdbf" roughness={.66} /></mesh>
-      <mesh position={[0, .7, 0]} castShadow><cylinderGeometry args={[.62, .6, .16, 48]} /><GoldMaterial color={item.accent} roughness={.26} /></mesh>
-      <mesh position={[0, .79, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[.46, 48]} /><ProductMaterial color="#f4ded7" roughness={.48} /></mesh>
-      <mesh position={[0, .805, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[.2, .22, 36]} /><GoldMaterial color="#c59b67" /></mesh>
+    <group scale={[1, 1, .84]}>
+      <mesh position={[0, .16, 0]} castShadow><cylinderGeometry args={[.59, .65, .26, 64]} /><ProductMaterial color="#dcb7ae" metalness={.08} roughness={.34} /></mesh>
+      <mesh position={[0, .3, 0]}><cylinderGeometry args={[.56, .58, .09, 64]} /><GoldMaterial color={item.accent} roughness={.28} /></mesh>
+      <mesh position={[0, .36, 0]}><cylinderGeometry args={[.5, .52, .08, 64]} /><ProductMaterial color="#f0d9d0" roughness={.7} /></mesh>
+      <mesh position={[0, .4, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[.47, 64]} /><ProductMaterial color="#ead2c7" roughness={.58} /></mesh>
+      <mesh position={[0, .412, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[.34, .41, 64]} /><ProductMaterial color="#f4ded7" roughness={.5} /></mesh>
+      <mesh position={[0, .418, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[.16, .21, 64]} /><GoldMaterial color="#c59b67" roughness={.3} /></mesh>
+      <mesh position={[0, .423, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[.055, .08, 48]} /><ProductMaterial color="#f8e8df" roughness={.48} /></mesh>
+      <mesh position={[.36, .43, .03]} rotation={[-Math.PI / 2, 0, .25]}><boxGeometry args={[.28, .016, .024]} /><ProductMaterial color="#fff5ed" roughness={.42} /></mesh>
+      <mesh position={[0, .78, -.4]} rotation={[Math.PI / 2, 0, 0]} castShadow><cylinderGeometry args={[.58, .58, .07, 64]} /><ProductMaterial color="#e6beb5" metalness={.08} roughness={.36} /></mesh>
+      <mesh position={[0, .78, -.445]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[.49, .49, .025, 64]} /><GlassMaterial color="#f2d6cf" opacity={.45} /></mesh>
     </group>
   )
 }
@@ -105,13 +195,13 @@ function Lip({ item }) {
 }
 
 function Blush({ item }) {
-  return <group><Compact item={item} blush /><mesh position={[.3, .35, .06]} rotation={[-Math.PI / 2, 0, .5]}><boxGeometry args={[.38, .018, .025]} /><ProductMaterial color="#f5d6d0" /></mesh></group>
+  return <BlushCompact item={item} />
 }
 
 function Geometry({ item }) {
   if (item.geometryType === 'foundation') return <Foundation item={item} />
   if (item.geometryType === 'eyeshadow') return <Eyeshadow item={item} />
-  if (item.geometryType === 'cushion') return <Compact item={item} />
+  if (item.geometryType === 'cushion') return <Cushion item={item} />
   if (item.geometryType === 'blush') return <Blush item={item} />
   if (item.geometryType === 'mascara') return <Mascara item={item} />
   if (item.geometryType === 'concealer') return <Concealer item={item} />

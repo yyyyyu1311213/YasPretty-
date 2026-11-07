@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   ArrowDownUp,
@@ -22,6 +22,9 @@ import { buildProductAssessment, getProductVerification } from './data/product-v
 import { createNavigationEntry, navigationPath, resolveNavigationEntry } from './lib/navigation-history'
 import BrandOpening from './components/BrandOpening'
 const MakeupTable = lazy(() => import('./components/MakeupTable3D'))
+const FlexCarousel = lazy(() => import('./components/FlexCarousel'))
+import ScrollFloat from './components/ScrollFloat'
+import StrokeText from './components/StrokeText'
 import XiaoYAssistant from './components/XiaoYAssistant'
 
 const STORAGE_KEY = 'base-archive-collection'
@@ -30,6 +33,21 @@ const emptyFilters = {
 }
 
 const statusOptions = ['想买', '正在用', '会回购']
+
+class EnhancementBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { failed: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children
+  }
+}
 
 function getStoredCollection() {
   try {
@@ -92,7 +110,40 @@ function App() {
   const [profileProduct, setProfileProduct] = useState(initialProfileProduct)
   const [filterPanelOpen, setFilterPanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const makeupFocusAppliedRef = useRef(false)
   const completeOpening = useCallback(() => setOpeningActive(false), [])
+
+  useEffect(() => {
+    if (!openingActive || view !== 'home') return undefined
+    const previousOverflow = document.body.style.overflow
+    const previousRootOverflow = document.documentElement.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+    window.scrollTo({ top: 0, behavior: 'auto' })
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.documentElement.style.overflow = previousRootOverflow
+    }
+  }, [openingActive, view])
+
+  useEffect(() => {
+    if (openingActive || view !== 'home' || makeupFocusAppliedRef.current) return undefined
+    makeupFocusAppliedRef.current = true
+    const previousOverflow = document.body.style.overflow
+    const previousRootOverflow = document.documentElement.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+    const unlockTimer = window.setTimeout(() => {
+      document.body.style.overflow = previousOverflow
+      document.documentElement.style.overflow = previousRootOverflow
+    }, 2600)
+    return () => {
+      window.clearTimeout(unlockTimer)
+      document.body.style.overflow = previousOverflow
+      document.documentElement.style.overflow = previousRootOverflow
+    }
+  }, [openingActive, view])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(collection))
@@ -366,50 +417,79 @@ function Header({ activeView, favoriteCount, mobileMenuOpen, onNavigate, onMobil
 
 function HomeView({ openingReady, onSearch, onQuickFilter, onViewCategory, onNavigate, onOpenProduct, collection, onFavorite, onRemoveFavorite }) {
   const [keyword, setKeyword] = useState('')
-  const featured = [...products].sort((a, b) => b.rating - a.rating).slice(0, 4)
+  const featured = [...products].sort((a, b) => b.rating - a.rating).slice(0, 12)
+  const featuredItems = featured.map((product) => ({
+    id: product.id,
+    src: product.image,
+    alt: `${product.brand} ${product.name} 产品图`,
+    title: product.name,
+    subtitle: `${product.brand} · ${product.category}`,
+  }))
+  const staticFeatured = <div className="product-grid featured-grid">{featured.map((product) => <ProductCard key={product.id} product={product} collection={collection} onOpen={onOpenProduct} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} />)}</div>
   return (
-    <>
+    <div className={`home-motion-stage${openingReady ? ' is-ready' : ''}`}>
+      {openingReady && <section className="makeup-table-intro-section content-section" aria-labelledby="makeup-table-intro-title">
+        <ScrollFloat as="h2" containerClassName="makeup-table-intro-title" textClassName="makeup-table-intro-text" effect="float" splitBy="chars" distance={56} stretch={1.15} stagger={0.018} animationDuration={1.45} smoothing={0.18} scrollStart="top 90%" scrollEnd="bottom 48%" ease="power3.out">从化妆台开始，整理你的选择</ScrollFloat>
+        <p>先从品类和使用场景开始，再打开对应的真实产品档案。</p>
+      </section>}
       <Suspense fallback={<div className="makeup-table-lazy-placeholder" aria-label="正在准备交互式化妆桌" />}>
         <MakeupTable openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
       </Suspense>
-      <section className="home-hero">
-        <div className="hero-media" aria-hidden="true">
+      <section className={`home-hero${openingReady ? ' home-hero--ready' : ''}`}>
+        <div className={`hero-media${openingReady ? ' hero-media--ready' : ''}`} aria-hidden="true">
           <picture>
-            <source media="(max-width: 680px)" srcSet="/assets/hero/hero-mobile.svg" />
-            <img src="/assets/hero/hero-desktop.svg" alt="" />
+            <source media="(max-width: 680px)" srcSet="/assets/logo/hero/hero-mobile.jpg" />
+            <img src="/assets/logo/hero/hero-desktop.jpg" alt="" />
           </picture>
           <div className="hero-caption"><span>YASPRETTY</span><i>PERSONAL BEAUTY DECISION LIBRARY</i></div>
         </div>
-        <div className="hero-copy">
-          <p className="hero-kicker">YASPRETTY / BEAUTY DECISION LIBRARY</p>
-          <p className="eyebrow"><Sparkles size={14} /> 个性化妆容规划 / 可信产品决策</p>
-          <h1>甄选好物，<br />找到适配你的美</h1>
-          <p className="hero-description">从肤质、场景、预算和妆效出发，先建立你的条件，再查看每一步推荐背后的产品事实与限制。</p>
-          <button className="assistant-entry-button" onClick={() => onNavigate('assistant')}><Sparkles size={17} /> 创建我的妆容方案 <ChevronRight size={16} /></button>
-          <form className="hero-search" onSubmit={(event) => { event.preventDefault(); onSearch(keyword) }}>
+        <div className={`hero-copy${openingReady ? ' hero-copy--ready' : ''}`}>
+          {openingReady ? <ScrollFloat as="p" containerClassName="hero-kicker hero-motion-text" effect="float" splitBy="chars" distance={28} stretch={1.02} stagger={0.012} animationDuration={1.35} smoothing={0.16} scrollStart="top 92%" scrollEnd="bottom 58%" ease="power3.out">YASPRETTY / BEAUTY DECISION LIBRARY</ScrollFloat> : <p className="hero-kicker">YASPRETTY / BEAUTY DECISION LIBRARY</p>}
+          <p className="eyebrow hero-motion-control"><Sparkles size={14} /> {openingReady ? <ScrollFloat as="span" containerClassName="hero-eyebrow-text" effect="float" splitBy="chars" distance={22} stretch={1.02} stagger={0.012} animationDuration={1.35} smoothing={0.16} scrollStart="top 92%" scrollEnd="bottom 58%" ease="power3.out">个性化妆容规划 / 可信产品决策</ScrollFloat> : '个性化妆容规划 / 可信产品决策'}</p>
+          {openingReady ? <ScrollFloat as="h1" containerClassName="hero-slogan" textClassName="hero-slogan-text" effect="float" splitBy="chars" order="start" distance={70} stretch={1.12} stagger={0.025} animationDuration={1.6} smoothing={0.2} scrollStart="top 90%" scrollEnd="bottom 44%" ease="power3.out">{'甄选好物，\n找到适配你的美'}</ScrollFloat> : <h1 className="hero-slogan">{'甄选好物，\n找到适配你的美'}</h1>}
+          {openingReady ? <ScrollFloat as="p" containerClassName="hero-description hero-motion-text" effect="float" splitBy="words" distance={24} stretch={1.02} stagger={0.025} animationDuration={1.4} smoothing={0.16} scrollStart="top 90%" scrollEnd="bottom 56%" ease="power3.out">从肤质妆效和预算出发，小Y先记忆你的个人条件和偏好，再为你推荐专属于你的产品</ScrollFloat> : <p className="hero-description">从肤质妆效和预算出发，小Y先记忆你的个人条件和偏好，再为你推荐专属于你的产品</p>}
+          <button className="assistant-entry-button hero-motion-control" onClick={() => onNavigate('assistant')}><Sparkles size={17} /> 创建我的妆容方案 <ChevronRight size={16} /></button>
+          <form className="hero-search hero-motion-control" onSubmit={(event) => { event.preventDefault(); onSearch(keyword) }}>
             <Search size={20} aria-hidden="true" />
             <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="搜索品牌、产品名或色号" aria-label="搜索品牌、产品名或色号" />
             <button type="submit">搜索</button>
           </form>
-          <div className="quick-links" aria-label="快捷筛选">
+          <div className="quick-links hero-motion-control" aria-label="快捷筛选">
             {quickFilters.map((filter) => <button key={filter.label} onClick={() => onQuickFilter(filter.query)}>{filter.label}<ChevronRight size={14} /></button>)}
           </div>
         </div>
       </section>
       <section className="content-section home-selection">
         <div className="section-heading">
-          <div><p className="eyebrow">编辑精选</p><h2>最近值得翻阅的底妆</h2></div>
+          <div>{openingReady ? <ScrollFloat as="h2" containerClassName="featured-heading" textClassName="featured-heading-text" effect="float" splitBy="chars" distance={45} stretch={1.08} stagger={0.018} animationDuration={1.45} smoothing={0.18} scrollStart="top 90%" scrollEnd="bottom 48%" ease="power3.out">编辑精选</ScrollFloat> : <h2 className="featured-heading">编辑精选</h2>}</div>
           <button className="text-action" onClick={() => onSearch('')}>查看产品库 <ChevronRight size={16} /></button>
         </div>
-        <div className="product-grid featured-grid">
-          {featured.map((product) => <ProductCard key={product.id} product={product} collection={collection} onOpen={onOpenProduct} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} />)}
-        </div>
+        {openingReady ? <EnhancementBoundary fallback={staticFeatured}>
+          <Suspense fallback={staticFeatured}>
+            <FlexCarousel items={featuredItems} preset="ribbon" intro="rise" fit="portrait" cardHeight={0.58} gap={16} squeeze={0.08} focusOnClick captions autoplay interval={3.1} fallback={staticFeatured} onSelect={(_, item) => { const product = productById(item?.id); if (product) onOpenProduct(product) }} />
+          </Suspense>
+        </EnhancementBoundary> : staticFeatured}
       </section>
-      <section className="story-strip">
-        <div><p className="eyebrow">资料库使用方式</p><h2>让彩妆选择有据可循</h2></div>
-        <div className="story-points"><span>01 <b>先看肤质</b></span><span>02 <b>再定妆效</b></span><span>03 <b>最后看持妆</b></span></div>
+      <section className="story-closing" aria-label="You are so pretty">
+        <StrokeText
+          text="You are so pretty"
+          trigger="view"
+          strokeColor="var(--yp-rose-deep)"
+          fillColor="var(--yp-rose-deep)"
+          strokeWidth={1.8}
+          drawDuration={1.6}
+          fillDelay={0.15}
+          stagger={0.04}
+          ease="power2.out"
+          fontSize={72}
+          fontWeight={700}
+          fontFamily="'Segoe Script', 'Snell Roundhand', 'Brush Script MT', cursive"
+          fontStyle="italic"
+          letterSpacing={-1}
+          className="story-closing-text"
+        />
       </section>
-    </>
+    </div>
   )
 }
 
@@ -465,10 +545,11 @@ function SortSelect({ sort, onChange }) {
 
 function ProductCard({ product, collection, onOpen, onFavorite, onRemoveFavorite }) {
   const status = collection[product.id]
+  const [imageFailed, setImageFailed] = useState(false)
   const showShadeSwatch = !['粉底液', '气垫', '遮瑕'].includes(product.category)
   return (
     <article className="product-card">
-      <button className="product-photo" onClick={() => onOpen(product)} aria-label={`查看 ${product.brand} ${product.name} 详情`}><img src={product.image} alt={`${product.brand} ${product.name} 产品图`} loading="lazy" /><span className="category-stamp">{product.category}</span></button>
+      <button className="product-photo" onClick={() => onOpen(product)} aria-label={`查看 ${product.brand} ${product.name} 详情`}>{imageFailed ? <span className="product-photo-fallback">图片暂不可用</span> : <img src={product.image} alt={`${product.brand} ${product.name} 产品图`} onError={() => setImageFailed(true)} loading="lazy" />}<span className="category-stamp">{product.category}</span></button>
       <div className="product-card-body">
         <div className="product-card-top"><p className="product-brand">{product.brand}</p><button className={status ? 'favorite-button saved' : 'favorite-button'} aria-label={status ? '取消收藏' : '收藏'} title={status ? '取消收藏' : '收藏'} onClick={() => status ? onRemoveFavorite(product.id) : onFavorite(product.id, '想买')}><Heart size={18} fill={status ? 'currentColor' : 'none'} /></button></div>
         <button className="product-name" onClick={() => onOpen(product)}>{product.name}</button>
@@ -630,9 +711,9 @@ function CultureView({ onNavigate }) {
       <p>清晰的信息、真实的体验、理性的视角，让每一次选择都更接近你自己。</p>
     </div>
     <div className="culture-principles">
-      <article><span>真实</span><h2>真实记录</h2><p>同一款彩妆在不同肤质、气候与上妆方法下都有不同表现。资料保留优点，也写下需要留意的部分。</p></article>
-      <article><span>理解</span><h2>理解皮肤</h2><p>油光、毛孔、干纹和肤色都不是需要被纠正的缺点，而是帮助我们找到合适产品的线索。</p></article>
-      <article><span>选择</span><h2>做自己的编辑</h2><p>不必被热度和标准答案推着走。翻阅、比较、收藏，建立一份属于自己的彩妆清单。</p></article>
+      <article><h2>真实记录</h2><p>同一款彩妆在不同肤质、气候与上妆方法下都有不同表现。资料保留优点，也写下需要留意的部分。</p></article>
+      <article><h2>适配推荐</h2><p>油光、毛孔、干纹和肤色都不是需要被纠正的缺点，而是帮助我们找到合适产品的线索。</p></article>
+      <article><h2>做自己的编辑</h2><p>不必被热度和标准答案推着走。翻阅、比较、收藏，建立一份属于自己的彩妆清单。</p></article>
     </div>
     <div className="culture-closing"><div><p className="eyebrow">YASPRETTY BEAUTY ARCHIVE</p><h2>你的样子，不需要被改写。</h2><p>它值得被认真看见，也值得拥有适合它的彩妆。</p></div><button className="primary-action" onClick={() => onNavigate('library')}>浏览产品库 <ChevronRight size={16} /></button></div>
   </section>

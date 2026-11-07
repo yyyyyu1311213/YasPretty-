@@ -1,0 +1,7 @@
+.scroll-float { max-width: 100%; margin: 20px 0; overflow: hidden; overflow-wrap: anywhere; }
+.scroll-float--open { overflow: visible; overflow-x: clip; }
+.scroll-float-text { display: block; max-width: 100%; overflow-wrap: anywhere; }
+.scroll-float-word { display: inline-block; white-space: nowrap; }
+.scroll-float-char { display: inline-block; }
+.scroll-float-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (prefers-reduced-motion: reduce) { .scroll-float, .scroll-float-char, .scroll-float-word { overflow: visible; transform: none !important; opacity: 1 !important; } }
