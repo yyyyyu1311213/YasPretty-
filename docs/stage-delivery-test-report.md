@@ -1202,6 +1202,6 @@
 
 ## 阶段 5 修复：Netlify ESM 函数入口（YAS-2026-0050）
 
-2026-11-07（北京时间）根据公网函数错误复现：Netlify 将 CommonJS 入口打包为 `/var/task/api.js`，而仓库 `package.json` 声明了 `type: module`，运行时按 ESM 加载 `module.exports`，导致 `ReferenceError: module is not defined in ES module scope`。入口已改为 `netlify/functions/api.js`，使用 ESM `export async function handler`，通过 `createRequire` 复用既有 CommonJS Fastify 网关，并保留显式 ESM 产品目录导入。
+2026-11-07（北京时间）根据公网函数错误复现：Netlify 将 CommonJS 入口打包为 `/var/task/api.js`，而仓库 `package.json` 声明了 `type: module`，运行时按 ESM 加载 `module.exports`，导致 `ReferenceError: module is not defined in ES module scope`。入口已改为 `netlify/functions/api.js`，使用 ESM `export async function handler`，通过静态 ESM 导入复用既有 CommonJS Fastify 网关，并保留显式 ESM 产品目录导入。
 
 本地验证：直接调用 ESM handler 的 `/api/health` 返回 HTTP 200、`services.assistant: true`；`npm run check` 通过，Vitest 11 个文件、69/69 项通过，Vite 构建通过并保留既有 3D 大分块警告。已推送提交待 Netlify 重新部署后复验函数冷启动、`/api/health`、小Y对话和失败降级；未修改产品事实、图片授权、购买链接、照片流向或 API Key 边界。

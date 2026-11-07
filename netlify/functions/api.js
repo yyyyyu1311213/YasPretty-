@@ -1,8 +1,8 @@
-import { createRequire } from 'node:module'
+import appModule from '../../server/app.cjs'
+import configModule from '../../server/config.cjs'
 
-const require = createRequire(import.meta.url)
-const { buildApp } = require('../../server/app.cjs')
-const { loadConfig } = require('../../server/config.cjs')
+const { buildApp } = appModule
+const { loadConfig } = configModule
 
 let appPromise
 
