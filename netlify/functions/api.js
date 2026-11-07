@@ -1,3 +1,6 @@
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 const { buildApp } = require('../../server/app.cjs')
 const { loadConfig } = require('../../server/config.cjs')
 
@@ -52,7 +55,7 @@ function responseFromInject(response) {
   }
 }
 
-async function handler(event) {
+export async function handler(event) {
   try {
     const app = await getApp()
     const body = event.body
@@ -78,4 +81,4 @@ async function handler(event) {
   }
 }
 
-module.exports = { handler, requestPath }
+export { requestPath }

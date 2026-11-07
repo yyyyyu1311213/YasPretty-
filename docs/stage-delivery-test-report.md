@@ -1199,3 +1199,9 @@
 2026-11-07（北京时间）根据 Netlify 生产构建日志复现部署失败：Vite 构建和函数打包均成功，但 Netlify 将 `netlify/functions/api.test.js` 识别为名为 `api.test` 的线上函数，因函数名包含点号而拒绝部署。测试文件已移至 `tests/netlify-api-adapter.test.js`，`netlify/functions` 目录只保留真正的 `api.cjs` 函数；测试覆盖未减少，仍由 Vitest 执行。
 
 本地验证：`Get-ChildItem netlify/functions` 仅列出 `api.cjs`；`npm run check` 通过，Vitest 11 个文件、69/69 项通过，Vite 构建通过并保留既有 3D 大分块警告。待将修复推送并触发 Netlify 部署后，再复验函数部署、`/api/health`、小Y对话和失败降级。当前没有新增依赖、产品数据或用户数据处理；本次编码环境的 `git diff --check` 另受工作树中既有 `promo-yaspretty/public/audio/ATTRIBUTION.md` 尾随空格影响，该文件未由本次修改产生。
+
+## 阶段 5 修复：Netlify ESM 函数入口（YAS-2026-0050）
+
+2026-11-07（北京时间）根据公网函数错误复现：Netlify 将 CommonJS 入口打包为 `/var/task/api.js`，而仓库 `package.json` 声明了 `type: module`，运行时按 ESM 加载 `module.exports`，导致 `ReferenceError: module is not defined in ES module scope`。入口已改为 `netlify/functions/api.js`，使用 ESM `export async function handler`，通过 `createRequire` 复用既有 CommonJS Fastify 网关，并保留显式 ESM 产品目录导入。
+
+本地验证：直接调用 ESM handler 的 `/api/health` 返回 HTTP 200、`services.assistant: true`；`npm run check` 通过，Vitest 11 个文件、69/69 项通过，Vite 构建通过并保留既有 3D 大分块警告。已推送提交待 Netlify 重新部署后复验函数冷启动、`/api/health`、小Y对话和失败降级；未修改产品事实、图片授权、购买链接、照片流向或 API Key 边界。

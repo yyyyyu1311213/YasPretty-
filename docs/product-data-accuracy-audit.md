@@ -394,3 +394,7 @@
 ## 2026-11-07 Netlify Functions 测试文件修复的数据影响（YAS-2026-0049）
 
 本阶段无新增产品、价格、规格、色号、评分、商品来源或图片授权核验。仅将 `netlify/functions/api.test.js` 移到 `tests/netlify-api-adapter.test.js`，避免 Netlify 把测试文件识别为线上函数；不改变 API、产品目录、产品事实、图片授权状态或购买链接。既有 `pending`/`blocked` 结论保持不变，待修复版本重新部署后再记录公网接口证据；提交 SHA 和阶段 tag 待项目负责人明确授权后补录。
+
+## 2026-11-07 Netlify ESM 函数入口修复的数据影响（YAS-2026-0050）
+
+本阶段无新增产品、价格、规格、色号、评分、商品来源或图片授权核验。仅将 Netlify 函数入口从 CommonJS `api.cjs` 调整为 ESM `api.js`，并通过 `createRequire` 复用既有服务端模块；不改变产品目录、产品事实、图片授权状态、购买链接或推荐逻辑。既有 `pending`/`blocked` 结论保持不变，待公网重新部署后再记录接口证据；提交 SHA 和阶段 tag 待项目负责人明确授权后补录。

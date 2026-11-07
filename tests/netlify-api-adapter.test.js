@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import apiModule from '../netlify/functions/api.cjs'
-
-const { requestPath } = apiModule
+import { requestPath } from '../netlify/functions/api.js'
 
 describe('Netlify API adapter', () => {
   it('keeps redirected API paths under the Fastify /api namespace', () => {

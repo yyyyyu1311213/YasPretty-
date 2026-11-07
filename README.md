@@ -73,7 +73,7 @@ npm start
 
 ### Netlify 部署
 
-仓库根目录的 `netlify.toml` 会使用 `npm run build` 构建前端，并将 `/api/*` 同源转发到 `netlify/functions/api.cjs`。该函数复用现有 Fastify 网关，不会把智谱请求或密钥暴露给浏览器。
+仓库根目录的 `netlify.toml` 会使用 `npm run build` 构建前端，并将 `/api/*` 同源转发到 `netlify/functions/api.js`。该函数复用现有 Fastify 网关，不会把智谱请求或密钥暴露给浏览器。
 
 在 Netlify 的站点设置中添加服务端环境变量 `ZHIPU_API_KEY`（以及需要调整的 `ZHIPU_MODEL`、`ZHIPU_SEARCH_ENGINE`、限流和超时变量），然后重新部署。不要把 Key 写入 `VITE_*` 变量、前端代码、Git 或提交日志。部署后先访问 `/api/health`：返回 `services.assistant: true` 才表示小Y在线 AI 已配置；未配置时产品库和本地规则推荐仍可用。
 
@@ -121,7 +121,7 @@ server/app.cjs                    API、安全控制、限流与同源静态服�
 server/providers/                 智谱和外部检索适配器
 server/services/                  服务端智能体编排
 netlify.toml                      Netlify 构建、同源 API 重写和函数目录配置
-netlify/functions/api.cjs         复用 Fastify 网关的 Netlify Functions 适配器
+netlify/functions/api.js          复用 Fastify 网关的 Netlify Functions 适配器
 docs/phase-0-baseline.md          安全扫描、功能与构建基线
 docs/phase-1-ai-gateway.md        阶段 1 架构、测试与风险记录
 docs/stage-delivery-test-report.md 各阶段作用、用户价值、测试证据与剩余风险
