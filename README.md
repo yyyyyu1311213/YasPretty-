@@ -16,7 +16,7 @@ YasPretty 是一个面向普通消费者的个性化美妆决策项目。当前�
 - 集成在主站中的小Y页面。
 - 小Y的本地规则推荐，以及由服务端 `intentRouter` 编排的智谱对话和联网搜索；产品库之外的问题统一从 `/api/assistant` 路由，不再单列天气模块。妆容类问题使用结构化 `/api/makeup-plans`，上游限流或模型输出无效时返回经过 schema 校验的本地 7 步方案。
 - Fastify API 网关：服务端密钥、Zod schema、64 KiB 请求限制、超时、有限重试、每 IP 限流、单进程每日额度、安全头和脱敏日志。
-- 67 项 Vitest 测试，覆盖小Y规则、统一意图路由、受控知识库、回答执行来源、天气缺少城市时的追问、参考来源、网关、智谱 provider、结构化方案及其限流降级、阶段 3 品类候选、产品证据文件、人工核验字段、淘宝/天猫商品链接门禁、品牌开幕、导航历史和 3D 化妆桌性能档位，并验证独立天气接口已下线。
+- 69 项 Vitest 测试，覆盖小Y规则、统一意图路由、受控知识库、回答执行来源、天气缺少城市时的追问、参考来源、网关、智谱 provider、结构化方案及其限流降级、阶段 3 品类候选、产品证据文件、人工核验字段、淘宝/天猫商品链接门禁、品牌开幕、导航历史、3D 化妆桌性能档位和 Netlify API 适配，并验证独立天气接口已下线。
 - Windows 启动脚本和可通过的 Vite 生产构建。
 
 以下能力尚未实现，不能在参赛材料或演示中描述为已完成：
@@ -24,7 +24,7 @@ YasPretty 是一个面向普通消费者的个性化美妆决策项目。当前�
 - 照片上传、质量检查或 MediaPipe 分析。
 - 眉妆仍无已核验商品；全部产品图片的明确再利用授权仍待核验。
 - React 组件测试和 Playwright 端到端测试体系。
-- 正式公网部署、账号体系或跨设备数据。
+- 当前仓库已提供 Netlify Functions 同源 API 部署配置；公网站点需要重新部署并配置服务端环境变量后，才能使用在线智谱对话。账号体系或跨设备数据仍未实现。
 
 ## 数据与素材状态
 
@@ -71,6 +71,14 @@ npm start
 
 生产构建由同一个 Fastify 服务在 <http://127.0.0.1:8787/> 提供页面与 API。`npm run preview` 是 `npm start` 的别名，不会重新构建。
 
+### Netlify 部署
+
+仓库根目录的 `netlify.toml` 会使用 `npm run build` 构建前端，并将 `/api/*` 同源转发到 `netlify/functions/api.cjs`。该函数复用现有 Fastify 网关，不会把智谱请求或密钥暴露给浏览器。
+
+在 Netlify 的站点设置中添加服务端环境变量 `ZHIPU_API_KEY`（以及需要调整的 `ZHIPU_MODEL`、`ZHIPU_SEARCH_ENGINE`、限流和超时变量），然后重新部署。不要把 Key 写入 `VITE_*` 变量、前端代码、Git 或提交日志。部署后先访问 `/api/health`：返回 `services.assistant: true` 才表示小Y在线 AI 已配置；未配置时产品库和本地规则推荐仍可用。
+
+当前仓库只准备了可复现的部署配置，未从编码环境直接发布或修改 Netlify 站点设置。公网部署完成后应再次验证小Y对话、联网失败降级和限流响应。
+
 ## 配置与密钥
 
 `.env.example` 只提供无密钥模板。需要启用智谱能力时，在本机创建被 Git 忽略的 `.env`，由维护者配置 `ZHIPU_API_KEY`；普通用户界面不会显示或接收第三方 Key。当前参赛本机配置使用智谱 Model Code `glm-5.3-flash`，并通过服务端原始 HTTP `POST /api/paas/v4/chat/completions`、Bearer 鉴权和 JSON 请求体调用；`ZHIPU_MAX_TOKENS` 控制受控输出预算。联网检索使用独立 HTTP `POST /api/paas/v4/web_search`，默认 `search_std`。模型、超时、每分钟限制和每日额度均由服务端环境变量控制。
@@ -112,6 +120,8 @@ server/fishtalk-server.cjs        Fastify 网关启动入口
 server/app.cjs                    API、安全控制、限流与同源静态服务
 server/providers/                 智谱和外部检索适配器
 server/services/                  服务端智能体编排
+netlify.toml                      Netlify 构建、同源 API 重写和函数目录配置
+netlify/functions/api.cjs         复用 Fastify 网关的 Netlify Functions 适配器
 docs/phase-0-baseline.md          安全扫描、功能与构建基线
 docs/phase-1-ai-gateway.md        阶段 1 架构、测试与风险记录
 docs/stage-delivery-test-report.md 各阶段作用、用户价值、测试证据与剩余风险

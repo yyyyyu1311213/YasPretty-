@@ -1187,3 +1187,15 @@
 2026-11-06（北京时间）根据项目负责人截图复现：“教我如何画一个适合拍照的妆容，场景是秋日落叶阳光”未命中前端和服务端妆容意图，误走通用 `/api/assistant`，上游响应超时后显示“智能服务当前不可用”。现已补充“如何画、教我画、拍照妆、秋日妆、落叶妆”等表达，统一进入 `/api/makeup-plans`；模型不可用时继续使用已有 schema 校验的本地 7 步方案。
 
 真实复验：等价拍照场景结构化请求 HTTP 200，约 0.36 秒返回 7 个步骤、`sourceMode: local`；前端方案模式会显示本地方案状态，不再等待通用模型回答。新增前后端意图回归测试，定向测试 2 个文件、32/32 项通过。未修改产品事实、知识库来源、照片流向、用户保存期限、API Key 或联网检索规则；当前工作树未提交，提交 SHA 和阶段 tag 待项目负责人明确授权后回填。
+
+## 阶段 5 增量：Netlify Functions 同源 API 接入准备（YAS-2026-0048）
+
+2026-11-07（北京时间）核验公网入口 `https://yaspretty.netlify.app/api/health` 返回 HTTP 404，确认现有 Netlify 部署仅提供静态前端，线上小Y无法访问仓库已有 `/api/assistant` 服务。新增根目录 `netlify.toml`，使用 `npm run build` 构建前端，将 `/api/*` 重写到 `netlify/functions/api.cjs`；新增适配器复用 `server/app.cjs` 的 Fastify 网关、Zod 校验、限流、安全头、错误映射和服务端 `ZHIPU_API_KEY`，普通用户仍不会接触第三方凭据。受控产品目录通过显式函数打包路径载入，未改变产品事实。
+
+本地验证：Netlify 适配器路径测试 2/2 通过；直接调用函数 handler 的 `/.netlify/functions/api/health` 返回 HTTP 200 和 `services.assistant: true`；完整 Vitest 11 个文件、69/69 项通过；`npm run build` 通过（Vite 2861 个模块，保留既有 3D 大分块警告）；`git diff --check` 通过。README 已补充 Netlify 环境变量和验证步骤。当前工作树只准备部署配置，未从编码环境发布或修改 Netlify 站点设置；公网部署、`/api/assistant` 真实对话、联网失败降级和限流仍待站点重新部署后复验，不能表述为已上线。未新增依赖，未修改产品数据、图片来源/授权、购买链接、照片流向或用户本地保存边界；提交 SHA 和阶段 tag 待项目负责人明确授权后回填。
+
+## 阶段 5 修复：移出 Netlify Functions 测试文件（YAS-2026-0049）
+
+2026-11-07（北京时间）根据 Netlify 生产构建日志复现部署失败：Vite 构建和函数打包均成功，但 Netlify 将 `netlify/functions/api.test.js` 识别为名为 `api.test` 的线上函数，因函数名包含点号而拒绝部署。测试文件已移至 `tests/netlify-api-adapter.test.js`，`netlify/functions` 目录只保留真正的 `api.cjs` 函数；测试覆盖未减少，仍由 Vitest 执行。
+
+本地验证：`Get-ChildItem netlify/functions` 仅列出 `api.cjs`；`npm run check` 通过，Vitest 11 个文件、69/69 项通过，Vite 构建通过并保留既有 3D 大分块警告。待将修复推送并触发 Netlify 部署后，再复验函数部署、`/api/health`、小Y对话和失败降级。当前没有新增依赖、产品数据或用户数据处理；本次编码环境的 `git diff --check` 另受工作树中既有 `promo-yaspretty/public/audio/ATTRIBUTION.md` 尾随空格影响，该文件未由本次修改产生。
