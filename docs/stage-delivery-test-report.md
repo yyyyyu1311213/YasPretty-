@@ -1213,3 +1213,15 @@
 2026-11-07（北京时间）根据公网函数错误复现：Netlify 将 CommonJS 入口打包为 `/var/task/api.js`，而仓库 `package.json` 声明了 `type: module`，运行时按 ESM 加载 `module.exports`，导致 `ReferenceError: module is not defined in ES module scope`。入口已改为 `netlify/functions/api.js`，使用 ESM `export async function handler`，通过静态 ESM 导入复用既有 CommonJS Fastify 网关，并保留显式 ESM 产品目录导入。
 
 本地验证：直接调用 ESM handler 的 `/api/health` 返回 HTTP 200、`services.assistant: true`；`npm run check` 通过，Vitest 11 个文件、69/69 项通过，Vite 构建通过并保留既有 3D 大分块警告。已推送提交待 Netlify 重新部署后复验函数冷启动、`/api/health`、小Y对话和失败降级；未修改产品事实、图片授权、购买链接、照片流向或 API Key 边界。
+
+## 阶段 5 材料增量：项目介绍 PPT 可追溯交付（YAS-2026-0052）
+
+2026-11-08（北京时间）完成生活服务赛道项目介绍 PPT，团队名称为“人均180”。本次只补充参赛展示材料和可重复生成能力，不把阶段 5 标记为整体完成。材料提交 SHA 为 `8a699018be8aa9507e616520bc8f991e0dcb37ee`，未创建阶段 tag，未推送远端。
+
+实际新增 `docs/presentation/YasPretty-项目介绍-人均180-v1.0.pptx`、`docs/presentation/YasPretty-项目介绍-人均180-v1.1.pptx`、`docs/presentation/README.md` 和 `scripts/build-yaspretty-presentation.mjs`。v1.0 作为回退版本保留；v1.1 调整第 4 页截图与四步说明的间距，是当前交付版。两版 SHA-256、数据口径、素材来源、生成命令和回退方法均记录在 presentation README。用户体验入口是直接打开 v1.1 PPTX；演示内容共 9 页，覆盖用户问题、解决方案、真实主流程、推荐约束、产品档案、技术架构、当前成果和品牌收束。
+
+材料只使用当前代码能够证明的事实：35 条产品资料、35 份核验档案、111 份商品与店铺证据、73 项 Vitest 测试和 7 步妆容方案。照片分析、眉妆资料、React Testing Library、Playwright、产品图片明确授权和完整公开发布条件继续标为未完成。PPT 不包含未经复验的公网地址、二维码、API Key、真实用户照片或用户画像；外部能力失败时保留本地方案的表述与代码一致，没有把降级结果包装成模型成功。
+
+验证记录：Artifact Tool 最终校验通过，PPTX 包结构 finding 0、版面 finding 0、9/9 页、16:9、Noto Sans SC/Noto Serif SC 字体策略通过，最终文件可被第一方 Artifact Tool 再次导入；9 张逐页 PNG 和整套 montage 已人工检查，第 4 页在 v1.1 修复页脚附近的拥挤。完整 `npm run check` 通过，Vitest 12 个文件、73/73 项通过，Vite 生产构建转换 2861 个模块；保留既有 3D 异步分块大于 500 kB 警告。`git diff --check` 通过。构建脚本在移除本机绝对路径后，以 `.qa/` 复验输出再次完成全部校验。
+
+剩余风险：产品图片继续使用“来源已披露、授权待核验”策略，PPT 中没有升级授权状态；本次通过 Artifact Tool 渲染和结构校验，但尚未在比赛现场所用 Microsoft PowerPoint 版本和投影设备逐页复验，仍需在最终演示设备确认字体替换、颜色和视频输出比例。代码、README 与 PPT 表述已经对齐；本次没有修改评审视频，因此视频仍需按 v1.1 的真实能力和限制单独核对。
