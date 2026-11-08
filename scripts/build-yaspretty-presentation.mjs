@@ -34,7 +34,7 @@ const C = {
 
 const A = (relative) => path.join(workspaceDir, relative)
 const assets = {
-  hero: A('public/assets/logo/hero/hero-desktop.jpg'),
+  heroMobile: A('public/assets/logo/hero/hero-mobile.jpg'),
   logo: A('public/assets/logo/yaspretty-wordmark-dark.png'),
   monogram: A('public/assets/logo/yaspretty-monogram.png'),
   share: A('public/assets/social/share-cover.png'),
@@ -151,7 +151,7 @@ async function build() {
   {
     const s = deck.slides.add()
     s.background.fill = C.bg
-    await addImage(s, assets.hero, 760, 0, 520, 720, 'cover')
+    await addImage(s, assets.heroMobile, 760, 0, 520, 720, 'contain')
     addRect(s, 0, 0, 760, 720, C.bg)
     await addImage(s, assets.logo, 58, 46, 196, 45, 'contain')
     addText(s, '个性化智能选妆与妆容推荐平台', 60, 126, 560, 30, { fontSize: 16, color: C.rose, bold: true })
@@ -164,7 +164,7 @@ async function build() {
     addText(s, 'YASPRETTY / 2026', 60, 654, 230, 20, { fontSize: 11, color: C.muted, bold: true })
     note(s, [
       '封面文案来源：src/App.jsx 中现有首页 slogan“甄选好物，找到适配你的美”。',
-      '视觉素材来源：public/assets/logo/hero/hero-desktop.jpg 与 YasPretty 自有字标。',
+      '视觉素材来源：public/assets/logo/hero/hero-mobile.jpg 与 YasPretty 自有字标。竖版 Hero 使用 contain 完整显示，不裁切产品插画。',
       '素材状态：项目原创，见 public/assets/asset-manifest.json。',
       '项目网页：https://yaspretty.netlify.app/。链接由项目负责人于 2026-11-08 提供；本页不据此声称所有在线 AI 能力均已复验。',
     ].join('\n'))
