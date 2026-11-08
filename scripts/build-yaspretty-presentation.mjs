@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const scriptDir = path.dirname(fileURLToPath(import.meta.url))
 const workspaceDir = path.resolve(scriptDir, '..')
 const buildDir = path.join(workspaceDir, '.qa/presentation-build')
-const outputVersion = process.env.YASPRETTY_PRESENTATION_VERSION || 'v1.1'
+const outputVersion = process.env.YASPRETTY_PRESENTATION_VERSION || '最终版'
 const outputDir = process.env.YASPRETTY_PRESENTATION_OUTPUT_DIR
   ? path.resolve(process.env.YASPRETTY_PRESENTATION_OUTPUT_DIR)
   : path.join(workspaceDir, 'docs/presentation')
@@ -77,6 +77,12 @@ function addText(slide, text, x, y, w, h, opts = {}) {
     color: opts.color || C.ink,
     italic: Boolean(opts.italic),
   }
+  return shape
+}
+
+function addLinkText(slide, label, uri, x, y, w, h, opts = {}) {
+  const shape = addText(slide, label, x, y, w, h, opts)
+  shape.text.get(label).link = { uri, isExternal: true }
   return shape
 }
 
@@ -154,11 +160,13 @@ async function build() {
     addRect(s, 60, 520, 164, 42, C.rose, C.rose, true)
     addText(s, '生活服务赛道', 81, 529, 126, 24, { fontSize: 15, color: C.white, bold: true })
     addText(s, '团队：人均180', 60, 584, 260, 28, { fontSize: 18, color: C.cocoa, bold: true })
+    addLinkText(s, '项目网页　https://yaspretty.netlify.app/', 'https://yaspretty.netlify.app/', 60, 620, 420, 24, { fontSize: 14, color: C.rose, bold: true })
     addText(s, 'YASPRETTY / 2026', 60, 654, 230, 20, { fontSize: 11, color: C.muted, bold: true })
     note(s, [
       '封面文案来源：src/App.jsx 中现有首页 slogan“甄选好物，找到适配你的美”。',
       '视觉素材来源：public/assets/logo/hero/hero-desktop.jpg 与 YasPretty 自有字标。',
       '素材状态：项目原创，见 public/assets/asset-manifest.json。',
+      '项目网页：https://yaspretty.netlify.app/。链接由项目负责人于 2026-11-08 提供；本页不据此声称所有在线 AI 能力均已复验。',
     ].join('\n'))
   }
 
@@ -348,12 +356,13 @@ async function build() {
     addRect(s, 60, 474, 510, 1, C.dusty)
     addText(s, '选什么　为什么选　应该怎么用', 60, 496, 540, 32, { fontSize: 20, color: C.muted, bold: true })
     addText(s, '小Y陪你一步一步找到答案。', 60, 545, 520, 36, { fontSize: 23, color: C.rose, bold: true })
-    addText(s, 'You are so pretty.', 60, 632, 420, 30, { fontSize: 22, color: C.cocoa, italic: true, fontFamily: FONT_SERIF })
+    addLinkText(s, '项目网页　https://yaspretty.netlify.app/', 'https://yaspretty.netlify.app/', 60, 600, 460, 24, { fontSize: 14, color: C.rose, bold: true })
+    addText(s, 'You are so pretty.', 60, 640, 420, 30, { fontSize: 22, color: C.cocoa, italic: true, fontFamily: FONT_SERIF })
     addText(s, '生活服务赛道　团队：人均180', 840, 648, 360, 24, { fontSize: 14, color: C.cocoa, bold: true })
     note(s, [
       '结尾语言延续 src/App.jsx 的品牌 slogan 与“You are so pretty”。',
       '背景来源：public/assets/social/share-cover.png，项目原创，见 public/assets/asset-manifest.json。',
-      '本页不包含未上线链接或未经复验的二维码。',
+      '项目网页：https://yaspretty.netlify.app/。本页不包含二维码，也不把链接本身当作在线 AI 能力复验证据。',
     ].join('\n'))
   }
 
