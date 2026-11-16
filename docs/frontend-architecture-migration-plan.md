@@ -11,7 +11,7 @@
 | 公共规范基线分支 | `master`；公共规范经授权提交后选择性同步到开发分支 |
 | 开发分支本次采用的公共规范提交 | `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，已核对实际远端 master；阶段执行记录在本分支追加 |
 | 固定阶段开发分支 | `codex/frontend-contracts-yas-2026-0055` |
-| 当前阶段 | `ARCH-03`：`assistant`，唯一 `current`；S01/S02 已人工验收并推送，S03 业务 API 已人工验收，授权提交/推送后继续 |
+| 当前阶段 | `ARCH-03`：`assistant`，唯一 `current`；S01/S02/S03 已人工验收并推送，S04 状态 Hook 自动验证完成、待人工验收 |
 | 下一阶段 | `ARCH-04`：`lib/api`，保持 `pending`，未实施 |
 | 开发分支已完成前置工作 | `src/contracts/` 六个 JSDoc 契约文件；master 基线尚未包含 |
 | contracts 基线提交 | `86b25b3`（`YAS-2026-0055`；项目负责人确认已推送） |
@@ -20,7 +20,7 @@
 | 本次公共规范提交前的 master 基线 | `0b93a18167de0760f2ecfd99c9294b78653bb5ed`，与实际远端 master 一致 |
 | 架构阶段标签 | `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向 `8c95966cf61367396fd6783da1f86c8569546668`；`arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` 指向 `5e58236f6897147b354153ea9b02d080641a3cea`；`arch-stage-02` 远端对象 `47a9d3a27bf11a305c2ecb94eacea0e99195b2af` 指向 `f0d02eb64ced01c0fd1fa5fc210eb687050620e5`，2026-11-17 启动预检已核对远端 |
 | 最近状态更新 | 2026-11-17，北京时间 |
-| 最近验证结果 | ARCH-03-S03：API 15/15、相关 100/100、全量 162/162、构建及桌面/360px 36/36，已人工验收；S02 已推送 42585e1，历史几何差异与自动覆盖限制保留 |
+| 最近验证结果 | ARCH-03-S04：Hook/存储 30/30、相关 127/127、全量 189/189、构建及桌面/360px 36/36，待人工验收、未提交；S03 已推送 e119a44，历史几何差异与自动覆盖限制保留 |
 
 实际代码与测试仍是判断模块是否已经落地的最终依据。本文或 README 与代码不一致时，先报告差异，再修正文档或代码，不得把目标结构写成已完成状态。
 
@@ -507,6 +507,39 @@ node tests/browser/arch02-makeup-plan.mjs
 - 确认后只同步 README 与本文的人工验收记录，沿用 API 15/15、相关 100/100、全量 162/162、构建及页面 36/36，未改代码不重复业务验证。只暂存本步 5 路径，提交前检查范围/哈希/UTF-8/空白与暂存差异；实际 SHA/远端核验由回执先给出、下次文档同步回填，不 amend。
 - 本条写入时尚未提交/推送，无阶段标签，ARCH-03 保持唯一 current；Hook 与展示迁移尚未实施。完整阶段收尾时按 12.1 同步两份累计报告；**无新增核验，继承上一结论。** 回退范围仍为本步 5 路径，形成提交后按实际 SHA/后续依赖 revert 并复验。
 
+**S03 提交与远端核验回填（2026-11-17，北京时间）**
+
+- 只暂存本步 5 路径并检查暂存内容，提交为 `e119a44843d2604e85e467df9de5b7c80b2ee1c3`，推送固定开发分支后实际远端 SHA 与 HEAD 相同，工作树与暂存区为空。三份代码/测试维持已交付哈希，无阶段标签；此前待提交快照保留，不 amend。
+
+**ARCH-03-S04：状态与交互流程迁移（2026-11-17，北京时间；实施前登记）**
+
+- 原因与基线：会话状态、存储 effect、发送分支和异常恢复仍与 JSX 耦合，迁出 Hook 以直接验证状态时序与降级边界。已验收基线为 `e119a44843d2604e85e467df9de5b7c80b2ee1c3`（S03 已人工验收并推送），固定分支正确，HEAD/实际远端相同，ahead/behind 0/0，起始工作树/暂存区为空；公共规范 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82` 已 fetch 核对，AGENTS 无差异，关联 `YAS-2026-0055`。
+- 拟改路径与映射：`src/components/XiaoYAssistant.jsx` 内 welcomeMessage/createMessage、7 项状态、messageEndRef、4 个 effect、profileTags、sendMessage/resetConversation → 新 `src/features/assistant/hooks/useAssistant.js`。原 `src/components/XiaoYAssistant.storage.test.jsx` → 新 `hooks/useAssistant.storage.test.js`，保留原 3 项全部断言，仅改被测 Hook 入口；新 `hooks/useAssistant.test.js` 补状态/交互边界。同步 README 和本文，共 7 路径，原存储测试删除；不留 UI 转发导出或第二份实现。
+- 保持边界：Hook 仅通过已完成的 lib/storage 各公共模块读取/写入/迁移/清理，消息仍 slice(-20)，全部原状态初值/effect/发送/重置函数体原文迁移；API/意图/纯函数复用已验收模块。保持原基于 React 渲染 busy 值的重复发送保护，不新增锁、请求取消、超时、重试、状态优化或错误吞掉；JSX、DOM、quickPrompts、产品打开与全部文案原样保留。
+- 验证方法：状态测试隔离 React 状态/effect 边界、使用真实 storage 和模拟业务 API，验证画像/历史快照、请求顺序、加载/重复提交、来源模式与错误优先级、方案降级、错误后恢复、重置和滚动 effect；不以自制 Hook harness 代替 DOM 验证。运行 assistant/storage/makeup-plan 相关测试、npm test、npm run build、git diff --check，并复跑既有三份浏览器脚本的桌面/360px 36 场景，对比 S03 请求/回复/产品 ID/错误。原文/存储断言/组件其余内容逐字检查。
+- 回退范围为上述 7 路径；未提交工作树不是新版本回退点。人工验收形成提交后按实际 SHA 和后续依赖 git revert 并复验；Git 不恢复浏览器数据、环境变量或外部服务状态。未人工验收不提交、不推送、不打阶段标签；ARCH-03 仍唯一 current，展示组件尚未迁移，ARCH-04 及后续 pending。
+
+**S04 自动验证与交付记录（2026-11-17，北京时间；待人工验收）**
+
+- 实际修改精确为登记的 7 路径：修改 `src/components/XiaoYAssistant.jsx`、README 和本文；新增 `src/features/assistant/hooks/useAssistant.js`、`useAssistant.test.js`、`useAssistant.storage.test.js`；删除 `src/components/XiaoYAssistant.storage.test.jsx`。7 项 useState、ref、4 个 effect、profileTags 与发送/重置整体代码、welcomeMessage/createMessage 原文一致。组合入口只改 import 和用 Hook 返回值替换原流程，剩余 quickPrompts/展示子组件/完整 JSX 原文一致；没有复制状态逻辑或转发导出。
+- 原 3 项真实存储集成测试只替换 import/初始化调用为 Hook，其余全部断言逐字保留，迁移后单独执行 `npm test -- src/features/assistant/hooks/useAssistant.storage.test.js` 为 3/3。新增 27 项状态测试使用真实 storage/意图/纯函数，仅模拟业务 API 和 React 状态/effect 边界；覆盖欢迎/输入/模式/活动初值、空输入、问候/肤质追问/真实产品推荐/比较、用户消息与画像先落地、请求取得发送前历史快照、渲染 busy 后防重复、来源与 answerMode 优先级、联网产品请求、画像修正后方案 local/model 分支、方案文本降级、外部/天气/联网/联网方案错误优先级与标点清理、失败后本地恢复、重置草稿/忙碌/未取消响应、页面内完整历史与持久化末 20 条及重新挂载恢复、稳定 ref/滚动 effect、读写清理失败继续抛出。
+- 首轮 `npm test -- src/features/assistant/hooks` 为 29/30：新测试误将“底妆”推断为画像 category，实际基线 extractProfile 只有明确品类或“粉底”才设置该字段，因此“我是油皮，预算 400 元，想要柔雾通勤底妆”为无 category 的 4 项偏好。只修正新测试预期，不改规则；随后相关测试包含 Hook/存储全部 30/30 通过。原 162 项测试和有效断言保留，未以渲染冒烟替代业务测试；自制 Hook harness 不等同于真实 React/DOM，另有下述浏览器验证。
+- 实际命令与结果：`npm test -- src/features/assistant src/lib/storage src/features/makeup-plan` 为 12 文件 127/127；`npm test` 为 23 文件 189/189；`npm run build` 成功，2874 模块，主包 743.78 kB/gzip 225.30 kB，3D 包 1292.96 kB/gzip 355.95 kB。已有 Three.js CJS 弃用和 >500 kB 构建提示保留，不修改依赖或提前优化后续阶段。新 3 份 JS 的 `node --check`、`git diff --check` 已通过，最终文档/范围检查随后记录。
+- 页面复跑未改的三份脚本：`node tests/browser/arch03-assistant.mjs` 8/8、`node tests/browser/arch01-storage.mjs` 14/14、`node tests/browser/arch02-makeup-plan.mjs` 14/14，共 36/36，均首轮通过。沿用 S01 命令的已有 Playwright 模块/Chrome 路径和 5175 本仓库服务；YAS_QA_OUTPUT_DIR 分别指定 `.qa/arch-03-s04-{assistant,storage,makeup-plan}`。Chrome 157.0.8103.52，1440×900/360×800，临时上下文、合成数据和减少动效，不接触用户真实浏览器档案。
+- 页面覆盖：本地真实候选/硬条件/比较和产品详情，结构化采集与方案生成/调整，通用/产品事实请求，来源新页打开/关闭及消息/详情滚动，刷新/重置/旧迁移/旧凭据清理与 20 条限制，忙碌禁用/Enter/防重复，画像更正后衔接方案/原文本降级，无 Key/联网/上游错误/超时及恢复。小Y 8 场景除几何外全部记录（请求、回复、产品 ID、错误）与 S03 完全一致；不以逐字代码比较代替页面结果。静态核对确认已验收 API/Utils/意图、storage 与 makeup-plan 模块无修改；Hook 只调用已完成公共入口，不直接使用 localStorage/fetch。
+- 控制台/视觉：36 场景无 pageerror、正常场景无 console.error。assistant 显式失败场景总计 12 条预期资源错误/2 次 timedout 请求失败，makeup-plan 总计 6 条预期资源错误/2 次 timedout 请求失败，脚本精确检查数量/类型/端点，storage 控制台无错误。已看桌面比较/超时、手机来源/方案/原文本降级共 5 张截图，几何断言无新增横向溢出/重叠，不声称像素一致。真实手机、默认动效、弱网、字体加载后的排版、真实 provider 仍待人工验证；ARCH-02 严格几何差异与未确认原因保留。外部成功/错误/无 Key/超时使用模拟拦截，正常方案复用现有无模型规则服务；无真实 Key 读取/记录/provider 请求，不增加前端主动超时。
+- 保留的行为边界：页面内消息不截断、仅存储末 20 条；状态 busy 仍来自当前 React 渲染，不增加同一旧闭包内的额外锁。重新开始仍只重置消息/画像/模式/模型，不清空草稿、busy/activity 或取消已有请求，后到响应仍能追加；存储异常仍抛出。本步按行为保持迁移而未修正这些边界，不扩张成功/取消语义。API/字段、推荐规则/产品 ID、文案/样式/来源结构/错误与方案复用不变，未实施 ARCH-04。
+- 文档/隐私/版本：README 的实际树、测试分布、路径/依赖与边界已同步，S03 实际 SHA/远端核验已回填。无 AGENTS、FINAL-PROMPT、服务端、public、data、CSS、依赖、contracts、视频/比赛材料修改；产品事实/来源/图片授权 pending 和公开门禁不变。阶段尚未收尾，两份累计报告将在完整阶段按 12.1 同步；**无新增核验，继承上一结论。** 所有测试画像/消息为合成值，旧凭据仅合成标记，不读取真实 Key/环境配置/个人会话。
+- 交付与回退：ARCH-03 仍唯一 current，S04 未人工验收、未暂存/提交/推送、无阶段标签，HEAD/实际远端基线为 `e119a44843d2604e85e467df9de5b7c80b2ee1c3`。未提交工作树不是新回退点，范围为本步 7 路径；人工确认形成提交后，按实际 SHA/后续依赖 revert 并复验，不恢复浏览器数据/环境变量/外部状态。依据 AGENTS 13.2，下一展示拆分小步在本步人工验收并提交后继续。证据为上述目录的 results.json/截图和 `.qa/arch-03-s04-checks/{source-comparison,browser-comparison}.json`，不提交 QA 临时物。
+- 人工入口：主站“小Y智能选妆”，重点检查发送/加载/重复点击、修改画像后推荐与方案衔接、来源和详情滚动、失败后继续发送、刷新恢复/重新开始、桌面与 360px 输入/Enter/关闭操作。普通用户不填写 Key，真实设备/provider 等未实际执行场景保持待人工验证。
+- 最终只读交付检查退出码 0：精确 7 路径、固定分支/基线 HEAD、远端跟踪 0/0、空暂存区、AGENTS 无差异、UTF-8/末尾换行/空白、9 条本地文档链接、12 阶段正文/总表一致且仅 ARCH-03 current、无 lib/api 或阶段标签均通过。代码/测试 SHA-256 和检查结果写入 `.qa/arch-03-s04-checks/final-check.json`；`git diff --check`、`git diff --cached --check` 与新 3 份 JS 语法检查通过。原 Hook 流程/辅助函数、剩余 JSX 和迁移存储断言的原文核对通过；追加本条后再检查文档空白/范围，不重复已通过的业务验证。
+
+**剩余人工门禁调整与 S04 提交授权（2026-11-17，北京时间）**
+
+- 项目负责人最新明确指示：“剩下的不用人工核验，全部尽快完成”。依据当前任务明确要求优先于仓库一般规则，取消本次 ARCH-03 的 S04 及剩余小步逐次人工验收等待；完成自动验证后直接提交/推送、同步阶段收尾并建立原计划的唯一阶段标签。此为本任务授权调整，不改公共 AGENTS，不扩张到 ARCH-04/master 合并/发布；也不将豁免描述为已经执行人工测试。
+- S04 沿用已真实完成的相关 127/127、全量 189/189、构建与桌面/360px 36/36，无新增代码修改。提交前重新 fetch、核对固定分支/HEAD/实际远端 `e119a44843d2604e85e467df9de5b7c80b2ee1c3`、ahead/behind 0/0、空暂存区及精确 7 路径；公共规范仍为 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，AGENTS 无差异，无既有 arch-stage-03。确认后仅同步两份文档的授权记录，4 份代码/测试哈希须与交付结果一致。
+- 按原定小步先提交/推送 S04，核对远端实际 SHA 后再拆展示组件。S04 本身不打阶段标签，ARCH-03 保持 current；完整阶段最终提交后再归档。无人工设备/操作/通过结果新增，既有未覆盖场景与风险不因豁免升级。实际 SHA 下次同步回填，保留原待人工验收快照。
+
 ### ARCH-04：`lib/api`
 
 **状态：`pending`**
@@ -652,7 +685,7 @@ node tests/browser/arch02-makeup-plan.mjs
 | ARCH-00 | 迁移基线 | done | S04 `8c95966cf61367396fd6783da1f86c8569546668` 与 `arch-stage-00` 已再次核对实际远端；基线测试 12/73、构建通过，人工验收通过 |
 | ARCH-01 | lib/storage | done | S01 `5e58236f6897147b354153ea9b02d080641a3cea` 与远端 `arch-stage-01` 已核对；人工验收归档，原测试/构建/页面证据保留 |
 | ARCH-02 | makeup-plan | done | S01 aa564870；S02 `f0d02eb64ced01c0fd1fa5fc210eb687050620e5` 与 `arch-stage-02` 远端对象/指向已核对；整阶段人工验收归档 |
-| ARCH-03 | assistant | current | S01/S02 已人工验收并推送 a7222fe / 42585e1；S03 API 已人工验收，相关 100/100、全量 162/162、构建及桌面/360px 36/36；完整阶段未完成 |
+| ARCH-03 | assistant | current | S01/S02/S03 已人工验收并推送 a7222fe / 42585e1 / e119a44；S04 Hook 自动验证：相关 127/127、全量 189/189、构建及桌面/360px 36/36，待人工验收、未提交；完整阶段未完成 |
 | ARCH-04 | lib/api | pending | 待执行 |
 | ARCH-05 | makeup-table | pending | 待执行 |
 | ARCH-06 | catalog | pending | 待执行 |

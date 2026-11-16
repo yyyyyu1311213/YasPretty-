@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import XiaoYAssistant from './XiaoYAssistant'
+import { useAssistant } from './useAssistant'
 
 // Exercise the real storage wiring at initialization/effect boundaries without a DOM dependency.
 // These checks do not replace browser interaction or viewport regression checks.
@@ -14,7 +14,7 @@ vi.mock('react', async (importOriginal) => ({
 
 function initializeAndPersist() {
   lifecycle.effects = []
-  XiaoYAssistant({ onOpenProduct: vi.fn() })
+  useAssistant()
   lifecycle.effects.forEach((effect) => effect())
 }
 
