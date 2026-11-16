@@ -110,7 +110,7 @@ npm start
 
 ### 当前实际结构
 
-以下主树以 `master` 的 `0b93a18` 代码内容及本次新增的规范文档为基线，不代表目标模块已经全部迁移完成。开发分支额外已存在的结构单独列在树后；后续阶段应在开发分支同步更新其实际结构与执行记录。
+以下主树描述开发分支 `codex/frontend-contracts-yas-2026-0055` 在 `ce266c654709506fe36340da21874676b382a239` 的实际结构（2026-11-16，北京时间，ARCH-00-S03 只读核对）。本次采用的公共规范为远端 `master` 的 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`；master 尚无下列六个 contracts 文件。当前没有 `src/app/`、`src/features/`、`src/lib/api/` 或 `src/lib/storage/`，不得将目标目录描述为已实现。
 
 ```text
 yaspretty/
@@ -130,6 +130,14 @@ yaspretty/
 │   │   ├── ScrollFloat.jsx             首页滚动文字动效
 │   │   ├── StrokeText.jsx              笔画文字动效
 │   │   └── makeup-table-3d/            Three.js 场景、妆具、粒子和性能配置
+│   │
+│   ├── contracts/                      六个 JSDoc 契约文件，无运行时校验
+│   │   ├── userProfile.js
+│   │   ├── makeupRequest.js
+│   │   ├── makeupPlan.js
+│   │   ├── assistant.js
+│   │   ├── product.js
+│   │   └── index.js
 │   │
 │   ├── data/
 │   │   ├── products.js                 当前 35 条受控彩妆资料与来源状态
@@ -160,6 +168,7 @@ yaspretty/
 │   └── functions/api.js                复用 Fastify 网关的 Functions 适配器
 ├── docs/
 │   ├── frontend-architecture-migration-plan.md 当前架构迁移阶段、约束与执行记录
+│   ├── frontend-architecture-migration-inventory.md ARCH-00 源码引用、目标映射与测试缺口
 │   ├── phase-0-baseline.md             安全扫描、功能与构建基线
 │   ├── phase-1-ai-gateway.md           阶段 1 架构、测试与风险记录
 │   ├── stage-delivery-test-report.md   各阶段作用、测试证据与剩余风险
@@ -168,9 +177,13 @@ yaspretty/
 └── beauty-assistant.html               旧独立页备份，不继续扩展
 ```
 
+组件自带 CSS 目前仍在 `src/components/`：`MakeupTable.css`、`MakeupTable3D.css`、`FlexCarousel.css`、`ScrollFloat.css`、`StrokeText.css`，以及 `makeup-table-3d/GhostCursor.css`。3D 内部实际文件为 `Scene.jsx`、`CosmeticItem.jsx`、`DressingTable.jsx`、`ParticleBurst.jsx`、`GhostCursor.jsx`、`cosmetics.js` 和 `performance-profile.js`。
+
+当前 12 个 Vitest 文件分布在 `src/components/`（4）、`src/data/`（2）、`src/lib/`（1）、`server/`（4，含子目录）和 `tests/`（1）；没有把全部组件交互或浏览器流程覆盖为自动化测试。逐文件范围与后续迁移位置见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)。
+
 ### 前端目标结构（迁移中）
 
-开发分支 `codex/frontend-contracts-yas-2026-0055` 的 `86b25b3` 已建立 `src/contracts/`，包含 `userProfile.js`、`makeupRequest.js`、`makeupPlan.js`、`assistant.js`、`product.js` 和 `index.js`；上述 master 基线未包含这六个文件。开发分支的演示材料和已有历史报告继续保留，公共规范同步不搬移或删除这些差异。
+开发分支的 `86b25b3` 已建立上述 `src/contracts/` 六个文件，这是前置实现提交，不是本次迁移基线 HEAD；公共 master 基线未包含它们。开发分支的演示材料和已有历史报告继续保留，公共规范同步不搬移或删除这些差异。
 
 下列 `app/`、`features/`、`lib/api/` 和 `lib/storage/` 仍是开发分支待逐步实施的目标，不得据此描述为已经完成模块化。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
 
@@ -192,7 +205,7 @@ src/
 │   │   │   ├── HeroSection.jsx         Slogan、首屏文案和主 CTA
 │   │   │   ├── EditorSelection.jsx
 │   │   │   ├── HomeProductSection.jsx
-│   │   │   └── visual/                 只服务首页的视觉组件
+│   │   │   └── visual/                 首页视觉；StrokeText 另被品牌开幕复用
 │   │   │       ├── ScrollFloat.jsx
 │   │   │       ├── StrokeText.jsx
 │   │   │       └── FlexCarousel.jsx
@@ -277,7 +290,9 @@ src/
 
 测试文件与对应源码就近放置。`data/` 继续作为产品事实唯一数据源；`homeContent.js` 只保存精选产品 ID 和展示内容，不复制产品信息。图片、模型、纹理等静态资源继续放在 `public/`。
 
-### 依赖边界
+### 依赖边界（目标，尚未全面落地）
+
+当前真实入口为 `main.jsx → App.jsx`；App 直接组合内嵌页面与 `components/` 中的小Y、品牌开幕及视觉组件，小Y再组合工作台。产品库与收藏仍在 App，三处业务 fetch 仍在小Y/工作台，收藏直接读写 localStorage；小Y画像与消息使用 `lib/xiaoy-storage.js`。contracts 当前只有 JSDoc，没有运行时导入或校验。下面是后续阶段约束，不是当前已实现依赖图。
 
 ```text
 main.jsx → app → features → lib/api、lib/storage
@@ -292,6 +307,8 @@ catalog    → data
 ```
 
 `lib` 不依赖 `features`，`contracts` 不保存业务数据，`makeup-plan` 不反向依赖 `assistant`。组件负责展示，Hooks 负责状态和流程，业务 API 负责请求适配，Utils 保持为可独立测试的纯函数。
+
+实际引用还要求在相应阶段复核：BrandOpening 也使用 StrokeText；首页精选使用 App 定义的 EnhancementBoundary；产品详情使用收藏状态控件，catalog 需要单向消费 collection 的展示组件。迁移不得产生 app/home 或 catalog/collection 循环依赖，也不得复制共享实现。全局 `styles.css`、`xiaoy.css` 仍由 main 按现有顺序加载，后者也包含工作台及首页 CTA 样式。本步仅记录这些依赖，未开始后续阶段。
 
 ### 架构文档同步规则
 
