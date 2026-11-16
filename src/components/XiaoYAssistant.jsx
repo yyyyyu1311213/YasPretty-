@@ -10,25 +10,20 @@ import {
   UserRound,
 } from 'lucide-react'
 import { products } from '../data/products'
+import { requestAssistant, requestMakeupPlan } from '../features/assistant/assistantApi'
 import { detectIntent, needsOnlineResearch } from '../features/assistant/intentUtils'
 import {
   cleanErrorMessage,
   extractProfile,
-  formatPlanReply,
   localMakeupReply,
   localReply,
-  parseAssistantResult,
   pickShade,
-  planPayloadFromConversation,
 } from '../features/assistant/assistantUtils'
 import { clearLegacyCredentials } from '../lib/storage/clearUserData'
 import { readVersioned } from '../lib/storage/migrations'
 import { writeVersioned } from '../lib/storage/storageClient'
 import { LEGACY_MESSAGES_KEY, LEGACY_PROFILE_KEY, MESSAGES_KEY, PROFILE_KEY } from '../lib/storage/storageKeys'
-import { requestMakeupPlan as requestPlan } from '../features/makeup-plan/makeupPlanApi'
 import MakeupWorkbench from '../features/makeup-plan/components/MakeupWorkbench'
-
-const ASSISTANT_ENDPOINT = '/api/assistant'
 
 const welcomeMessage = {
   id: 'welcome',
@@ -52,36 +47,6 @@ function createMessage(role, content, productIds = [], sources = []) {
     productIds,
     sources,
   }
-}
-
-async function requestAssistant({ text, messages, profile }) {
-  const response = await fetch(ASSISTANT_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: text,
-      profile,
-      messages: messages.slice(-8).map((message) => ({ role: message.role, content: message.content })),
-    }),
-  })
-  const data = await response.json().catch(() => null)
-  if (!response.ok) {
-    const error = new Error(data?.error?.message || `请求失败（${response.status}）`)
-    error.code = data?.error?.code || 'REQUEST_FAILED'
-    throw error
-  }
-  if (!data?.answer) throw new Error('智能服务没有返回内容')
-  return {
-    ...parseAssistantResult(data.answer),
-    sources: data.sources || [],
-    answerMode: data.answerMode || 'model',
-    model: data.model || '',
-  }
-}
-
-async function requestMakeupPlan({ text, profile }) {
-  const plan = await requestPlan(planPayloadFromConversation(text, profile))
-  return formatPlanReply(plan)
 }
 
 function ProfileSummary({ profile }) {
