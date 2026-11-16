@@ -1,16 +1,13 @@
 import {
-  Bot,
   ChevronRight,
-  LoaderCircle,
   RefreshCw,
   Send,
   ShieldCheck,
   Sparkles,
-  UserRound,
 } from 'lucide-react'
+import AssistantMessages from '../features/assistant/components/AssistantMessages'
+import ProfileSummary from '../features/assistant/components/ProfileSummary'
 import { useAssistant } from '../features/assistant/hooks/useAssistant'
-import { products } from '../data/products'
-import { pickShade } from '../features/assistant/assistantUtils'
 import MakeupWorkbench from '../features/makeup-plan/components/MakeupWorkbench'
 
 const quickPrompts = [
@@ -19,54 +16,6 @@ const quickPrompts = [
   '预算 400 元以内，想要高遮瑕',
   '帮我比较 NARS 超方瓶和雅诗兰黛持妆粉底液',
 ]
-
-function ProfileSummary({ profile }) {
-  const items = [
-    ['肤质', profile.skin],
-    ['妆效', profile.finish],
-    ['场景', profile.scene],
-    ['预算', profile.budget ? `${profile.budget} 元内` : ''],
-    ['常用城市', profile.city],
-  ].filter(([, value]) => value)
-
-  return (
-    <div className="xiaoy-profile">
-      <div className="xiaoy-profile-title"><UserRound size={16} /><span>当前偏好</span></div>
-      {items.length ? (
-        <dl>{items.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-      ) : <p>对话中提到的肤质、妆效、场景和预算会显示在这里。</p>}
-    </div>
-  )
-}
-
-function AssistantProduct({ product, profile, onOpenProduct }) {
-  const shade = pickShade(product, profile)
-  return (
-    <button className="xiaoy-product" onClick={() => onOpenProduct(product)}>
-      <img src={product.image} alt={`${product.brand} ${product.name}`} />
-      <span className="xiaoy-product-copy">
-        <small>{product.brand}</small>
-        <b>{product.name}</b>
-        <i>{shade.name} · {product.finish} · {product.priceLabel}</i>
-      </span>
-      <ChevronRight size={17} />
-    </button>
-  )
-}
-
-function SourceList({ sources }) {
-  if (!sources?.length) return null
-  return (
-    <div className="xiaoy-sources">
-      <span>参考来源</span>
-      {sources.map((source, index) => (
-        <a key={`${source.url}-${index}`} href={source.url} target="_blank" rel="noreferrer">
-          <b>[{index + 1}]</b>{source.title}<ChevronRight size={14} />
-        </a>
-      ))}
-    </div>
-  )
-}
 
 export default function XiaoYAssistant({ onOpenProduct }) {
   const { messages, profile, input, setInput, busy, mode, activeModel, activity, messageEndRef, profileTags, sendMessage, resetConversation } = useAssistant()
@@ -96,27 +45,7 @@ export default function XiaoYAssistant({ onOpenProduct }) {
         </aside>
 
         <div className="xiaoy-chat">
-          <div className="xiaoy-messages" aria-live="polite">
-            {messages.map((message) => (
-              <article key={message.id} className={`xiaoy-message ${message.role}`}>
-                <span className="xiaoy-message-icon">{message.role === 'assistant' ? <Bot size={17} /> : <UserRound size={17} />}</span>
-                <div className="xiaoy-message-body">
-                  <p>{message.content}</p>
-                  {message.productIds?.length > 0 && (
-                    <div className="xiaoy-products">
-                      {message.productIds.map((id) => {
-                        const product = products.find((item) => item.id === id)
-                        return product ? <AssistantProduct key={id} product={product} profile={profile} onOpenProduct={onOpenProduct} /> : null
-                      })}
-                    </div>
-                  )}
-                  <SourceList sources={message.sources} />
-                </div>
-              </article>
-            ))}
-            {busy && <article className="xiaoy-message assistant loading"><span className="xiaoy-message-icon"><Bot size={17} /></span><div className="xiaoy-message-body"><p><LoaderCircle size={16} />{activity}</p></div></article>}
-            <div ref={messageEndRef} />
-          </div>
+          <AssistantMessages messages={messages} profile={profile} busy={busy} activity={activity} messageEndRef={messageEndRef} onOpenProduct={onOpenProduct} />
 
           {messages.length === 1 && <div className="xiaoy-prompts">{quickPrompts.map((prompt) => <button key={prompt} onClick={() => sendMessage(prompt)}>{prompt}<ChevronRight size={15} /></button>)}</div>}
 
