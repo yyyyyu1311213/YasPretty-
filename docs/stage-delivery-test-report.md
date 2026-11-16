@@ -1241,3 +1241,46 @@
 当前唯一 PPTX 仍为 `docs/presentation/YasPretty-项目介绍-人均180-最终版.pptx`，SHA-256 更新为 `F77B687EEB991C054EAB85C917A0F98B4576703E7D4CDFC94EF9F55ED5C32E36`。Artifact Tool 包结构、版面、9 页页数、16:9 页面、字体策略和第一方重新导入全部通过，finding 0；封面 PNG 已按原始分辨率人工复核，粉底、口红、轮廓线和底部基线完整可见。PPTX 关系包仍包含第 1 页和第 9 页的两个项目网页外部超链接。
 
 完整 `npm run check` 再次通过，Vitest 12 个文件、73/73 项通过，Vite 生产构建转换 2861 个模块；保留既有 3D 大分块警告。本次只替换项目原创 Hero 资产的适配版本和显示模式，不改变产品事实、用户数据、图片授权状态或其他页面内容。最终演示设备上的 PowerPoint 与投影复验仍是公开展示前门禁。
+
+## 阶段 5 架构准备增量：前端 JSDoc 数据契约（YAS-2026-0055）
+
+记录日期：2026-11-16（北京时间）。本次是现有代码的数据约定整理，不改变阶段 5 的整体验收状态，也不启动 features、lib/api 或 storage 迁移。
+
+### 基线、问题证据与提交定位
+
+- 基线分支：`master`；基线 SHA：`d136bddaeb3a5a3c24f9f8ec47f573f5b4099e31`。
+- 开始前已执行 `git status`、`git diff`、`git diff --cached`、`git log -5 --oneline`、`git branch --show-current`、`git rev-parse HEAD`。工作树与暂存区均为空；master 已领先 origin/master 6 个本地提交，不属于本次改动。
+- 问题：前端画像、请求、方案、小Y消息及产品记录的格式分散在现有实现中，缺少可统一引用的 JSDoc 约定。证据位于 `server/schemas.cjs`、`server/app.cjs`、`server/services/makeup-plan-service.cjs`、`src/components/MakeupWorkbench.jsx`、`src/components/XiaoYAssistant.jsx`、`src/lib/xiaoy-storage.js`、`src/data/products.js` 及其现有测试。
+- 工作分支：`codex/frontend-contracts-yas-2026-0055`。本条、数据审计增量与六个新增契约文件合为一个内聚提交，不拆出纯 SHA 回填提交。实现提交 SHA 可由 `git log -1 --format=%H --diff-filter=A -- src/contracts/index.js` 解析；该提交正文含问题编号 `YAS-2026-0055`，最终交付同时列出完整 SHA。此定位用于避免在提交内容中预填尚未产生的自身哈希；上述基线 SHA 不冒充实现 SHA。未创建 tag。
+
+### 实际文件与边界
+
+新增 `src/contracts/userProfile.js`、`makeupRequest.js`、`makeupPlan.js`、`assistant.js`、`product.js`、`index.js`；同步本报告和 `docs/product-data-accuracy-audit.md`。新建文件中的数据定义从现有代码整理，不重新设计格式，也不复制服务端 Zod 校验。
+
+- `userProfile.js`：标准画像的解析后结构；预算为数字，数组和默认字段均保留。
+- `makeupRequest.js`：服务端当前妆容需求，以及独立命名的现有工作台表单结构。表单预算允许空字符串、带妆时长允许 select 返回的字符串；不把表单直接当 API 请求。
+- `makeupPlan.js`：请求与成功响应、输入快照、步骤、候选 evidence 和完整方案；请求允许省略服务端可补齐的字段。方案只引用产品 ID，保留 `primaryProductId: string | null`、`candidateEvidence`、`sourceMode` 和 `schemaVersion`。
+- `assistant.js`：独立的 `AssistantProfile`、API `ConversationMessage`、UI `AssistantMessage`、请求、实际成功响应、来源和公开错误响应。响应包含网关补充的 `ok`；保留空来源数组和可为 null 的模型名。
+- `product.js`：受控产品及当前实际附加的色号、图片和核验记录。保留可空价格、持妆、氧化和编辑示例评分；`priceLabel` 只用于展示。`AssistantSource.accessedAt` 为 UTC 日期时间，`ProductSource.accessedAt`、`priceVerifiedAt` 为 YYYY-MM-DD 日期，不强行合并。
+- `index.js`：仅通过 JSDoc 类型别名统一引用；各文件的 `export {}` 只是模块标记，没有运行时导出、对象、默认值或业务逻辑。可缺省属性用 JSDoc `[field]`（等同于 `field?`），明确空值单独写 `| null`。
+
+开发者入口是通过 JSDoc `import('./contracts/index.js').类型名` 引用。消费者入口继续沿用主站小Y及妆容工作台，没有新增页面或交互。`App.jsx`、组件、接口路径、请求转换、localStorage、服务端代码、package.json 和锁文件均不在本次修改范围。
+
+### 已运行的验证与限制
+
+- 基线及契约写入后的 `npm run test`：均退出码 0，12 个文件、73/73 项通过。保留既有 `THREE_CJS_DEPRECATED` 弃用提示。
+- 基线及契约写入后的 `npm run build`：均退出码 0，Vite 转换 2861 个模块；产物文件名和输出大小一致。保留既有大于 500 kB 的分块警告，不据此宣称性能问题已解决。
+- 本地 `node --input-type=module` 字段核对：19 组检查通过，覆盖当前 schema 的字段集合及 35 条富化产品记录；动态导入六个新模块确认运行时导出均为空。该检查只核对契约覆盖和模块边界，不替代运行时 schema 或外部商品核验。
+- 本地 Fastify inject（模拟 provider，不调用外部服务）：默认方案 HTTP 200，预算为数字、首步骤产品为 null；普通小Y回答 HTTP 200；缺城市澄清 HTTP 200，返回 `sources: []`、`model: null`；空字符串预算 HTTP 400，`error.details` 指向 `userProfile.budgetTotal`。
+- 契约编辑后的 `git diff --check` 退出码 0；提交前仍需检查全部暂存差异，提交后及最终交付前按任务要求再次运行测试和构建，真实输出与最终提交 SHA 一并在交付中报告。
+- 额外 JSDoc 编译检查未完成：仓库未安装 TypeScript；PATH 中 code 对应的本机安装目录已失效，尝试调用其 tsc.js 返回 `MODULE_NOT_FOUND`。未安装依赖、未声称 checkJs 通过。普通沙箱工具曾在进程启动前报 `setup refresh had errors`；上述实际验证通过可用的本地执行通道完成。
+
+本次没有改变浏览器运行代码，未新增桌面/360px 浏览器验收，也未把既有截图或单元测试当作新的浏览器控制台验收。现有成功、失败、超时和本地降级行为保持原实现；没有照片、对话、画像、密钥或其他个人数据的新增读取、上传或持久化。
+
+### 未实现内容、风险与回退
+
+转换函数、请求封装、存储迁移、运行时校验、features 拆分、照片分析和方案调整 API 均未在本次实现。JSDoc 不会自动拦截非法数据；后续修改字段时必须与服务端和调用方同步。
+
+核对发现：当前服务端仍支持 `answerMode: weather` / 来源 `kind: weather`，部分 `informationSources` 仍是品牌官网商品页，与目标文档中的天气 provider 和最新产品链接约束存在差异。契约按当前实现如实记录，不新增这类功能或链接，不把旧链接写成合规官方旗舰店来源；相关数据整改和架构变更留待另行授权。图片授权待核验、缺原始来源等既有公开门禁继续保留。README、AGENTS.md、FINAL-PROMPT.md 的产品目标与运行方法无需因本次类型整理改写；未修改视频或比赛材料，也不宣称新功能已上线。
+
+单独回退时，先用上述 Git 命令取得实现 SHA，再执行 `git revert <实现SHA>`；它只回退本问题的六个新增文件及两份文档增量。回退后重新执行 `npm run test` 和 `npm run build` 并记录实际结果，不使用强制重置或历史改写。未执行 push、tag、发布、远端 PR 或不可逆 Git 操作。
