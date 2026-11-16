@@ -110,11 +110,11 @@ npm start
 
 ### 当前实际结构
 
-以下主树描述开发分支 `codex/frontend-contracts-yas-2026-0055` 的 ARCH-02-S01 已人工验收结构（2026-11-17，北京时间）。修改前已验收基线为 `5e58236f6897147b354153ea9b02d080641a3cea`（`arch-stage-01`）；公共规范为本次 fetch 核对的远端 `master` 提交 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`。master 尚无下列六个 contracts 文件、storage 拆分或 makeup-plan Utils；`src/app/`、`src/lib/api/` 仍未建立，`src/features/` 目前只有本步纯转换模块与就近测试。
+以下主树描述开发分支 `codex/frontend-contracts-yas-2026-0055` 的 ARCH-02-S02 已通过人工验收的实际结构（2026-11-17，北京时间）。修改前已验收基线为 `aa564870f30f97711e096aebf744f3c2f5af6230`（ARCH-02-S01，已核对实时远端）；公共规范为 fetch 核对的远端 master `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`。master 尚无本分支 contracts、storage 或 makeup-plan 拆分；`src/app/`、`src/lib/api/` 和 `src/features/assistant/` 均未建立。
 
 ARCH-00 已通过人工验收并归档：S03 为 `f16542c6a84ed9141ab955661008fcb1bbc06b6f`，S04 为 `8c95966cf61367396fd6783da1f86c8569546668`；带注释的 `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向 S04。ARCH-01-S01 已将旧 `src/lib/xiaoy-storage.js` 拆入下列四个 storage 模块并更新小Y直接调用，未保留转发入口；相关 40/40、全量 113/113、构建及桌面/360px 的 14 项 Playwright 页面复测通过。负责人于 2026-11-17 明确确认人工验收通过，实际提交为 `5e58236f6897147b354153ea9b02d080641a3cea`；远端 `arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` 指向该提交，启动预检已核对。两阶段保持 `done`，历史基线与映射分别见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)和[迁移计划 ARCH-01](docs/frontend-architecture-migration-plan.md#arch-01libstorage)。
 
-负责人随后明确授权“开启02”，ARCH-02 为唯一 `current`，ARCH-03 及之后保持 `pending`。S01 仅将 `DEFAULT_FORM`、`legacyToForm`、`toPlanPayload` 迁入 `features/makeup-plan/makeupPlanUtils.js`，工作台与小Y直接使用新模块，原组件不转发导出。API、状态和组件拆分仍待后续小步；本步相关 21/21、全量 120/120、生产构建及前后各 10/10 的桌面/360px 页面复跑通过。2026-11-17 负责人明确确认“ARCH-02-S01 人工验收通过 上传到github上去”，已授权仅提交并推送本步 8 文件；本文写入时待提交，实际 SHA 与远端核验由交付回执先行给出、下次文档同步回填，不改写历史。ARCH-02 整阶段尚未完成，不建立 `arch-stage-02`。逐小步验收与证据见[迁移计划 ARCH-02](docs/frontend-architecture-migration-plan.md#arch-02makeup-plan)。
+ARCH-02 已通过整阶段人工验收，状态为 `done`；ARCH-03 及以后仍 `pending`。S01 纯转换已人工验收并推送 `aa564870`；S02 将方案 API、工作台状态/流程及表单/结果/产品展示迁入 `features/makeup-plan/`，工作台组合入口也按已归档映射迁入该 feature，原组件路径删除，小Y同步引用并共享唯一方案请求。S02 自动验证完成：相关 76/76、全量 138/138、构建通过，最终桌面/360px 浏览器 14/14；严格像素几何比较存在差异，见迁移计划。2026-11-17 负责人确认“人工核验完成”；本次仅同步四份收尾文档，代码/测试保持已验收版本。收尾提交和 `arch-stage-02` 的实际远端核验由本次归档回执报告、下次文档同步回填，核对成功前不称已归档。本次收尾不混入 ARCH-03。
 
 ```text
 yaspretty/
@@ -127,7 +127,6 @@ yaspretty/
 │   ├── components/
 │   │   ├── BrandOpening.jsx            一次性品牌开幕、跳过与减少动效处理
 │   │   ├── XiaoYAssistant.jsx          小Y界面、本地规则与 YasPretty API 调用
-│   │   ├── MakeupWorkbench.jsx         结构化妆容工作台
 │   │   ├── MakeupTable3D.jsx           交互式 3D 化妆桌入口
 │   │   ├── MakeupTable.jsx             2D 品类桌回退
 │   │   ├── FlexCarousel.jsx            首页产品增强轮播
@@ -145,8 +144,19 @@ yaspretty/
 │   │
 │   ├── features/
 │   │   └── makeup-plan/
-│   │       ├── makeupPlanUtils.js      默认表单、旧画像兼容与方案请求纯转换
-│   │       └── makeupPlanUtils.test.js  纯转换兼容性与请求边界测试
+│   │       ├── components/
+│   │       │   ├── MakeupWorkbench.jsx 工作台标题、状态、表单和结果组合
+│   │       │   ├── MakeupPlanForm.jsx  需求表单与选项
+│   │       │   ├── PlanResult.jsx      方案步骤、候选依据与限制
+│   │       │   ├── PlanProduct.jsx     真实产品 ID 查询与详情回调
+│   │       │   └── PlanProduct.test.jsx
+│   │       ├── hooks/
+│   │       │   ├── useMakeupPlan.js    表单、画像同步与生成流程
+│   │       │   └── useMakeupPlan.test.js
+│   │       ├── makeupPlanApi.js        工作台/小Y共用的方案 HTTP 请求
+│   │       ├── makeupPlanApi.test.js
+│   │       ├── makeupPlanUtils.js      已验收默认表单及纯转换
+│   │       └── makeupPlanUtils.test.js
 │   │
 │   ├── data/
 │   │   ├── products.js                 当前 35 条受控彩妆资料与来源状态
@@ -195,19 +205,19 @@ yaspretty/
 
 组件自带 CSS 目前仍在 `src/components/`：`MakeupTable.css`、`MakeupTable3D.css`、`FlexCarousel.css`、`ScrollFloat.css`、`StrokeText.css`，以及 `makeup-table-3d/GhostCursor.css`。3D 内部实际文件为 `Scene.jsx`、`CosmeticItem.jsx`、`DressingTable.jsx`、`ParticleBurst.jsx`、`GhostCursor.jsx`、`cosmetics.js` 和 `performance-profile.js`。
 
-当前 17 个 Vitest 文件分布在 `src/components/`（5）、`src/features/makeup-plan/`（1）、`src/data/`（2）、`src/lib/`（4，含 storage 子目录）、`server/`（4，含子目录）和 `tests/`（1）。ARCH-02-S01 将小Y测试中的 1 项纯转换用例迁到就近 Utils 测试并补充 7 项默认值、旧画像、数值与请求字段兼容检查，共 8 项；相关 3 文件 21/21、全量 17 文件 120/120 及生产构建通过。ARCH-01 的 40 项存储测试保留，其中 `XiaoYAssistant.storage.test.jsx` 隔离 React 初始化/effect 边界，不替代真实 DOM、刷新或视口检查；历史 12/73 基线见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)，ARCH-01 验收见[阶段报告](docs/stage-delivery-test-report.md#arch-01-s01存储职责拆分已通过人工验收)。
+当前 20 个 Vitest 文件分布在 `src/components/`（5）、`src/features/makeup-plan/`（4）、`src/data/`（2）、`src/lib/`（4，含 storage）、`server/`（4）和 `tests/`（1）。S02 新增 API、Hook 边界和真实产品 ID 的 18 项断言，保留已有断言；相关 9 文件 76/76、全量 20 文件 138/138 及构建通过。Hook/存储测试隔离 React 状态/effect，不替代真实 DOM 回归；历史基线与 S01 验收证据保留在迁移计划和阶段报告。
 
 另有 `tests/browser/arch01-storage.mjs` 独立脚本，不计入 Vitest 数量；从主站真实导航、发送、刷新和重置入口，使用临时浏览器上下文和合成数据验证存储。2026-11-17 在 Chrome 157.0.8103.52、1440×900 和 360×800、减少动效下复测 14/14 通过，并检查截图与横向溢出/重叠；未覆盖真实手机、默认动画或禁用存储权限时的页面表现。首次定位器超时与资源错误、复跑命令和结果路径均保留在阶段报告；负责人后续已确认本步人工验收，不据此扩充自动测试覆盖范围。
 
 `tests/browser/arch02-makeup-plan.mjs` 同样独立运行，不增加依赖；在 5175 测试服务上以临时上下文覆盖生成、修改条件、当前/旧画像、加载与禁用提交、空响应/错误/重试、详情按钮与 Escape、小Y方案和既有文本降级。正常响应调用现有服务端无模型规则生成，错误响应由测试拦截模拟；迁移前后各 10/10，比较确认请求/表单值、控件尺寸和相对位置一致，已查看桌面/手机表单、结果和错误截图。首轮标签定位超时与后续复跑证据见迁移计划。没有验证真实 provider、真实 HTTP 失败/断网/超时、默认动效或真实手机；负责人已确认 S01 人工验收，不据此扩充上述自动覆盖范围。
 
-本次人工体验保留 `http://127.0.0.1:5175/` 前端及 8787 测试后端；后者仅在独立进程中显式禁用模型密钥，不修改 `.env`。已有网关健康检查与经 Vite 代理的无照片方案 API 冒烟通过（local、7 步），此结果与上面的浏览器拦截测试分别记录，不代表真实模型已验证。
+S02 使用已有 `http://127.0.0.1:5175/` 服务及临时 Chrome 上下文；正常方案通过现有服务端无模型规则生成，HTTP 503/504 和网络超时由测试路由模拟，未测试实际网关或真实 provider。迁移前 10/10，最终扩充为 14/14；正常场景无控制台/失败资源错误，两个显式网络失败场景的预期错误精确记录。新增优先项上限、无效 ID/候选依据过滤、依据与详情滚动、失败恢复检查。已看六张桌面/手机截图，几何断言无溢出/重叠；严格前后比较仍记录标签/产品按钮高度及纵向位置差异，未确认字体时序原因，不声称像素一致。真实手机、默认动画、真实网关/provider 和字体加载后的排版待人工验证。
 
 ### 前端目标结构（迁移中）
 
 开发分支的 `86b25b3` 已建立上述 `src/contracts/` 六个文件，这是前置实现提交，不是本次迁移基线 HEAD；公共 master 基线未包含它们。开发分支的演示材料和已有历史报告继续保留，公共规范同步不搬移或删除这些差异。
 
-下列 `app/`、绝大部分 `features/`、`lib/api/` 仍是开发分支待逐步实施的目标；`lib/storage/` 四模块已通过 ARCH-01 人工验收，makeup-plan 的 Utils 已迁入并通过 S01 人工验收，其他 makeup-plan 文件尚未建立。其余目标不得据此描述为已完成。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
+下列 `app/`、绝大部分 `features/`、`lib/api/` 仍是开发分支待逐步实施的目标；`lib/storage/` 四模块已通过 ARCH-01 人工验收，makeup-plan 的 Utils 已通过 S01 人工验收，API/Hook/组件已在 S02 迁入并通过人工验收。其余目标不得据此描述为已完成。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
 
 ```text
 src/
@@ -314,9 +324,9 @@ src/
 
 ### 依赖边界（目标，尚未全面落地）
 
-当前真实入口为 `main.jsx → App.jsx`；App 直接组合内嵌页面与 `components/` 中的小Y、品牌开幕及视觉组件，小Y再组合工作台。产品库与收藏仍在 App，三处业务 fetch 仍在小Y/工作台，收藏直接读写 localStorage；小Y直接组合 `lib/storage/` 的版本读取/迁移、写入、Key 和旧凭据清理，消息保存仍在原 effect 中使用 `slice(-20)`。`migrations` 依赖 `storageClient` 和 `storageKeys`，`storageClient` 与 `clearUserData` 仅依赖 `storageKeys`；没有反向依赖 UI 或增加桶式转发导出。损坏 JSON 仍回退，存储访问/写入/删除失败仍抛出，未新增静默降级。contracts 只有 JSDoc，没有运行时校验。下面是后续阶段约束，不是当前已全面实现的依赖图。
+当前真实入口为 `main.jsx → App.jsx`；App 直接组合内嵌页面与 `components/` 中的小Y、品牌开幕及视觉组件，小Y再组合工作台。产品库与收藏仍在 App，assistant fetch 仍在小Y，方案 fetch 已集中在 makeupPlanApi，收藏直接读写 localStorage；小Y直接组合 `lib/storage/` 的版本读取/迁移、写入、Key 和旧凭据清理，消息保存仍在原 effect 中使用 `slice(-20)`。`migrations` 依赖 `storageClient` 和 `storageKeys`，`storageClient` 与 `clearUserData` 仅依赖 `storageKeys`；没有反向依赖 UI 或增加桶式转发导出。损坏 JSON 仍回退，存储访问/写入/删除失败仍抛出，未新增静默降级。contracts 只有 JSDoc，没有运行时校验。下面是后续阶段约束，不是当前已全面实现的依赖图。
 
-ARCH-02-S01 的实际依赖为 `MakeupWorkbench / XiaoYAssistant → features/makeup-plan/makeupPlanUtils → data/products`，契约仅通过 JSDoc 引用 `contracts/index.js`；Utils 不依赖 React、网络、存储或 assistant。小Y的对话参数提取和结果格式化仍在原文件，工作台的 API、状态和展示也仍在组件内。本步未创建公共 API Client、Hook 或新的存储入口。
+ARCH-02-S02 的实际依赖为 `XiaoYAssistant → makeup-plan/components/MakeupWorkbench → useMakeupPlan → makeupPlanApi / makeupPlanUtils`；表单/结果/产品组件保留展示职责，小Y会话方案也直接复用 makeupPlanApi。API 只负责原 POST/JSON/错误检查并返回 plan；Utils 继续只依赖 data/products，契约仅经 JSDoc 引用；无 assistant 反向依赖、前端方案生成器、公共 Client 或新增存储入口。小Y的意图、会话参数、格式化、消息与降级仍在原组件，留给 ARCH-03。
 
 ```text
 main.jsx → app → features → lib/api、lib/storage

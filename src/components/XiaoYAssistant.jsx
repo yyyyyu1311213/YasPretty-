@@ -15,11 +15,11 @@ import { readVersioned } from '../lib/storage/migrations'
 import { writeVersioned } from '../lib/storage/storageClient'
 import { LEGACY_MESSAGES_KEY, LEGACY_PROFILE_KEY, MESSAGES_KEY, PROFILE_KEY } from '../lib/storage/storageKeys'
 import { legacyToForm, toPlanPayload } from '../features/makeup-plan/makeupPlanUtils'
-import MakeupWorkbench from './MakeupWorkbench'
+import { requestMakeupPlan as requestPlan } from '../features/makeup-plan/makeupPlanApi'
+import MakeupWorkbench from '../features/makeup-plan/components/MakeupWorkbench'
 
 const SCENE_OPTIONS = ['通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
 const ASSISTANT_ENDPOINT = '/api/assistant'
-const PLAN_ENDPOINT = '/api/makeup-plans'
 
 const welcomeMessage = {
   id: 'welcome',
@@ -273,14 +273,8 @@ function cleanErrorMessage(message) {
 }
 
 async function requestMakeupPlan({ text, profile }) {
-  const response = await fetch(PLAN_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(planPayloadFromConversation(text, profile)),
-  })
-  const data = await response.json().catch(() => null)
-  if (!response.ok || !data?.plan) throw new Error(data?.error?.message || `方案生成失败（${response.status}）`)
-  return formatPlanReply(data.plan)
+  const plan = await requestPlan(planPayloadFromConversation(text, profile))
+  return formatPlanReply(plan)
 }
 
 function ProfileSummary({ profile }) {

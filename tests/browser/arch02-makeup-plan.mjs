@@ -104,8 +104,18 @@ async function scenario(viewport, name, seed, test) {
     await openAssistant(page)
     const evidence = await test({ page, requests, setReply: (next) => { reply = next } }, label)
     assert.deepEqual(errors, [])
-    assert.deepEqual(consoleErrors, [])
-    assert.deepEqual(failedRequests, [])
+    if (evidence?.expectedNetworkFailure) {
+      // Only this scenario intentionally produces browser HTTP/network errors.
+      // Keep every event in the evidence and reject unrelated console/resource errors.
+      assert.equal(consoleErrors.length, 3)
+      for (const message of consoleErrors) assert.match(message, /^Failed to load resource: (?:the server responded with a status of (?:503|504) .+|net::ERR_TIMED_OUT)$/)
+      assert.equal(failedRequests.length, 1)
+      assert.equal(new URL(failedRequests[0].url).pathname, '/api/makeup-plans')
+      assert.equal(failedRequests[0].error, 'net::ERR_TIMED_OUT')
+    } else {
+      assert.deepEqual(consoleErrors, [])
+      assert.deepEqual(failedRequests, [])
+    }
     results.push({ label, passed: true, requests, errors, consoleErrors, failedRequests, ...evidence })
   } catch (error) {
     results.push({ label, passed: false, error: error.stack, requests, errors, consoleErrors, failedRequests })
@@ -226,6 +236,67 @@ try {
       await page.getByRole('alert').waitFor({ state: 'hidden' })
       assert.equal(await page.locator('.makeup-workbench-state').innerText(), '已生成')
       return { geometry: await layout(page) }
+    })
+
+    await scenario(viewport, 'priorities-evidence-unknown-product', {}, async ({ page, requests, setReply }, label) => {
+      const form = page.locator('.makeup-workbench-form')
+      for (const name of ['持妆', '遮瑕', '控油']) await form.getByLabel(name, { exact: true }).check()
+      await form.getByLabel('保湿', { exact: true }).click()
+      assert.equal(await form.getByLabel('保湿', { exact: true }).isChecked(), false)
+      await form.getByLabel('持妆', { exact: true }).uncheck()
+      await form.getByLabel('保湿', { exact: true }).check()
+      setReply(async (route, payload) => {
+        const plan = await service.create(payload)
+        plan.steps[0].primaryProductId = 'arch02-not-real'
+        plan.steps[0].alternativeProductIds = ['arch02-not-real', products[0].id]
+        plan.candidateEvidence.push({ productId: 'arch02-not-real', score: 100, matchedConditions: ['must-not-render'], tradeoffs: [] })
+        await route.fulfill({ json: { ok: true, plan } })
+      })
+      await form.getByRole('button', { name: '创建我的妆容方案', exact: true }).click()
+      await page.locator('.makeup-plan-result').waitFor()
+      assert.deepEqual(requests[0].makeupRequest.priorities, ['轻薄', '遮瑕', '控油', '保湿'])
+      const firstStep = page.locator('.makeup-plan-step').first()
+      assert.equal(await firstStep.locator('.makeup-plan-product').count(), 1)
+      assert((await firstStep.innerText()).includes(products[0].name))
+      assert(!(await page.locator('.makeup-plan-result').innerText()).includes('must-not-render'))
+      const evidence = page.locator('.makeup-plan-evidence')
+      await evidence.locator('summary').click()
+      assert.equal(await evidence.getAttribute('open'), '')
+      await evidence.scrollIntoViewIfNeeded()
+      await layout(page)
+      await capture(page, label)
+      await evidence.locator('summary').click()
+      assert.equal(await evidence.getAttribute('open'), null)
+      await firstStep.locator('.makeup-plan-product').click()
+      await page.getByRole('dialog').waitFor()
+      const dialog = page.getByRole('dialog')
+      assert((await dialog.innerText()).includes(products[0].name))
+      await dialog.evaluate((element) => { element.scrollTop = element.scrollHeight })
+      await page.keyboard.press('Escape')
+      await dialog.waitFor({ state: 'hidden' })
+      return { geometry: await layout(page) }
+    })
+
+    await scenario(viewport, 'http-network-failure-recovery', {}, async ({ page, setReply }, label) => {
+      const submit = page.getByRole('button', { name: '创建我的妆容方案', exact: true })
+      for (const [status, message] of [[503, 'ARCH-02 合成上游失败'], [504, 'ARCH-02 合成上游超时']]) {
+        setReply(async (route) => route.fulfill({ status, json: { error: { message } } }))
+        await submit.click()
+        await until(async () => (await page.getByRole('alert').innerText()).includes(message), 'HTTP error missing')
+        assert.equal(await submit.isEnabled(), true)
+        assert.equal(await page.locator('.makeup-plan-result').count(), 0)
+      }
+      setReply(async (route) => route.abort('timedout'))
+      await submit.click()
+      await until(async () => (await page.getByRole('alert').innerText()).includes('Failed to fetch'), 'Network timeout missing')
+      assert.equal(await submit.isEnabled(), true)
+      await page.getByRole('alert').scrollIntoViewIfNeeded()
+      await capture(page, label)
+      setReply(async (route, payload) => route.fulfill({ json: { ok: true, plan: await service.create(payload) } }))
+      await submit.click()
+      await page.locator('.makeup-plan-result').waitFor()
+      await page.getByRole('alert').waitFor({ state: 'hidden' })
+      return { expectedNetworkFailure: true, geometry: await layout(page) }
     })
 
     await scenario(viewport, 'assistant-plan', {}, async ({ page, requests, setReply }) => {
