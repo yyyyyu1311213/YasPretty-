@@ -11,7 +11,8 @@ YasPretty 是一个长期维护、面向普通消费者的智能美妆决策项�
 - `AGENTS.md`：强制约束、技术边界、工作方式和完成标准。
 - `FINAL-PROMPT.md`：最终产品定义、目标架构、数据模型、实施阶段和验收场景。
 - `prompt-chain.md`：历史需求演进和旧版提示词，只用于追溯，不指导未来架构。
-- `README.md`：面向 GitHub 用户的安装、运行、功能状态和项目介绍。
+- `README.md`：面向 GitHub 用户的安装、运行、功能状态、当前与目标项目架构介绍。
+- `docs/frontend-architecture-migration-plan.md`：前端架构迁移的当前阶段、允许范围、阶段门禁和真实执行记录。
 - 实际代码与测试：判断“当前是否已经实现”的唯一事实依据。
 
 ### 1.2 冲突处理
@@ -332,6 +333,7 @@ YasPretty 是一个长期维护、面向普通消费者的智能美妆决策项�
 ```text
 AGENTS.md                         强制项目规则
 FINAL-PROMPT.md                   最终目标与实施路线
+docs/frontend-architecture-migration-plan.md 前端架构迁移阶段与执行记录
 prompt-chain.md                   历史需求记录
 src/App.jsx                       当前主站与视图入口
 src/components/XiaoYAssistant.jsx 当前小Y界面与逻辑
@@ -526,9 +528,10 @@ beauty-assistant.html             旧独立页备份，不继续扩展
 
 1. 完整阅读本文件。
 2. 涉及产品、架构或阶段实施时完整阅读 `FINAL-PROMPT.md`。
-3. 阅读任务直接相关的源文件和测试。
-4. 检查工作树，不覆盖用户修改，不删除来源不明文件。
-5. 核验当前实现，列出本任务涉及的阶段、模块、风险和明确不做事项。
+3. 涉及前端目录、模块、组件迁移或依赖调整时，完整阅读 `docs/frontend-architecture-migration-plan.md` 和 `README.md` 的“项目架构”模块，只执行迁移计划中唯一标记为 `current` 的阶段；如需调整顺序或范围，先获得项目负责人授权并更新计划。
+4. 阅读任务直接相关的源文件和测试。
+5. 检查工作树，不覆盖用户修改，不删除来源不明文件。
+6. 核验当前实现，列出本任务涉及的阶段、模块、风险和明确不做事项。
 
 ### 16.2 实施中
 
