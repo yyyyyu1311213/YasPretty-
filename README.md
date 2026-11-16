@@ -112,6 +112,8 @@ npm start
 
 以下主树描述开发分支 `codex/frontend-contracts-yas-2026-0055` 在 `ce266c654709506fe36340da21874676b382a239` 的实际结构（2026-11-16，北京时间，ARCH-00-S03 只读核对）。本次采用的公共规范为远端 `master` 的 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`；master 尚无下列六个 contracts 文件。当前没有 `src/app/`、`src/features/`、`src/lib/api/` 或 `src/lib/storage/`，不得将目标目录描述为已实现。
 
+2026-11-17（北京时间），项目负责人确认 ARCH-00 人工验收通过；基线与迁移清单提交为 `f16542c6a84ed9141ab955661008fcb1bbc06b6f`。ARCH-00-S04 仅同步验收和阶段收尾，当前结构与上述代码基线一致。ARCH-00 状态为 `done`，阶段标签使用 `arch-stage-00`，最终提交及标签远端核验由本次交付回执给出、下次文档同步回填；ARCH-01 仍为 `pending`，等待另行授权，当前没有执行中的迁移阶段。全部源码映射、测试边界和保留风险见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)。
+
 ```text
 yaspretty/
 ├── src/
