@@ -2,39 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { products } from '../data/products'
 import {
   cleanErrorMessage,
-  detectIntent,
   extractProfile,
   formatPlanReply,
   localReply,
   localMakeupReply,
-  needsOnlineResearch,
   parseAssistantResult,
   planPayloadFromConversation,
   recommendProducts,
 } from './XiaoYAssistant'
 
 describe('小Y本地规则', () => {
-  it('routes external questions, catalog, and greeting intents', () => {
-    expect(detectIntent('今天上海天气怎么样')).toBe('external_question')
-    expect(detectIntent('推荐一款通勤粉底')).toBe('catalog_recommendation')
-    expect(detectIntent('我明天要约会，帮我设计一个妆容')).toBe('makeup_plan')
-    expect(detectIntent('我想要一个韩女水光妆容的妆教')).toBe('makeup_plan')
-    expect(detectIntent('教我如何画一个适合拍照的妆容，场景是秋日落叶阳光')).toBe('makeup_plan')
-    expect(detectIntent('我怎么判断我的肤质')).toBe('external_question')
-    expect(detectIntent('你好')).toBe('greeting_help')
-    expect(detectIntent('给我介绍一下巴黎时装周')).toBe('external_question')
-  })
-
   it('normalizes upstream punctuation before composing an error message', () => {
     expect(cleanErrorMessage('联网检索没有返回可用来源。。')).toBe('联网检索没有返回可用来源')
-  })
-
-  it('requires online research for timely or out-of-catalog facts', () => {
-    expect(needsOnlineResearch('这款现在官网多少钱', 'catalog_recommendation')).toBe(true)
-    expect(needsOnlineResearch('推荐一款油皮粉底', 'catalog_recommendation')).toBe(false)
-    expect(needsOnlineResearch('推荐一支口红', 'catalog_recommendation')).toBe(true)
-    expect(needsOnlineResearch('给我介绍一下巴黎时装周', 'external_question')).toBe(false)
-    expect(needsOnlineResearch('明天上海天气怎么样', 'external_question')).toBe(true)
   })
 
   it('extracts the supported profile fields', () => {
