@@ -100,35 +100,210 @@ npm start
 - API 不返回无条件跨域头；开发环境通过 Vite 同源代理，生产构建由 Fastify 同源提供。
 - 当前限额是单进程内存实现，服务重启会重置，也不能跨多个实例共享；正式多实例部署前需要外部额度存储。
 
-## 项目结构
+## 项目架构
+
+前端架构迁移的当前阶段、允许修改范围、阶段门禁和真实执行记录见 [前端架构迁移计划](docs/frontend-architecture-migration-plan.md)。开始任何前端目录、模块、组件或依赖调整前，必须先阅读该计划并只执行唯一标记为 `current` 的阶段。
+
+`master` 保存公共规范、架构目标和迁移计划基线；`codex/frontend-contracts-yas-2026-0055` 承载架构阶段的代码、测试和配套执行记录。公共规范先经授权提交到 `master`，再选择性同步到开发分支；阶段变更与其 README、迁移计划、验收及审计记录一起提交到开发分支，不自动合并回 `master`。
+
+每次架构任务开始、提交前，先 `git fetch origin master`，读取最新 `origin/master:AGENTS.md` 及远端文档公共约定，核对开发分支规则副本并记录规范来源 SHA。未同步的公共规则先处理，开发分支的阶段进度须保留；不能联网核验时明确说明并只做只读检查。详见 `AGENTS.md` 13.3。
+
+### 当前实际结构
+
+以下主树以 `master` 的 `0b93a18` 代码内容及本次新增的规范文档为基线，不代表目标模块已经全部迁移完成。开发分支额外已存在的结构单独列在树后；后续阶段应在开发分支同步更新其实际结构与执行记录。
 
 ```text
-src/App.jsx                       主站、产品库、详情与收藏
-src/components/BrandOpening.jsx  一次性品牌开幕、跳过与减少动效处理
-src/components/XiaoYAssistant.jsx 小Y界面、本地规则与 YasPretty API 调用
-src/lib/xiaoy-storage.js          版本化匿名画像、对话与旧 Key 清理
-src/data/products.js              当前 35 条受控彩妆资料与来源状态
-src/data/product-image-sources.js 35 张产品封面的来源、权利人和授权状态
-src/data/product-verification.js 产品核验状态、链接门禁和参数解读边界
-src/data/product-verification.generated.js 核验证据路径、大小与 SHA-256 生成清单
-src/data/product-verification.reviewed.js 人工核验表的规范化商品事实与单元格追溯
-public/products/                  按稳定产品 ID 存放的 WebP 产品封面
-public/assets/                    项目原创字标、Hero 和手绘素材及来源清单
-public/verification/              按稳定产品 ID 存放的网页证据副本和清单
-scripts/sync-product-verification.mjs 从原始核验目录重复生成网页证据
-server/fishtalk-server.cjs        Fastify 网关启动入口
-server/app.cjs                    API、安全控制、限流与同源静态服务
-server/providers/                 智谱和外部检索适配器
-server/providers/weather-provider.cjs Open-Meteo 天气数据适配器
-server/services/                  服务端智能体编排
-netlify.toml                      Netlify 构建、同源 API 重写和函数目录配置
-netlify/functions/api.js          复用 Fastify 网关的 Netlify Functions 适配器
-docs/phase-0-baseline.md          安全扫描、功能与构建基线
-docs/phase-1-ai-gateway.md        阶段 1 架构、测试与风险记录
-docs/stage-delivery-test-report.md 各阶段作用、用户价值、测试证据与剩余风险
-docs/product-image-collection.md  图片采集与授权要求
-beauty-assistant.html             旧独立页备份，不继续扩展
+yaspretty/
+├── src/
+│   ├── App.jsx                         主站、页面组合、产品库、详情与收藏
+│   ├── main.jsx                        React 挂载与全局样式入口
+│   ├── styles.css                      全局样式
+│   ├── xiaoy.css                       小Y样式
+│   │
+│   ├── components/
+│   │   ├── BrandOpening.jsx            一次性品牌开幕、跳过与减少动效处理
+│   │   ├── XiaoYAssistant.jsx          小Y界面、本地规则与 YasPretty API 调用
+│   │   ├── MakeupWorkbench.jsx         结构化妆容工作台
+│   │   ├── MakeupTable3D.jsx           交互式 3D 化妆桌入口
+│   │   ├── MakeupTable.jsx             2D 品类桌回退
+│   │   ├── FlexCarousel.jsx            首页产品增强轮播
+│   │   ├── ScrollFloat.jsx             首页滚动文字动效
+│   │   ├── StrokeText.jsx              笔画文字动效
+│   │   └── makeup-table-3d/            Three.js 场景、妆具、粒子和性能配置
+│   │
+│   ├── data/
+│   │   ├── products.js                 当前 35 条受控彩妆资料与来源状态
+│   │   ├── product-image-sources.js    产品封面来源、权利人和授权状态
+│   │   ├── product-verification.js     核验状态、链接门禁和参数解读边界
+│   │   ├── product-verification.generated.js 证据路径、大小与 SHA-256 清单
+│   │   ├── product-verification.reviewed.js  人工核验事实与单元格追溯
+│   │   └── product-shade-verification.js     色号核验资料
+│   │
+│   └── lib/
+│       ├── navigation-history.js       导航与浏览器历史工具
+│       └── xiaoy-storage.js            版本化匿名画像、对话与旧 Key 清理
+│
+├── public/
+│   ├── products/                       按稳定产品 ID 存放的 WebP 产品封面
+│   ├── assets/                         原创字标、Hero、手绘素材及来源清单
+│   └── verification/                   按稳定产品 ID 存放的网页证据副本
+│
+├── server/
+│   ├── fishtalk-server.cjs             Fastify 网关启动入口
+│   ├── app.cjs                         API、安全控制、限流与同源静态服务
+│   ├── providers/                      智谱、天气和外部检索适配器
+│   └── services/                       服务端智能体编排
+│
+├── scripts/
+│   └── sync-product-verification.mjs   从原始核验目录重复生成网页证据
+├── netlify/
+│   └── functions/api.js                复用 Fastify 网关的 Functions 适配器
+├── docs/
+│   ├── frontend-architecture-migration-plan.md 当前架构迁移阶段、约束与执行记录
+│   ├── phase-0-baseline.md             安全扫描、功能与构建基线
+│   ├── phase-1-ai-gateway.md           阶段 1 架构、测试与风险记录
+│   ├── stage-delivery-test-report.md   各阶段作用、测试证据与剩余风险
+│   └── product-image-collection.md     图片采集与授权要求
+├── netlify.toml                        Netlify 构建与同源 API 重写配置
+└── beauty-assistant.html               旧独立页备份，不继续扩展
 ```
+
+### 前端目标结构（迁移中）
+
+开发分支 `codex/frontend-contracts-yas-2026-0055` 的 `86b25b3` 已建立 `src/contracts/`，包含 `userProfile.js`、`makeupRequest.js`、`makeupPlan.js`、`assistant.js`、`product.js` 和 `index.js`；上述 master 基线未包含这六个文件。开发分支的演示材料和已有历史报告继续保留，公共规范同步不搬移或删除这些差异。
+
+下列 `app/`、`features/`、`lib/api/` 和 `lib/storage/` 仍是开发分支待逐步实施的目标，不得据此描述为已经完成模块化。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
+
+```text
+src/
+├── app/                                应用装配、导航和跨功能连接
+│   ├── App.jsx
+│   ├── opening/
+│   │   └── BrandOpening.jsx            应用品牌开场动画
+│   └── components/
+│       ├── Header.jsx
+│       ├── Footer.jsx
+│       └── EnhancementBoundary.jsx     视觉增强失败边界
+│
+├── features/
+│   ├── home/                           首页内容与编辑精选
+│   │   ├── components/
+│   │   │   ├── HomeView.jsx
+│   │   │   ├── HeroSection.jsx         Slogan、首屏文案和主 CTA
+│   │   │   ├── EditorSelection.jsx
+│   │   │   ├── HomeProductSection.jsx
+│   │   │   └── visual/                 只服务首页的视觉组件
+│   │   │       ├── ScrollFloat.jsx
+│   │   │       ├── StrokeText.jsx
+│   │   │       └── FlexCarousel.jsx
+│   │   └── homeContent.js              首页文案、精选产品 ID 和展示顺序
+│   │
+│   ├── makeup-table/                   2D/3D 化妆台体验及降级
+│   │   ├── components/
+│   │   │   ├── MakeupTableExperience.jsx
+│   │   │   ├── MakeupTable3D.jsx
+│   │   │   └── MakeupTable.jsx
+│   │   └── makeup-table-3d/            Three.js 场景内部实现
+│   │
+│   ├── catalog/                        产品浏览、筛选和详情
+│   │   ├── components/
+│   │   │   ├── LibraryView.jsx
+│   │   │   ├── ProductCard.jsx
+│   │   │   ├── FilterPanel.jsx
+│   │   │   ├── ProductProfile.jsx
+│   │   │   └── ProductDetailDrawer.jsx
+│   │   ├── hooks/useCatalog.js
+│   │   ├── catalogService.js           产品读取和按 ID 查询
+│   │   └── catalogUtils.js             文本匹配、筛选和排序纯函数
+│   │
+│   ├── assistant/                      小Y智能助手
+│   │   ├── components/
+│   │   │   ├── XiaoYAssistant.jsx
+│   │   │   ├── AssistantMessages.jsx
+│   │   │   ├── ProfileSummary.jsx
+│   │   │   ├── AssistantProduct.jsx
+│   │   │   └── SourceList.jsx
+│   │   ├── hooks/useAssistant.js       消息、画像、发送和降级流程
+│   │   ├── assistantApi.js             /api/assistant 业务请求
+│   │   ├── intentUtils.js              前端流程意图判断
+│   │   └── assistantUtils.js           画像提取、本地推荐和消息格式化
+│   │
+│   ├── makeup-plan/                    结构化妆容方案
+│   │   ├── components/
+│   │   │   ├── MakeupWorkbench.jsx
+│   │   │   ├── MakeupPlanForm.jsx
+│   │   │   ├── PlanResult.jsx
+│   │   │   └── PlanProduct.jsx
+│   │   ├── hooks/useMakeupPlan.js
+│   │   ├── makeupPlanApi.js            /api/makeup-plans 业务请求
+│   │   └── makeupPlanUtils.js          表单与 API 数据结构转换
+│   │
+│   ├── collection/                     收藏与试用状态
+│   │   ├── components/
+│   │   │   ├── CollectionView.jsx
+│   │   │   └── CollectionStatusControl.jsx
+│   │   ├── hooks/useCollection.js
+│   │   ├── collectionStorage.js        收藏持久化和旧 Key 兼容
+│   │   └── collectionUtils.js
+│   │
+│   ├── guide/components/GuideView.jsx  肤质与美妆指南
+│   └── culture/components/CultureView.jsx 品牌文化页面
+│
+├── lib/                                不含具体业务的公共技术能力
+│   ├── api/
+│   │   ├── client.js                   fetch、JSON、超时和响应检查
+│   │   ├── errors.js                   网络、超时和业务错误分类
+│   │   └── endpoints.js                API 路径常量
+│   ├── storage/
+│   │   ├── storageClient.js            JSON 读写、版本包装和异常处理
+│   │   ├── storageKeys.js              当前 Key 和旧 Key
+│   │   ├── migrations.js               本地数据迁移
+│   │   └── clearUserData.js            用户数据和旧凭据清理
+│   └── navigation-history.js
+│
+├── contracts/                          JSDoc 数据契约，不复制服务端 Zod
+│   ├── userProfile.js
+│   ├── makeupRequest.js
+│   ├── makeupPlan.js
+│   ├── assistant.js
+│   ├── product.js
+│   └── index.js
+│
+├── data/                               沿用当前受控产品事实和核验资料
+├── main.jsx
+├── styles.css
+└── xiaoy.css
+```
+
+测试文件与对应源码就近放置。`data/` 继续作为产品事实唯一数据源；`homeContent.js` 只保存精选产品 ID 和展示内容，不复制产品信息。图片、模型、纹理等静态资源继续放在 `public/`。
+
+### 依赖边界
+
+```text
+main.jsx → app → features → lib/api、lib/storage
+                    │
+                    ├──→ contracts
+                    └──→ data
+
+home       → makeup-table、catalog
+assistant  → makeup-plan
+collection → lib/storage
+catalog    → data
+```
+
+`lib` 不依赖 `features`，`contracts` 不保存业务数据，`makeup-plan` 不反向依赖 `assistant`。组件负责展示，Hooks 负责状态和流程，业务 API 负责请求适配，Utils 保持为可独立测试的纯函数。
+
+### 架构文档同步规则
+
+任何新增、删除、移动目录或模块，以及改变模块职责、依赖关系、数据流或迁移状态的变更，都必须在开发分支的同一次阶段变更中同步更新本节的“当前实际结构”和迁移计划中的阶段状态，并标明对应分支；目标尚未落地时只能更新“前端目标结构（迁移中）”，不得写成已完成。公共规范在 master 更新时保留开发分支进度与主分支状态的区别；更新时同时核对正文和第三方披露中的文件路径，确保树状图名称、层级、职责与对应分支实际代码一致。
+
+### 提交、人工验收与回退
+
+架构迁移按可独立构建和回退的小步提交。开始修改和提交、推送前核对任务对应分支、HEAD、工作树、暂存区及远端状态。每小步使用唯一的 `ARCH-XX-SNN` 编号，先记录问题或迁移原因、修改前基线 SHA 和验证方法；通过自动测试、必要构建和 `git diff --check` 后，交项目负责人人工测试确认，确认后才可提交并推送开发分支。公共规范提交到 master 另须对此次文档变更的明确授权。提交信息使用 `【问题】[ARCH-XX][ARCH-XX-SNN] … 【修改】…`，已有 YAS 编号同时保留。
+
+完整阶段的最终状态和验收记录纳入收尾提交后，在该提交上创建带注释的唯一 `arch-stage-XX` 标签并推送。迁移计划和累计交付记录关联修改前后 SHA、测试、人工确认与标签；推送后核对远端分支 SHA 和标签指向，未成功时明确标记待推送或待标签。详细门禁见 `AGENTS.md` 13.2 和迁移计划 5.1。
+
+公共历史回退优先使用 `git revert <sha>`，按后续依赖从新到旧撤销必要提交，保留故障现象、原提交、反向提交和复验记录；不强推、不移动阶段标签。每个已验收提交都是可定位的代码恢复点，但回退仍须处理可能的依赖与冲突并重新验证。未提交修改、未跟踪文件和临时 stash 尚未形成版本回退点；Git 不负责恢复浏览器数据、环境变量或外部服务状态。
 
 ## 第三方能力披露
 
