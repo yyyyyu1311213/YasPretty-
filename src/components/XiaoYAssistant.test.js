@@ -12,7 +12,6 @@ import {
   planPayloadFromConversation,
   recommendProducts,
 } from './XiaoYAssistant'
-import { legacyToForm, toPlanPayload } from './MakeupWorkbench'
 
 describe('小Y本地规则', () => {
   it('routes external questions, catalog, and greeting intents', () => {
@@ -93,16 +92,5 @@ describe('小Y本地规则', () => {
     const result = parseAssistantResult(`建议如下。\n[[PRODUCT:${knownId}]]\n[[PRODUCT:not-real]]`)
     expect(result.productIds).toEqual([knownId])
     expect(result.text).not.toContain('PRODUCT')
-  })
-
-  it('maps structured workbench inputs to the stage 2 API contract', () => {
-    const payload = toPlanPayload(legacyToForm({ skin: '混油皮', finish: '柔雾', budget: 500 }))
-    expect(payload.userProfile).toMatchObject({
-      skinType: '混油皮',
-      skinTypeSource: 'self_reported',
-      budgetTotal: 500,
-      finishPreferences: ['柔雾'],
-    })
-    expect(payload.makeupRequest).toMatchObject({ photoEnabled: false, scene: '日常', style: '自然' })
   })
 })

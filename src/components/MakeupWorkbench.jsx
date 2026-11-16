@@ -1,58 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Check, ChevronRight, CircleAlert, LoaderCircle, Sparkles } from 'lucide-react'
 import { finishOptions, products, skinOptions } from '../data/products'
+import { legacyToForm, toPlanPayload } from '../features/makeup-plan/makeupPlanUtils'
 
 const PLAN_ENDPOINT = '/api/makeup-plans'
 const SCENES = ['日常', '通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
 const STYLES = ['自然', '清透', '柔雾', '氛围', '精致']
 const PRIORITIES = ['轻薄', '持妆', '遮瑕', '控油', '保湿', '快速完成']
-
-const DEFAULT_FORM = {
-  skinType: 'unknown',
-  undertone: 'unknown',
-  finish: '自然光泽',
-  budgetTotal: '',
-  skillLevel: '新手',
-  scene: '日常',
-  style: '自然',
-  wearHours: 8,
-  timeOfDay: '白天',
-  priorities: ['轻薄'],
-}
-
-function legacyToForm(profile = {}) {
-  return {
-    ...DEFAULT_FORM,
-    skinType: skinOptions.includes(profile.skin) ? profile.skin : DEFAULT_FORM.skinType,
-    finish: finishOptions.includes(profile.finish) ? profile.finish : DEFAULT_FORM.finish,
-    budgetTotal: profile.budget ? String(profile.budget) : '',
-  }
-}
-
-function toPlanPayload(form) {
-  return {
-    userProfile: {
-      skinType: form.skinType || 'unknown',
-      skinTypeSource: form.skinType && form.skinType !== 'unknown' ? 'self_reported' : 'unknown',
-      undertone: form.undertone || 'unknown',
-      finishPreferences: form.finish ? [form.finish] : [],
-      concerns: [],
-      budgetTotal: form.budgetTotal ? Number(form.budgetTotal) : 0,
-      skillLevel: form.skillLevel || 'unknown',
-      excludedBrands: [],
-      sensitivities: [],
-      city: '',
-    },
-    makeupRequest: {
-      scene: form.scene,
-      style: form.style,
-      wearHours: Number(form.wearHours),
-      timeOfDay: form.timeOfDay,
-      photoEnabled: false,
-      priorities: form.priorities,
-    },
-  }
-}
 
 function PlanProduct({ id, onOpenProduct }) {
   const product = products.find((item) => item.id === id)
@@ -162,5 +116,3 @@ export default function MakeupWorkbench({ profile, onOpenProduct }) {
     </section>
   )
 }
-
-export { DEFAULT_FORM, legacyToForm, toPlanPayload }

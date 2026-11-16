@@ -14,7 +14,8 @@ import { clearLegacyCredentials } from '../lib/storage/clearUserData'
 import { readVersioned } from '../lib/storage/migrations'
 import { writeVersioned } from '../lib/storage/storageClient'
 import { LEGACY_MESSAGES_KEY, LEGACY_PROFILE_KEY, MESSAGES_KEY, PROFILE_KEY } from '../lib/storage/storageKeys'
-import MakeupWorkbench, { legacyToForm, toPlanPayload } from './MakeupWorkbench'
+import { legacyToForm, toPlanPayload } from '../features/makeup-plan/makeupPlanUtils'
+import MakeupWorkbench from './MakeupWorkbench'
 
 const SCENE_OPTIONS = ['通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
 const ASSISTANT_ENDPOINT = '/api/assistant'

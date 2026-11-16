@@ -11,16 +11,16 @@
 | 公共规范基线分支 | `master`；公共规范经授权提交后选择性同步到开发分支 |
 | 开发分支本次采用的公共规范提交 | `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，已核对实际远端 master；阶段执行记录在本分支追加 |
 | 固定阶段开发分支 | `codex/frontend-contracts-yas-2026-0055` |
-| 当前阶段 | 无实施中的阶段；`ARCH-01`：`lib/storage` 已于 2026-11-17 人工验收通过，状态 `done`，本次执行收尾提交与标签归档 |
-| 下一阶段 | `ARCH-02`：`makeup-plan`，保持 `pending`，未授权实施 |
+| 当前阶段 | `ARCH-02`：`makeup-plan`，唯一 `current`；2026-11-17 负责人明确授权开启，先执行 S01 纯转换迁移 |
+| 下一阶段 | `ARCH-03`：`assistant`，保持 `pending`，未实施 |
 | 开发分支已完成前置工作 | `src/contracts/` 六个 JSDoc 契约文件；master 基线尚未包含 |
 | contracts 基线提交 | `86b25b3`（`YAS-2026-0055`；项目负责人确认已推送） |
 | ARCH-00-S03 修改前实时基线 | `ce266c654709506fe36340da21874676b382a239`；2026-11-16 核对本地与实际远端同名分支一致，ahead/behind 为 0/0；工作树、暂存区及未跟踪文件均为空 |
 | 规范复核时的开发分支 HEAD 与远端同名分支 | 均为 `86b25b331106b49b02f10b499de7f7d94c24032b`（2026-11-16 只读核对） |
 | 本次公共规范提交前的 master 基线 | `0b93a18167de0760f2ecfd99c9294b78653bb5ed`，与实际远端 master 一致 |
-| 架构阶段标签 | `arch-stage-00` 远端标签对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e`，指向 `8c95966cf61367396fd6783da1f86c8569546668`；本次收尾写入时 `arch-stage-01` 尚不存在，拟在最终提交上建立并核验，真实 SHA/tag 由回执给出、下次同步回填 |
+| 架构阶段标签 | `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向 `8c95966cf61367396fd6783da1f86c8569546668`；`arch-stage-01` 远端对象 `ba59303891315291dcdab02b6906971b1799d339` 指向 `5e58236f6897147b354153ea9b02d080641a3cea`，2026-11-17 启动预检已核对远端；ARCH-02 未建标签 |
 | 最近状态更新 | 2026-11-17，北京时间 |
-| 最近验证结果 | ARCH-01-S01：相关 4 文件 40/40、全量 16 文件 113/113 测试及生产构建通过；桌面/360px Playwright 复测 14/14，复测无 pageerror/console.error；2026-11-17 负责人确认人工核验完成并授权上传，本次收尾写入时待提交 |
+| 最近验证结果 | ARCH-02-S01：相关 3 文件 21/21、全量 17 文件 120/120 与生产构建通过；迁移前后桌面/360px 各 10/10；2026-11-17 负责人确认人工验收通过并授权本步提交推送，本记录写入时待提交 |
 
 实际代码与测试仍是判断模块是否已经落地的最终依据。本文或 README 与代码不一致时，先报告差异，再修正文档或代码，不得把目标结构写成已完成状态。
 
@@ -244,7 +244,7 @@ fetch origin master，读取最新公共 AGENTS 与规范章节，必要时先�
 
 ### ARCH-02：`makeup-plan`
 
-**状态：`pending`**
+**状态：`current`**
 
 **允许范围**：`MakeupWorkbench.jsx`、新 `features/makeup-plan/`、直接引用方、相关测试和文档。
 
@@ -259,7 +259,60 @@ fetch origin master，读取最新公共 AGENTS 与规范章节，必要时先�
 
 **验收**：无照片生成、条件修改、画像衔接、加载、失败和空结果行为不变；测试和构建通过。
 
-**执行记录**：待执行。
+**ARCH-02-S01：纯数据转换与直接引用迁移（2026-11-17，北京时间）**
+
+以下保留初次交付时的待验收、未提交快照；最新 S01 人工确认与提交授权见本阶段末尾记录，ARCH-02 整阶段仍为 current。
+
+- 启动授权：前次只读预检发现本阶段仍 pending，已按门禁停止且未改文件。负责人随后明确回复“01已经结束了 已上传完毕，开启02”，据此登记 ARCH-02 为唯一 current；ARCH-00/01 保持 done，ARCH-03 及以后保持 pending。此授权不等于本步人工验收、提交、推送或阶段标签授权。
+- 修改前已验收基线：固定分支 `codex/frontend-contracts-yas-2026-0055`，HEAD 与 fetch 后的远端同名分支均为 `5e58236f6897147b354153ea9b02d080641a3cea`，ahead/behind 0/0，起始工作树、未跟踪文件和暂存区均为空。ARCH-01 人工验收记录、实际远端提交及带注释标签已核对；标签对象与提交指向见上表，不把旧文档“收尾写入时待提交”快照改写成未归档。
+- 公共规范：已运行 `git fetch origin master codex/frontend-contracts-yas-2026-0055`，读取远端 AGENTS、README 公共约定与计划约束；采用 master `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，`git diff origin/master -- AGENTS.md` 为空。无新 YAS 编号，保留前置关联 `YAS-2026-0055`。原契约已完整阅读，字段不变。
+- 迁移原因：工作台内默认表单与纯转换既供表单使用，又被小Y方案入口和测试从 UI 文件导入，职责与依赖混合。只迁移 `DEFAULT_FORM`、`legacyToForm`、`toPlanPayload`，不移动小Y的意图、对话参数提取或结果格式化。
+- 拟改文件与映射：`src/components/MakeupWorkbench.jsx` 的上述三项迁入 `src/features/makeup-plan/makeupPlanUtils.js`；工作台与 `src/components/XiaoYAssistant.jsx` 改为直接导入 Utils，不保留组件转发导出。`src/components/XiaoYAssistant.test.js` 中纯转换测试迁往就近 `makeupPlanUtils.test.js` 并补兼容性边界；增加 `tests/browser/arch02-makeup-plan.mjs` 验证真实页面；README 当前结构/依赖与本文同步。本步未到完整阶段收尾，两份累计报告届时按 12.1 同步。
+- 行为边界：保持默认值、旧画像合法选项筛选、预算 truthy/字符串及数字转换、固定 `photoEnabled: false`、请求字段和 priorities 原样传递；不增加 React/fetch/localStorage 副作用。API 调用、状态、DOM、样式、文案、服务端降级、数据与依赖均保留。现有画像变更 effect 会重新应用全部默认值，失败会保留旧方案；空响应按原错误语义处理，本步不修正或美化这些既有行为。
+- 验证计划：迁移前后分别用相同浏览器脚本检查桌面 1440×900 与手机 360×800 的无照片方案、预算/场景/妆效调整与其他条件、旧画像衔接、加载/重复操作、服务端本地降级、失败/空响应/重试、站内产品详情及小Y方案入口。方案正常响应使用现有服务端规则生成，不创建前端生成器；错误由测试拦截模拟，禁用真实外部调用。运行相关 Vitest、`npm test`、`npm run build`、`git diff --check`；实际结果后续追加，未执行前不称通过。
+- 回退范围：上述纯转换新模块/测试、组件和小Y直接引用、迁移的原测试、浏览器脚本、README 与本文；基线为 `5e58236` / `arch-stage-01`，未提交工作树不是新恢复点。人工验收形成提交后才按实际 SHA 与后续依赖使用 `git revert` 并复验；不自动回退、不清理浏览器数据、不移动旧标签。
+- 版本门禁：本步未暂存、未提交、未推送，修改后 SHA 不存在，未创建 `arch-stage-02`；人工验收待确认。按 AGENTS 13.2 每小步验收并建立提交后再继续下一小步；后续 API、Hook、组件拆分尚未开始。**本阶段无新增核验，继承上一条结论。**
+
+**S01 自动验证后交付记录（2026-11-17，北京时间）**
+
+| 原位置/职责 | 本步实际映射 |
+| --- | --- |
+| `MakeupWorkbench.jsx` 的默认表单与两项转换 | `features/makeup-plan/makeupPlanUtils.js`，原实现迁入，补集中契约 JSDoc，无新增运行时校验 |
+| 工作台和小Y从 UI 导入转换 | 两组件直接导入 Utils；工作台继续作为现有 UI 入口，无重复实现或转发导出 |
+| `XiaoYAssistant.test.js` 的 1 项表单映射测试 | `makeupPlanUtils.test.js` 保留该测试并新增 7 项兼容性用例；小Y自身方案提取/格式化测试保留 |
+| 无方案页面回归脚本 | `tests/browser/arch02-makeup-plan.mjs`，使用已有 Playwright、合成画像及现有服务端无模型规则，未新增前端生成器 |
+
+- 实际修改共 8 文件：上述 Utils 与其测试、`src/components/MakeupWorkbench.jsx`、`src/components/XiaoYAssistant.jsx`、`src/components/XiaoYAssistant.test.js`、浏览器脚本、README 和本文。未修改 contracts（其中旧组件职责注释作为前置快照保留）、storage、App、服务端、data、public、样式、文案、API 字段/地址、算法、依赖或视频材料。尚未到完整阶段收尾，两份累计报告未在本小步改动；完成全阶段并验收时按 12.1 追加。
+- 迁移前纯函数基线：01:57:52 执行 `npm test -- src/features/makeup-plan/makeupPlanUtils.test.js`，当时测试导入原组件的转换，1 文件 8/8 通过（267ms）。迁移后改为新模块导入，01:59:00 执行 `npm test -- src/features/makeup-plan src/components/XiaoYAssistant.test.js src/components/XiaoYAssistant.storage.test.jsx`，退出码 0，3 文件 21/21（469ms）；01:59:27 执行 `npm test`，退出码 0，17 文件 120/120（1.76s），保留 Three.js CommonJS 弃用提示。
+- 生产构建：`npm run build` 退出码 0，2865 模块，1.99s；主 JS 743.02 kB（gzip 224.99 kB），3D 异步块 1292.96 kB（gzip 355.95 kB），仍有超过 500 kB 警告。本次没有安装依赖或调用真实付费 provider。首次差异检查发现移除导出后的文件末尾多余空行，已修正；最终文档/空白检查结果另行追加，不把检查脚本错误写成业务通过。
+- 页面环境：原 `npm run dev:web` 因 5174 已被占用而退出，未停止该服务；独立启动 `node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5175 --strictPort`。Node 24.18.0，已有 Playwright + Chrome 157.0.8103.52，1440×900 和 360×800，deviceScaleFactor 1、reducedMotion reduce；每场景使用独立临时上下文，不读取实际浏览器用户数据。API 被脚本拦截，正常方案调用现有 `createMakeupPlanService` 且 provider configured=false，不启动真实网关或发出第三方请求。
+- 页面基线首轮：10 项中 2 项通过，8 项因 select 的 label 包含选项文本、测试使用 exact 标签定位而超时，pageerror/console.error/失败资源请求均为空；证据保留 `.qa/arch-02-s01-baseline/results.json` 与失败截图。只修改测试定位为现有标签的包含匹配，生产代码当时未改；复跑 10/10、退出码 0，证据 `.qa/arch-02-s01-baseline-rerun/results.json`。迁移后同脚本 10/10、退出码 0，证据 `.qa/arch-02-s01-after/results.json`。
+- 页面实际覆盖：不上传照片生成 7 步；预算 500→200、场景通勤→拍照、妆效柔雾→哑光后其他条件保留；当前与旧画像映射，画像字段变化后恢复原默认值的既有 effect；加载/禁用按钮/Enter 无重复请求；本地规则降级标识；空响应与无效 JSON 进入原错误状态；合成业务失败仍保留旧方案且不显示新的成功状态，重试成功；站内产品详情打开、关闭按钮和 Escape；小Y对话生成方案、产品详情与既有文本降级。迁移前后全部场景的 pageerror、console.error、失败资源请求为空，自动几何断言无横向溢出或表单字段重叠。
+- 前后对比与截图：请求字段和表单值逐项相同。首次额外比较绝对 viewport y 坐标时，小Y自动滚动造成 103px 偏移而断言失败；控件尺寸与横向位置相同。只读对比消除整体滚动偏移后，10/10 场景尺寸及相对位置相同，保存 `.qa/arch-02-s01-after/comparison.json`；没有修改生产滚动行为。已实际查看桌面表单/结果、手机表单/结果/错误截图，未见新增布局问题。截图和 JSON 都在忽略的 `.qa/`，不加入提交。
+- 复跑命令（PowerShell；使用已存在的运行时，不新增依赖）：
+
+```powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE = 'file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_BASE_URL = 'http://127.0.0.1:5175'
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-02-s01-after'
+node tests/browser/arch02-makeup-plan.mjs
+```
+
+- 未完成与剩余风险：负责人 S01 人工验收待确认；API、Hook 和组件拆分尚未开始，ARCH-03 及以后仍 pending。页面使用业务错误/空响应模拟，未覆盖真实 HTTP 非 2xx、断网、超时、真实模型与网关集成、默认动画或真实手机；不能把浏览器规则响应当作 provider 成功。既有无主动请求超时、画像变化重置非画像条件、失败保留旧方案、默认 priorities 数组引用及宽松转换保持原样。Three.js 弃用、大分包、图片授权与商品来源政策差异等历史风险不升级或隐藏。
+- 用户体验入口：主站“小Y智能选妆”上方工作台，或在下方对话框请求完整妆容。人工重点检查无照片生成、连续改预算/场景/妆效时其他条件、已有画像衔接、产品详情按钮/Escape；失败与空响应可复跑上述隔离浏览器脚本。**本阶段无新增核验，继承上一条结论。** 未新增照片处理、持久化范围、产品事实或授权证明。
+- 版本与验收状态：本步待人工验收，未暂存、未提交、未推送、未创建 `arch-stage-02`，HEAD 仍为 `5e58236f6897147b354153ea9b02d080641a3cea`。当前工作树不构成新的恢复点，回退范围为上述 8 文件；不自动开启下一小步或 ARCH-03。AGENTS/FINAL-PROMPT 无需同步，README 当前路径和依赖已更新。
+- 最终交付检查：`git diff --check`、`node --check tests/browser/arch02-makeup-plan.mjs` 均退出码 0；Node 只读检查核对 8 文件范围、固定分支/HEAD/0:0/空暂存区、AGENTS 无差异、无 `arch-stage-02`、纯转换原实现等价、工作台其余实现及小Y业务实现未改、UTF-8/换行/空白、本地文档链接与 12 阶段唯一 current 均通过。该检查初次将中文冒号误写为英文而未匹配到阶段标题，修正检查表达式后通过，未改阶段或业务代码；不计为功能测试。
+- 人工体验服务：自动页面回归结束后发现 8787 健康检查不可达，为方便人工测试，在独立 Node 进程内显式令 `ZHIPU_API_KEY` 为空、端口为 8787、host 为 127.0.0.1，再调用现有网关 `start()`；不改 `.env` 或源文件。健康检查随后返回 ok=true/status=ready，通过 Vite 5175 代理实际请求 `/api/makeup-plans`，返回 ok=true、sourceMode=local、7 步、photoEnabled=false。此前“未覆盖网关集成”指自动浏览器脚本；本条仅增加无模型配置下的健康/代理/正常方案 API 冒烟验证，真实 HTTP 失败、断网、超时和模型仍未覆盖。保留 5175 前端和 8787 无模型测试后端供人工验收，不影响原 5174 服务。
+
+**S01 人工验收通过与提交授权（2026-11-17，北京时间）**
+
+- 确认人：项目负责人；原话“ARCH-02-S01 人工验收通过 上传到github上去”。确认范围为已交付的 8 文件：Utils/就近测试、工作台与小Y引用、原小Y测试调整、浏览器脚本、README 与本文；不虚构负责人具体设备或逐项执行步骤。此确认授权当前小步提交并推送固定开发分支，不代表全阶段完成、不授权合并 master 或进入 ARCH-03。
+- 提交前规范与版本：已再次 `git fetch origin master codex/frontend-contracts-yas-2026-0055`，读取远端 AGENTS、README 公共约定和计划约束；公共规范仍为 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，AGENTS 副本无差异。固定开发分支 HEAD/远端均为修改前基线 `5e58236f6897147b354153ea9b02d080641a3cea`，ahead/behind 0/0，起始暂存区为空，实际范围仍为上述 8 文件。
+- 确认后仅同步 README 与本文的人工验收/版本门禁，6 个代码与测试文件保持原样，哈希在文档修改前保存供提交前复核。沿用本步实际通过的相关 21/21、全量 120/120、构建、前后各 10/10 页面及无模型代理 API 冒烟结果；不重复已通过测试或声称本轮新运行。脚本语法、diff/暂存空白、文件范围/编码/链接/阶段状态和已验收文件哈希在提交前复核，结果实际取得后追加。
+- 阶段与审计：ARCH-02 继续唯一 current，API、Hook 与组件拆分未开始；ARCH-03 及以后继续 pending，不建立 `arch-stage-02`。两份累计报告按完整阶段收尾时同步，本步无新增核验，继承上一条结论；未扩大图片授权、商品来源、真实模型/断网/超时或真机验证结论，所有历史失败与风险保留。
+- 提交与回退：本条写入时尚未暂存/提交/推送，修改后 SHA 未产生；本次按问题格式只提交上述 8 文件，真实 SHA 与推送后的远端核验由交付回执先行给出、下次文档同步回填，不 amend 或为自引用额外提交。仅当前小步形成新的代码回退位置，按实际 SHA、后续依赖和 `git revert` 流程复验；不覆盖 master、不强推、不移动旧标签，Git 不恢复浏览器数据、环境变量或外部状态。
+- 提交前检查结果：`git diff --check`、`node --check tests/browser/arch02-makeup-plan.mjs` 均退出码 0；Node 只读检查确认精确 8 文件范围、固定分支/HEAD/远端 0:0、空暂存区、公共规则一致、6 个已验收代码/测试文件哈希未变、UTF-8/换行/空白、本地链接/人工确认、12 个阶段状态及原两轮 10/10 浏览器证据均通过。追加本结果后再查空白；暂存后继续核对精确文件范围与暂存内容，不把本次文档检查计为新功能测试。
 
 ### ARCH-03：`assistant`
 
@@ -425,8 +478,8 @@ fetch origin master，读取最新公共 AGENTS 与规范章节，必要时先�
 | --- | --- | --- | --- |
 | 前置 | contracts（仅开发分支） | done | `86b25b3`；项目负责人确认已推送 |
 | ARCH-00 | 迁移基线 | done | S04 `8c95966cf61367396fd6783da1f86c8569546668` 与 `arch-stage-00` 已再次核对实际远端；基线测试 12/73、构建通过，人工验收通过 |
-| ARCH-01 | lib/storage | done | S01 相关 40/40、全量 113/113、构建及桌面/360px 14/14 通过；2026-11-17 人工验收通过，收尾写入时待提交/推送/arch-stage-01，真实远端记录由回执给出 |
-| ARCH-02 | makeup-plan | pending | 待执行 |
+| ARCH-01 | lib/storage | done | S01 `5e58236f6897147b354153ea9b02d080641a3cea` 与远端 `arch-stage-01` 已核对；人工验收归档，原测试/构建/页面证据保留 |
+| ARCH-02 | makeup-plan | current | S01 自动验证与人工验收通过，已授权提交推送；本记录写入时待提交，真实 SHA/远端核验由回执给出；阶段未完成，无阶段标签 |
 | ARCH-03 | assistant | pending | 待执行 |
 | ARCH-04 | lib/api | pending | 待执行 |
 | ARCH-05 | makeup-table | pending | 待执行 |
