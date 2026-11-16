@@ -10,7 +10,10 @@ import {
   UserRound,
 } from 'lucide-react'
 import { categoryOptions, finishOptions, products, skinOptions } from '../data/products'
-import { xiaoyStorage } from '../lib/xiaoy-storage'
+import { clearLegacyCredentials } from '../lib/storage/clearUserData'
+import { readVersioned } from '../lib/storage/migrations'
+import { writeVersioned } from '../lib/storage/storageClient'
+import { LEGACY_MESSAGES_KEY, LEGACY_PROFILE_KEY, MESSAGES_KEY, PROFILE_KEY } from '../lib/storage/storageKeys'
 import MakeupWorkbench, { legacyToForm, toPlanPayload } from './MakeupWorkbench'
 
 const SCENE_OPTIONS = ['通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
@@ -328,8 +331,8 @@ function SourceList({ sources }) {
 }
 
 export default function XiaoYAssistant({ onOpenProduct }) {
-  const [messages, setMessages] = useState(() => xiaoyStorage.readMessages([welcomeMessage]))
-  const [profile, setProfile] = useState(() => xiaoyStorage.readProfile())
+  const [messages, setMessages] = useState(() => readVersioned(MESSAGES_KEY, LEGACY_MESSAGES_KEY, [welcomeMessage]))
+  const [profile, setProfile] = useState(() => readVersioned(PROFILE_KEY, LEGACY_PROFILE_KEY, {}))
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [mode, setMode] = useState('ready')
@@ -338,15 +341,15 @@ export default function XiaoYAssistant({ onOpenProduct }) {
   const messageEndRef = useRef(null)
 
   useEffect(() => {
-    xiaoyStorage.clearLegacyCredentials()
+    clearLegacyCredentials()
   }, [])
 
   useEffect(() => {
-    xiaoyStorage.writeProfile(profile)
+    writeVersioned(PROFILE_KEY, profile)
   }, [profile])
 
   useEffect(() => {
-    xiaoyStorage.writeMessages(messages.slice(-20))
+    writeVersioned(MESSAGES_KEY, messages.slice(-20))
   }, [messages])
 
   useEffect(() => {

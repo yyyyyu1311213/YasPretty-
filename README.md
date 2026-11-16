@@ -110,9 +110,9 @@ npm start
 
 ### 当前实际结构
 
-以下主树描述开发分支 `codex/frontend-contracts-yas-2026-0055` 在 `ce266c654709506fe36340da21874676b382a239` 的实际结构（2026-11-16，北京时间，ARCH-00-S03 只读核对）。本次采用的公共规范为远端 `master` 的 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`；master 尚无下列六个 contracts 文件。当前没有 `src/app/`、`src/features/`、`src/lib/api/` 或 `src/lib/storage/`，不得将目标目录描述为已实现。
+以下主树描述开发分支 `codex/frontend-contracts-yas-2026-0055` 的 ARCH-01-S01 已验收结构（2026-11-17，北京时间）。修改前已验收基线为 `8c95966cf61367396fd6783da1f86c8569546668`（`arch-stage-00`）；公共规范为提交前再次 fetch 核对的远端 `master` 提交 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`。master 尚无下列六个 contracts 文件或本次 storage 拆分；`src/app/`、`src/features/`、`src/lib/api/` 仍未建立。
 
-2026-11-17（北京时间），项目负责人确认 ARCH-00 人工验收通过；基线与迁移清单提交为 `f16542c6a84ed9141ab955661008fcb1bbc06b6f`。ARCH-00-S04 仅同步验收和阶段收尾，当前结构与上述代码基线一致。ARCH-00 状态为 `done`，阶段标签使用 `arch-stage-00`，最终提交及标签远端核验由本次交付回执给出、下次文档同步回填；ARCH-01 仍为 `pending`，等待另行授权，当前没有执行中的迁移阶段。全部源码映射、测试边界和保留风险见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)。
+ARCH-00 已通过人工验收并归档：S03 为 `f16542c6a84ed9141ab955661008fcb1bbc06b6f`，S04 为 `8c95966cf61367396fd6783da1f86c8569546668`；2026-11-17 已再次核对实际远端同名分支及带注释的 `arch-stage-00`，标签对象为 `cb811573c820bc01bd5ee5628f24c5e30fc6600e`，指向 S04。ARCH-01-S01 已将旧 `src/lib/xiaoy-storage.js` 拆入下列四个 storage 模块并更新小Y直接调用，未保留转发入口；单元测试、构建及桌面/360px 的 14 项 Playwright 页面复测通过，复测控制台无错误。负责人于 2026-11-17 明确确认“人工核验完成 更改状态，上传到git上去”，ARCH-01 更新为 `done`；ARCH-02 及之后仍 `pending`，当前无实施中的阶段。本次收尾写入时尚未提交或建立 `arch-stage-01`，实际提交 SHA、远端分支及标签对象/指向由归档交付回执给出，下一次文档同步回填，不为自引用改写历史。历史基线映射见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)，当前映射与证据见 [迁移计划 ARCH-01](docs/frontend-architecture-migration-plan.md#arch-01libstorage)。
 
 ```text
 yaspretty/
@@ -151,7 +151,11 @@ yaspretty/
 │   │
 │   └── lib/
 │       ├── navigation-history.js       导航与浏览器历史工具
-│       └── xiaoy-storage.js            版本化匿名画像、对话与旧 Key 清理
+│       └── storage/
+│           ├── storageClient.js        JSON 解析、版本包装；保留原异常语义
+│           ├── storageKeys.js          当前/旧 Key 与版本 1
+│           ├── migrations.js           当前值读取与旧画像/消息迁移
+│           └── clearUserData.js        仅清理两枚旧配置键，不新增全量删除
 │
 ├── public/
 │   ├── products/                       按稳定产品 ID 存放的 WebP 产品封面
@@ -166,6 +170,8 @@ yaspretty/
 │
 ├── scripts/
 │   └── sync-product-verification.mjs   从原始核验目录重复生成网页证据
+├── tests/browser/
+│   └── arch01-storage.mjs              独立浏览器存储回归，使用已有 Playwright
 ├── netlify/
 │   └── functions/api.js                复用 Fastify 网关的 Functions 适配器
 ├── docs/
@@ -181,13 +187,15 @@ yaspretty/
 
 组件自带 CSS 目前仍在 `src/components/`：`MakeupTable.css`、`MakeupTable3D.css`、`FlexCarousel.css`、`ScrollFloat.css`、`StrokeText.css`，以及 `makeup-table-3d/GhostCursor.css`。3D 内部实际文件为 `Scene.jsx`、`CosmeticItem.jsx`、`DressingTable.jsx`、`ParticleBurst.jsx`、`GhostCursor.jsx`、`cosmetics.js` 和 `performance-profile.js`。
 
-当前 12 个 Vitest 文件分布在 `src/components/`（4）、`src/data/`（2）、`src/lib/`（1）、`server/`（4，含子目录）和 `tests/`（1）；没有把全部组件交互或浏览器流程覆盖为自动化测试。逐文件范围与后续迁移位置见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)。
+当前 16 个 Vitest 文件分布在 `src/components/`（5）、`src/data/`（2）、`src/lib/`（4，含 storage 子目录）、`server/`（4，含子目录）和 `tests/`（1）。ARCH-01 新增 `storageClient.test.js`、`migrations.test.js`、`clearUserData.test.js` 以及 `XiaoYAssistant.storage.test.jsx` 共 40 项测试；最后一份通过隔离 React 初始化/effect 边界验证真实存储调用与最后 20 条消息保存，不替代真实 DOM、刷新或视口检查。相关 40/40、全量 113/113 和生产构建已通过。历史 12/73 基线与后续迁移位置见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)，本步证据与人工验收记录见 [阶段报告](docs/stage-delivery-test-report.md#arch-01-s01存储职责拆分已通过人工验收)。
+
+另有 `tests/browser/arch01-storage.mjs` 独立脚本，不计入 Vitest 数量；从主站真实导航、发送、刷新和重置入口，使用临时浏览器上下文和合成数据验证存储。2026-11-17 在 Chrome 157.0.8103.52、1440×900 和 360×800、减少动效下复测 14/14 通过，并检查截图与横向溢出/重叠；未覆盖真实手机、默认动画或禁用存储权限时的页面表现。首次定位器超时与资源错误、复跑命令和结果路径均保留在阶段报告；负责人后续已确认本步人工验收，不据此扩充自动测试覆盖范围。
 
 ### 前端目标结构（迁移中）
 
 开发分支的 `86b25b3` 已建立上述 `src/contracts/` 六个文件，这是前置实现提交，不是本次迁移基线 HEAD；公共 master 基线未包含它们。开发分支的演示材料和已有历史报告继续保留，公共规范同步不搬移或删除这些差异。
 
-下列 `app/`、`features/`、`lib/api/` 和 `lib/storage/` 仍是开发分支待逐步实施的目标，不得据此描述为已经完成模块化。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
+下列 `app/`、`features/`、`lib/api/` 仍是开发分支待逐步实施的目标；`lib/storage/` 的四模块已落地并通过 ARCH-01 人工验收，其余目标不得据此描述为已完成。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
 
 ```text
 src/
@@ -294,7 +302,7 @@ src/
 
 ### 依赖边界（目标，尚未全面落地）
 
-当前真实入口为 `main.jsx → App.jsx`；App 直接组合内嵌页面与 `components/` 中的小Y、品牌开幕及视觉组件，小Y再组合工作台。产品库与收藏仍在 App，三处业务 fetch 仍在小Y/工作台，收藏直接读写 localStorage；小Y画像与消息使用 `lib/xiaoy-storage.js`。contracts 当前只有 JSDoc，没有运行时导入或校验。下面是后续阶段约束，不是当前已实现依赖图。
+当前真实入口为 `main.jsx → App.jsx`；App 直接组合内嵌页面与 `components/` 中的小Y、品牌开幕及视觉组件，小Y再组合工作台。产品库与收藏仍在 App，三处业务 fetch 仍在小Y/工作台，收藏直接读写 localStorage；小Y直接组合 `lib/storage/` 的版本读取/迁移、写入、Key 和旧凭据清理，消息保存仍在原 effect 中使用 `slice(-20)`。`migrations` 依赖 `storageClient` 和 `storageKeys`，`storageClient` 与 `clearUserData` 仅依赖 `storageKeys`；没有反向依赖 UI 或增加桶式转发导出。损坏 JSON 仍回退，存储访问/写入/删除失败仍抛出，未新增静默降级。contracts 只有 JSDoc，没有运行时校验。下面是后续阶段约束，不是当前已全面实现的依赖图。
 
 ```text
 main.jsx → app → features → lib/api、lib/storage

@@ -1354,3 +1354,117 @@ README 原当前树用 master 旧基线，依赖图未明示目标；本步已�
 未完成项与风险：本阶段范围内无待办；ARCH-01 至 ARCH-11 仍 pending，等待另行授权。存储/组件/视觉测试缺口、跨模块引用、现有 fetch 无主动超时、专用 weather-provider、品牌官网商品来源及短分享链接政策差异、图片授权 pending 和其他公开门禁继续保留，需在相应范围另行处理；本次验收不代表这些问题已整改或正式产品阶段 0 已重验。
 
 版本收尾：本条写入时 S04 未提交、未推送、未建标签，最终提交 SHA 由实际交付回执给出、下次同步回填，不改写历史。在包含验收和最终状态的 S04 提交上建立带注释的唯一 `arch-stage-00` 并推送；只有远端分支 SHA、标签对象和 `^{}` 提交均核对后才宣称归档。现有 S01 至 S03 记录不删除；回退本步仅以实际 S04 SHA 执行 git revert 并复核状态/文档，保留阶段标签；如需回退更早内容，先确认依赖。Git 不恢复浏览器数据、环境变量或外部服务状态。
+
+## ARCH-01-S01：存储职责拆分，已通过人工验收
+
+当前状态：2026-11-17（北京时间）负责人确认“人工核验完成 更改状态，上传到git上去”，本阶段更新为 done。下列初次交付/补测中的待验收与 current 描述保留为历史；最终验收和归档安排见本节末尾，后续阶段未启动。
+
+日期：2026-11-17（北京时间）。阶段 ARCH-01（架构迁移，非正式产品阶段），唯一小步 ARCH-01-S01，前置关联 YAS-2026-0055，无新增 YAS 编号。固定分支 `codex/frontend-contracts-yas-2026-0055`；修改前已验收基线为 `8c95966cf61367396fd6783da1f86c8569546668`。本次 fetch 与实际远端查询确认分支 SHA 一致、ahead/behind 0/0，工作树及暂存区起始干净；ARCH-00-S04 已归档，`arch-stage-00` 远端标签对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向上述基线。公共规范为 master `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，规则副本无差异。历史 S04 的待创建描述保留，本条回填实际版本。
+
+启动依据：初次任务因阶段门禁未满足而停止；归档完成后负责人明确选择“授权启动 ARCH-01（推荐）”，并要求“继续”。本步先更新计划的唯一 current 再迁移，不把启动授权解释为人工验收或提交授权。只执行 lib/storage；ARCH-02 至 ARCH-11 继续 pending。
+
+### 实际修改与保留行为
+
+| 文件 | 实际修改 |
+| --- | --- |
+| `src/lib/storage/storageKeys.js`（新增） | 原六常量：版本 1，当前画像/消息、旧画像/消息及两个旧配置键 |
+| `src/lib/storage/storageClient.js`（新增） | JSON 读取/解析 fallback、版本包装写入；存储访问和序列化错误仍抛出 |
+| `src/lib/storage/migrations.js`（新增） | 原 readVersioned 当前值优先判断及旧值写入后删除逻辑 |
+| `src/lib/storage/clearUserData.js`（新增） | 原 clearLegacyCredentials，仅删除两个旧配置键，不读取旧凭据、不新增全量删除 |
+| `src/lib/xiaoy-storage.js`（移除） | 实现已迁入四模块，去掉原业务转发对象，无兼容空壳或重复实现 |
+| `src/components/XiaoYAssistant.jsx` | 仅更新初始化/effects 的 import 与调用；`slice(-20)` 仍在原 effect，画像及消息值和 resetConversation 原样保留 |
+| `src/lib/storage/storageClient.test.js`（新增） | 12 项：JSON/版本包装、完整消息值、不在 client 裁剪、无效/falsy 数据、存储及序列化失败 |
+| `src/lib/storage/migrations.test.js`（新增） | 23 项：画像/消息迁移、优先级、版本判断、fallback、原宽松值与迁移写入/删除失败 |
+| `src/lib/storage/clearUserData.test.js`（新增） | 2 项：精确清理范围、幂等、不读取值及失败中断行为 |
+| `src/components/XiaoYAssistant.storage.test.jsx`（新增） | 3 项：真实调用组合的初始化恢复、欢迎默认值、字段保留、旧值迁移与最后 20 条按原顺序保存、旧凭据清理；隔离 React 初始化/effect，不是 DOM 挂载或浏览器测试 |
+| `tests/browser/arch01-storage.mjs`（新增） | 独立 Playwright 浏览器脚本，真实导航/发送/刷新/重置，桌面与 360px 共 14 场景；不计入 Vitest、不增加依赖 |
+| README、迁移计划、本报告、产品数据审计 | 同步当前实际结构、映射、授权/门禁、测试和待验收记录；历史清单保留为 ARCH-00 基线 |
+
+无新接口、依赖或 schema；未改服务端、public、src/data、App 收藏存储、UI、样式、API、推荐规则或契约字段。`src/contracts/assistant.js` 的旧文件名注释作为前置契约历史保留，本步仅采用其 AssistantProfile/AssistantMessage 字段定义，不改数据形状或增加运行时校验。小Y“重新开始”仍设置空画像和欢迎消息，由原 effects 保存；没有新增“清空所有站点用户数据”的能力。无须调整 AGENTS/FINAL-PROMPT 的产品与架构规范。
+
+### 自动验证
+
+| 实际运行命令 | 北京时间/真实结果 |
+| --- | --- |
+| 修改前 `npm test` | 00:37:48，退出码 0；12 文件、73/73 项，4.61s |
+| `npm test -- src/lib/storage src/components/XiaoYAssistant.storage.test.jsx` | 00:46:26，退出码 0；4 文件、40/40 项，337ms |
+| `npm test` | 00:46:56，退出码 0；16 文件、113/113 项，2.07s；保留 THREE_CJS_DEPRECATED 提示 |
+| `npm run build` | 退出码 0；2864 模块，1.82s；主 JS 743.02 kB（gzip 225.01 kB），3D 异步 JS 1292.96 kB（gzip 355.95 kB）；保留超过 500 kB 警告 |
+| `git diff --check` | 代码修改后已运行，退出码 0；文档追加后的最终检查另见迁移计划 S01 末尾；新增未跟踪文件另查空白，不用暂存代替验收 |
+
+以上自动回归验证画像/消息重建初始化后的读写、旧数据迁移、最后 20 条保存、旧配置清理与异常语义。损坏 JSON 用 fallback，当前有效版本优先并保留其值（包括 null/falsy），无有效当前值才尝试旧值；写入失败不删除旧值，删除失败保留已写新值并继续抛出。localStorage 不可用或数据形状错误时仍可能影响小Y渲染，这是本次必须保留的既有行为，不能表述为已实现隐私存储禁用时的页面降级。
+
+### 页面回归与交付人工测试
+
+体验入口：运行 `npm run dev:web`，访问 `http://127.0.0.1:5174/`，从主站导航进入“小Y”；仅验证本地推荐即可，不需 Key 或真实 API。开发服务已启动。使用独立测试浏览器配置和合成画像/消息，避免覆盖已有浏览器数据。
+
+初次交付时页面检查未完成：in-app browser 首次打开返回“Tab 1 is not part of browser session”；浏览器清单查询及一次重试均遇到自动审批检查超时，未获得页面状态。工具超时不是页面失败或自动审批拒绝。当时常见桌面、360px 级手机、浏览器控制台及下面的交互/刷新场景均待验证，无截图或浏览器通过结论；该历史保留，后续实际补测见下节，负责人验收仍待确认。
+
+1. 画像与消息恢复：在小Y输入“我是混油皮，预算 400 元，想要柔雾通勤底妆”，确认本地回复和当前偏好；刷新后重新从导航进入小Y，画像、双方消息、产品和来源（如有）应保留。
+2. 消息上限：连续本地对话使总消息超过 20 条；刷新前当前会话保持原显示，存储仅保存末尾 20 条，刷新后恢复的顺序与这 20 条一致。自动集成测试已用 25 条合成旧消息验证预期为编号 5–24，仍需页面验证。
+3. 旧数据迁移：在独立测试配置、尚未进入小Y时使用开发者工具准备下列旧数据，然后从导航进入小Y；应显示干皮/300 元偏好，旧画像/消息 Key 被移除，新 Key 的包装为 version 1；最后 20 条为编号 5–24。两个假旧配置键应删除，额外非小Y记录保留。当前有效 version 1 值存在时应优先使用它，不迁移或删除仍存在的旧画像/消息。
+
+   ```js
+   // 仅在独立的测试浏览器配置内运行；不使用真实画像、对话或凭据。
+   localStorage.removeItem('yaspretty-xiaoy-profile-v1')
+   localStorage.removeItem('yaspretty-xiaoy-messages-v1')
+   localStorage.setItem('yaspretty-xiaoy-profile', JSON.stringify({ skin: '干皮', budget: 300 }))
+   localStorage.setItem('yaspretty-xiaoy-messages', JSON.stringify(Array.from({ length: 25 }, (_, index) => ({
+     id: String(index), role: 'user', content: `ARCH-01 测试 ${index}`, productIds: [],
+   }))))
+   localStorage.setItem('yaspretty-xiaoy-config', 'ARCH-01-test-only')
+   localStorage.setItem('yaspretty-assistant-config', 'ARCH-01-test-only')
+   localStorage.setItem('arch-01-unrelated-test', 'keep')
+   ```
+
+4. 异常及重置：测试当前 Key 为损坏 JSON、且无有效旧值时，画像回到 `{}`、消息回到欢迎消息；点击“重新开始”后刷新，应恢复空偏好与欢迎消息。存储权限/配额抛错不会被静默吞掉，本次不能以此新增错误页或降级语义。
+5. 分别在常见桌面（如 1440×900）和 360×800 手机视口检查小Y、画像、工作台及消息区：无新增重叠、横向溢出或无法关闭内容；清空测试前控制台记录后检查本步正常存储路径无新增未处理错误。
+
+### 负责人要求后的实际浏览器补测（2026-11-17，北京时间）
+
+负责人要求“你来帮我测试一下”后，在同一 ARCH-01-S01 新增上表脚本，未修改生产代码。使用已有 Playwright 运行时和系统 Chrome 157.0.8103.52，无安装或 package 变更。无头模式、1440×900 / 360×800、deviceScaleFactor 1、reducedMotion reduce；每场景新建临时浏览器上下文，以合成画像/消息/假配置和空收藏哨兵准备历史场景，通过真实主站导航、输入、发送、刷新和重置验证，不接触实际用户浏览器配置。
+
+实际复跑命令（前提：本地 `npm run dev:web` 已运行；也可将模块/浏览器路径改为本机已有安装）：
+
+```powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE = 'file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-01-storage-rerun'
+node tests/browser/arch01-storage.mjs
+```
+
+| 每视口执行场景（两视口共 14 项） | 实际结果 |
+| --- | --- |
+| fresh-defaults | 空画像、欢迎消息及版本 1 默认持久化正确 |
+| conversation-refresh-limit-reset | 真实发送 11 次，当前 23 条、保存末尾 20 条，刷新后 20 条内容与顺序及完整画像不变；重置后刷新为空偏好/1 条欢迎消息 |
+| legacy-migration-and-credentials | 25 条旧消息及完整画像迁移，旧画像/消息键删除；仅保存并刷新恢复编号 5–24，产品与合成来源链接渲染；两枚旧配置删除，非小Y与收藏哨兵保留 |
+| current-precedence | 当前有效 version 1 优先，旧画像/消息不删除，旧配置仍删除，刷新保持 |
+| broken-current-valid-legacy | 当前损坏 JSON 时迁移有效旧值，新值正确、旧值移除 |
+| broken-json-fallback | 无有效当前/旧数据时恢复默认值，损坏旧值保留 |
+| invalid-version-fallback | 错误版本/缺 value 时恢复默认值 |
+
+首轮于 01:16:15 完成，12/14；两个迁移用例因来源链接可访问名称中的空格与定位器不一致而超时，截图已有来源链接。两例还记录 `Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED`，未捕获资源 URL，原因不作推断；14 例均无 pageerror 或 API 请求。保留 `.qa/arch-01-storage/results.json` 和两张失败截图，不覆盖失败证据。仅将测试链接定位改为名称正则后复跑。
+
+复跑于 01:17:19 完成，退出码 0，**14/14 通过**；`.qa/arch-01-storage-rerun/results.json` 的所有 pageErrors、consoleErrors、apiRequests 均为空，首轮资源错误未复现。检查两视口对话与迁移整页截图，并结合默认/对话/迁移场景的 DOM 几何断言，未见横向溢出、画像与聊天重叠或输入/发送控件重叠。复跑目录保留六张截图（`1440-` / `360-` 下 fresh-defaults、conversation-refresh-limit-reset、legacy-migration-and-credentials）；这些临时证据位于忽略的 `.qa/`，不提交。合成 `https://example.test/arch-01` 只作来源字段恢复断言，未点击或作为产品事实来源。
+
+本次页面范围只覆盖本地存储正常/损坏 JSON/旧值路径；不代表真实手机、默认动画、存储权限被禁用/配额耗尽的页面、工作台 API 或外部 provider 通过。存储权限/读写删除异常由原相关单元测试验证其继续抛错语义，未新增 UI 降级。首轮资源错误原因仍未定位。以上浏览器执行与截图检查为自动验证证据，不能替代负责人对 S01 的人工验收。
+
+补测后 `node --check tests/browser/arch01-storage.mjs`、`git diff --check`、`git diff --cached --check` 与 Node 只读检查均退出码 0；15 个文件（9 个未跟踪）的许可范围、UTF-8/空白、本地文档链接、固定分支/HEAD/空暂存区、唯一 current 及结果 JSON 均通过。生产代码自原 40/40、113/113 与构建通过后未变，仅补充浏览器脚本和文档，因此未重复该组 npm 验证。追加本检查结果后再核对空白。
+
+### 隐私、风险与版本门禁
+
+没有读取、记录或上传真实浏览器用户数据、照片、凭据或旧 memory；测试只使用合成内容，没有新增服务端持久化、保存 Key 或第三方调用。**本阶段无新增核验，继承上一条结论。** 产品、价格、色号、图片授权 pending、评分、来源和链接政策差异保持上一审计结论，未因测试通过升级。README 与本次代码/测试范围一致，视频/PPT/比赛材料未修改，未声称正式产品新功能完成。
+
+补测交付时，人工确认人、日期、结果尚待填写，页面自动证据见上节，ARCH-01 仍 current。大分包、Three.js 弃用、存储访问抛错及宽松数据形状等保留风险未修复；ARCH-02 及后续阶段未实施。**当时本步未提交、未暂存、未推送、未创建 `arch-stage-01`**，修改后 SHA 不存在。人工验收与完整阶段收尾前不得标 done、打标签或进入下一阶段；本条保留收尾准备时的证据。回退范围为本步四模块、旧文件、调用方、四份 Vitest 测试、浏览器脚本及四份文档，共 15 个实际变更文件；形成提交后按实际 SHA/依赖执行 git revert 并复验，保留失败与归档历史；Git 不恢复浏览器数据、环境变量或外部服务状态。
+
+### 2026-11-17 人工验收确认与 ARCH-01 完整阶段收尾
+
+项目负责人明确回复“人工核验完成 更改状态，上传到git上去”。依据本次确认，将同一 ARCH-01-S01 的 15 文件交付整体记为人工验收通过并授权提交/推送；不编造负责人使用的设备、测试步骤或额外页面证据。验收后仅更新 README、迁移计划、本报告和数据审计的状态/收尾记录，已验收生产代码及测试未变，无新增小步。ARCH-01 done、ARCH-00 done，ARCH-02 至 ARCH-11 pending，当前无实施中的阶段。
+
+提交前再次 fetch 并读取公共规范，master 仍为 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，AGENTS 无差异；固定分支 `codex/frontend-contracts-yas-2026-0055` 的 HEAD/实际远端同名分支仍为 `8c95966cf61367396fd6783da1f86c8569546668`，ahead/behind 0/0、暂存起始为空，远端及本地尚无 `arch-stage-01`。本步已实际运行的相关 40/40、全量 113/113、构建和桌面/360px 14/14 结果继续有效；仅改验收文档不重复业务验证。提交前再核对 diff、语法/空白、许可文件、链接、阶段状态及非文档文件哈希，实际结果随提交回执报告。
+
+阶段目的、15 个实际文件/迁移映射、主站“小Y智能选妆”入口、真实测试命令/两轮浏览器结果、未实现内容、存储降级边界和隐私说明均见上文，失败证据保留。当前仍保留读写/删除抛错与宽松形状语义、Three.js 弃用/大分包提示、首轮资源错误原因未定位；真实手机、默认动画、禁用存储权限的页面和 provider 未增加自动覆盖。README 与已验收代码一致，AGENTS、FINAL-PROMPT、视频及比赛材料未改，后续模块未落地或提前描述为完成。
+
+**本阶段无新增核验，继承上一条结论。** 累计数据审计同步记录本次人工确认，产品事实、价格、评分、来源/链接政策差异与图片授权 pending/blocked、公开门禁均未升级；没有真实用户照片/画像/对话/凭据的新增读取、提交或上传。
+
+写入本收尾记录时，本步提交 SHA 尚未产生、分支未推送、`arch-stage-01` 未创建；本次授权执行最终提交→分支推送及远端核验→在该提交上建立带注释的唯一标签→推送与核验标签。实际 SHA、远端分支、标签对象与提交指向由本次归档回执报告，下次文档同步回填，不为自引用改写历史。回退覆盖同一 S01 的 15 文件，按实际 SHA 与后续依赖使用 git revert 并复验；不改 master，不自动开始 ARCH-02。
