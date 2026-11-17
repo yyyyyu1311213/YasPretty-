@@ -1,16 +1,17 @@
-const PLAN_ENDPOINT = '/api/makeup-plans'
+import { postJson } from '../../lib/api/client'
+import { PLAN_ENDPOINT } from '../../lib/api/endpoints'
+import { createApiError } from '../../lib/api/errors'
+
+function planResponseError(response, data) {
+  return createApiError(data?.error?.message || `方案生成失败（${response.status}）`)
+}
 
 /**
  * @param {import('../../contracts/index.js').MakeupPlanRequest} payload
  * @returns {Promise<import('../../contracts/index.js').MakeupPlan>}
  */
 export async function requestMakeupPlan(payload) {
-  const response = await fetch(PLAN_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  const data = await response.json().catch(() => null)
-  if (!response.ok || !data?.plan) throw new Error(data?.error?.message || `方案生成失败（${response.status}）`)
+  const { response, data } = await postJson(PLAN_ENDPOINT, payload, planResponseError)
+  if (!data?.plan) throw planResponseError(response, data)
   return data.plan
 }

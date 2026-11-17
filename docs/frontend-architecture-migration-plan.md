@@ -11,8 +11,8 @@
 | 公共规范基线分支 | `master`；公共规范经授权提交后选择性同步到开发分支 |
 | 开发分支本次采用的公共规范提交 | `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，已核对实际远端 master；阶段执行记录在本分支追加 |
 | 固定阶段开发分支 | `codex/frontend-contracts-yas-2026-0055` |
-| 当前阶段 | 无实施中的阶段；`ARCH-03` 为 `done`，剩余人工核验由负责人明确豁免，最终归档须以本次回执的实际远端提交/标签核验为准 |
-| 下一阶段 | `ARCH-04`：`lib/api`，保持 `pending`，未实施 |
+| 当前阶段 | 无 `current`；`ARCH-04`：`lib/api` 已于 2026-11-17 获完整人工验收，更新为 `done`，按本次授权完成版本归档 |
+| 下一阶段 | `ARCH-05`：`makeup-table`，保持 `pending`，未实施 |
 | 开发分支已完成前置工作 | `src/contracts/` 六个 JSDoc 契约文件；master 基线尚未包含 |
 | contracts 基线提交 | `86b25b3`（`YAS-2026-0055`；项目负责人确认已推送） |
 | ARCH-00-S03 修改前实时基线 | `ce266c654709506fe36340da21874676b382a239`；2026-11-16 核对本地与实际远端同名分支一致，ahead/behind 为 0/0；工作树、暂存区及未跟踪文件均为空 |
@@ -20,7 +20,8 @@
 | 本次公共规范提交前的 master 基线 | `0b93a18167de0760f2ecfd99c9294b78653bb5ed`，与实际远端 master 一致 |
 | 架构阶段标签 | `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向 `8c95966cf61367396fd6783da1f86c8569546668`；`arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` 指向 `5e58236f6897147b354153ea9b02d080641a3cea`；`arch-stage-02` 远端对象 `47a9d3a27bf11a305c2ecb94eacea0e99195b2af` 指向 `f0d02eb64ced01c0fd1fa5fc210eb687050620e5`，2026-11-17 启动预检已核对远端 |
 | 最近状态更新 | 2026-11-17，北京时间 |
-| 最近验证结果 | ARCH-03-S05：展示 10/10、相关 137/137、全量 199/199、构建 2878 模块及桌面/360px 36/36 通过；S04 已推送 7ce13ed，S05 收尾提交/arch-stage-03 远端结果见回执，历史几何差异与自动覆盖限制保留 |
+| ARCH-03 实际远端归档回填 | 收尾提交 `bf7e2254001fe3cc1fa7619c925fb3a8a00d456c`；标签对象 `b8bacb242f91983b471ccd097470aca6287d5152`，`^{}` 指向收尾提交，2026-11-17 预检已核对 |
+| 最近验证结果 | ARCH-04-S01：公共/API 51/51、相关 163/163、全量 225/225、构建 2881 模块；桌面/360px 22/22，非几何行为记录与迁移前一致；无 Key 本地代理冒烟通过；2026-11-17 负责人确认“人工核验完毕”，验收后仅同步文档 |
 
 实际代码与测试仍是判断模块是否已经落地的最终依据。本文或 README 与代码不一致时，先报告差异，再修正文档或代码，不得把目标结构写成已完成状态。
 
@@ -567,7 +568,7 @@ node tests/browser/arch02-makeup-plan.mjs
 
 ### ARCH-04：`lib/api`
 
-**状态：`pending`**
+**状态：`done`**（2026-11-17，北京时间，完整人工验收通过；归档实值见本次回执）
 
 **允许范围**：`assistantApi.js`、`makeupPlanApi.js`、新 `lib/api/`、相关测试和文档。
 
@@ -581,7 +582,67 @@ node tests/browser/arch02-makeup-plan.mjs
 
 **验收**：小Y问答和方案请求完整回归，失败路径不变；测试和构建通过。
 
-**执行记录**：待执行。
+**ARCH-04-S01：公共请求骨架与错误兼容迁移（2026-11-17，北京时间；实施前登记）**
+
+- 启动授权：本任务初次只读检查发现 ARCH-04 仍 pending，已按负责人要求停止且未改文件。负责人随后明确回复“授权，03已经全部完成”，据此将本阶段登记为唯一 current；ARCH-00–03 保持 done，ARCH-05–11 保持 pending。此授权仅启动本阶段，不构成人工验收、提交、推送或标签授权。
+- 修改前已验收基线：固定分支 `codex/frontend-contracts-yas-2026-0055`，HEAD 与 fetch 后远端同名分支均为 `bf7e2254001fe3cc1fa7619c925fb3a8a00d456c`；ahead/behind 0/0，起始工作树、未跟踪文件和暂存区均为空。ARCH-03 收尾实际远端已核对：带注释标签对象 `b8bacb242f91983b471ccd097470aca6287d5152`，`^{}` 指向上述基线；保留此前待提交快照，实际归档值在本条回填。关联 `YAS-2026-0055`，没有新增问题编号。
+- 公共规范：2026-11-17 北京时间重新执行 `git fetch origin master codex/frontend-contracts-yas-2026-0055`；采用 `origin/master` 的 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，远端 AGENTS、README 公共约定及迁移约束已读取，`git diff origin/master -- AGENTS.md` 为空。未同步无关 master 历史或改变公共规则。
+- 迁移原因与事实：两个业务 API 重复 POST/Content-Type/JSON 序列化及 JSON 解析失败回退 null。两者都没有主动定时超时、AbortController、取消或重试；网络错误原对象向上抛出。小Y HTTP 错误附带原业务 code/default REQUEST_FAILED，成功无 answer 为无 code 的 Error；方案 HTTP/空 plan 按原消息抛出无 code 的 Error，不能为统一而改变这些边界。
+- 拟改文件：两个业务 API 及其就近测试；新 `src/lib/api/{client,errors,endpoints}.js`、`client.test.js`、`errors.test.js`；README、本文和两份累计报告，共 13 路径。既有浏览器脚本直接复用，不计划更改组件、Hook、Utils、contracts、server、public、data、UI/样式/文案或依赖。
+- 迁移映射：两枚端点常量 → endpoints；共同 POST/JSON 读取和 HTTP 检查 → client 的单一 postJson；Error 构建及有/无 code 的既有区别 → errors。具体 HTTP 错误消息/code 的选择、answer/plan 检查、来源/产品 ID 和会话方案适配仍由各 feature 负责；表单转换保留 makeupPlanUtils，意图与本地推荐不进入 lib。公共模块无业务反向依赖。
+- 验证方法：在改代码前运行两个业务 API 原测试和已有小Y/方案浏览器脚本形成基线；迁移后补公共成功/HTTP/坏 JSON/解析失败/网络/超时/取消原对象传播及检查顺序测试，并运行两个业务 API 适配、assistant/makeup-plan 相关测试、`npm test`、`npm run build`、`git diff --check`。桌面 1440×900、手机 360×800 复跑同脚本，比对请求/回复/产品 ID/来源/错误/表单，检查截图/控制台/溢出；所有结果取得后追加，不预写通过。
+- 回退与版本门禁：一个原子小步覆盖上述 13 路径，尚未形成新的提交回退点；人工确认并形成提交后按实际 SHA/后续依赖 `git revert` 并复验，保留 ARCH-03 标签及历史证据。Git 不恢复浏览器数据、环境变量或外部服务。当前未暂存、未提交、未推送、未创建 arch-stage-04，人工验收待进行；ARCH-04 保持 current，不进入 ARCH-05。两份累计文档先记录待验收准备，完整阶段收尾须再同步确认结果；无新增核验，继承上一结论。
+
+**S01 实际交付与阶段收尾准备（2026-11-17，北京时间；待人工验收）**
+
+| 原职责 | 实际迁移位置与保留边界 |
+| --- | --- |
+| assistantApi / makeupPlanApi 的路径常量 | lib/api/endpoints.js，仅两枚实际端点，不增加天气/第三方地址 |
+| 两业务 API 重复 POST/Content-Type/JSON.stringify/JSON 读取 | lib/api/client.js 的 postJson，先 JSON.catch(null) 再 HTTP 检查，不适配业务数据 |
+| Error 创建、有/无 code 的错误区别 | lib/api/errors.js 的 createApiError，保持普通 Error 原型和可选 code；不包装网络/超时/取消原对象 |
+| HTTP 消息/code、answer/plan 检查 | 仍在两个 feature API；Client 调用其 HTTP 错误工厂；方案空 plan 沿用同一错误消息工厂 |
+| 参数转换、产品 ID/来源/回复/降级 | 原 Utils、feature API 与 Hook 原地保持，无组件或直接调用方修改 |
+
+- 实际修改 15 路径：原计划 13 路径加 `tests/browser/arch02-makeup-plan.mjs` 和 `tests/browser/arch03-assistant.mjs`，后两者只将一行拦截规则改为 URL pathname.startsWith('/api/')。原 glob `**/api/**` 会误拦截新 `/src/lib/api/client.js`，必须修正才能继续真实开发页面测试；方法/端点/响应/错误/几何断言均未放宽。该必要相关测试修复仍属于本步，无新增依赖或阶段扩张。
+- 代码边界：两个 API 的导出与调用方路径不变，无转发层；公共模块无 features/components/contracts/data/React/storage 依赖。小Y仍只发送 query/profile/末 8 条 role-content，原来源/模式/模型默认值和 ID 过滤保持。方案仍返回原 plan 对象，成功接纳边界不变；具体消息/code/空响应检查保留原语义。没有超时定时器、signal、重试、缓存、鉴权、并发或服务端策略改变。
+- 08:45:49 迁移前执行 `npm test -- src/features/assistant/assistantApi.test.js src/features/makeup-plan/makeupPlanApi.test.js`，2 文件 25/25，退出码 0。08:48:45 迁移后执行 `npm test -- src/lib/api src/features/assistant/assistantApi.test.js src/features/makeup-plan/makeupPlanApi.test.js`，4 文件 51/51（公共 19、业务 API 32），退出码 0。保留原 25 项 API 断言；新增 HTTP 优先级、有/无 code、原生 TimeoutError/AbortError 身份、JSON 读取与 HTTP 顺序、坏 JSON/JSON 读取拒绝回退 null、同步解析错误/序列化失败及 fake timers 推进 5 分钟仍无新增超时/取消/重试等针对性边界，不将虚拟计时写成真实弱网等待。
+- 08:49:16 执行 `npm test -- src/lib/api src/features/assistant src/features/makeup-plan src/lib/storage`，18 文件 163/163、509ms，退出码 0；08:49:18 执行 `npm test`，29 文件 225/225、2.49s，退出码 0。原 199 项及有效断言保留，Three.js CommonJS 弃用提示仍在。`npm run build` 退出码 0，2881 模块、1.48s；主 JS 744.39 kB/gzip 225.38 kB，3D 块 1292.96 kB/gzip 355.95 kB，仍有 >500 kB 提示。未安装依赖，未改变 UI/样式或实施拆包优化。
+- 页面环境与命令：原 5175 不可达，因此新启动 `node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5175 --strictPort`，没有停止用户服务。已有 Playwright/Chrome 157.0.8103.52，1440×900 与 360×800、deviceScaleFactor 1、reducedMotion reduce，每场景独立临时上下文；沿用下列环境分别执行 `node tests/browser/arch03-assistant.mjs` 与 `node tests/browser/arch02-makeup-plan.mjs`。正常方案复用既有 createMakeupPlanService/configured=false，其他 API 由合成路由返回，不调用付费 provider。
+
+```powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE = 'file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_BASE_URL = 'http://127.0.0.1:5175'
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-04-s01-after-rerun-assistant'
+node tests/browser/arch03-assistant.mjs
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-04-s01-after-rerun-makeup-plan'
+node tests/browser/arch02-makeup-plan.mjs
+```
+
+- 迁移前 8/8+14/14，退出码均为 0，证据 `.qa/arch-04-s01-before-{assistant,makeup-plan}`。迁移后首轮误拦截源模块：方案脚本在 Unexpected API call 断言处退出码 1；小Y出现两次导航定位超时后主动中断，退出码 1，无完整汇总，不能记为 0/8 完整执行。保留首轮 `.qa/arch-04-s01-after-*` 的可用截图与本条工具输出事实。仅修正上述两行测试路由后，复跑 8/8+14/14，共 22/22，退出码均为 0，证据 `.qa/arch-04-s01-after-rerun-{assistant,makeup-plan}`，未再次修改生产代码。
+- 实际页面覆盖：本地推荐/比较/无需请求、通用问答/产品事实/来源顺序与新页开关/滚动；末 8 条历史和画像、加载/Enter/防重复；无 Key/联网失败/上游失败/HTTP503/504/模拟网络 timedout 的明确披露和恢复；空 answer/plan、坏 JSON、无照片生成 7 步、条件修改后重生及其他字段保留、失败保留旧方案/重试；小Y画像修正衔接方案/原文本降级，真实产品 ID/无效 ID 过滤、依据/详情按钮与 Escape/滚动。全部 22 场景无 pageerror；正常场景无 console.error。故意失败场景精确记录预期资源错误，小Y合计 12 条/2 个 timedout 请求、方案 6 条/2 个失败请求，恢复成功，不声称零资源错误。
+- 行为与视觉证据：`node .qa/arch-04-s01-checks/compare-browser.mjs` 退出码 0，将两脚本全部场景除 geometry 字段外的每项记录逐项对比，均相同，保存 browser-comparison.json。已查看桌面/手机来源、桌面/手机方案结果、手机网络失败和文本降级共 6 图，原几何断言无新增横向溢出/重叠。不声称严格像素一致，保留 ARCH-02 几何差异及未证实字体成因；真实手机、默认动画、弱网和字体加载后的严格排版仍待人工验证。
+- 真实本地代理冒烟：保留 5175 前端与 8787 无 Key 测试网关供人工体验；临时进程禁用 dotenv 文件加载并显式空 Key，不读私有 .env、不改配置文件。`node .qa/arch-04-s01-checks/smoke.mjs` 最终退出码 0：health ok=true/assistant=false；普通问答 503/PROVIDER_NOT_CONFIGURED、原消息“智能服务暂未配置，请使用站内推荐或稍后再试。”；方案 200/sourceMode=local/7 步/photoEnabled=false。首次临时冒烟误按合成响应期待 AI_NOT_CONFIGURED，实际服务端原码为 PROVIDER_NOT_CONFIGURED，断言失败并伴随 Windows Node 清理断言；核对 app.cjs/原测试后仅改临时预期，复跑通过，不修改服务端或前端映射。此为健康/无 Key/方案正常代理冒烟，不扩大为真实 provider/真实联网/实际上游失败页面验证。
+- 文档/审计/隐私：README 同步当前结构、依赖与受影响路径；两份累计报告追加本阶段待验收准备和 ARCH-03 实际归档回填，**无新增核验，继承上一结论**。没有产品、价格、图片、来源、评分或授权变化，pending/blocked/链接政策差异与公开门禁保留。测试只用合成画像/对话/来源，未新增照片、上传、存储范围、日志或第三方调用；AGENTS/FINAL-PROMPT、服务端/public/data/组件/Hook/Utils/CSS/依赖/视频与比赛材料未改。
+- 人工入口与剩余门禁：主站“小Y智能选妆”，上方工作台、下方对话。重点检查无照片成功/改条件重生、来源及详情打开关闭、失败后恢复、桌面/360px 加载与操作。真实付费 provider/真实联网仍待人工验证，不要求普通用户输入 Key。当前无人工确认人/日期/通过结果，ARCH-04 仍唯一 current；未暂存、未提交、未推送、未创建 arch-stage-04，修改后 SHA 不存在，ARCH-05 未启动。实际范围及回退扩大到上述 15 路径；完整收尾需人工确认后再同步两份报告、提交/推送和标签核验，当前工作树不是新的 Git 回退点。
+- 最终只读检查：`node .qa/arch-04-s01-checks/final-check.mjs` 退出码 0，精确 15 文件、固定分支/基线/远端跟踪 0/0、空暂存区、公共规则无差异、UTF-8/末尾换行/无行尾空白、11 条本地文档链接、12 阶段正文/总表一致且仅 ARCH-04 current、两份报告只追加历史、公共依赖边界/端点/原调用方、两浏览器脚本仅一行匹配修正及 22 场景对比均通过。全部 11 个变更 JS/MJS 语法、`git diff --check`、`git diff --cached --check` 退出码 0；证据和各文件 SHA-256 保存在忽略目录 checks/final-check.json。交付前再次只读查询实际远端，开发分支仍为 bf7e225，ARCH-03 对象/指向一致，无 arch-stage-04；此后仅补文档并复核范围/空白，不重复已通过业务验证。
+
+**整阶段统一交付（2026-11-17，北京时间）**
+
+- 负责人补充“把全部的完成我再核验”，据此一次性交付本次 ARCH-04 全部开发内容；不是启动 ARCH-05 或免除最终人工验收的指令。三个公共模块、两个 API 接入、业务适配和错误兼容测试、两视口成功/失败/降级回归、README 及两份累计报告均已纳入 S01，没有尚待实施的 ARCH-04 后续小步。现有代码/测试保持已验证内容，本次只澄清虚拟计时证据及整阶段交付状态，不扩大验证结论。
+- ARCH-04 保持唯一 current，等待负责人对本阶段完整 15 文件统一核验；未暂存、未提交、未推送、未打标签。核验通过后的版本归档和最终状态更新仍待该明确确认。无新增核验，继承上一结论；真实 provider/真机等未执行项与历史风险按上文保留。
+
+**ARCH-04-S01 人工验收与完整阶段收尾（2026-11-17，北京时间）**
+
+- 项目负责人在完整 15 文件统一交付后明确回复“人工核验完毕”，据 AGENTS.md 13.2 记为本步及完整 ARCH-04 人工验收通过，并构成固定开发分支提交、推送与阶段标签归档的授权。不虚构负责人所用设备、逐项操作或真实 provider 测试结果；前述 current/待验收/未提交记录保留为当时快照。
+- 验收后复核：分支仍为 codex/frontend-contracts-yas-2026-0055，HEAD、fetch 后同名远端与修改前已验收基线仍为 bf7e2254001fe3cc1fa7619c925fb3a8a00d456c，ahead/behind 0/0，暂存区起始为空；再次读取远端公共约定，规范 master 仍为 19b87df58d0f8bf3874dc8e958175c7c22ac6f82，AGENTS 副本无差异；本地和远端均无 arch-stage-04。未切换分支、清理用户修改或同步无关 master 历史。
+- 确认后仅更新 README、本文、阶段交付报告及产品数据审计四份文档的人工确认/最终状态。验收快照保存在忽略目录 .qa/arch-04-s01-checks/accepted-snapshot.json，11 个代码/测试文件 SHA-256 必须逐一与快照一致；提交范围仍为同一小步的完整 15 路径，不添加后续阶段或新的实质改动。
+- 沿用本步实际取得的公共/API 51/51、相关 163/163、全量 225/225、生产构建 2881 模块、两视口 22/22 及真实无 Key 代理冒烟结果；本轮只验证文档、范围、哈希、链接、阶段状态和 Git 空白，不声称重跑整套功能测试。首轮浏览器拦截失败、临时冒烟错误预期及 Windows 清理断言、既有几何差异/字体成因未确认、Three.js 弃用/大分包风险和真实 provider/真机/默认动画/弱网/严格排版覆盖限制全部保留；人工验收不把未执行场景补记为已测试。
+- 两份累计报告按 12.1 同步，**本阶段无新增核验，继承上一条结论。** 未改产品事实、价格、图片、评分、来源、授权或链接政策状态，pending/blocked 与公开门禁不升级；没有新增上传、保存范围、真实用户数据或第三方凭据处理。AGENTS/FINAL-PROMPT、视频及比赛材料未改。
+- ARCH-04 更新为 done，ARCH-00–03 仍 done，ARCH-05–11 全部 pending，当前无 current；本次不启动 ARCH-05、不合并 master。写入时新提交 SHA 尚未产生、尚未推送/建立标签；依授权先提交上述 15 文件、推送并核对实际分支 SHA，再在同一收尾提交建立唯一带注释 arch-stage-04、推送并核对标签对象及 ^{} 指向。实际 SHA/标签由本次归档回执先行报告、下次文档同步回填，不 amend 自引用或虚构远端状态；远端匹配后才称已归档。
+- 回退范围为本 S01 的完整 15 路径，形成提交后按实际 SHA 和下游依赖使用 git revert 并重新验证；保留全部失败/审计记录及既有标签，不强推或移动标签。Git 不恢复浏览器本地数据、环境变量或外部服务状态。
+
+- 验收后提交前只读检查：node .qa/arch-04-s01-checks/acceptance-check.mjs 退出码 0，精确 15 路径、11 个代码/测试文件与验收快照 SHA-256 一致、11 条本地文档链接、UTF-8/换行/行尾空白、两份报告只追加、12 阶段正文/总表一致（00–04 done、05–11 pending、无 current）、公共依赖/端点边界、22 场景非几何比较与 11 文件语法检查均通过；git diff --check 与 git diff --cached --check 退出码 0。最新实际远端查询确认开发分支 bf7e225、master 19b87df、无 arch-stage-04；一次普通沙箱查询因 schannel 凭据通道失败，使用允许的网络权限复核成功，未改变凭据或远端状态。补本条后再核对文档/范围/哈希/空白；暂存后另核对索引精确范围及内容，不重复已通过业务测试。
 
 ### ARCH-05：`makeup-table`
 
@@ -710,8 +771,8 @@ node tests/browser/arch02-makeup-plan.mjs
 | ARCH-00 | 迁移基线 | done | S04 `8c95966cf61367396fd6783da1f86c8569546668` 与 `arch-stage-00` 已再次核对实际远端；基线测试 12/73、构建通过，人工验收通过 |
 | ARCH-01 | lib/storage | done | S01 `5e58236f6897147b354153ea9b02d080641a3cea` 与远端 `arch-stage-01` 已核对；人工验收归档，原测试/构建/页面证据保留 |
 | ARCH-02 | makeup-plan | done | S01 aa564870；S02 `f0d02eb64ced01c0fd1fa5fc210eb687050620e5` 与 `arch-stage-02` 远端对象/指向已核对；整阶段人工验收归档 |
-| ARCH-03 | assistant | done | S01–S03 人工验收推送 a7222fe / 42585e1 / e119a44；S04 7ce13ed 已推送，S04/S05 人工等待由负责人豁免；最终相关 137/137、全量 199/199、构建及桌面/360px 36/36；收尾提交/arch-stage-03 的实际远端结果见回执 |
-| ARCH-04 | lib/api | pending | 待执行 |
+| ARCH-03 | assistant | done | 收尾 bf7e225 与 arch-stage-03 对象/指向已核对实际远端；S01–S03 人工验收，S04/S05 人工等待由负责人豁免；历史自动验证和风险保留 |
+| ARCH-04 | lib/api | done | S01 基线 bf7e225；公共/API 51/51、相关 163/163、全量 225/225、构建和两视口 22/22 通过；2026-11-17 完整人工验收通过，已授权收尾提交/推送/唯一标签归档，实际值见回执 |
 | ARCH-05 | makeup-table | pending | 待执行 |
 | ARCH-06 | catalog | pending | 待执行 |
 | ARCH-07 | collection | pending | 待执行 |

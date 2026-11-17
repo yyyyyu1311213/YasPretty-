@@ -84,6 +84,22 @@ describe('小Y业务请求', () => {
     await expect(requestAssistant(input)).rejects.toBe(error)
     expect(fetch).toHaveBeenCalledTimes(1)
   })
+
+  it.each(['TimeoutError', 'AbortError'])('propagates a native %s unchanged for the existing caller', async (name) => {
+    const error = new DOMException('合成请求失败', name)
+    const fetch = vi.fn().mockRejectedValue(error)
+    vi.stubGlobal('fetch', fetch)
+    await expect(requestAssistant(input)).rejects.toBe(error)
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('checks HTTP before accepting an answer and preserves the specific business code', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false, status: 503,
+      json: async () => ({ answer: 'must-not-win', error: { code: 'WEATHER_PROVIDER_UNAVAILABLE', message: '合成天气不可用。' } }),
+    }))
+    await expect(requestAssistant(input)).rejects.toMatchObject({ code: 'WEATHER_PROVIDER_UNAVAILABLE', message: '合成天气不可用。' })
+  })
 })
 
 describe('小Y会话方案请求适配', () => {

@@ -98,7 +98,7 @@ async function scenario(viewport, name, test) {
   let reply = async () => { throw new Error('Unexpected API call') }
   const routeErrors = []
   await context.route('https://example.test/**', (route) => route.fulfill({ contentType: 'text/html; charset=utf-8', body: '<meta charset="utf-8"><title>ARCH-03 合成来源</title><p>仅用于来源打开检查。</p>' }))
-  await context.route('**/api/**', async (route) => {
+  await context.route((url) => url.pathname.startsWith('/api/'), async (route) => {
     try {
       const endpoint = new URL(route.request().url()).pathname
       assert(['/api/assistant', '/api/makeup-plans'].includes(endpoint), 'Unexpected endpoint')

@@ -110,13 +110,13 @@ npm start
 
 ### 当前实际结构
 
-以下主树描述开发分支 `codex/frontend-contracts-yas-2026-0055` 的 ARCH-03-S05 收尾结构（2026-11-17，北京时间）。S05 修改前已验证且获授权提交的基线为 `7ce13eded4261d0e2afa43df4cf2fa2ba702793f`（S04，已核对实际远端）；公共规范为 fetch 核对的远端 master `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`。负责人已明确取消剩余人工核验，自动验证和文档收尾已完成；最终提交、推送与阶段标签核验结果由归档回执提供。master 尚无本分支 contracts、storage、makeup-plan 或 assistant 拆分；`src/app/`、`src/lib/api/` 尚未建立。
+以下主树描述开发分支 `codex/frontend-contracts-yas-2026-0055` 的 ARCH-04-S01 已人工验收结构（2026-11-17，北京时间）。修改前已验收基线为 `bf7e2254001fe3cc1fa7619c925fb3a8a00d456c`（ARCH-03 收尾，已核对实际远端）；公共规范为 fetch 核对的远端 master `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`。负责人于 2026-11-17 明确确认“人工核验完毕”，ARCH-04 更新为 done，当前无 current，ARCH-05 及以后保持 pending；本次收尾提交及远端分支/标签实际值由归档回执先行提供，下次文档同步回填；master 尚无本分支 contracts、storage、makeup-plan、assistant 或 lib/api 拆分，`src/app/` 仍未建立。
 
 ARCH-00 已通过人工验收并归档：S03 为 `f16542c6a84ed9141ab955661008fcb1bbc06b6f`，S04 为 `8c95966cf61367396fd6783da1f86c8569546668`；带注释的 `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向 S04。ARCH-01-S01 已将旧 `src/lib/xiaoy-storage.js` 拆入下列四个 storage 模块并更新小Y直接调用，未保留转发入口；相关 40/40、全量 113/113、构建及桌面/360px 的 14 项 Playwright 页面复测通过。负责人于 2026-11-17 明确确认人工验收通过，实际提交为 `5e58236f6897147b354153ea9b02d080641a3cea`；远端 `arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` 指向该提交，启动预检已核对。两阶段保持 `done`，历史基线与映射分别见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)和[迁移计划 ARCH-01](docs/frontend-architecture-migration-plan.md#arch-01libstorage)。
 
 ARCH-02 已通过整阶段人工验收并归档，状态为 `done`。S01 纯转换提交为 `aa564870`；S02 将方案 API、工作台状态/流程及表单/结果/产品展示迁入 `features/makeup-plan/`，原组件路径删除，小Y同步引用并共享唯一方案请求。2026-11-17 启动复核确认 S02 收尾提交与实际远端均为 `f0d02eb64ced01c0fd1fa5fc210eb687050620e5`；带注释的 `arch-stage-02` 远端对象 `47a9d3a27bf11a305c2ecb94eacea0e99195b2af` 指向该提交。S02 的相关 76/76、全量 138/138、构建及最终桌面/360px 14/14 证据保留；严格像素几何差异及真实设备/provider 等限制见迁移计划，不因归档升级验证结论。
 
-ARCH-03 为 `done`，当前无执行中的阶段，ARCH-04 及以后保持 `pending`。S01 前端意图工具、S02 业务纯函数、S03 API 已分别人工验收并推送 `a7222feca91c90160a69114e702a851802342e0f`、`42585e110e0d19a611b6565a9c79d0cb24a143c5`、`e119a44843d2604e85e467df9de5b7c80b2ee1c3`。S04 状态/存储/发送与降级 Hook 已按负责人最新授权提交并推送 `7ce13eded4261d0e2afa43df4cf2fa2ba702793f`。S05 将消息、画像、产品和来源展示迁入四个实际组件，XiaoYAssistant 留作组合入口；原业务/存储断言保留，全部测试就近。负责人原话“剩下的不用人工核验，全部尽快完成”，据此免除 S04/S05 人工核验等待并完成本阶段归档，不记为已经执行人工测试。最终收尾提交及唯一带注释 `arch-stage-03` 的实际远端对象/指向在交付回执给出，下次文档同步回填；未启动 ARCH-04。
+ARCH-03、ARCH-04 均为 `done`，当前无 `current`，ARCH-05 及以后保持 `pending`，未实施。S01 前端意图工具、S02 业务纯函数、S03 API 已分别人工验收并推送 `a7222feca91c90160a69114e702a851802342e0f`、`42585e110e0d19a611b6565a9c79d0cb24a143c5`、`e119a44843d2604e85e467df9de5b7c80b2ee1c3`。S04 状态/存储/发送与降级 Hook 已按负责人最新授权提交并推送 `7ce13eded4261d0e2afa43df4cf2fa2ba702793f`。S05 将消息、画像、产品和来源展示迁入四个实际组件，XiaoYAssistant 留作组合入口；原业务/存储断言保留，全部测试就近。负责人原话“剩下的不用人工核验，全部尽快完成”，据此免除 ARCH-03 的 S04/S05 人工核验等待，不记为已经执行人工测试。本次回填已核对的收尾提交 `bf7e2254001fe3cc1fa7619c925fb3a8a00d456c`；唯一带注释 `arch-stage-03` 的远端对象为 `b8bacb242f91983b471ccd097470aca6287d5152`，指向该提交。ARCH-03 的豁免不扩张到 ARCH-04。
 
 ```text
 yaspretty/
@@ -190,6 +190,12 @@ yaspretty/
 │   │
 │   └── lib/
 │       ├── navigation-history.js       导航与浏览器历史工具
+│       ├── api/
+│       │   ├── client.js               共用 POST、JSON 读取与 HTTP 检查
+│       │   ├── client.test.js
+│       │   ├── errors.js               原 Error/code 边界，无网络错误包装
+│       │   ├── errors.test.js
+│       │   └── endpoints.js            现有两枚 YasPretty API 路径
 │       └── storage/
 │           ├── storageClient.js        JSON 解析、版本包装；保留原异常语义
 │           ├── storageKeys.js          当前/旧 Key 与版本 1
@@ -228,7 +234,7 @@ yaspretty/
 
 组件自带 CSS 目前仍在 `src/components/`：`MakeupTable.css`、`MakeupTable3D.css`、`FlexCarousel.css`、`ScrollFloat.css`、`StrokeText.css`，以及 `makeup-table-3d/GhostCursor.css`。3D 内部实际文件为 `Scene.jsx`、`CosmeticItem.jsx`、`DressingTable.jsx`、`ParticleBurst.jsx`、`GhostCursor.jsx`、`cosmetics.js` 和 `performance-profile.js`。
 
-当前 27 个 Vitest 文件分布在 `src/components/`（3）、`src/features/assistant/`（9）、`src/features/makeup-plan/`（4）、`src/data/`（2）、`src/lib/`（4，含 storage）、`server/`（4）和 `tests/`（1）。assistant 的 6 项意图、13 项业务、15 项 API、3 项原存储测试均保留，新增 27 项 Hook 流程和 10 项展示边界测试。S05 展示测试 4 文件 10/10、相关 16 文件 137/137、全量 27 文件 199/199、构建（2878 模块）通过；`git diff --check` 通过。Hook 隔离测试、静态 markup 和事件回调断言验证各自边界，真实页面行为另由浏览器脚本覆盖。S04 首轮测试误将“底妆”视为 category，更正测试为原规则后通过，未改业务实现；详细历史与命令见迁移计划。
+当前 29 个 Vitest 文件分布在 `src/components/`（3）、`src/features/assistant/`（9）、`src/features/makeup-plan/`（4）、`src/data/`（2）、`src/lib/`（6，含 storage/api）、`server/`（4）和 `tests/`（1）。ARCH-03 的 199 项测试及有效断言全部保留；ARCH-04 增加公共 Client/错误 19 项及业务 API 7 项，两个 API 合计 32 项。当前公共/API 4 文件 51/51、相关 18 文件 163/163、全量 29 文件 225/225、构建（2881 模块）通过。Hook 隔离测试、静态 markup 和事件回调断言验证各自边界，真实页面行为另由浏览器脚本覆盖。历史失败和构建提示保留在迁移计划，不因本次迁移删除。
 
 另有 `tests/browser/arch01-storage.mjs` 独立脚本，不计入 Vitest 数量；从主站真实导航、发送、刷新和重置入口，使用临时浏览器上下文和合成数据验证存储。2026-11-17 在 Chrome 157.0.8103.52、1440×900 和 360×800、减少动效下复测 14/14 通过，并检查截图与横向溢出/重叠；未覆盖真实手机、默认动画或禁用存储权限时的页面表现。首次定位器超时与资源错误、复跑命令和结果路径均保留在阶段报告；负责人后续已确认本步人工验收，不据此扩充自动测试覆盖范围。
 
@@ -246,11 +252,13 @@ ARCH-03-S04 复跑三个既有浏览器脚本，assistant 8/8、storage 14/14、
 
 ARCH-03-S05 最终复跑三份原浏览器脚本，assistant 8/8、storage 14/14、makeup-plan 14/14，共 36/36。Chrome 157.0.8103.52、1440×900 和 360×800、临时上下文、减少动效；小Y除几何外全部记录与 S04 相同，三个展示函数和完整消息 JSX 原文等价，其余组合仅替换引用。已查看桌面比较/超时与手机来源/方案/文本降级 5 张截图，几何断言无新增横向溢出/重叠，全部场景无 pageerror。正常场景无 console.error；显式失败场景出现脚本预期的资源错误（assistant 12 条/2 个失败请求、方案 6 条/2 个失败请求），恢复通过。API 成功/无 Key/失败/超时均为隔离合成响应或现有无模型方案规则；未使用真实 Key，未验证实际 provider、真实手机、默认动画、弱网及字体加载后严格排版，不声称像素一致。S04/S05 的人工等待由负责人豁免，未执行部分仍为待人工验证项，不阻塞本次授权归档。
 
+ARCH-04-S01 将两个业务 API 的共同 POST/JSON 读取和 HTTP 检查迁入 `src/lib/api/client.js`，端点仍为 `/api/assistant` 与 `/api/makeup-plans`。公共错误模块保留原 Error/code 边界，业务消息、来源处理、产品标记和方案转换仍在 features；不新增定时超时、取消、重试、缓存或鉴权。公共/API 测试 51/51、相关测试 163/163、全量 225/225 和构建通过。两个既有页面脚本迁移前 8/8+14/14、迁移后修正拦截范围后 8/8+14/14；原 `**/api/**` 曾误拦截 `/src/lib/api/client.js`，现仅拦截根路径 `/api/`，业务断言未放宽。桌面/360px 的请求/回复/ID/来源/错误/表单等全部非几何记录一致，已查看 6 张截图，几何断言无新增溢出/重叠；正常场景无控制台错误，故意 HTTP/网络失败的预期资源错误保留。真实本地无 Key 网关及 Vite 代理冒烟确认普通问答返回 503/PROVIDER_NOT_CONFIGURED，方案返回本地 7 步；付费 provider、真实手机、默认动画和字体加载后严格排版仍待人工验证，不声称像素一致。负责人于 2026-11-17 对完整 15 文件确认“人工核验完毕”，ARCH-04 更新为 done；确认后只同步四份文档，11 个代码/测试文件保持已验收内容。提交、推送及唯一带注释 arch-stage-04 的实际 SHA/对象/指向以远端核验后的本次归档回执为准，下次文档同步回填；未进入 ARCH-05。人工确认不扩充真实 provider、设备或严格像素验证结论。完整命令、失败记录和证据见迁移计划与两份累计报告。
+
 ### 前端目标结构（迁移中）
 
 开发分支的 `86b25b3` 已建立上述 `src/contracts/` 六个文件，这是前置实现提交，不是本次迁移基线 HEAD；公共 master 基线未包含它们。开发分支的演示材料和已有历史报告继续保留，公共规范同步不搬移或删除这些差异。
 
-下列 `app/`、绝大部分 `features/`、`lib/api/` 仍是开发分支待逐步实施的目标；`lib/storage/` 四模块已通过 ARCH-01 人工验收，makeup-plan 的 Utils/API/Hook/组件已在 ARCH-02 迁入并通过人工验收。assistant 的意图、业务纯函数、API、Hook 与四个展示组件已在 ARCH-03 迁入；S01–S03 已人工验收，S04/S05 剩余人工核验由负责人取消，自动验证与收尾结果见上文，其余目标不得据此描述为已完成。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
+下列 `app/` 和绝大部分 `features/` 仍是开发分支待逐步实施的目标；`lib/storage/` 四模块已通过 ARCH-01 人工验收，makeup-plan 的 Utils/API/Hook/组件已在 ARCH-02 迁入并通过人工验收。assistant 的意图、业务纯函数、API、Hook 与四个展示组件已在 ARCH-03 迁入；S01–S03 已人工验收，S04/S05 剩余人工核验由负责人取消。`lib/api/` 已在 ARCH-04-S01 落地并通过自动验证及 2026-11-17 人工验收，其余目标不得据此描述为已完成。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
 
 ```text
 src/
@@ -329,8 +337,8 @@ src/
 │
 ├── lib/                                不含具体业务的公共技术能力
 │   ├── api/
-│   │   ├── client.js                   fetch、JSON、超时和响应检查
-│   │   ├── errors.js                   网络、超时和业务错误分类
+│   │   ├── client.js                   共用 POST/JSON/HTTP 检查；无新增定时超时
+│   │   ├── errors.js                   保留原生错误与业务 Error/code 区别
 │   │   └── endpoints.js                API 路径常量
 │   ├── storage/
 │   │   ├── storageClient.js            JSON 读写、版本包装和异常处理
@@ -357,9 +365,9 @@ src/
 
 ### 依赖边界（目标，尚未全面落地）
 
-当前真实入口为 `main.jsx → App.jsx`；App 直接组合内嵌页面与 `components/` 中的小Y、品牌开幕及视觉组件，小Y再组合工作台。产品库与收藏仍在 App，assistant fetch 已集中在 assistantApi，方案 fetch 仍集中在 makeupPlanApi，收藏直接读写 localStorage；小Y的 useAssistant 组合 `lib/storage/` 的版本读取/迁移、写入、Key 和旧凭据清理，消息保存仍在迁移后的原 effect 中使用 `slice(-20)`。`migrations` 依赖 `storageClient` 和 `storageKeys`，`storageClient` 与 `clearUserData` 仅依赖 `storageKeys`；没有反向依赖 UI 或增加桶式转发导出。损坏 JSON 仍回退，存储访问/写入/删除失败仍抛出，未新增静默降级。contracts 只有 JSDoc，没有运行时校验。下面是后续阶段约束，不是当前已全面实现的依赖图。
+当前真实入口为 `main.jsx → App.jsx`；App 直接组合内嵌页面与 `components/` 中的小Y、品牌开幕及视觉组件，小Y再组合工作台。产品库与收藏仍在 App；两个业务 API 的 fetch 已共用 `lib/api/client.js`，参数、响应和具体错误映射仍在 features，收藏直接读写 localStorage。小Y的 useAssistant 组合 `lib/storage/` 的版本读取/迁移、写入、Key 和旧凭据清理，消息保存仍在迁移后的原 effect 中使用 `slice(-20)`。`migrations` 依赖 `storageClient` 和 `storageKeys`，`storageClient` 与 `clearUserData` 仅依赖 `storageKeys`；没有反向依赖 UI 或增加桶式转发导出。损坏 JSON 仍回退，存储访问/写入/删除失败仍抛出，未新增静默降级。contracts 只有 JSDoc，没有运行时校验。下面是后续阶段约束，不是当前已全面实现的依赖图。
 
-当前小Y依赖为 `XiaoYAssistant → useAssistant / AssistantMessages / ProfileSummary / MakeupWorkbench`。`useAssistant → assistantApi / assistantUtils / intentUtils / lib/storage`；`AssistantMessages → AssistantProduct / SourceList / data/products`；`AssistantProduct → assistantUtils`。入口保留标题/快捷问题/输入/隐私与工作台连接；展示组件不负责请求或持久化，真实产品仍传递给 App 的现有详情回调。`assistantApi → assistantUtils / makeupPlanApi`；`assistantUtils → intentUtils / makeupPlanUtils / data/products`；`MakeupWorkbench → useMakeupPlan → makeupPlanApi / makeupPlanUtils`，makeup-plan 无 assistant 反向依赖。Hook 不直接操作 localStorage 或 fetch，未新增存储逻辑、锁、取消、超时/重试或静默错误处理。画面消息不截断，只持久化末 20 条；重复发送仍由当前渲染的 busy 判断，重新开始仍不清空草稿或取消进行中的响应。S05 保留 DOM/样式类/键盘/详情/来源行为，不迁移入口文件路径；公共 Client 留给尚未启动的 ARCH-04。
+当前小Y依赖为 `XiaoYAssistant → useAssistant / AssistantMessages / ProfileSummary / MakeupWorkbench`。`useAssistant → assistantApi / assistantUtils / intentUtils / lib/storage`；`AssistantMessages → AssistantProduct / SourceList / data/products`；`AssistantProduct → assistantUtils`。入口保留标题/快捷问题/输入/隐私与工作台连接；展示组件不负责请求或持久化，真实产品仍传递给 App 的现有详情回调。`assistantApi → lib/api / assistantUtils / makeupPlanApi`，`makeupPlanApi → lib/api`；`assistantUtils → intentUtils / makeupPlanUtils / data/products`；`MakeupWorkbench → useMakeupPlan → makeupPlanApi / makeupPlanUtils`，makeup-plan 无 assistant 反向依赖。公共 API 模块不依赖 features、components、contracts、data、React 或存储；业务回调决定具体 HTTP 错误，Client 只检查 HTTP，不接管 answer/plan/来源/ID 校验或降级。小Y保留 code/default REQUEST_FAILED，方案错误仍无 code；fetch 网络/超时/取消拒绝保留原对象，JSON 读取拒绝仍转 null。基线没有前端定时超时或主动取消，本步不新增。Hook 不直接操作 localStorage 或 fetch，画面消息不截断，只持久化末 20 条；重复发送仍由当前渲染的 busy 判断，重新开始仍不清空草稿或取消进行中的响应。S05 保留 DOM/样式类/键盘/详情/来源行为，不迁移入口文件路径。
 
 ```text
 main.jsx → app → features → lib/api、lib/storage

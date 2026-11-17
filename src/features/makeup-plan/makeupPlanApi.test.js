@@ -40,6 +40,25 @@ describe('妆容方案业务请求', () => {
     await expect(requestMakeupPlan({})).rejects.toBe(error)
   })
 
+  it.each(['TimeoutError', 'AbortError'])('propagates a native %s unchanged without retrying', async (name) => {
+    const error = new DOMException('合成请求失败', name)
+    const fetch = vi.fn().mockRejectedValue(error)
+    vi.stubGlobal('fetch', fetch)
+    await expect(requestMakeupPlan({})).rejects.toBe(error)
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    [503, { plan: { id: 'must-not-win' }, error: { code: 'AI_NOT_CONFIGURED', message: '合成方案不可用。' } }, '合成方案不可用。'],
+    [200, { error: { code: 'UPSTREAM_TIMEOUT', message: '合成方案超时。' } }, '合成方案超时。'],
+  ])('preserves the plain message-only error for HTTP %s even when the response carries a code', async (status, body, message) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: status < 400, status, json: async () => body }))
+    const error = await requestMakeupPlan({}).catch((error) => error)
+    expect(error.message).toBe(message)
+    expect(Object.getPrototypeOf(error)).toBe(Error.prototype)
+    expect(Object.hasOwn(error, 'code')).toBe(false)
+  })
+
   it('retains the existing response acceptance boundary without adding plan schema checks', async () => {
     const plan = { id: 'synthetic-plan' }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ ok: false, plan }) }))

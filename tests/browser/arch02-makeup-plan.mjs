@@ -92,7 +92,7 @@ async function scenario(viewport, name, seed, test) {
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()) })
   page.on('requestfailed', (request) => failedRequests.push({ url: request.url(), error: request.failure()?.errorText }))
   let reply = async (route, payload) => route.fulfill({ json: { ok: true, plan: await service.create(payload) } })
-  await page.route('**/api/**', async (route) => {
+  await page.route((url) => url.pathname.startsWith('/api/'), async (route) => {
     assert.equal(new URL(route.request().url()).pathname, '/api/makeup-plans', 'Unexpected API call')
     assert.equal(route.request().method(), 'POST')
     const payload = route.request().postDataJSON()
