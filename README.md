@@ -110,7 +110,7 @@ npm start
 
 ### 当前实际结构
 
-以下主树描述 `master` 已通过本次整体人工验收的实际结构（2026-11-17，北京时间），包含原开发分支已归档的 contracts、storage、makeup-plan、assistant 与 lib/api。合并前 master 为 `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`，原开发分支末端为 `4062153c512107534b88f3bc6011ffa869334c8a`；使用普通合并保留双方历史。负责人已明确回复“人工验证通过”，切换任务记 done，正在按授权提交、正常推送和安全删除原分支；实际 Git 收尾结果在完成后回填。ARCH-00～04 保持 done，ARCH-05 为唯一 current（只确定下一阶段，尚未实施），ARCH-06～11 pending；本次不实施 ARCH-05。`src/app/` 仍未建立。切换状态与完整证据见[迁移计划分支切换记录](docs/frontend-architecture-migration-plan.md#52-2026-11-17-分支切换记录)。
+以下主树描述 `master` 已通过本次整体人工验收的实际结构（2026-11-17，北京时间），包含原开发分支已归档的 contracts、storage、makeup-plan、assistant 与 lib/api。普通合并提交为 `8caf4dcdad416a2a8fbc6057a7f5a289403e9a1c`，双亲分别为原 master `19b87df58d0f8bf3874dc8e958175c7c22ac6f82` 和原开发分支末端 `4062153c512107534b88f3bc6011ffa869334c8a`，原历史完整保留。负责人明确回复“人工验证通过”后，已正常推送 master 并核对远端相同；原分支无独有提交，本地使用 `git branch -d` 安全删除，远端同名分支也已删除并复核，五个阶段标签对象及指向未变。切换任务 done，ARCH-00～04 保持 done，ARCH-05 为唯一 current（只确定下一阶段，尚未实施），ARCH-06～11 pending；后续完整阶段直接在 master 实施后统一人工验收。`src/app/` 仍未建立。切换状态与完整证据见[迁移计划分支切换记录](docs/frontend-architecture-migration-plan.md#52-2026-11-17-分支切换记录)。
 
 ARCH-00 已通过人工验收并归档：S03 为 `f16542c6a84ed9141ab955661008fcb1bbc06b6f`，S04 为 `8c95966cf61367396fd6783da1f86c8569546668`；带注释的 `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向 S04。ARCH-01-S01 已将旧 `src/lib/xiaoy-storage.js` 拆入下列四个 storage 模块并更新小Y直接调用，未保留转发入口；相关 40/40、全量 113/113、构建及桌面/360px 的 14 项 Playwright 页面复测通过。负责人于 2026-11-17 明确确认人工验收通过，实际提交为 `5e58236f6897147b354153ea9b02d080641a3cea`；远端 `arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` 指向该提交，启动预检已核对。两阶段保持 `done`，历史基线与映射分别见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)和[迁移计划 ARCH-01](docs/frontend-architecture-migration-plan.md#arch-01libstorage)。
 
