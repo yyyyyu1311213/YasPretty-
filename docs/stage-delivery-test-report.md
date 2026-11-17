@@ -2694,3 +2694,136 @@ buildApp({ config, logger: false }).then(app => app.listen({ host: '127.0.0.1', 
 
 
 **2026-11-17 19:26（北京时间）ARCH-11 最终确认提交前暂存核对，YAS-2026-0055**：19:25:18再次fetch并实际ls-remote，master仍为f8fcbfa2673af1b9f9f470796f6a206aedeffcc9，00～10标签对象/指向一致、11不存在；原始远端记录保留。19:25:53以YAS_QA_VERIFY_STAGED=1运行node .qa/arch-11-checks/verify-acceptance.mjs退出码0，暂存清单精确为已验收11路径、每个Git blob与工作树经过滤内容一致，无未暂存/未跟踪文件；七代码/测试哈希不变，12阶段done、无新的current、历史/追加报告/原测试/目录链接披露/语法编码/原自动证据及两项diff检查通过。仅补记本条并重新暂存三份记录、复核后执行本次已授权最终提交/正常推送/唯一带注释标签，不改实现或覆盖结论；此时真实新SHA/tag尚未产生，结果由归档回执提供。不删分支。**本阶段无新增核验，继承上一条结论。**
+
+
+## 2026-11-17（北京时间）ARCH-12：展示层所有权收敛，人工验收通过并进入归档收尾
+
+关联 YAS-2026-0055。负责人后续明确授权的新阶段；修改前基线/已归档 ARCH-11 提交为 `57b0a877a9a6bbd769fdb079c2c4ef71629e28e9`，tag 对象 `89aa7c31466b3d270bab4820d0b34c6c38730c4e` / `arch-stage-11` 指向该提交。19:39–19:40 已核对实际远端一致。ARCH-11 在原批准范围内已经归档；ARCH-12 是后续新增的展示层归属整改，不是对 ARCH-11 测试或验收结论的否定。ARCH-00～11 历史、done、提交、标签、失败和风险全部保留。
+
+目的：使共享视觉、开幕、小Y与工作台及首页 CSS 由真实所有者维护；不改变 DOM/文案/UI 效果、API、数据、存储 Key 或依赖。所有组件业务主体和三视觉整文件与基线等价；未新增服务端接口。
+
+| 修改前文件 | 实际目标文件 |
+| --- | --- |
+| `src/components/FlexCarousel.jsx` | `src/components/visual/FlexCarousel.jsx` |
+| `src/components/FlexCarousel.css` | `src/components/visual/FlexCarousel.css` |
+| `src/components/ScrollFloat.jsx` | `src/components/visual/ScrollFloat.jsx` |
+| `src/components/ScrollFloat.css` | `src/components/visual/ScrollFloat.css` |
+| `src/components/StrokeText.jsx` | `src/components/visual/StrokeText.jsx` |
+| `src/components/StrokeText.css` | `src/components/visual/StrokeText.css` |
+| `src/components/XiaoYAssistant.jsx` | `src/features/assistant/components/XiaoYAssistant.jsx` |
+| `src/components/BrandOpening.jsx` | `src/features/app-shell/components/BrandOpening.jsx` |
+| `src/components/BrandOpening.test.js` | `src/features/app-shell/components/BrandOpening.test.js` |
+| `src/styles.css` + `src/xiaoy.css` | 按下表拆为五个归属文件；原 xiaoy.css 完全迁出后删除 |
+
+| 其他实际修改文件 | 修改内容 |
+| --- | --- |
+| `src/App.jsx` | 两个入口导入改为 app-shell/assistant；其余应用装配原样 |
+| `src/main.jsx` | 先导入全局 styles.css，再导入 App；移除 xiaoy.css 导入 |
+| `src/features/home/components/HomeView.jsx` | ScrollFloat/StrokeText 静态引用、FlexCarousel 动态引用指向 visual；自行加载 HomeView.css |
+| `src/features/makeup-plan/components/MakeupWorkbench.jsx` | 自行加载 MakeupWorkbench.css |
+| `src/features/home/components/HomeView.test.jsx` | 三个 mock 路径同步，原断言不变 |
+| `src/features/app-shell/App.test.jsx` | 小Y导入同步，原断言不变 |
+| `tests/browser/arch08-home.mjs` | 故障注入匹配旧/新轮播路径，保留基线复跑能力及原断言 |
+| `tests/browser/arch12-style-ownership.mjs`（新） | 20 个状态计算样式/相对几何/截图与基线对照；隔离 API 与字体 |
+| `tests/architecture/arch12-ownership.mjs`（新） | 九文件迁移/主体等价、CSS 声明序列、历史只追加及阶段归属只读检查 |
+| `scripts/fill_ai_usage_statement.py` | 披露中的小Y与工作台实际路径；未执行生成器或重制比赛材料 |
+| `README.md` | 当前实际树/测试分布/依赖/披露/本阶段状态与专门 Git 门禁 |
+| `docs/frontend-architecture-migration-plan.md` | 新增唯一 current ARCH-12、完整映射和真实执行；00～11 阶段正文不变 |
+| `docs/stage-delivery-test-report.md`、`docs/product-data-accuracy-audit.md` | 仅追加本阶段交付与审计 |
+| `docs/arch-12-css-ownership.md`（新） | 全量原选择器、原行号、媒体条件、使用方与目标 CSS 映射 |
+
+以上共 39 个工作树路径（移动计原/新路径，未暂存）；九个移动无转发壳、旧根 components 仅余 visual 目录。AGENTS.md、FINAL-PROMPT.md 和旧设计/阶段材料中的原路径作为历史/规则文本保留，当前实际映射由本次明确授权和 README/本文说明，不把历史字符串当成运行引用。
+
+| CSS 所有者 / 目标 | 原来源与实际使用方 | 守恒项数（单选择器/关键帧含原媒体上下文） |
+| --- | --- | --- |
+| `src/styles.css` | 原全站基础/共享展示与其余页面样式；从 xiaoy.css 接收 980px 导航覆盖和小Y/工作台共用的唯一 xiaoy-spin | 511 |
+| `src/features/home/components/HomeView.css`（新） | 原 styles.css 首页/hero/精选/收尾/占位/动效，加原 xiaoy.css 首页 CTA；由 HomeView 导入 | 127 |
+| `src/features/assistant/assistant.css`（新） | 原两 CSS 的 xiaoy-* 页面/消息/画像/产品/来源/设置等；XiaoYAssistant 导入；未恢复旧 Key/设置 UI | 118 |
+| `src/features/makeup-plan/components/MakeupWorkbench.css`（新） | 原两 CSS 的工作台/表单/步骤/结果/依据/错误等；MakeupWorkbench 导入；不依赖 assistant.css | 88 |
+| `src/features/app-shell/components/BrandOpening.css`（新） | 原 styles.css 的 brand-opening/opening-*、关键帧、手机和减少动效；BrandOpening 导入 | 79 |
+
+总计 923 项、817 个不同的选择器与上下文组合，全部声明和值/important/同选择器顺序/关键帧一致；混合选择器按所有者拆分，没有补样式或删旧规则。三个 visual CSS 整文件逐字相同，且维持组件自行导入。全局先于组件基础，visual CSS 先于所属页面 CSS；共享加载关键帧保持原名且只定义一次。全量 792 行规则归属映射见 [CSS 所有权表](arch-12-css-ownership.md)；拆分合写选择器增加构建 CSS 字节，不是新增视觉效果。
+
+#### 自动验证与页面回归（真实运行，2026-11-17 北京时间）
+
+| 命令/检查 | 实际结果与证据（.qa 均仅本地忽略，不纳入 Git） |
+| --- | --- |
+| 迁移前 npm test / build | 42 文件 336/336；2902 模块成功；before-test.log / before-build.log |
+| npm test -- src/features/app-shell src/features/home src/features/assistant src/features/makeup-plan | 20:06:36–20:06:38，18 文件 143/143，退出码 0；related-test.log / related-test-meta.json |
+| npm test | 20:06:42–20:06:47，42 文件 336/336，退出码 0；final-test.log / final-test-meta.json；原 42 文件与断言保留（只迁移一文件及改引用） |
+| npm run build | 20:01:57–20:02:01，退出码 0，2905 模块；after-build.log。主 CSS 71.95 kB/gzip 15.68 kB，主 JS 747.09 kB/gzip 227.75 kB；原 Three.js CJS 弃用及 >500kB 提示保留 |
+| node tests/architecture/arch11-imports.mjs | 120 src 文件、124 JS/JSX/MJS 解析文件、72 生产模块；219 导入、39 类型引用、121 字面资源；断链/大小写/循环/反向边界/转发壳/未用导入导出/空目录均无问题；after-imports.json / .log |
+| node tests/architecture/arch12-ownership.mjs | 九文件迁移、三个装配主体、923 CSS 项/817 组合、00～11 历史正文、两累计报告只追加及唯一 current 核对通过；ownership.json / .log（交付末尾复核） |
+| node tests/browser/arch11-final-regression.mjs | 开发基线 19:44:43–19:54:26 与迁移后 20:06:39–20:15:07 各 116/116，退出码 0；before-browser / after-browser（九套 results.json 与截图） |
+| node tests/browser/arch12-style-ownership.mjs | 20:02:07 完成归档源码稳定参考，20:07:16 完成迁移后：20/20、计算样式和相对几何差异 0；baseline-styles-stable / after-styles-final，comparison.json；归一化本机端口，不改资源路径 |
+| node tests/browser/arch11-final-regression.mjs --production | 20:09:58–20:15:40，隔离真实无 Key 同源构建 38/38，退出码 0；production-browser / .log / -meta.json |
+| node tests/architecture/arch11-production-routes.mjs | 20:10:00，73/73；所有产品及未知/尾斜杠/查询深链接正文与 SPA 一致，封面 HTTP/类型/字节正确；production-routes.json / production-routes-recorded.log |
+| diff / 语法 / 文档 / 版本检查 | 两项 git diff --check、两新 MJS 与原浏览器脚本 node --check、Python ast 披露脚本解析通过；最终路径/链接/UTF-8/LF/空索引/固定 HEAD/原标签检查在交付末尾追加真实结果 |
+
+浏览器均使用现有 Playwright 与 Chrome **157.0.8103.52**，**1440×900 / 360×800**，隔离临时上下文和合成画像/消息，无真实浏览器资料、用户照片或模型调用。原九套分别 storage 14、makeup-plan 14、assistant 8、makeup-table 16、catalog 14、collection 16、home 12、guide-culture 10、app-shell 12。包括真实 UI 导航/搜索/筛选/收藏/详情/来源、旧存储/刷新/重置、生成/修改/加载/错误/重试、开幕/跳过/减少动效、轮播及 WebGL/2D 故障回退；合成 API/网络故障与真实无 Key 同源 HTTP 分开记录。生产测试同时逐个核对构建文件 HTTP/字节、真实 400/503、local 七步方案及离线浏览。
+
+已实际查看前后手机 hero、前后桌面开幕、迁移后桌面/手机首页、小Y/来源、工作台结果/错误、精选等截图。所检控件无新增重叠或文档横向溢出；首页手机插画背景仍延续基线构图，不借迁移重设计。20 状态对照固定回退字体、鼠标移出控件并等待两帧；正常动效另由原脚本抽样，不能扩张为全站逐像素、真机或全部动画一致。
+
+原定向故障的 collection 存储写入/null 导致根卸载、lazy 场景下载拒绝的预期 pageerror/控制台记录全部保留；其余场景按原断言检查，未发现新增未处理错误。Google Fonts 环境拒绝、故意图片/HTTP/超时日志保留，不声称“所有 console.error 均为零”。六个契约仅 JSDoc、原重复 prefersReducedMotion 辅助函数仍保留，不因目录整理引入运行 schema 或抽象。
+
+#### 失败、纠正与未覆盖边界
+
+- 样式脚本首轮误把减少动效模式的 ProductCard 回退当成增强轮播等待，超时；仅修正测试定位器和合成回答字段，源码未为此修改。before-styles.log 与原截图保留。
+- 首轮迁移对照两个按钮出现点击/悬停/0.001s 过渡时刻差异；固定鼠标位置、滚入视口后等待两帧，用基线 SHA 的 118 文件只读源码参考服务 5223 复跑（未复制 .env、凭据或用户数据）。随后开幕差异仅为 5221/5223 资源 URL 端口，保留原失败日志并归一化 origin 后 20/20；未降低任何 CSS 声明检查或用额外样式遮盖差异。before/after-styles* 失败证据不删除。
+- 临时基线源码里的 37 份测试曾被 Vitest 自动发现，首轮显示 79 文件/633 项；该结果不计为正式项目全量。将仅用于归档参考的测试文件改为非测试后缀并保留，未动生产源码/配置；重新实跑正式全量为 42 文件 336/336。after-test.log 与 final-test.log 同时保留。
+- 人工文档补丁有一次因整行不匹配被原子拒绝，临时差异打印器有一次语法错误；均只影响工具脚本/文档操作，修正后通过，不是产品失败，也不冒称整轮首试全绿。
+- 真实智谱/联网/天气成功、真实手机/触摸/其他浏览器、外部字体成功后的排版、全部默认动效/GPU、真实弱网未新增验证。ARCH-11 的外部连接/天气超时、素材授权 pending、官方旗舰店链接差异、大包与旧存储异常抛出等风险继续保留；不利用本阶段修复后端或产品能力。
+
+#### 复跑、人工入口与收尾边界
+
+PowerShell 环境变量与外部运行时沿用本机现有安装（无安装或依赖变化）：
+
+```powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE='file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE='C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_BASE_URL='http://127.0.0.1:5221'
+$env:YAS_QA_OUTPUT_DIR='.qa/arch-12/replay-dev'
+node tests/browser/arch11-final-regression.mjs
+$env:YAS_QA_STYLE_BASELINE='.qa/arch-12/baseline-styles-stable/results.json'
+$env:YAS_QA_OUTPUT_DIR='.qa/arch-12/replay-styles'
+node tests/browser/arch12-style-ownership.mjs
+$env:YAS_QA_BASE_URL='http://127.0.0.1:5222'
+$env:YAS_QA_OUTPUT_DIR='.qa/arch-12/replay-production'
+node tests/browser/arch11-final-regression.mjs --production
+$env:YAS_QA_ROUTE_OUTPUT='.qa/arch-12/replay-routes.json'
+node tests/architecture/arch11-production-routes.mjs
+$env:YAS_QA_AUDIT_OUTPUT='.qa/arch-12/replay-imports.json'
+node tests/architecture/arch11-imports.mjs
+$env:YAS_QA_OWNERSHIP_JSON='.qa/arch-12/replay-ownership.json'
+node tests/architecture/arch12-ownership.mjs
+```
+
+开发页面 5221 是禁止读取 .env 的 Vite 测试服务（现有测试路由隔离 API）；基线参考 5223 以 57b0a877 的 src/index.html（字节来自 git show）及原 public 只读运行。稳定样式比较的原始基线截图和 JSON 只在本机忽略证据里，后续跨机需从该 SHA 重建参考并先运行同脚本，不把缺失基线当成比较通过。生产服务 5222 启动前禁用 dotenv.config，并显式 ZHIPU_API_KEY=''、NODE_ENV=production，buildApp 提供 dist 和 API，避免读取真实配置或付费调用；具体启动器可用下述仓库根目录命令复跑：
+
+```powershell
+node --input-type=module -e "import {createServer} from 'vite';const s=await createServer({envDir:false,server:{host:'127.0.0.1',port:5221,strictPort:true}});await s.listen();s.printUrls()"
+# 另一个终端（先 npm run build）；仅为无 Key / 本地规则验收
+node -e "require('dotenv').config=()=>({parsed:{}});const {loadConfig}=require('./server/config.cjs');const {buildApp}=require('./server/app.cjs');const config=loadConfig({NODE_ENV:'production',ZHIPU_API_KEY:'',API_RATE_LIMIT_MAX:10000,AI_RATE_LIMIT_MAX:1000,AI_DAILY_LIMIT:100000});buildApp({config,logger:false}).then(app=>app.listen({host:'127.0.0.1',port:5222}))"
+```
+
+人工页面入口为 **http://127.0.0.1:5222/**，明确为**隔离无 Key**服务，适合本阶段 UI/本地降级验收；“智能服务暂未配置”是此入口预期，不能用来判断真实配置/供应商故障。正常配置的运行方法仍见 README；此前 ARCH-11 的 5214 入口是历史服务，不冒称本阶段已验证真实回答。重点检查开幕/跳过、首页 CTA/搜索/精选、手机导航、小Y输入/消息/来源和方案生成/修改/详情，桌面及 360px 各一轮。
+
+交付状态为 **done / 当前无新的 current**，负责人已完成人工验收并授权本次 Git 收尾。修改后提交 SHA、远端 master、`arch-stage-12` 对象及 `arch-stage-12^{}` 指向由本次实际操作产生并核验；原 ARCH-11 标签对象与其归档提交保持，不复用、移动或删除。
+
+代码、README/披露及两累计报告按上述真实边界一致；未改视频、比赛材料、AGENTS.md 或 FINAL-PROMPT.md，不声称全部产品阶段完成。照片分析、独立步骤调整、账号/跨设备等未实现内容保持原状。回退范围为上述 39 路径，当前未提交现场不是新 Git 恢复点；已有恢复基线为 57b0a877/arch-stage-11，获授权归档后按实际 SHA/后续依赖评估 git revert 并复验，保留所有旧证据，不执行自动清理或恢复外部状态。
+
+**本阶段无新增核验，继承上一条结论。** 该句仅指产品数据核验，技术/页面测试不升级产品、价格、色号、图片、评分、来源或授权结论。
+
+#### ARCH-12 架构优化成效审计补记（2026-11-17，北京时间；YAS-2026-0055）
+
+【问题】原前端的领域入口、应用装配、共享视觉组件和页面展示职责分散在根目录与超大样式文件中；`styles.css` 与 `xiaoy.css` 混合多个页面所有权，静态/动态引用、测试 mock、第三方披露路径和跨模块影响不易追溯，迁移后的测试与人工验收证据也缺少统一的成效摘要。
+
+【修改】以 `57b0a877a9a6bbd769fdb079c2c4ef71629e28e9` / `arch-stage-11` 为修改前基线，保留并核对 `features`、`lib`、`contracts`、`data`、`app-shell` 的职责边界，统一 API、存储和领域模块入口；完成小Y、品牌开幕及共享视觉组件迁移，按首页、小Y、工作台、品牌开幕和全局范围整理 CSS，删除完成迁移后的 `src/xiaoy.css`；同步旧路径、动态引用、测试 mock 和披露路径，清理无效引用与循环依赖，并以导入/所有权审计、单元测试、桌面和 360px 页面回归、提交与标签记录保持连续追溯。ARCH-11 在原批准范围内已经归档；ARCH-12 是后续新增的展示层归属整改，不是对 ARCH-11 测试或验收结论的否定。
+
+【效果】模块职责更清晰，组件复用和样式隔离边界更明确，修改影响范围更容易判断；为减少重复资源加载、无效渲染和不必要内存占用提供结构基础，但本阶段没有迁移前后性能或内存基准数据，不作量化性能承诺。测试、维护和后续扩展成本降低，文件、测试、人工验收、提交 SHA 和标签可以连续追溯。ARCH-12 已完成人工验收并改为 `done`，当前无新的 `current`；本次 Git 收尾产生的提交 SHA、标签对象与远端指向以归档回执为准；`arch-stage-11` 未复用、未移动、未删除。
+
+**2026-11-17（北京时间）ARCH-12 人工验收与归档授权收尾，YAS-2026-0055**：负责人确认“ARCH12 人工核验没问题”及“12人工核验结束”，据此按完整阶段人工验收通过处理。ARCH-12 改为 `done`，当前无新的 `current`；ARCH-11 在原批准范围内已经归档，本次不否定其测试或验收结论。
+
+- 本次收尾范围为已验收的 39 条工作树路径，包含展示层迁移、CSS 所有权、引用/mock/披露同步、ARCH-12 审计脚本及四份项目文档；不修改服务端、产品数据、AGENTS.md、FINAL-PROMPT.md、视频或比赛材料。
+- `npm test` 42 文件 336/336、`npm run build` 2905 模块、`git diff --check`、导入/所有权审计均通过；页面回归沿用 ARCH-12 已记录的桌面 1440×900 / 手机 360×800 证据，本次收尾未新增浏览器性能测试。
+- 本条写入时最终提交 SHA、远端分支 SHA、带注释 `arch-stage-12` 对象及 `arch-stage-12^{}` 指向尚待本次 Git 操作实际产生并核验；核验结果由归档回执提供，不 amend、rebase、reset、强推或删除旧标签/分支。

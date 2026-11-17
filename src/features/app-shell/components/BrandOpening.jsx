@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
-import StrokeText from './StrokeText'
+import StrokeText from '../../../components/visual/StrokeText'
+import './BrandOpening.css'
 
 const PARTICLES = [
   { x: -28, y: 23, size: 7, delay: 140, duration: 1220, rotate: -18 },

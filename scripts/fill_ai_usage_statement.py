@@ -69,7 +69,7 @@ def main():
     # Final-result AI content table.
     final_content = document.tables[3]
     final_values = [
-        ["程序代码与技术文档", "Codex 提供代码、组件、测试和文档辅助；DeepSeek 提供需求拆解、结构沟通和提示词迭代建议，直接对话文本未原样保留", "学生完成需求判断、架构设计、代码修改、数据核验、测试和最终整合", "首页与产品资料库（src/App.jsx）、小Y助手与妆容工作台（src/components/XiaoYAssistant.jsx、MakeupWorkbench.jsx）、Fastify 网关与服务（server/app.cjs、server/services/）、推荐规则、schema、测试文件和参赛说明"],
+        ["程序代码与技术文档", "Codex 提供代码、组件、测试和文档辅助；DeepSeek 提供需求拆解、结构沟通和提示词迭代建议，直接对话文本未原样保留", "学生完成需求判断、架构设计、代码修改、数据核验、测试和最终整合", "首页与产品资料库（src/App.jsx）、小Y助手与妆容工作台（src/features/assistant/components/XiaoYAssistant.jsx、src/features/makeup-plan/components/MakeupWorkbench.jsx）、Fastify 网关与服务（server/app.cjs、server/services/）、推荐规则、schema、测试文件和参赛说明"],
         ["视觉素材图片", "Lovart 生成部分页面或展示视觉素材的候选图片版本", "学生筛选、裁切、调整并核对平台条款、输入素材权限、来源记录和公开使用边界", "首页 Hero/品牌开幕及作品评审或展示材料中最终冻结并实际保留的视觉素材图片；未保留的生成版本不作为最终成果"],
         ["运行时 AI 推荐内容", "智谱 GLM 可在服务端辅助生成小Y回答和结构化妆容方案；web-search-pro 提供按需检索结果", "服务端执行硬条件、schema、产品 ID、来源和降级校验；学生确定推荐规则与最终产品边界", "主站小Y助手回答区和妆容工作台生成结果区；未配置 Key 时展示本地规则降级，真实模型链路按最终验收状态填写"],
     ]

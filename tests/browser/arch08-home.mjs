@@ -79,7 +79,7 @@ async function run(viewport, name, body, mode = '') {
   page.on('request', (r) => { if (new URL(r.url()).pathname.startsWith('/api/')) apiRequests.push(r.url()) })
   try {
     // Removing the enhanced item list exercises its existing ProductCard fallback.
-    if (['static', 'image', 'empty'].includes(mode)) await page.route('**/src/components/FlexCarousel.jsx*', async (route) => {
+    if (['static', 'image', 'empty'].includes(mode)) await page.route(url => /\/src\/components\/(?:visual\/)?FlexCarousel\.jsx$/.test(url.pathname), async (route) => {
       const response = await route.fetch()
       const source = await response.text()
       assert(source.includes('Array.isArray(items)'))

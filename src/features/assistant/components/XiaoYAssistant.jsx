@@ -5,10 +5,11 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
-import AssistantMessages from '../features/assistant/components/AssistantMessages'
-import ProfileSummary from '../features/assistant/components/ProfileSummary'
-import { useAssistant } from '../features/assistant/hooks/useAssistant'
-import MakeupWorkbench from '../features/makeup-plan/components/MakeupWorkbench'
+import AssistantMessages from './AssistantMessages'
+import ProfileSummary from './ProfileSummary'
+import { useAssistant } from '../hooks/useAssistant'
+import MakeupWorkbench from '../../makeup-plan/components/MakeupWorkbench'
+import '../assistant.css'
 
 const quickPrompts = [
   '我是混油皮，想要柔雾通勤底妆',

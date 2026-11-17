@@ -2,6 +2,7 @@ import { CircleAlert, Sparkles } from 'lucide-react'
 import MakeupPlanForm from './MakeupPlanForm'
 import PlanResult from './PlanResult'
 import { useMakeupPlan } from '../hooks/useMakeupPlan'
+import './MakeupWorkbench.css'
 
 export default function MakeupWorkbench({ profile, onOpenProduct }) {
   const { form, plan, status, error, update, togglePriority, createPlan } = useMakeupPlan(profile)

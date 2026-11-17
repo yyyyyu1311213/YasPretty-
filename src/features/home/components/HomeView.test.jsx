@@ -11,10 +11,10 @@ vi.mock('react', async (original) => ({
   ...await original(),
   useState(initial) { return [typeof initial === 'string' ? draft.value : initial, draft.set] },
 }))
-vi.mock('../../../components/ScrollFloat', () => ({ default: ({ as: Tag = 'h2', containerClassName, children }) => <Tag className={containerClassName}>{children}</Tag> }))
-vi.mock('../../../components/StrokeText', () => ({ default: ({ text, className }) => <span className={className}>{text}</span> }))
+vi.mock('../../../components/visual/ScrollFloat', () => ({ default: ({ as: Tag = 'h2', containerClassName, children }) => <Tag className={containerClassName}>{children}</Tag> }))
+vi.mock('../../../components/visual/StrokeText', () => ({ default: ({ text, className }) => <span className={className}>{text}</span> }))
 vi.mock('../../makeup-table/components/MakeupTableExperience', () => ({ default: () => null }))
-vi.mock('../../../components/FlexCarousel', () => ({ default: () => null }))
+vi.mock('../../../components/visual/FlexCarousel', () => ({ default: () => null }))
 
 function* nodes(value) {
   if (Array.isArray(value)) { for (const child of value) yield* nodes(child); return }

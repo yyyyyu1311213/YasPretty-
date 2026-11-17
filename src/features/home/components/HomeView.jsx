@@ -3,11 +3,12 @@ import { ChevronRight, Search, Sparkles } from 'lucide-react'
 import { quickFilters } from '../../../data/products'
 import { getCatalogProducts, productById } from '../../catalog/catalogService'
 import ProductCard from '../../catalog/components/ProductCard'
-import ScrollFloat from '../../../components/ScrollFloat'
-import StrokeText from '../../../components/StrokeText'
+import ScrollFloat from '../../../components/visual/ScrollFloat'
+import StrokeText from '../../../components/visual/StrokeText'
+import './HomeView.css'
 
 const MakeupTableExperience = lazy(() => import('../../makeup-table/components/MakeupTableExperience'))
-const FlexCarousel = lazy(() => import('../../../components/FlexCarousel'))
+const FlexCarousel = lazy(() => import('../../../components/visual/FlexCarousel'))
 const products = getCatalogProducts()
 
 // App supplies its existing error boundary until the ARCH-10 app migration.
