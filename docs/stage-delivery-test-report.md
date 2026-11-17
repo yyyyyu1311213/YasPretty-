@@ -1825,3 +1825,110 @@ ARCH-04 的“人工核验完毕”、完整 15 文件验收及归档安排已�
 删除前源末端的祖先核对成功、`master..codex/frontend-contracts-yas-2026-0055` 独有提交计数为0，工作树/索引干净且无其他工作树占用；使用 `git branch -d` 安全删除指定本地分支成功，正常 `git push origin --delete` 删除同名远端成功。再次实际查询远端无该分支，本地/跟踪引用也均不存在，master仍为上述SHA；五个 arch-stage-00～04 原标签对象/提交均与前表及本地一致。其他分支未操作。
 
 本次切换 done；ARCH-00～04 done，ARCH-05唯一current但尚未实施，06～11pending。收尾只改 README、迁移计划和两份报告的事实记录；代码/测试/资源与已验收版本相同，沿用本次225/225、构建及浏览器36/36、同源无Key冒烟，文档与提交空白/完整性再次核对。产品无新增核验、隐私边界不变、未执行检查和既有风险保留。本条随独立纯文档提交正常推送，最终HEAD/远端完整SHA由实际交付回执给出、下次文档同步回填，不为自引用改写历史；迁移计划5.2记录完整操作证据与定位方式。
+
+## 2026-11-17（北京时间）ARCH-05：makeup-table 整阶段迁移，待人工验收
+
+关联原问题 **YAS-2026-0055**，不新增问题或小步编号。本阶段只调整现有化妆台的目录和装配边界，不增加产品功能；ARCH-05 仍是唯一 `current`，ARCH-06～11 保持 `pending`。代码、页面回归和文档交付后统一人工验收，当前未收到本阶段人工通过确认。
+
+### 启动基线及前次归档 SHA 回填
+
+2026-11-17 10:21（北京时间）实际远端查询及 `git fetch origin master` 后，分支为 master，HEAD、origin/master 与实际远端均为 `3b7ceee79576d8d38ff3821d1d688914d49c2f18`，ahead/behind 0/0，工作树、暂存区和未跟踪文件为空。此 SHA 是上次分支切换的纯文档归档提交，在本条回填；普通双亲合并 `8caf4dcdad416a2a8fbc6057a7f5a289403e9a1c` 及原阶段历史保留。原 `codex/frontend-contracts-yas-2026-0055` 本地/实际远端均不存在，不恢复分支或执行双分支同步。arch-stage-00～04 的本地/实际远端标签对象和提交指向均与上次归档表一致，无 arch-stage-05；ARCH-00～04 done、05 唯一 current、06～11 pending。
+
+已完整阅读 AGENTS、FINAL-PROMPT、README、迁移计划、ARCH-00 映射清单、两份累计报告及相关源码和测试。普通沙箱 fetch 写 FETCH_HEAD 被拒绝、普通远端查询遇 schannel 凭据通道失败；使用获准的命令权限后真实查询成功，没有修改 Git 配置或读取凭据。以上属于工具环境限制，不是产品错误，也没有用最近已知 SHA 代替实际核对。
+
+### 实际迁移映射及入口
+
+目标前缀为 `src/features/makeup-table/`。原 14 文件迁为 15 个实际 feature 文件：
+
+| 原位置 | 当前实际位置与职责 |
+| --- | --- |
+| `src/components/MakeupTable.jsx`、`.css`、`.test.js` | `components/` 下同名三文件；2D 仅修改产品数据相对 import，原测试断言保留 |
+| `src/components/MakeupTable3D.jsx` 内能力检测、运行边界、状态、effect、定时器、2D 回退与回调 | `components/MakeupTableExperience.jsx`，对外唯一实际装配入口 |
+| 同文件 3D section JSX、GHOST_PARTICLES | `components/MakeupTable3D.jsx`，保留 Scene、GhostCursor 和原 DOM/工具/品类轨道/说明 |
+| `src/components/MakeupTable3D.css`、`.test.js` | `components/` 下同名两文件；常量从 Experience 导入，原测试断言不变 |
+| `src/components/makeup-table-3d/Scene.jsx`、`CosmeticItem.jsx`、`DressingTable.jsx`、`ParticleBurst.jsx` | `makeup-table-3d/` 下同名四文件，原字节不变 |
+| 同目录 `GhostCursor.jsx`、`GhostCursor.css`、`cosmetics.js`、`performance-profile.js` | `makeup-table-3d/` 下同名四文件，原字节不变 |
+| `src/App.jsx` 内 lazy 定义及 HomeView 使用 | 仅两处改用 MakeupTableExperience，原 Suspense 占位、openingReady 和其他 props 保留 |
+| 本阶段新增页面回归 | `tests/browser/arch05-makeup-table.mjs`，使用已有 Playwright/Chrome，不增依赖 |
+| 文档 | README、迁移计划、本报告和数据审计台账四文件 |
+
+旧路径已删除，无转发入口、重复实现或空目录。App/HomeView → lazy Experience → 3D 展示/内部场景或原 2D 回退；没有把 Three.js 依赖加入首屏同步包。HomeView 未迁出，catalog/collection 等后续 feature 未创建。README 当前实际树、依赖说明、CSS 和第三方 GhostCursor 源码路径已更新；原 ARCH-00 清单及已归档阶段正文不反写。
+
+### 自动验证的真实结果
+
+| 实际命令/检查 | 迁移前 | 迁移后 |
+| --- | --- | --- |
+| `npx vitest run src/components/MakeupTable.test.js src/components/MakeupTable3D.test.js src/components/BrandOpening.test.js`；迁移后换为 feature 内两测试路径 | 10:23，3 文件、11/11 | 10:35，3 文件、11/11 |
+| `npm test` | 10:24，29 文件、225/225 | 10:46，29 文件、225/225，2.10 秒 |
+| `npm run build` | 2881 模块，主 JS 744.39 kB，3D 异步块 1292.96 kB | 2882 模块，主 JS 744.42 kB，异步 Experience 块 1293.47 kB |
+| `node .qa/arch-05-checks/compare-source.mjs` | before.json 保存原源码及 SHA256 | 退出码0：内部8文件/3CSS原字节、2D仅相对路径、原断言、原状态/effect/JSX/回调及App两处改名核对通过 |
+| `node tests/browser/arch05-makeup-table.mjs` | 生产源码迁移前真实工作树最终14/14 | 原14场景14/14；扩充后16/16 |
+| 原字节快照参考服务与当前页面的最终补充脚本 | 5193，16/16 | 5192，16/16 |
+
+以上命令退出码均0；相关测试和全量测试保留 THREE_CJS_DEPRECATED，构建保留 >500 kB 提示，CSS 19.04 kB 内容/hash 不变。独立浏览器脚本不计入 Vitest 225 项；构建通过不是 GPU 验收。原源码快照服务仅在忽略目录使用 Vite resolve/load 插件和独立缓存，不切换分支、不覆盖当前源文件、不修改生产配置。源码相同检查与真实交互回归分别记录。
+
+复跑浏览器前用现有 `node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5192 --strictPort` 启动仅前端服务，再执行（环境变量只指向已安装运行库/浏览器，不含凭据）：
+
+```powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE = 'file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_BASE_URL = 'http://127.0.0.1:5192'
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-05-recheck'
+node tests/browser/arch05-makeup-table.mjs
+```
+
+### 页面、失败路径与清理证据
+
+Chrome 157.0.8103.52、1440×900 与 360×800、deviceScaleFactor=1，独立临时上下文，不读取真实浏览器档案。每视口8场景共16项：正常完整开幕/懒加载占位、减少动效+跳过+低性能档、WebGL 不可用的2D、场景运行抛错、场景6秒未就绪、在途未就绪卸载、状态/回调/重新进入、lazy 模块下载拒绝。正常场景真实 Canvas 返回 ANGLE Intel UHD Graphics / Direct3D11（Intel UHD Graphics 0x0000A788），确有硬件 WebGL 运行；不是用 mock 或常量测试替代真实场景。
+
+- 真实场景完成自动展开、收拢、画布空白处鼠标拖动、品类轨道进入真实腮红产品库、离开/重进；正常开幕和跳过均连接 openingReady。减弱动效与低性能档的真实场景无光标，另用 Scene 替身观察低档 DPR=1 与动态媒体偏好更新。DPR/阴影/粒子/光标规则原模块字节不变，无参数调整。
+- WebGL 不可用通过 getContext 返回 null 模拟，运行原2D组件，验证5产品展开、详情打开、Escape关闭、焦点返回和查看全部回调；这不是对物理不支持设备的真机验证。
+- Scene 抛错只替换 Scene 模块，原 ErrorBoundary 返回2D；Scene 不调用 onReady 时实际等待约6秒再回退（最终桌面6408.3→6423.9ms，手机6435.4→6409.2ms，包含轮询/2D就绪等待）。均不是实际 GPU 丢失故障。
+- lazy 下载拒绝单独中断实际入口模块请求；迁移前后均复现未捕获动态导入错误及根视图卸载。此为已有失败处理缺口，未修复、不称为回退成功；新增恢复能力须另行确认，不混入目录迁移。
+- 正常桌面收拢后的跟踪记录为 timers0/frames1/listeners9/observers2/ghostResources25，离开后五项均0；手机无光标，离开后同为0。另验证未就绪期间离开会清除定时器、重新进入重新展开；R3F画布卸载及原GSAP/资源清理源码保留。此跟踪只覆盖测试归属的计时器/RAF/监听/Observer/光标WebGL资源，不证明全部驱动/GPU内存零泄漏；基线2D焦点RAF与hover body cursor的边缘情况未改变。
+- 正常场景本地资源请求无失败、无 pageerror；普通动效的两视口各有1条 Google Fonts ERR_NETWORK_ACCESS_DENIED，迁移前后相同。Scene抛错有预期React错误和原warn，下载拒绝有ERR_FAILED和动态导入pageerror，日志均保留，不能宣称所有控制台/资源错误为零。
+- 最终等待原GSAP结束再截取的16场景：`.qa/arch-05-reference-settled/` 和 `.qa/arch-05-after-settled/` 各16/16。`compare-browser.mjs` 对操作/状态/回调/清理等非时钟非尺寸证据一致，记录的控件几何一致；严格初始canvas缓冲高度比较未通过：桌面717→718、手机558→557（各1px）。保留 strictGeometryEqual=false 和第一次严格比较失败，不改CSS/视觉参数来追平，不声称像素一致；补充定位结果在后续核对条记录。
+
+实际查看桌面展开/收拢、手机展开/2D和桌面未就绪回退等截图，既有溢出、控件边界/重叠断言通过，未见新增重叠或不可关闭面板。360px 是桌面浏览器视口，不是手机硬件/触摸验收。页面证据及失败结果均只在 `.qa/`，不提交截图或临时下载物。
+
+### 失败与修正、数据及隐私边界
+
+浏览器首轮3/14、第二轮10/14；原因包括拖动点落在妆具而触发导航、测试使用错误的可访问名称/旧粉底数量、Vite CJS场景替身使用命名导入以及环境外部字体请求失败。仅修测试为画布空白处拖动、真实控件名、受控数据派生21款计数、复用应用React默认导出、按具体外部域名独立记录字体失败；仍拒绝任一本地资源失败，未放宽业务断言。真实基线14/14建立后才迁移生产源码，失败JSON和截图全部保留在 `.qa/arch-05-before/`、`before-rerun/`；`before-final/`、`after/`、`after-final/`、`reference-final/`及最终settled结果保留。未用编辑假数据修复测试。
+
+**本阶段无新增核验，继承上一条结论。** 未修改产品事实/价格/规格/色号/评分/图片/来源/授权或链接字段；pending/blocked、网络图片再利用授权风险、原品牌官网商品来源/e.tb.cn与现行官方旗舰店规则的历史差异、删除入口和公开门禁全部保留。产品详情连接只证明真实入口可操作，不是商品数据核验。
+
+没有服务端、public素材、依赖、API、推荐规则、存储Key或其他feature变化；不读取真实Key、私有.env、用户照片/画像/对话或旧memory。浏览器测试使用匿名临时上下文，没有API/provider调用、照片上传或新增保存/日志/第三方处理。现有Google字体请求如实披露，不扩大为商品来源证据。视频和比赛材料未改，不把目录迁移表述为新AI/视觉能力；实际代码、README和阶段状态一致，既有产品/第三方来源与许可证说明只更新源码位置。
+
+### 待人工验收、剩余风险与归档计划
+
+体验入口为[本地前端首页](http://127.0.0.1:5192/)。请分别检查完整开幕和刷新后跳过，自动展开/收拢/视角拖动，八品类入口与产品详情，切到产品库后回首页，桌面和360px排版，系统减少动效偏好；运行错误/未就绪/WebGL不可用/下载拒绝由上述脚本精确复跑，没有加入生产测试开关。真实手机触摸、其他GPU/驱动、全部内存泄漏、字体成功加载后的严格排版、实际生产CDN断网与下载恢复未执行；付费provider/服务端/其他页面全回归不属于本阶段新增验证。
+
+本次只有上述35原始变更路径（14旧文件删除、15新feature文件、App、浏览器脚本、四文档），全部未暂存；没有本阶段修改后SHA、人工确认日期或arch-stage-05。保留前基线3b7ceee及原五标签，不将未提交现场称为Git恢复点。负责人明确回复本次整阶段“人工验证通过”后，立即追加真实验收和收尾记录、ARCH-05 done/ARCH-06唯一current；重新fetch核验范围后，在master按 `【问题】[ARCH-05][YAS-2026-0055] … 【修改】…` 创建可构建回退的清晰提交，正常推送并核对实际远端，在包含最终记录的提交建立唯一带注释arch-stage-05并核对对象/提交指向；标签存在则报告，不移动/覆盖/复用。只指定ARCH-06，不开始实现。未通过则保留现场修复并完整复验，不提交、推送、打标签或删除分支。归档后的回退需按实际SHA及后续依赖评估revert，Git不恢复浏览器数据或外部服务，禁止改写公共历史。
+
+### 2026-11-17 10:57（北京时间）补充尺寸定位及远端复核
+
+严格1px比较未通过后，使用仅在忽略目录的 `node .qa/arch-05-checks/diagnose-canvas-size.mjs` 在两版本×两视口×2次共8次真实场景重复测量（退出码0）。同一迁移后桌面代码缓冲高度分别为718、717，客户端高度均718；原版本两次均717，动画期间实测getBoundingClientRect高度可为717.9999389648438，稳定客户端仍718。手机两版本补测均558，迁移后此前557/补测558的波动来自同一份源码；稳定客户端均558。既有react-use-measure读取矩形、Three.js对尺寸×DPR向下取整与数据相符，支持既有小数测量/取整波动，未发现迁移造成的新CSS布局差异；不改生产实现，不把此定位或后续截图当作严格像素比较通过。完整采样含初始transform和0/100/700/1800/3000ms尺寸，保存于 `.qa/arch-05-checks/canvas-size-diagnostic.json`；原strictGeometryEqual=false及失败记录保留。
+
+10:56再次 `git fetch origin master` 成功，实际 `git ls-remote` 确认master仍为3b7ceee79576d8d38ff3821d1d688914d49c2f18、无旧开发分支、五个原阶段标签对象/提交不变且无arch-stage-05；本地HEAD/origin/master相同、ahead/behind0/0，35原始变更路径均在范围内，暂存区空。无本阶段提交、推送、标签或分支删除。最终文档/范围/空白核验将在下条追加；不重复执行未变化的生产源码测试/构建来扩大次数。状态仍为ARCH-05唯一current/待人工验收，ARCH-06～11pending。
+
+### 2026-11-17 11:00（北京时间）最终交付核对
+
+`node .qa/arch-05-checks/verify-final.mjs`退出码0：35原始变更路径/15新feature文件符合范围、索引空、两累计报告只追加、已归档ARCH-00～04正文及06～11计划正文未改、12阶段表/正文只有ARCH-05 current。README树118实际路径和9条Markdown本地链接/锚点、feature相对import有效，29个Vitest文件仍在；原五标签对象/提交保留、无05标签或旧分支。`compare-source.mjs`再过；正式浏览器脚本`node --check`、`git diff --check`、`git diff --cached --check`均退出码0，新未跟踪文件另逐行检查空白/UTF-8/结尾换行。追加本条后再次核对文档/空白，不重新声称未变源码的全量测试或构建运行次数。
+
+本地证据保存于忽略目录`.qa/arch-05-checks/final-verification.json`及前述源码/页面/诊断结果，临时物不提交。当前前端5192留作人工验收；原字节快照5193仅用于对照，检查结束停止。无提交/推送/标签/删除操作；ARCH-05 current、待人工验收，06～11 pending，人工确认结果、修改后SHA和arch-stage-05尚不存在。**本阶段无新增核验，继承上一条结论。** 懒加载拒绝缺口、1px严格比较未通过、外部字体拒绝、真机/其他GPU等未执行项与产品公开风险完整保留。
+
+### 2026-11-17（北京时间）ARCH-05整阶段人工验收通过与归档授权
+
+项目负责人在本次完整交付后明确回复原话“人工验证通过”，确认上述35原始变更路径的整阶段结果；立即将ARCH-05改done、ARCH-06改为唯一current，ARCH-07～11pending。本次只指定下一阶段，不实施ARCH-06。原待验收/未提交快照、失败和限制保留，人工确认不推定真实手机、其他GPU、严格像素或其他未执行项目已通过。
+
+验收后11:18重新fetch origin master并查询实际远端，HEAD/origin/master/实际master仍为3b7ceee79576d8d38ff3821d1d688914d49c2f18，ahead/behind0/0、索引空；35路径全属已验收现场，原开发分支仍不存在，arch-stage-00～04原对象/提交未变，无arch-stage-05。verify-final和源码对照复核通过，无来源不明修改。本轮仅修改四文档的当前状态和确认/收尾记录，17个已验收源码/正式测试文件hash保存于忽略目录approved-content.json并在提交前复核；不改变任何已验收产品行为。
+
+相关11/11、全量225/225、构建2882模块、最终前后桌面/360px各16/16沿用本次实跑证据，不冒称验收后重跑。原lazy下载失败缺口、1px严格比较未通过、字体请求拒绝、设备/GPU/内存及生产下载恢复未执行范围保留。**本阶段无新增核验，继承上一条结论。** 不改产品、public、服务端、依赖、API、存储或隐私边界，视频/比赛材料未改。
+
+按本次第八部分授权，以一个清晰可构建提交包含已验收源码/测试、最终状态、人工确认和收尾记录，仅显式暂存上述35路径，提交信息为“【问题】[ARCH-05][YAS-2026-0055] … 【修改】…”。提交前复核文档链接/状态/内容范围、已验收hash和Git工作树/暂存空白；正常推送master后查询实际远端SHA匹配，再建立唯一带注释arch-stage-05并正常推送、核对对象及提交指向。若标签存在先报告，不移动/覆盖/复用；不删分支，不强推、不改写历史、不实施下一阶段。
+
+写入本条时本阶段新提交SHA/标签对象尚未产生、尚未推送，实际结果由交付回执给出并在下次文档同步回填，不为正文自引用amend。最终提交包含本条真实确认及收尾；归档后的回退按实际SHA、后续依赖和明确范围评估revert，保留原证据，Git不恢复浏览器数据或外部状态。收尾核对实际结果将在提交前追加，不把人工通过扩大为产品/素材核验或公开发布许可。
+
+### 2026-11-17 11:24（北京时间）已验收范围暂存及提交前实核
+
+verify-acceptance退出码0，核对05 done/06唯一current、35原始范围、17源码测试hash不变、历史只追加、README118树路径/9本地链接、29测试文件及原五标签。已显式枚举暂存35路径；Git迁移识别显示22条文件变化，verify-index确认原始35路径完全一致、无未暂存或未跟踪文件，所有已验收源码测试hash仍相同。工作树及实际暂存内容的空白检查均退出码0，源码等价和脚本语法检查通过。仅此收尾追加后三文档再暂存/核验，沿用本阶段已运行的225/225、构建及页面证据，不再更改实现。**本阶段无新增核验，继承上一条结论。** 当前新提交/推送/标签尚未产生，实际结果由回执及下次同步补记，阶段状态/人工确认/本收尾共同纳入最终提交。

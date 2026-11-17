@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getCategoryGroups, getCategorySummary, MAX_BLOOM_ITEMS } from './MakeupTable'
-import { products } from '../data/products'
+import { products } from '../../../data/products'
 
 describe('化妆桌品类数据', () => {
   it('只显示受控产品数据中真实存在的品类', () => {

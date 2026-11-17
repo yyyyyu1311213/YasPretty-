@@ -21,7 +21,7 @@ import { imageRightsContactUrl, productImageNotice } from './data/product-image-
 import { buildProductAssessment, getProductVerification } from './data/product-verification'
 import { createNavigationEntry, navigationPath, resolveNavigationEntry } from './lib/navigation-history'
 import BrandOpening from './components/BrandOpening'
-const MakeupTable = lazy(() => import('./components/MakeupTable3D'))
+const MakeupTableExperience = lazy(() => import('./features/makeup-table/components/MakeupTableExperience'))
 const FlexCarousel = lazy(() => import('./components/FlexCarousel'))
 import ScrollFloat from './components/ScrollFloat'
 import StrokeText from './components/StrokeText'
@@ -433,7 +433,7 @@ function HomeView({ openingReady, onSearch, onQuickFilter, onViewCategory, onNav
         <p>先从品类和使用场景开始，再打开对应的真实产品档案。</p>
       </section>}
       <Suspense fallback={<div className="makeup-table-lazy-placeholder" aria-label="正在准备交互式化妆桌" />}>
-        <MakeupTable openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
+        <MakeupTableExperience openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
       </Suspense>
       <section className={`home-hero${openingReady ? ' home-hero--ready' : ''}`}>
         <div className={`hero-media${openingReady ? ' hero-media--ready' : ''}`} aria-hidden="true">

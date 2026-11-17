@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { COSMETIC_ITEMS, categoryForCosmetic } from './makeup-table-3d/cosmetics'
-import { getScenePerformanceProfile } from './makeup-table-3d/performance-profile'
-import { AUTO_BLOOM_DELAY_MS, SCENE_READY_TIMEOUT_MS } from './MakeupTable3D'
+import { COSMETIC_ITEMS, categoryForCosmetic } from '../makeup-table-3d/cosmetics'
+import { getScenePerformanceProfile } from '../makeup-table-3d/performance-profile'
+import { AUTO_BLOOM_DELAY_MS, SCENE_READY_TIMEOUT_MS } from './MakeupTableExperience'
 
 describe('3D 化妆桌受控数据', () => {
   it('只包含八件具有唯一 ID 的品类符号', () => {

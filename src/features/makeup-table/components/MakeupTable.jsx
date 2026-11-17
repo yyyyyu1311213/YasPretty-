@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUpRight, ChevronRight, Info, Palette, X } from 'lucide-react'
-import { categoryOptions, products } from '../data/products'
+import { categoryOptions, products } from '../../../data/products'
 import './MakeupTable.css'
 
 export const MAX_BLOOM_ITEMS = 5
