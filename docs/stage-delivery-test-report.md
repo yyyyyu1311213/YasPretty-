@@ -2372,3 +2372,113 @@ node tests/browser/arch09-guide-culture.mjs
 - 上一归档基线为上述 ARCH-08；本阶段实际归档后按真实最终提交及后续 ARCH-10/11 依赖评估获授权的 git revert，从新到旧撤销必要范围并复验。只回退本阶段九路径，不承诺无冲突，不恢复浏览器数据、环境变量或外部服务状态，原提交、标签与失败证据保留。
 
 **2026-11-17 17:19（北京时间）验收后提交前核对**：17:18:53运行 node .qa/arch-09-checks/verify-acceptance.mjs退出码0；精确九路径、五个已验收代码/测试SHA-256未变、累计报告继续只追加、00～08执行正文不变、10只登记状态/启动门禁及11正文未改、12阶段正文/总表一致且10唯一current。README158实际路径/15本地链接锚点/4第三方路径、176相对引用无循环、39测试文件、原源码等价/前后浏览器evidence相同、语法/UTF-8/换行及两项diff --check通过。17:19:39再次fetch和实际ls-remote确认master仍为aee4175bd09be01b065d5875c0f1305e55410cd9，00～08标签保留且09不存在，分支master、ahead/behind0/0、索引空。补记后再复核上述文档/范围/空白；只同步验收收尾，不重复业务测试。本阶段无新增核验，继承上一条结论。提交/推送/阶段标签实际结果仍由回执先行提供、下次同步回填。
+
+
+## 2026-11-17（北京时间）ARCH-10：app-shell 整阶段自动交付，待人工验收
+
+关联既有 **YAS-2026-0055**，未新增问题编号。目的：将ARCH-09后App中的导航、顶部/手机结构和整体布局按职责收敛，保留真实应用和领域连接。**待人工验收、未提交、未推送、未创建 arch-stage-10**；ARCH-10唯一current、ARCH-11 pending且未实施，无本阶段人工确认或修改后SHA/tag，索引空。
+
+启动17:26先执行git fetch origin master，实际查询git ls-remote origin refs/heads/master refs/tags/arch-stage-09 'refs/tags/arch-stage-09^{}'；master/HEAD/origin/master/实际远端master/ARCH-09最终归档均为 **8cbac32e0e1cc480f6b573688f05c3caa93c27a3**，ahead/behind0/0；本地及实际远端带注释arch-stage-09对象 **72428c4ce8b4dc2a81213fc78a3bda0e489907bc**，^{}均指向该提交。起始工作树/索引/未跟踪为空；09已有整阶段“人工核验通过”，10唯一current、11pending，门禁满足。本条回填09实际归档，旧待产生快照保留。沙箱FETCH_HEAD写权限及Schannel通道失败后同命令权限重试成功，无配置/凭据修改或自动审批拒绝。
+
+### 实际文件、映射和入口
+
+| 路径（共13） | 实际修改/职责 |
+| --- | --- |
+| src/App.jsx | 328→142行；保留initialEntry/openingActive/view、唯一useCatalog/useCollection、三项搜索/筛选/品类回调、七类页面条件与领域props、详情/收藏插槽、原EnhancementBoundary |
+| src/features/app-shell/components/AppShell.jsx | 原根div及opening/header/main/footer/overlay兄弟顺序，Footer内置；无额外DOM包裹、请求或存储 |
+| src/features/app-shell/components/TopHeader.jsx | 原桌面navItems/激活/计数、品牌首页/手机按钮；原DOM/类名/图标/文案/回调 |
+| src/features/app-shell/components/MobileNavigation.jsx | 原顶部下拉菜单；没有侧栏或底部导航，不新增相应UI/空文件 |
+| src/features/app-shell/hooks/useAppNavigation.js | 原selected/profile/menu/ref/callback、4个Effect、导航/快照/push/replace/详情开关；currentNavigationEntry共用原lib与catalogService |
+| src/features/app-shell/components/appShell.test.jsx | 7项结构/导航/计数/激活/回调/顺序测试 |
+| src/features/app-shell/App.test.jsx | 9项页面条件/唯一catalog及collection实例/共享对象和操作/跨域搜索连接测试 |
+| src/features/app-shell/hooks/useAppNavigation.test.js | 11项无效ID、Hash、History、监听清理、RAF/滚动、详情depth/替换/返回、Escape、原开幕timer测试 |
+| tests/browser/arch10-app-shell.mjs | 12个桌面/手机场景，同脚本迁移前后对照；已有Playwright，独立上下文与合成响应 |
+| README.md | 实际树/测试/依赖/本地与远端状态/原目标的app部分与本次指定路径同步 |
+| docs/frontend-architecture-migration-plan.md | ARCH-10原位置/依赖/引用方/状态/Effect/Ref/回调映射，启动/基线/验证/失败/风险/回退；10保持current |
+| docs/stage-delivery-test-report.md | 本条累计技术记录，只追加保留历史 |
+| docs/product-data-accuracy-audit.md | 本阶段继承审计，只追加，不升级事实/授权 |
+
+App→AppShell/TopHeader/MobileNavigation仅传原页、开幕、overlay和导航props；App→useAppNavigation→lib/navigation-history/catalogService。Hook展开顺序initial/opening/view→catalog→collection→selected/profile/menu/ref/callback及原四Effect注册顺序不变：[openingActive,view]两项锁滚动/2600ms解锁、[selectedProduct] Escape、[initialEntry] popstate/manual scrollRestoration/replaceState清理。没有Context/Redux/路由库，没有新的状态副本/持久化。小Y/工作台的消息、草稿、表单、busy和请求继续在原领域组件/Hook，App保持原挂载关系；不把原离页重置重写成全局保存。main/BrandOpening/视觉边界不迁移，原Header/Footer/导航实现从App移出且实际使用新模块，不执行ARCH-11全局清理。
+
+用户入口：[本地生产构建与API](http://127.0.0.1:8787/)（显式空Key，不读.env）、[开发站](http://127.0.0.1:5201/)、[构建预览](http://127.0.0.1:5202/)；现有首页、桌面导航/手机顶部菜单→小Y/工作台、产品库、指南、文化、收藏及产品抽屉/深链接。不存在MainBrowser/侧栏/底部导航，按实际基线覆盖。
+
+### 真实命令与结果
+
+迁移前（17:28–17:32）：相关14文件121/121、npm test 39文件309/309、npm run build 2898模块，退出码0。迁移后（17:46）：
+
+```powershell
+npm test -- src/features/app-shell src/lib/navigation-history.test.js src/components/BrandOpening.test.js src/features/catalog src/features/collection src/features/home src/features/guide-culture src/features/assistant/hooks/useAssistant.test.js src/features/makeup-plan/hooks/useMakeupPlan.test.js
+npm test
+npm run build
+node --check src/features/app-shell/hooks/useAppNavigation.js
+node --check src/features/app-shell/hooks/useAppNavigation.test.js
+node --check tests/browser/arch10-app-shell.mjs
+git diff --check
+git diff --cached --check
+```
+
+相关17文件148/148；全量42文件336/336（原309项文件/断言不变，新增27项）；build2902模块，主JS747.03kB/gzip227.76，异步3D1293.47kB/gzip356.09；其余语法/空白检查通过。JSX由Vitest/Vite编译，新增单测为SSR/元素回调/隔离Hook边界，不称RTL真实DOM；浏览器提供实际React/History验证。Three.js CJS弃用与>500kB构建警告保留，三份CSS构建hash不变（index-BTPGBce7/FlexCarousel-BXfJaBAn/MakeupTableExperience-DUcrjJjC）。最后App仅对overlay属性缩进修正，不改变运行代码；后续文档/只读核对不冒称重跑全部测试。
+
+浏览器复跑命令，使用已有安装路径而非新增依赖：
+
+```powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE='file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE='C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_BASE_URL='http://127.0.0.1:5201'
+$env:YAS_QA_OUTPUT_DIR='.qa/arch-10-after'
+node tests/browser/arch10-app-shell.mjs
+$env:YAS_QA_OUTPUT_DIR='.qa/arch-10-after-catalog'
+node tests/browser/arch06-catalog.mjs
+$env:YAS_QA_OUTPUT_DIR='.qa/arch-10-after-guide'
+node tests/browser/arch09-guide-culture.mjs
+node .qa/arch-10-checks/compare.mjs
+$env:YAS_QA_BASE_URL='http://127.0.0.1:5202'
+$env:YAS_QA_OUTPUT_DIR='.qa/arch-10-production'
+node tests/browser/arch10-app-shell.mjs
+node .qa/arch-10-checks/smoke.mjs
+```
+
+迁移前使用相同三脚本与5201服务，目录分别arch-10-before-accepted、arch-10-before-catalog、arch-10-before-guide；它们在App生产源码编辑前取得。Chrome157.0.8103.52、1440×900/360×800、DPR1，独立合成上下文；开幕/菜单/筛选场景默认动效，其余减少动效。新脚本前后各12/12，原catalog前后各14/14、guide前后各10/10，共各36/36。compare.mjs退出0，36场景记录evidence及请求差异各0，包括记录的控件布局，不称严格像素一致。构建预览另12/12。HTTP脚本在既有Fastify实际同源8787验证：health ok/assistant=false，HTML/构建JS/产品直达200，普通问答503/PROVIDER_NOT_CONFIGURED，方案200/local/7步/photoEnabled=false；服务禁用dotenv读取并显式空Key。浏览器拦截的挂起/失败为合成响应，方案复用既有无模型规则，与真实HTTP证据分列，不声称真实付费模型/联网服务已验证。
+
+### 页面比较、截图、错误和未覆盖项
+
+| 检查 | 迁移前后结果 |
+| --- | --- |
+| 所有真实桌面/手机导航、页面组合与激活/标题 | 原顺序/按钮/五导航项+品牌回首页、七类条件渲染一致；页面互斥，无新入口 |
+| URL/Hash/History/刷新/前后退/直达 | 原Hash清除、主站路径/状态、有效/缺失产品ID、depth/push/replace/抽屉替换/root关闭一致 |
+| 搜索/35筛选/四排序/空目录/图片故障/收藏 | 原ID、顺序、条件/状态和跨页/刷新同步一致；无数据改动 |
+| 小Y和工作台请求/加载 | 画像预填、消息恢复、挂起加载、离页重挂载后旧响应不进入新实例、7步生成/禁用重复/预算重生成/空响应/故意timedout/重试一致；各10次API POST payload相同 |
+| overlay/焦点/滚动/移动UI | 原详情Escape/内部滚动/焦点BODY、筛选Escape/History关闭、开幕锁/2600ms解锁、同页smooth不push和历史RAF恢复一致；无文档横向溢出/所检控件重叠 |
+
+实际查看截图：before-accepted/360-opening-menu-filter.png、before-accepted/1440-workbench-generation-failures-result.png、before-guide/360-catalog-collection-detail-drawer.png；after/360-workbench-generation-failures-result.png、after-guide/1440-guide-entries-filters.png、after-guide/360-catalog-collection-detail-drawer.png、after/1440-assistant-pending-remount-loading.png；另production/1440-all-navigation.png（真实首页3D）和production/360-workbench-generation-failures-result.png。上述目录前缀均为.qa/arch-10-，results.json/PNG忽略保留，不作为公开素材。逐项比较数据见.qa/arch-10-checks/browser-comparison.json，HTTP见production-http.json。
+
+全部成功运行pageerror0、badResponses0，无非预期console.error或本地失败。开发新脚本前/后各5条console.error/失败请求（3 Google字体环境拒绝、2故意API timedout）；guide前/后各22字体失败；catalog前62/后52条（各22字体、故意cover.webp拦截前40/后30，加载时序导致数量不同，不能称日志相同）。构建预览26条（24字体+2故意timedout）；API各10次。没有把预期错误删除或称所有资源请求成功。
+
+测试失败历史：.qa/arch-10-before 0/12，默认load等待外部字体pending超时；脚本改domcontentloaded+真实UI。before-final 9/12（两个滚动断言错误、手机遮罩阻挡菜单），before-complete 11/12（同手机遮罩）；前者Playwright点击顶部nav先滚动改变快照，改用文化页底部真实按钮，后者用真实Back/Forward验证面板关闭。生产代码未为断言改写；最终before-accepted12/12先于迁移取得。临时统计读取JSON默认GBK曾失败，显式UTF-8后完成，无生产影响。所有失败结果保留。
+
+原基线缺口不因迁移升级：草稿/工作台结果和手填表单离页重置；无请求序号/AbortController/主动取消/过期屏障，重置会话不取消进行中响应；抽屉没有焦点陷阱/主动背景锁滚动/显式恢复焦点；Escape不关闭手机菜单。现有收藏null/写失败与lazy下载失败根卸载、构建大包/弃用等旧风险继承，本次未重跑这些定向故障，不称已修复。未完整覆盖真机/触摸、其他浏览器、字体成功后的排版、全部默认动效/GPU/资源泄漏、真实弱网/配额/存储权限、真实provider/联网和完整无障碍；不声称像素一致。
+
+### 隐私、文档与回退
+
+**本阶段无新增核验，继承上一条结论。** 产品数据/价格/规格/链接/来源/图片授权/评分及公开门禁不变，没有读真实Key/.env/用户照片/画像/对话或付费调用；独立上下文仅合成数据，无新上传/日志/持久化位置。API、存储Key、错误/降级保持。README同步当前实际结构、app-shell/导航/Context边界及测试，原第三方披露4个视觉路径有效、Lucide仍为现有依赖；迁移计划同步10唯一current及完整映射，两报告只追加。AGENTS/FINAL-PROMPT、视频/比赛材料未改；不升级未验证的材料表述，不写ARCH-11最终清理已完成。
+
+可回退范围为本次13路径；当前未提交现场不是新Git恢复点。上一可定位归档为8cbac32e0e1cc480f6b573688f05c3caa93c27a3/arch-stage-09，实际验收归档后按App/Shell/Hook及后续ARCH-11依赖评估授权revert，从新到旧撤销必要范围并完整复验，不承诺无冲突；Git不恢复浏览器/环境变量/外部服务。无自动暂存、stash、清理、切换、提交、推送、标签或删分支。当前仍 **待人工验收、未提交、未推送、未创建 arch-stage-10**。
+
+
+**2026-11-17 18:01:16（北京时间）ARCH-10 最终自动核对**：node .qa/arch-10-checks/verify-final.mjs退出码0，精确13路径、app-shell七文件（四生产/三测试）、master/ARCH-09基线及本地09标签、空暂存区和无10标签通过；两报告只追加、ARCH-00～09执行正文及ARCH-11正文未改、12阶段正文/总表一致且10唯一current。README169实际树路径、16本地链接/锚点、4第三方源码路径及本阶段39相对引用有效；未执行ARCH-11全局导入/死文件扫描。原39测试文件内容不变、总42测试文件；原导航函数/四Effect/状态顺序/跨域回调/页面props/抽屉/顶部与手机DOM/Footer/视觉边界源码等价，三JS/MJS语法、全部13路径UTF-8/换行/行尾空白及两项git diff --check通过。保存的前后各36场景evidence/请求差异0、生产12/12和真实无KeyHTTP证据均核对。临时源码对照首轮因截取器结束标记先于起点导致“Mobile DOM unchanged”断言失败，修正截取器和状态变量定位后通过；只改临时核对脚本，无生产影响，未掩盖失败。此轮为文档/只读核对，沿用已实跑148/336/build2902与页面结果，不冒称业务测试重跑。补记后再次核对。当前仍**待人工验收、未提交、未推送、未创建 arch-stage-10**；11 pending且未实施，无删分支。**本阶段无新增核验，继承上一条结论。**
+
+
+**2026-11-17 18:06:54（北京时间）ARCH-10 整阶段人工验收通过与归档收尾，YAS-2026-0055**
+
+- 项目负责人在本会话对已交付的完整13路径明确回复原话“人工审核完毕”；本次按整阶段人工验收通过收尾，ARCH-10立即改done、ARCH-11仅登记为唯一current且未实施。不虚构负责人的设备/操作或其他人工检查细节，不扩充真实provider/真机/无障碍等未验证结论，不推定分支删除授权。
+- 18:04重新执行git fetch origin master，普通沙箱FETCH_HEAD权限失败后同命令权限重试成功；18:05实际git ls-remote查询确认master/HEAD/origin/master/FETCH_HEAD/实际远端master均为8cbac32e0e1cc480f6b573688f05c3caa93c27a3，ahead/behind0/0。00～09本地/实际远端标签对象和^{}指向均一致保留，arch-stage-09对象72428c4ce8b4dc2a81213fc78a3bda0e489907bc、^{}为上述基线；10本地/远端未创建。精确13个已验收路径，暂存区空、无来源不明文件；没有改配置/凭据、没有自动审批拒绝。
+- 18:05:08再次运行node .qa/arch-10-checks/verify-final.mjs退出码0，13路径、源码等价、原测试/阶段历史/ARCH-11正文、前后页面证据、README路径/链接/披露、语法/编码/空白检查通过。确认后只更新README、迁移计划及两累计报告；九个已验收代码/测试/脚本以SHA-256快照逐一核对不变。沿用真实相关148/148、全量42文件336/336、build2902、前后各36/36、生产构建12/12及真实无Key同源HTTP证据，不把文档/只读收尾核对写成重跑业务测试。后续收尾验证实际结果另追加。
+- 首轮0/12、9/12、11/12脚本错误及截取器首轮失败、字体环境拒绝、故意封面/超时日志、原请求/草稿/焦点缺口、存储与lazy风险、构建提示和数据/链接/图片授权风险全部保留。**本阶段无新增核验，继承上一条结论。** API、存储、隐私和素材/产品事实不变；AGENTS/FINAL-PROMPT、服务端、视频/比赛材料不修改。
+- 本条写入时：ARCH-10已人工验收通过、done，尚未提交、尚未推送、尚未创建arch-stage-10；此前待验收/current记录均为真实历史快照。按本次确认及AGENTS.md 13.2只暂存已验收13路径，在master以规定格式创建最终确认提交、正常推送并核对实际远端SHA，再于同一提交建立唯一带注释arch-stage-10并推送核验标签对象及^{}。实际SHA/tag由收尾回执先提供、下次文档同步回填，不为自引用amend/移动标签或虚构成功，不实施ARCH-11或删除分支。
+- 上一归档为上述ARCH-09。实际归档后按最终提交及App→Shell/Hook、后续ARCH-11依赖评估获授权revert，从新到旧撤销必要范围并复验；范围仍13路径，不承诺无冲突，Git不恢复浏览器/环境变量/外部状态，保留原提交/标签/失败证据。
+
+
+**2026-11-17 18:08:49（北京时间）ARCH-10 验收收尾自动核对**：18:07:42运行node .qa/arch-10-checks/verify-acceptance.mjs退出码0；九个已验收代码/测试/脚本SHA-256不变、精确13路径、索引空、master/ARCH-09基线/09标签及无10标签、两累计报告只追加、ARCH-00～09执行历史不变、ARCH-10 done与ARCH-11仅登记current通过。12阶段正文/总表一致，README169实际树路径/16本地链接锚点/4第三方路径、本阶段39相对引用、原39测试文件/源码等价/前后各36场景记录及生产12/12和无KeyHTTP证据、语法/UTF-8/换行/空白均通过。18:08:11再次fetch及实际ls-remote核对master仍为8cbac32e0e1cc480f6b573688f05c3caa93c27a3、00～09标签保留且10不存在，HEAD/origin/master/FETCH_HEAD一致。只同步验收文档、沿用已实跑业务验证，不称重跑测试。补记后复核，再仅暂存已确认13路径并核对blob；实际提交/推送/标签仍待本次回执。**本阶段无新增核验，继承上一条结论。**
+
+
+**2026-11-17 18:09:31（北京时间）ARCH-10 提交前暂存核对**：18:09:08以YAS_QA_VERIFY_STAGED=1运行node .qa/arch-10-checks/verify-acceptance.mjs退出码0，暂存清单精确匹配已验收13路径、各blob与工作树经Git过滤内容相同，无未暂存或未跟踪文件；九代码/测试/脚本哈希不变，阶段状态、原历史、两报告只追加、路径/链接/源码等价/语法/页面证据及工作树与索引空白检查通过。只补记本条、重新暂存三份记录并复核，不改实现/验证范围。最终确认与收尾记录纳入本次ARCH-10提交；此时新SHA/推送/标签尚未产生，实际结果由回执提供。**本阶段无新增核验，继承上一条结论。**
