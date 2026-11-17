@@ -1932,3 +1932,106 @@ Chrome 157.0.8103.52、1440×900 与 360×800、deviceScaleFactor=1，独立临�
 ### 2026-11-17 11:24（北京时间）已验收范围暂存及提交前实核
 
 verify-acceptance退出码0，核对05 done/06唯一current、35原始范围、17源码测试hash不变、历史只追加、README118树路径/9本地链接、29测试文件及原五标签。已显式枚举暂存35路径；Git迁移识别显示22条文件变化，verify-index确认原始35路径完全一致、无未暂存或未跟踪文件，所有已验收源码测试hash仍相同。工作树及实际暂存内容的空白检查均退出码0，源码等价和脚本语法检查通过。仅此收尾追加后三文档再暂存/核验，沿用本阶段已运行的225/225、构建及页面证据，不再更改实现。**本阶段无新增核验，继承上一条结论。** 当前新提交/推送/标签尚未产生，实际结果由回执及下次同步补记，阶段状态/人工确认/本收尾共同纳入最终提交。
+
+## 2026-11-17（北京时间）ARCH-06 catalog：完整迁移与自动验证，待人工验收
+
+关联原YAS-2026-0055，不另造编号。目的为把App中目录纯逻辑、状态与展示归入实际职责模块，保持用户行为和长期数据边界；不是功能或视觉改版。
+
+### 启动门禁与上一阶段归档回填
+
+11:38完成git fetch origin master及git ls-remote origin refs/heads/master refs/tags/arch-stage-05 'refs/tags/arch-stage-05^{}'，当前master/HEAD/origin/master/实际远端均 bf988460ae8c9611eaae21adb02a34c3bfc53fa1；初始工作树、索引、未跟踪文件为空。arch-stage-05为带注释标签，本地/实际远端对象 11b0d3e419b1fe642e3ed650fb07b9fc4ab9ceba，提交指向 bf988460ae8c9611eaae21adb02a34c3bfc53fa1，与已保存人工确认一致。12:19再次实际查询相同，无arch-stage-06。本次回填上次真实归档结果，原ARCH-05收尾“尚未产生SHA”的快照保留，不改写历史。06唯一current、07～11pending；本次中断后复核只有本任务已知新脚本/模块，未清理、暂存、stash或切分支。
+
+### 实际文件、迁移映射与用户入口
+
+| 修改前 App.jsx 职责 | 实际目标 / 消费方 | 原有保障及补测 |
+| --- | --- | --- |
+| :60 toggleArrayValue、:64 containsText、:72 productMatches、:178 排序 | src/features/catalog/catalogUtils.js；useCatalog 消费 | 原来无直接测试；新增 catalogUtils.test.js，21 项，保留搜索字段、大小写/空白、组内 OR/组间 AND、边界/空值、排序/稳定 ties |
+| :90 productById、页面产品数组读取 | src/features/catalog/catalogService.js；App 导航/Home/Favorites、LibraryView、ProductDetailDrawer 消费 | 新增 catalogService.test.js 2 项，原数组和每个稳定 ID 对象引用相同，严格匹配/未知 ID 返回 null；不复制数据或增加运行时 schema |
+| :106 filters、:107 sort、:111 filterPanelOpen、:178 结果、:191 updateFilter/clearFilters | src/features/catalog/hooks/useCatalog.js；App 保留搜索/快捷/品类到导航的连接 | 新增 hooks/useCatalog.test.js 4 项；初值、更新、清空不关闭面板、搜索保留条件、快捷替换条件但保留 sort |
+| :496 LibraryView、:542 SortSelect、:722 EmptyResults | src/features/catalog/components/LibraryView.jsx；小型子组件仍同文件 | components/catalogComponents.test.jsx 中业务回调与空态断言；真实浏览器搜索/四排序/无结果 |
+| :521 FilterPanel、:538 FilterGroup | src/features/catalog/components/FilterPanel.jsx；LibraryView 消费 | 全部选项、scalar/multiple 回调、清空/关闭/遮罩；两视口每组35单项筛选、组合与恢复 |
+| :546 ProductCard | src/features/catalog/components/ProductCard.jsx；LibraryView 和 App 内首页静态回退复用 | 原产品对象打开、收藏稳定 ID、图片失败、色块/编辑评分边界；原 JSX 原样迁入 |
+| :565 ProductProfileView、:638 ParameterRow | src/features/catalog/components/ProductProfile.jsx；App 产品页消费 | 原购买 gate、reviewedFacts、解读/来源/删除入口、返回；App 通过 statusControl 节点传原收藏控件 |
+| :642 DetailDrawer、:671 Metric | src/features/catalog/components/ProductDetailDrawer.jsx；App 所有产品详情回调消费 | 原色号初始化/effect、遮罩事件、详情/完整资料/相似产品次序；同一 statusControl 插槽保留原收藏控件 |
+
+
+其余实际新文件：src/features/catalog/catalogUtils.test.js、catalogService.test.js、hooks/useCatalog.test.js、components/catalogComponents.test.jsx（共4份，34项）；tests/browser/arch06-catalog.mjs；README.md、docs/frontend-architecture-migration-plan.md、本文和docs/product-data-accuracy-audit.md。合计18路径：1 App+8源码+4测试+1浏览器脚本+4文档。旧同文件定义移除，不留转发/重复实现。Service有原数组读取与严格ID查询两个真实职责，Utils无React/服务/存储依赖；data未复制或迁移。小型FilterGroup/SortSelect/EmptyResults/ParameterRow/Metric留对应父文件。
+
+入口为[本地前端主站](http://127.0.0.1:5194/)的“产品库”，或首页搜索/快捷筛选/精选、肤质指南和产品深链接 /products/estee-lauder-double-wear。App保留Header/Footer/Home/Guide/Culture/Favorites、页面导航/历史、selectedProduct/profileProduct与Escape、原收藏状态和持久化；通过statusControl节点传入两种详情，不让catalog反向依赖App/collection，不提前实施ARCH-07。
+
+### 实跑命令、结果与页面证据
+
+| 命令 / 检查 | 迁移前实际结果 | 迁移后实际结果 |
+| --- | --- | --- |
+| npm test -- src/data/product-verification.test.js src/data/home-featured.test.js src/lib/navigation-history.test.js | 11:41，3 文件 12/12，退出码0 | 相关命令包含原三文件，原断言保留 |
+| npm test -- src/features/catalog src/data/product-verification.test.js src/data/home-featured.test.js src/lib/navigation-history.test.js | 迁移前尚无 catalog 测试 | 12:15:23，7 文件46/46，451ms，退出码0 |
+| npm test | 11:41:05，29 文件225/225，2.30s | 12:16:00，33 文件259/259，2.12s，退出码0 |
+| npm run build | 2882 模块，1.79s；主JS744.42kB，3D1293.47kB | 2890 模块，1.78s；主JS745.05kB/gzip226.55kB，3D1293.47kB；退出码0 |
+| node tests/browser/arch06-catalog.mjs | 最终14/14；.qa/arch-06-before-final/results.json | 14/14；.qa/arch-06-after/results.json；退出码0 |
+| PowerShell 内联 Node 前后 evidence 逐项递归比较 | 同一数据/脚本/视口的真实迁移前页面 | differences=[]，14组全部相同，退出码0；保存 .qa/arch-06-checks/browser-compare.json |
+| node .qa/arch-06-checks/verify-source.mjs | before.json 保存原源码/文档 | 原函数/组件主体、导航/收藏/其他页面核对通过；6个新JS和1个MJS逐个 node --check，通过，退出码0 |
+| git diff --check、git diff --cached --check | 初始工作树/索引干净 | 最终文档同步后核对，真实结果见后续最终核对记录 |
+
+
+新增34项按文件为Utils21、Service2、Hook4、组件7。原29文件225项有效断言全部保留；Hook测试隔离useState/useMemo边界，组件测试检查真实React节点/SSR markup和事件回调，不宣称安装了RTL或替代真实DOM回归。构建CSS的index-BTPGBce7、FlexCarousel-BXfJaBAn、MakeupTableExperience-DUcrjJjC三产物名称/大小与基线一致；Three.js仍为异步块，不把本次小幅主JS变化称为体积优化。原THREE_CJS_DEPRECATED和>500kB提示保留。
+
+浏览器复跑使用现有安装，无新增依赖。先启动仅前端服务：node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5194 --strictPort。PowerShell 环境如下（均为测试路径，无凭据）：
+
+```powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE = 'file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_BASE_URL = 'http://127.0.0.1:5194'
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-06-recheck'
+node tests/browser/arch06-catalog.mjs
+```
+
+
+Chrome 157.0.8103.52，1440×900 与 360×800，deviceScaleFactor=1、reducedMotion=reduce，每场景独立临时浏览器上下文，无真实用户档案。每视口7组共14组：搜索/排序、筛选、抽屉/历史/收藏、直接深链接、首页/指南入口、图片失败、空目录。每组包含多次真实交互；14不是全部点击次数，也不计入259项Vitest。
+
+- 主导航真实入口；6种搜索（大小写品牌、空白、色号、场景、品类、不存在）和清空恢复；全部4种排序，并用键盘切换排序。
+- 每视口35个单项筛选（含每品类、肤质、妆效、遮瑕、持妆、氧化、地区、价格），逐个选择/取消；双肤质加妆效/价格组合，跨页返回保留条件；移动筛选关闭按钮、Escape和遮罩关闭。
+- 全目录按产品名称映射原稳定ID并核对完整有序结果；首款真实 estee-lauder-double-wear 的详情、第二色号选择、相似商品打开和色号重置、完整资料、关闭按钮/返回按钮/Escape、桌面遮罩关闭；抽屉实际内部滚动桌面1048px/手机1647px，记录字段/URL/history.state/焦点/滚动和节点尺寸。
+- 产品深链接直接进入、刷新字段不变、返回；抽屉刷新恢复；收藏“想买→正在用”、跨页/详情/完整资料共享、刷新恢复及移除，仍使用 base-archive-collection 原始对象。首页搜索、6个快捷筛选、指南肤质筛选、首页编辑精选打开同一目录商品，均从真实入口操作。
+- 图片失败仅在测试中拒绝封面请求，验证原“图片暂不可用”；空目录仅拦截开发模块返回空数组，原空态/清空可操作。二者均为故障模拟，不是实际源站/网络或商品核验。目录操作没有 /api/ 请求，不将此结论扩张为外部服务成功/超时/限流验证。
+- 最终 before-final 与 after 的全部 evidence（含产品ID/次序、详情/来源文案、URL/history、收藏、焦点、滚动、控件几何）逐项比较差异0；不比较调度时机造成的图片失败请求次数，不宣称严格像素一致。
+- pageerror 两版本均0；除故意图片失败外本地资源无失败，HTTP>=400为0。外部 Google Fonts 在前后各22次请求被环境 ERR_NETWORK_ACCESS_DENIED；图片故障组前34/后46次封面拒绝随懒加载调度不同，均只允许对应封面失败；console.error 仅这些已记录资源错误，无非预期JS错误，不能写成所有控制台/资源错误为零。
+- 已实际查看迁移前桌面产品库/手机抽屉，迁移后手机产品库/桌面完整资料，并继续核对关键抽屉/筛选截图；记录的横向宽度不溢出，所查看页面未见新增控件重叠或不可关闭面板。手机视口不是手机硬件验收。当前抽屉关闭没有新增焦点管理，关闭后焦点记录保持基线，不宣称新增完整焦点陷阱/返回实现。
+
+
+实际查看截图（均本地、忽略不提交）：before-final/1440-search-sort.png、before-final/360-drawer-history-collection.png；after/360-search-sort.png、after/1440-drawer-history-collection-profile.png，并复核after桌面目录/手机筛选/详情图。行为比较保存于.qa/arch-06-checks/browser-compare.json，原代码及文档快照为before.json；verify-source.mjs确认匹配函数/查找函数/组件主体与原版一致，两详情仅名称和App控件插槽不同，Header/Home/Favorites/Guide/Culture/Footer及导航/收藏回调原文保持。
+
+### 失败、修正、隐私与未覆盖项
+
+首轮页面12/14的两项失败均为测试导航使用“我的收藏”exact名称，而实际DOM附带数量；没有修改产品或业务逻辑。修定位并扩充覆盖后才在未迁移生产源码建立before-final14/14，迁移后同脚本14/14。保留首轮JSON/截图。源码比较首轮归一工具漏掉后续export导致假差异，只修全局归一后重跑通过；没有拿比较脚本掩盖代码差异。中断后测试端口5194已有原服务，重复启动报占用后复用，不清理其他进程。普通沙箱Git网络/写FETCH_HEAD失败经允许的同命令权限重试成功，未改变凭据/配置。其他旧阶段失败/回退证据不删除。
+
+本阶段内实现、自动验证及文档已交付；人工验收和Git归档尚未完成。真实手机/触摸、其他浏览器/操作系统、默认动效、字体成功加载后的严格排版、实际断网/弱网、外部provider和生产同源服务未新增验证。图片/空目录为合成故障；既有lazy下载拒绝根卸载、Three.js CommonJS弃用、大于500kB分包、待授权图片与历史商品链接政策差异继续保留，不因本次通过而消失。
+
+只改变本阶段代码组织/必要直接引用，无服务端、public、产品数据、contracts、存储模块、CSS、依赖或API变更。不提前实施collection/home/guide/culture/app/整体清理。原StatusControl、收藏Key/格式/effect及状态回调仍在App；没有新增用户照片、上传、持久化、日志或第三方个人数据处理，没有展示真实Key或调用付费模型。小Y/方案/化妆台各自产品数据消费不全局改写。视频/比赛材料未改，不得把目录迁移描述为新增AI、视觉或商品核验能力。
+
+**本阶段无新增核验，继承上一条结论。** 产品事实、价格、色号、评分、图片、来源、授权pending/blocked及公开状态均未升级。图片来源/删除声明不等于取得授权；品牌官网商品来源/e.tb.cn与现行直接官方旗舰店规则的历史差异继续待独立整改。
+
+回退范围为App、8个catalog源码、4份就近测试、独立浏览器脚本和四文档，共18路径。现在全部为未暂存现场，未形成新的Git回退点；上一已验收归档基线为 bf988460ae8c9611eaae21adb02a34c3bfc53fa1/arch-stage-05。验收归档后如需回退，先确认实际提交和后续依赖，再按授权revert并重跑测试/构建/页面；若后续collection/home消费catalog，须按依赖从新到旧处理，不承诺任意提交无冲突。Git不恢复浏览器数据、环境变量或外部状态；不自动清理/丢弃现场。
+
+**当前：ARCH-06唯一current、待人工验收、未提交、未推送、未创建arch-stage-06；ARCH-07～11 pending。** 本次没有人工确认人/日期/结果，没有修改后提交SHA。负责人对本阶段完整范围明确验收通过后，再记录真实确认/收尾、06 done/07唯一current，按规则执行获授权的提交、正常推送和唯一带注释标签核验；不据此提前实现07，也不推定分支删除授权。
+**2026-11-17 12:32（北京时间）ARCH-06 最终自动核对**
+
+- node .qa/arch-06-checks/verify-final.mjs 退出码0：精确18变更路径、12个feature源码/测试文件、空暂存区，master/HEAD/origin/master仍为bf988460ae8c9611eaae21adb02a34c3bfc53fa1；两报告只追加，ARCH-00～05正文与ARCH-07～11计划正文原样，12阶段正文/总表一致且仅ARCH-06 current。README 134个实际树路径、10条本地链接/锚点、相对import、33个Vitest文件、7个新JS/MJS语法、全部新文件UTF-8/末尾换行/行尾空白通过；源函数/组件主体及App导航/收藏/其他页面保留核对通过。
+- node .qa/arch-06-checks/compare-browser.mjs 退出码0：前后各14/14，全部已记录evidence差异0；补充对已记录的手机筛选/排序控件、抽屉返回/关闭及面板清空/关闭的矩形互斥检查通过。已实际再查看迁移后1440目录、360筛选和360抽屉截图，未见新增重叠或不可关闭面板。此为记录几何检查，不是严格像素或全部设备结论。
+- git diff --check、git diff --cached --check 退出码0；首次文档同步出现累计报告EOF额外空行，已只移除新增空行后复核。此前259/259、构建2890模块及前后各14/14沿用本次真实实跑，文档追加未重跑业务验证、不称重复执行。最终记录追加后再次复核文档/范围/空白。
+- 当前仍待人工验收、未暂存、未提交、未推送、未创建arch-stage-06；未删除分支或实施ARCH-07。12:19实际远端核验事实、首轮失败、字体拒绝/模拟故障、真机/服务未覆盖及所有历史数据风险保持。**本阶段无新增核验，继承上一条结论。**
+
+## 2026-11-17（北京时间）ARCH-06：人工验收通过与版本收尾
+
+关联YAS-2026-0055。项目负责人在整阶段交付后明确回复“人工验收通过 继续”，确认已交付18路径；不推断负责人具体设备或测试步骤。按AGENTS 13.2，ARCH-06改为done，ARCH-07为唯一current、未实施，ARCH-08～11 pending；不把验收推定为删除分支或下一阶段代码修改授权。
+
+12:41重新git fetch origin master及实际git ls-remote：master/HEAD/origin/master均bf988460ae8c9611eaae21adb02a34c3bfc53fa1，ahead/behind 0/0；arch-stage-05本地/远端对象11b0d3e419b1fe642e3ed650fb07b9fc4ab9ceba指向该基线，无arch-stage-06。普通沙箱fetch写FETCH_HEAD被拒，经允许的同命令权限重试成功，未改凭据/配置。18路径均属于已验收范围，索引为空，无额外修改。
+
+验收后只更新四份文档的状态及确认记录；已验收14个代码/测试路径保存SHA-256并复核不变。沿用本次实际相关46/46、全量259/259、构建2890模块、前后两视口各14/14、源码/语法检查，不称重跑；链接、路径、历史、唯一current和空白在文档收尾后重新检查。原首轮失败、截图、字体拒绝/模拟图片错误与全部未覆盖范围保留；自动验证或人工通过不证明真实provider、真机、默认动效、弱网、严格像素或产品事实已核验。
+
+收尾范围仍为App+8源码+4就近测试+浏览器脚本+四文档，共18路径；入口仍是主站产品库、首页/指南和产品深链接。未变UI/CSS/产品事实/API/收藏存储/依赖，未新增照片上传/保存/日志/第三方个人数据处理。**本阶段无新增核验，继承上一条结论。** 历史图片pending/blocked、原始来源及直接官方旗舰店链接差异、lazy下载缺口、大分包和弃用提示继续保留。
+
+本条为真实人工确认及最终状态，将与已验收代码一同纳入规定格式的ARCH-06收尾提交；本条写入时未产生本阶段SHA/标签对象、尚未推送。实际提交/正常推送master/唯一带注释arch-stage-06及远端对象和^{}核对结果由收尾回执先提供，下次文档同步回填，不改写或虚构自引用。此前待验收和未提交记录均保留为历史快照。
+
+形成归档后以真实SHA为新回退定位，撤销前确认后续catalog消费依赖，按授权revert并重跑必要验证；Git不恢复浏览器数据/环境变量/外部状态。本次不实施ARCH-07、不删分支；下一阶段开始前必须先定位并核对本次实际归档。
+
+**2026-11-17 12:45（北京时间）验收收尾自动核对**：node .qa/arch-06-checks/verify-acceptance.mjs 退出码0；14个已验收代码/测试路径SHA-256不变，18路径精确范围、空索引、两报告只追加、ARCH-00～05历史及ARCH-08～11计划不变、12阶段状态一致且ARCH-07唯一current、README134树路径/10条本地链接、33个Vitest文件、相对import、原标签、源码/语法和git diff --check全部通过。收尾仅文档确认，不重跑或扩大原业务验证；尚未产生本次提交/推送/标签结果，待实际回执。**本阶段无新增核验，继承上一条结论。**
