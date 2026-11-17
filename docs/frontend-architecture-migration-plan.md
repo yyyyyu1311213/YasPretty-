@@ -13,9 +13,9 @@
 | 合并前 master / 实际远端 | `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`；fetch 和实际远端查询已核对 |
 | 原开发分支末端（历史定位） | `codex/frontend-contracts-yas-2026-0055` / `4062153c512107534b88f3bc6011ffa869334c8a`；末端已纳入 master，本地和远端分支均已删除，原提交及标签保留 |
 | 切换完成 master SHA / 已核验远端 | 普通合并 `8caf4dcdad416a2a8fbc6057a7f5a289403e9a1c`；纯文档归档提交 `3b7ceee79576d8d38ff3821d1d688914d49c2f18`，ARCH-05 启动时已核对实际远端 |
-| 当前阶段 | `ARCH-09`：`guide` 与 `culture`，唯一 `current`；仅登记，未实施 |
-| 下一阶段 | `ARCH-10`：收敛 `app`，`pending`；未启动 |
-| 已验收阶段 | ARCH-00～07：`done` 且已归档；ARCH-08 已整阶段人工验收通过、`done`，Git收尾中，实际新SHA/标签待回执 |
+| 当前阶段 | `ARCH-10`：收敛 `app`，唯一 `current`；仅登记下一阶段，尚未实施 |
+| 下一阶段 | `ARCH-11`：整体清理与最终回归，`pending`；未启动 |
+| 已验收阶段 | ARCH-00～08：`done` 且已归档；ARCH-09 整阶段“人工核验通过”，`done`、Git收尾中，实际提交/推送/标签由收尾回执提供并下次同步回填 |
 | 前置 contracts | 六个 JSDoc 契约文件；原提交 `86b25b331106b49b02f10b499de7f7d94c24032b`（YAS-2026-0055）随合并保留 |
 | ARCH-00 | `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` → `8c95966cf61367396fd6783da1f86c8569546668` |
 | ARCH-01 | `arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` → `5e58236f6897147b354153ea9b02d080641a3cea` |
@@ -25,10 +25,10 @@
 | ARCH-05 | arch-stage-05 对象 11b0d3e419b1fe642e3ed650fb07b9fc4ab9ceba → bf988460ae8c9611eaae21adb02a34c3bfc53fa1；本地和实际远端一致 |
 | ARCH-06 | arch-stage-06 对象 dc38c7ac170701918cae4e08bf20e2ccee2ffd50 → e78c87f6768444138b88adca33b1221aa6c03d89；本地和实际远端一致 |
 | ARCH-07 | arch-stage-07 对象 c7765c37a83ce0dc4806d2db50ae84ebfbd9c4a9 → 7f71699ddea914c36a1ad3b0c877ad0d6eb31755；本地和实际远端一致 |
-| 最近远端核对 | 2026-11-17 16:36起（北京时间）重新fetch与实际ls-remote：master/HEAD/origin/master仍为7f71699ddea914c36a1ad3b0c877ad0d6eb31755，arch-stage-07本地/远端对象及^{}一致，无arch-stage-08；已验收9路径未提交、索引空 |
-| 最近验证结果 | ARCH-08 相关 81/81、全量 303/303、构建 2896 模块；首页前后 12/12、catalog 14/14、collection 16/16、化妆台 16/16，非几何记录一致；首页默认动效轮播瞬时坐标差异保留，详情见本阶段记录 |
+| 最近远端核对 | 2026-11-17 17:16:16（北京时间）重新fetch及实际ls-remote：master/HEAD/origin/master均aee4175bd09be01b065d5875c0f1305e55410cd9，arch-stage-08对象be773944bdae29408bc3eecdfc6789dc831ab0d1及^{}指向一致；00～08归档标签保留，09标签不存在；本地仅九个已验收路径、暂存区空。09已人工通过，提交/推送/标签待本次获授权收尾 |
+| 最近验证结果 | ARCH-09相关86/86、全量39文件309/309、build2898；桌面/360px同脚本迁移前后各10/10，全部记录evidence差异0；字体环境拒绝及覆盖限制保留 |
 
-实际代码与测试是判断模块是否落地的事实依据。ARCH-00～07 已验收归档；ARCH-08 已整阶段人工验收通过、done、Git收尾中，此时未提交、未推送、未创建 arch-stage-08。ARCH-09仅登记为唯一current且未实施，10～11pending。原待验收/未提交/current 记录完整保留为历史快照，最新事实以当前状态和各阶段末尾记录为准。
+实际代码与测试是判断模块是否落地的事实依据。ARCH-00～08已验收归档，08实际结果在本次启动核对回填；ARCH-09唯一current、待人工验收、未提交、未推送、未创建 arch-stage-09，10～11pending。原待验收/未提交/current记录完整保留为历史快照，最新事实以当前状态和各阶段末尾记录为准。
 
 ## 2. 文档分工
 
@@ -996,19 +996,114 @@ Chrome 157.0.8103.52，1440×900 与 360×800，deviceScaleFactor=1、reducedMot
 
 ### ARCH-09：`guide` 与 `culture`
 
-**状态：`current`**
+**状态：`done`**
 
-**允许范围**：指南页、品牌文化页、直接引用方和文档。
+**允许范围**：指南页、品牌文化页、直接引用方、相关测试与浏览器回归脚本及四份文档。
 
-**任务**：分别迁入 `features/guide/` 和 `features/culture/`，只抽取实际页面和内容，不增加空 Hooks、Utils 或 Service。
+**任务**：按本次负责人确认，将实际 GuideView、CultureView 迁入 `features/guide-culture/components/`，只抽取实际页面和内容，不增加空 Hooks、Utils 或 Service。原分别迁入 guide/culture 的目标保留在 ARCH-00 历史清单；本次明确范围优先。
 
 **验收**：页面内容、导航和响应式布局不变；测试、构建和视口回归通过。
 
 **执行记录**：2026-11-17（北京时间），负责人对ARCH-08完整阶段回复“人工核验完毕”，按AGENTS13.2将本阶段登记为唯一current。本次只收尾08，未实施09；开始09代码前必须先定位08实际提交及远端arch-stage-08归档并重新核对。
 
+**2026-11-17 16:51（北京时间）ARCH-09 启动与范围确认，YAS-2026-0055**
+
+- 已执行 `git fetch origin master`；分支 master，HEAD/origin/master/FETCH_HEAD/实际远端 master 均为 `aee4175bd09be01b065d5875c0f1305e55410cd9`，起始工作树、索引、未跟踪文件为空。ARCH-08 已整阶段人工验收并实际归档；带注释 `arch-stage-08` 本地/实际远端对象均为 `be773944bdae29408bc3eecdfc6789dc831ab0d1`，`^{}` 均指向该基线。实际远端查询 `git ls-remote origin refs/heads/master refs/tags/arch-stage-08 'refs/tags/arch-stage-08^{}'` 已于16:51:03核对。本条回填原08“Git收尾中”快照后的真实结果，不改写历史。
+- 沙箱首次 fetch 写 FETCH_HEAD 被拒，普通 ls-remote 出现 Schannel 凭据通道错误；同命令权限重试成功，未改 Git 配置或凭据。09唯一current、10/11pending，不切换/清理/stash/暂存或执行版本归档。
+- 任务与事实差异已报告，负责人明确选择“按实际基线迁移两个页面（推荐）”：实际只有 GuideView/CultureView，桌面导航直接显示肤质指南/品牌文化，手机沿用折叠菜单；没有 BeautyView、CultureSheet、MainBrowser、文化弹层或可迁出的文化 overlay 逻辑。因此只迁两个真实页面，保留名称与UI/导航/History，不创建无用途组件/useOverlay，不重构小Y/产品详情/筛选/移动菜单弹层。此为实施范围确认，不是整阶段人工验收。
+- 映射：App.jsx:322 GuideView及内嵌guides → guide-culture/components/GuideView.jsx；:331 CultureView → 同目录CultureView.jsx；唯一直接消费方为App的guide/culture条件分支，间接为main→App→Header真实导航。Guide回调仍经chooseQuickFilter→useCatalog.applyQuickFilter→navigate('library')；Culture仍onNavigate('library')；App保留跨页状态、History与全部overlay控制，不提前ARCH-10。
+- 行为基线：主视图均为 `/`，History保存view/depth/scrollY；标题不按页面另设，hash不作路由。导航/刷新/前进后退及跨页筛选/排序/收藏/小Y状态由同一新浏览器脚本在迁移前后实跑，缺失的MainBrowser/文化弹层场景明确不适用，不写成已通过。
+- 16:53迁移前相关10文件80/80、全量38文件303/303、构建2896模块通过，保留原THREE_CJS_DEPRECATED和>500kB提示。先新增 `tests/browser/arch09-guide-culture.mjs` 建立真实页面基线，再迁移源码；真实结果完成后追加。上一可回退归档为上述08提交/tag，未提交现场不是新恢复点；实际归档后按后续App收敛依赖评估授权revert及复验。
+
+
+**2026-11-17（北京时间）ARCH-09 整阶段自动验证与统一交付：待人工验收**
+
+关联既有 **YAS-2026-0055**，不新建问题编号。2026-11-17（北京时间），本阶段只迁移两个现有页面，负责人已明确选择“按实际基线迁移两个页面（推荐）”；此为范围确认，不构成整阶段人工验收。ARCH-09保持唯一current、交付状态“待人工验收”，ARCH-10/11保持pending、未实施。
+
+启动先运行git fetch origin master，再实际查询git ls-remote origin refs/heads/master refs/tags/arch-stage-08 'refs/tags/arch-stage-08^{}'，16:51:03核验：分支master，HEAD/origin/master/FETCH_HEAD/实际远端master/ARCH-08最终归档均为 **aee4175bd09be01b065d5875c0f1305e55410cd9**，ahead/behind0/0；带注释arch-stage-08本地/远端对象均为 **be773944bdae29408bc3eecdfc6789dc831ab0d1**，^{}指向该提交。起始工作树/索引/未跟踪为空；08已有“人工核验完毕”和实际归档，本次回填真实SHA/tag，原收尾时待产生的快照保留。沙箱FETCH_HEAD写权限和Schannel通道首次失败，同命令权限重试成功，未改配置/凭据，没有自动审批拒绝。
+
+实际 **9个变更路径**：
+
+| 原位置（aee4175） / 修改文件 | 实际目标与职责 |
+| --- | --- |
+| src/App.jsx:322 GuideView及内嵌guides | src/features/guide-culture/components/GuideView.jsx；原函数体原文相同，只增加Lucide导入及默认导出 |
+| src/App.jsx:331 CultureView | src/features/guide-culture/components/CultureView.jsx；原函数体、文案、SVG路径及返回结构相同 |
+| src/App.jsx | 只增加两个导入、移除旧同文件定义；原条件渲染、Header/Footer/EnhancementBoundary、导航/History、共享状态、详情/Escape原文不变 |
+| 新就近测试 | src/features/guide-culture/components/guideCulture.test.jsx；6项SSR/React元素/事件断言，非RTL或DOM挂载 |
+| 新浏览器回归 | tests/browser/arch09-guide-culture.mjs；迁移前后使用同一脚本，不新增依赖 |
+| 四份文档 | README.md、docs/frontend-architecture-migration-plan.md、docs/stage-delivery-test-report.md、docs/product-data-accuracy-audit.md |
+
+唯一直接调用方是App的guide/culture条件分支；间接为main→App→Header桌面/手机真实入口。Guide的onApplyFilter经App.chooseQuickFilter→useCatalog.applyQuickFilter→navigate('library')；Culture仍onNavigate('library')。页面只依赖Lucide，无History/存储/网络或App反向导入；App保留跨页组合与唯一useCollection。未创建空Hook、转发、重复实现或第二套路由。
+
+任务文字差异按负责人明确确认处理：实际无BeautyView、CultureSheet、MainBrowser或文化弹层，不创建这些组件及app-shell/useOverlay；桌面肤质指南/品牌文化直接可见，手机沿用折叠菜单。相关缺失场景明确不适用，不冒充测试通过；不把产品详情/筛选/移动菜单或小Y弹层纳入新抽象，不提前ARCH-10。
+
+| 真实命令 | 迁移前结果 | 迁移后结果 |
+| --- | --- | --- |
+| npm test -- src/lib/navigation-history.test.js src/features/catalog src/features/collection src/features/home | 16:53:47，10文件80/80，507ms，退出码0 | 同范围加src/features/guide-culture，17:02:02，11文件86/86，648ms，退出码0 |
+| npm test | 16:53:49，38文件303/303，2.70s | 17:02:05，39文件309/309，2.93s；退出码0 |
+| npm run build | 2896模块、1.60s，主JS745.63kB/gzip227.05kB | 2898模块、1.94s，主JS745.77kB/gzip227.16kB；退出码0 |
+| node tests/browser/arch09-guide-culture.mjs | .qa/arch-09-before-complete/results.json，10/10，退出码0 | .qa/arch-09-after/results.json，10/10，退出码0 |
+| node .qa/arch-09-checks/compare-browser.mjs | 相同脚本/数据/浏览器/视口 | 全部evidence递归比较differences=[]，含已记录几何；退出码0 |
+| node .qa/arch-09-checks/verify-source.mjs | before.json保存HEAD原文 | 两页面原函数体及App其余代码原文相同，master/HEAD/空索引/无09标签/无提前阶段核对通过；退出码0 |
+| node --check tests/browser/arch09-guide-culture.mjs | 新MJS语法检查 | 退出码0；JSX通过Vitest转换及生产构建验证，本阶段无新增运行时JS Hook |
+| git diff --check；git diff --cached --check | 起始干净 | 源码迁移后退出码0；文档同步后最终范围/空白/新文件检查另追加真实记录 |
+
+迁移后相关完整命令为npm test -- src/features/guide-culture src/lib/navigation-history.test.js src/features/catalog src/features/collection src/features/home。全部原303项及测试文件未改，新6项覆盖三指南的原条件对象与回调、页面文案/结构/素材、文化产品库入口。SSR/元素测试不替代真实浏览器。构建仍保留THREE_CJS_DEPRECATED及>500kB分包提示；3D异步块1293.47kB。三个CSS产物仍index-BTPGBce7.css、FlexCarousel-BXfJaBAn.css、MakeupTableExperience-DUcrjJjC.css，名称/hash/大小不变，不称性能优化。
+
+测试服务命令：node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5200 --strictPort。已有Playwright/Chrome157.0.8103.52，1440×900与360×800，DPR1、reducedMotion=reduce，每场景独立临时上下文和合成数据，不使用个人浏览器档案。复跑：
+
+~~~powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE = 'file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_BASE_URL = 'http://127.0.0.1:5200'
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-09-recheck'
+node tests/browser/arch09-guide-culture.mjs
+~~~
+
+每视口5组共10组，不是全部点击次数：
+
+- 真实桌面/手机入口、条件渲染；指南三卡全文、三项筛选的真实产品ID/次序、返回后内容、刷新和History状态。桌面入口可见；手机菜单可打开/再次点击关闭、选择后关闭，Escape按基线不关闭菜单。
+- 文化全文/原品牌SVG、无文化dialog、产品库按钮；整页滚动、按钮键盘焦点、Escape不改变当前页面/焦点、前进/后退/刷新与scrollY恢复、同页导航不增加History长度。
+- URL主视图均为 /，标题沿用index；应用导航保留view/depth/scrollY。原生同文档/#culture先保留Hash且history.state=null，刷新后App恢复首页并规范化为/；不存在Hash路由或MainBrowser，不新增标题/URL语义。
+- 产品库nArS/price-asc经过指南/文化返回仍保留；产品详情打开、内部滚动、关闭控件焦点及Escape，收藏“想买→正在用”、两页进出/History返回及刷新保留原始JSON；完整资料/products/estee-lauder-double-wear进入文化后返回、刷新保持。
+- 小Y原快捷问题纯本地回复、画像/工作台字段和保存消息经过指南/文化返回保持；首页可返回，开幕/主入口无新增行为。没有API/provider调用，不把本地回归扩张为在线问答/方案生成已重验。
+
+上述前后全部记录的文字、入口、URL/Hash/标题、History长度/状态、焦点/overflow、文化滚动、筛选排序/产品ID/收藏与小Y及所记录控件几何差异0；不声称严格像素一致。已实际查看迁移前桌面指南/手机文化/桌面详情，及迁移后桌面和手机指南/文化全文截图。所检控件无重叠、文档无横向溢出；文化为整页而非内部滚动弹层。原产品详情关闭焦点BODY、overflow空串等基线保持，未实现焦点陷阱/恢复或新增背景锁滚动，不能把该迁移称为无障碍整改。
+
+前后pageerror均0、非预期console.error为0、本地资源失败和HTTP>=400均0、API请求0；各22次fonts.googleapis.com请求被环境ERR_NETWORK_ACCESS_DENIED，console中同样各22条对应资源错误，完整URL/原因保留，不写成所有资源错误为0。正常本地素材/字体引用不移动，外部字体成功后的排版未验证。
+
+失败保留：首轮.qa/arch-09-before/为8/10，两视口Hash场景错误预期同页Hash跳转已执行挂载，实际history.state为null；仅修测试加入原生Hash与刷新分开断言。次轮.qa/arch-09-before-final/为9/10，桌面减少动效开幕自动结束使跳过按钮在点击时卸载，定位器超时；仅将测试跳过点击改为1秒，并仅在按钮确已消失时继续等待首页就绪。最终在生产源码未迁移时取得before-complete10/10，再实施源码迁移；迁移后同脚本10/10。原失败JSON/截图保留，不用业务修改迎合测试。文档工具首次README patch因旧缩进锚点不匹配未应用，改用精确校验后更新，无生产影响。
+
+本地证据：.qa/arch-09-before-complete/、.qa/arch-09-after/和.qa/arch-09-checks/（before.json、源码核对、browser-comparison.json等）。QA截图/临时脚本与合成数据忽略不提交。关键图为两目录的1440/360-guide-entries-filters.png、culture-history-scroll.png及catalog-collection-detail-drawer.png；实际查看范围如上，不声称所有截图均逐张人工检查。
+
+用户体验入口：[本地主站](http://127.0.0.1:5200/)的“肤质指南 / 品牌文化”；360px先打开导航。指南“按此筛选”进入原产品库；文化页底部“浏览产品库”可返回现有筛选。README实际/目标结构、当前依赖与测试路径已同步；文化品牌SVG /assets/logo/yaspretty-monogram.svg?v=20261104-y-seal-lines、全局CSS/字体、第三方视觉源码与许可引用路径未改。AGENTS.md、FINAL-PROMPT.md、server/public/data/contracts/依赖/视频/比赛材料未改，不把代码组织迁移描述为新AI、视觉或商品能力。
+
+**本阶段无新增核验，继承上一条结论。** 未新增产品、价格、规格、色号、店铺、链接、成分/功效、评分样本或图片授权证据。原图片pending/blocked、来源披露不等于授权、品牌官网商品页/e.tb.cn与直接官方旗舰店链接政策差异和公开门禁保持；文化文案未改，不将其中“真实体验”等编辑表达升级为独立实测证据。无真实Key/.env/旧memory/用户照片或个人画像/对话读取，无新上传、持久化、日志或第三方个人数据处理；测试只使用临时合成数据。
+
+未覆盖真实手机/触摸、其他浏览器/系统、默认动效、字体成功后的排版、严格像素、实际弱网/断网/存储配额或权限、生产同源HTTP/provider/在线模型及穷尽GPU/泄漏；不扩大此前阶段验证结论。既有收藏null/写失败和lazy下载拒绝根卸载、大分包/弃用、来源授权风险继续保留。
+
+回退范围为上述9路径。上一已验收归档点是 **aee4175bd09be01b065d5875c0f1305e55410cd9 / arch-stage-08**；当前未提交现场不是新的Git恢复点，不自动暂存、stash、清理或覆盖。人工通过并实际归档后按本阶段真实提交及后续ARCH-10 App装配/ARCH-11引用依赖评估授权git revert，从新到旧撤销必要范围并重跑验证；不承诺任意提交无冲突，Git不恢复浏览器数据、环境变量或外部服务状态。原标签与历史保留。
+
+**当前为待人工验收、未提交、未推送、未创建 arch-stage-09，暂存区为空。** 没有本阶段修改后SHA、整阶段人工确认人/日期/通过结果；负责人此前选择仅确认本次迁移范围。按本任务第七节及AGENTS.md 13.2等待整阶段明确人工验收后再执行获授权收尾，不标09 done、不实施10/11、不删除分支。
+
+
+**2026-11-17 17:09（北京时间）ARCH-09 最终自动核对**：node .qa/arch-09-checks/verify-final.mjs退出码0；精确9路径/3个guide-culture文件、master及基线aee4175、原08标签对象/指向、空索引和无09标签通过。两份累计报告只追加、ARCH-00～08执行正文及ARCH-10/11计划正文不变，12阶段正文/总表一致且09唯一current；README158实际树路径、15本地链接/锚点、4第三方源码路径、176相对引用/无循环及39个测试文件核对通过。两页面主体及App其余源码与归档原文相同；前后10/10全部evidence差异0；新增MJS语法、全部9路径UTF-8/末尾换行/无行尾空白及git diff --check、git diff --cached --check通过。此轮只同步文档与只读核对，沿用本次已实跑86/86、309/309、build2898及前后各10/10，不虚构重复运行。当前仍待人工验收、未提交、未推送、未创建 arch-stage-09；10/11pending，无分支删除。**本阶段无新增核验，继承上一条结论。** 补记后再复核文档/范围/空白，原失败、字体拒绝、无障碍与未覆盖限制保留。
+
+**2026-11-17 17:18:20（北京时间）ARCH-09 整阶段人工验收通过与归档收尾，YAS-2026-0055**
+
+- 项目负责人在本会话明确回复“人工核验通过”，确认本次 ARCH-09 完整阶段；此前“按实际基线迁移两个页面（推荐）”的范围确认与本次整阶段验收分别保留。按 AGENTS.md 13.2，ARCH-09 立即改为 done，ARCH-10 登记为唯一 current，ARCH-11 仍 pending；本次仅收尾09，不实施10/11，不删除分支。
+- 17:16:16 已重新执行 git fetch origin master 并实际查询远端 master/全部已归档 arch-stage 标签：master、HEAD、origin/master、FETCH_HEAD 与实际远端 master 仍为 aee4175bd09be01b065d5875c0f1305e55410cd9，ahead/behind 0/0；arch-stage-08 本地/远端对象 be773944bdae29408bc3eecdfc6789dc831ab0d1、^{}均指向该基线；00～08 标签对象/指向保留，09 本地及远端均未创建。精确九个已验收路径、暂存区为空，无来源不明变更；提交和推送前将再次 fetch 核对。
+- 人工确认后只更新 README.md、迁移计划和两份累计报告的阶段状态、验收与收尾记录；五个已验收代码/测试文件 SHA-256 保持原内容。17:16:33 再运行 node .qa/arch-09-checks/verify-final.mjs，退出码0，九路径、源码等价、前后浏览器 evidence、原历史、README 路径/链接、引用/无循环和空白检查通过。沿用本次真实相关86/86、全量309/309、build2898及迁移前后各10/10；不把文档收尾核对写成重复执行了业务测试或扩大真机/provider等覆盖。
+- 原 Hash 断言错误、开幕跳过竞态、外部字体环境拒绝、无障碍与未覆盖限制、构建警告和数据/图片/链接风险全部保留。用户入口仍为主站“肤质指南 / 品牌文化”；UI、导航、History、存储、API和隐私边界未变。AGENTS.md、FINAL-PROMPT.md、产品/素材、服务端、视频及比赛材料无需同步，本次未改。
+- **本阶段无新增核验，继承上一条结论。** 不新增或升级商品事实、价格、图片授权、评分样本或公开状态。
+- 本条写入时：人工验收已通过，尚未提交、尚未推送、尚未创建 arch-stage-09；上述原“待人工验收”记录为当时快照。按本次明确验收授权，仅暂存已验收九路径，使用规定格式在 master 创建最终确认提交、正常推送并核对实际远端 SHA，再在同一提交创建唯一带注释 arch-stage-09 并推送核对对象/指向。实际修改后 SHA/tag 由收尾回执先行提供，下次文档同步回填；不为自引用 amend、移动标签或虚构成功。
+- 上一归档基线为上述 ARCH-08；本阶段实际归档后按真实最终提交及后续 ARCH-10/11 依赖评估获授权的 git revert，从新到旧撤销必要范围并复验。只回退本阶段九路径，不承诺无冲突，不恢复浏览器数据、环境变量或外部服务状态，原提交、标签与失败证据保留。
+
+**2026-11-17 17:19（北京时间）验收后提交前核对**：17:18:53运行 node .qa/arch-09-checks/verify-acceptance.mjs退出码0；精确九路径、五个已验收代码/测试SHA-256未变、累计报告继续只追加、00～08执行正文不变、10只登记状态/启动门禁及11正文未改、12阶段正文/总表一致且10唯一current。README158实际路径/15本地链接锚点/4第三方路径、176相对引用无循环、39测试文件、原源码等价/前后浏览器evidence相同、语法/UTF-8/换行及两项diff --check通过。17:19:39再次fetch和实际ls-remote确认master仍为aee4175bd09be01b065d5875c0f1305e55410cd9，00～08标签保留且09不存在，分支master、ahead/behind0/0、索引空。补记后再复核上述文档/范围/空白；只同步验收收尾，不重复业务测试。本阶段无新增核验，继承上一条结论。提交/推送/阶段标签实际结果仍由回执先行提供、下次同步回填。
+
 ### ARCH-10：收敛 `app`
 
-**状态：`pending`**
+**状态：`current`**
 
 **允许范围**：`src/App.jsx`、`src/main.jsx`、新 `src/app/`、各页面组合引用和文档。
 
@@ -1022,7 +1117,7 @@ Chrome 157.0.8103.52，1440×900 与 360×800，deviceScaleFactor=1、reducedMot
 
 **验收**：所有页面入口、浏览器前进后退、产品深链接、移动菜单、Escape 关闭和返回顶部行为不变；测试、构建和完整主流程回归通过。
 
-**执行记录**：待执行。
+**执行记录**：2026-11-17（北京时间），负责人对ARCH-09完整阶段明确回复“人工核验通过”，按AGENTS.md 13.2登记本阶段为唯一current。本次仅收尾09，未实施10；开始10前必须先定位09实际最终提交及远端arch-stage-09归档并重新核对。
 
 ### ARCH-11：整体清理与最终回归
 
@@ -1056,9 +1151,9 @@ Chrome 157.0.8103.52，1440×900 与 360×800，deviceScaleFactor=1、reducedMot
 | ARCH-05 | makeup-table | done | 最终提交 bf988460ae8c9611eaae21adb02a34c3bfc53fa1；arch-stage-05 对象 11b0d3e419b1fe642e3ed650fb07b9fc4ab9ceba 指向该提交，11:38/12:19 实际远端一致；原验收和证据保留 |
 | ARCH-06 | catalog | done | e78c87f6768444138b88adca33b1221aa6c03d89；arch-stage-06对象dc38c7ac170701918cae4e08bf20e2ccee2ffd50指向该提交，12:52实际远端一致；原人工确认/证据保留 |
 | ARCH-07 | collection | done | 最终提交 7f71699ddea914c36a1ad3b0c877ad0d6eb31755；arch-stage-07 对象 c7765c37a83ce0dc4806d2db50ae84ebfbd9c4a9 指向该提交，15:52 实际远端一致；原人工确认/失败/证据保留 |
-| ARCH-08 | home | done | 负责人回复“人工核验完毕”；相关81/全量303/build2896与前后12+14+16+16原结果保留，Git收尾中；实际提交/推送/arch-stage-08待回执，限制不升级 |
-| ARCH-09 | guide、culture | current | 仅登记，未实施；开始前先核对08实际归档 |
-| ARCH-10 | app | pending | 待执行 |
+| ARCH-08 | home | done | aee4175bd09be01b065d5875c0f1305e55410cd9；arch-stage-08对象be773944bdae29408bc3eecdfc6789dc831ab0d1指向该提交，16:51:03实际远端一致；原人工确认/验证/失败和限制保留 |
+| ARCH-09 | guide-culture | done | 完整阶段“人工核验通过”；两个页面已迁移，86/309/build2898及前后10/10，原失败/限制保留；Git收尾中，提交/推送/arch-stage-09实际结果由回执提供、下次同步回填 |
+| ARCH-10 | app | current | 按09整阶段人工通过登记为唯一current；尚未实施，开始前须先完成09实际提交、推送及标签归档 |
 | ARCH-11 | 整体回归 | pending | 待执行 |
 
 ## 8. 阶段执行记录模板
