@@ -13,9 +13,9 @@
 | 合并前 master / 实际远端 | `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`；fetch 和实际远端查询已核对 |
 | 原开发分支末端（历史定位） | `codex/frontend-contracts-yas-2026-0055` / `4062153c512107534b88f3bc6011ffa869334c8a`；末端已纳入 master，本地和远端分支均已删除，原提交及标签保留 |
 | 切换完成 master SHA / 已核验远端 | 普通合并 `8caf4dcdad416a2a8fbc6057a7f5a289403e9a1c`；纯文档归档提交 `3b7ceee79576d8d38ff3821d1d688914d49c2f18`，ARCH-05 启动时已核对实际远端 |
-| 当前阶段 | `ARCH-07`：`collection`，唯一 `current`；本次仅登记下一阶段，未实施 |
-| 下一阶段 | `ARCH-08`：`home`，`pending`；未启动 |
-| 已验收阶段 | ARCH-00～06：`done`；00～05 已核验归档，06 已获本次明确人工验收并收尾，实际 SHA/远端/标签结果由交付回执提供、下次同步回填，原快照保留 |
+| 当前阶段 | `ARCH-08`：`home`，唯一 `current`；本次仅登记下一阶段，尚未实施 |
+| 下一阶段 | `ARCH-09`：`guide` 与 `culture`，`pending`；未启动 |
+| 已验收阶段 | ARCH-00～07：`done`；00～06已归档，07完整范围已人工验收通过，Git收尾中；真实SHA/标签在取得后由回执提供、下次同步回填 |
 | 前置 contracts | 六个 JSDoc 契约文件；原提交 `86b25b331106b49b02f10b499de7f7d94c24032b`（YAS-2026-0055）随合并保留 |
 | ARCH-00 | `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` → `8c95966cf61367396fd6783da1f86c8569546668` |
 | ARCH-01 | `arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` → `5e58236f6897147b354153ea9b02d080641a3cea` |
@@ -23,10 +23,11 @@
 | ARCH-03 | `arch-stage-03` 对象 `b8bacb242f91983b471ccd097470aca6287d5152` → `bf7e2254001fe3cc1fa7619c925fb3a8a00d456c` |
 | ARCH-04 | `arch-stage-04` 对象 `21597c84fa0d0c44a1ef3d4dd24ef0a8c36af78d` → `4062153c512107534b88f3bc6011ffa869334c8a`；“人工核验完毕”及两份累计报告存在 |
 | ARCH-05 | arch-stage-05 对象 11b0d3e419b1fe642e3ed650fb07b9fc4ab9ceba → bf988460ae8c9611eaae21adb02a34c3bfc53fa1；本地和实际远端一致 |
-| 最近远端核对 | 2026-11-17 12:41 验收后 fetch 及实际 ls-remote；master/HEAD/origin/master 均 bf988460ae8c9611eaae21adb02a34c3bfc53fa1，arch-stage-05 对象及 ^{} 指向一致，无 arch-stage-06；此为本次提交前事实，提交/标签成功后以回执和下次同步记录为准 |
-| 最近验证结果 | ARCH-06 相关 46/46、全量 259/259、构建 2890 模块；相同两视口浏览器场景前后各 14/14，记录的行为和几何差异 0；详情见本阶段记录 |
+| ARCH-06 | arch-stage-06 对象 dc38c7ac170701918cae4e08bf20e2ccee2ffd50 → e78c87f6768444138b88adca33b1221aa6c03d89；本地和实际远端一致 |
+| 最近远端核对 | 2026-11-17 15:26～15:32（北京时间）网络恢复后重新fetch和实际ls-remote；master/HEAD/origin/master均e78c87f6768444138b88adca33b1221aa6c03d89，arch-stage-06本地/远端对象及^{}一致，无arch-stage-07；本地17路径已获人工验收、暂存区空，此时待提交/推送/标签 |
+| 最近验证结果 | ARCH-07 相关 112/112、全量 296/296、构建 2895 模块；收藏前后各16/16、原catalog前后各14/14，全部记录evidence相同；正常场景无新增JS错误，故意存储故障/字体拒绝等如实保留 |
 
-实际代码与测试是判断模块是否落地的事实依据。已验收归档 ARCH-00～05 均在 master；本次回填 ARCH-05 真实提交/标签，不改写原收尾时的待提交快照。ARCH-06 已获项目负责人明确人工验收通过，收尾时更新为 done；实际提交和标签只在真实产生且远端核对后称已归档，由回执先行提供并在下次文档同步回填。ARCH-07 仅登记为下一阶段，不在 ARCH-06 收尾中实施。
+实际代码与测试是判断模块是否落地的事实依据。ARCH-00～06 已验收归档；ARCH-07 已获本次明确人工验收、状态done，正在按授权完成提交/正常推送/唯一带注释标签。当前未取得的新SHA或远端结果不提前写成已归档；原待验收/未提交/current记录为历史快照，完整保留。ARCH-08为唯一current且尚未实施，ARCH-09～11pending。
 
 ## 2. 文档分工
 
@@ -858,7 +859,7 @@ Chrome 157.0.8103.52，1440×900 与 360×800，deviceScaleFactor=1、reducedMot
 
 ### ARCH-07：`collection`
 
-**状态：`current`**
+**状态：`done`**
 
 **允许范围**：App 中收藏代码、新 `features/collection/`、`lib/storage`、catalog 公共组件、相关测试和文档。
 
@@ -874,9 +875,54 @@ Chrome 157.0.8103.52，1440×900 与 360×800，deviceScaleFactor=1、reducedMot
 
 **执行记录**：2026-11-17（北京时间），项目负责人对ARCH-06整阶段明确回复“人工验收通过 继续”，按AGENTS 13.2登记本阶段为唯一current。本次仅完成ARCH-06收尾，未实施collection；开始后续代码前须先定位ARCH-06实际提交及远端arch-stage-06归档点并重新核对。
 
+**2026-11-17（北京时间）ARCH-07 整阶段实施与交付：待人工验收，关联 YAS-2026-0055**
+
+- 启动核验时间 12:52：先执行 `git fetch origin master`，再 `git ls-remote origin refs/heads/master refs/tags/arch-stage-06 'refs/tags/arch-stage-06^{}'`。当前分支 master，HEAD/origin/master/实际远端和 ARCH-06 最终归档提交均为 `e78c87f6768444138b88adca33b1221aa6c03d89`；带注释标签对象本地/远端均 `dc38c7ac170701918cae4e08bf20e2ccee2ffd50`，提交指向该基线，ahead/behind 0/0；起始工作树、索引、未跟踪文件为空。06 人工确认和归档证据存在，07 为唯一 current，08～11 pending，通过门禁后才实施。普通沙箱 fetch 写 FETCH_HEAD 被拒、ls-remote 遇 schannel 凭据通道失败，经同命令权限重试成功；未改 Git 凭据或配置。中断后 12:56 复核分支/HEAD/空索引与工作树，复用本任务 5195 服务，无清理/切分支/stash。
+- 基线差异说明：旧计划目标文字含“旧 Key 兼容”，实际收藏只有 `base-archive-collection`，不存在另一个已实现的收藏旧 Key 或版本迁移；兼容的是该 Key 下历史原始对象。小Y当前/旧画像、消息 Key 是独立数据，不作为收藏迁移源。没有为满足目标措辞新增 Key、版本包装、迁移或删除逻辑。
+
+| 原 App 位置（ARCH-06归档版本） | 目标模块 / 引用方 | 原行为、测试与缺口 |
+| --- | --- | --- |
+| :30 STORAGE_KEY、:48 getStoredCollection、:108 写入 effect | collectionStorage.js → lib/storage/storageClient；useCollection 消费 | 唯一 Key、原始对象；读取失败回退、写失败抛出；15项 storage 测试 |
+| :31 statusOptions、:154 setStatus、:158 removeFavorite、:138 count、:438 list filter | collectionUtils.js → Hook / 两组件 | 三状态原序、spread更新/delete、计数与目录序过滤；14项 Utils 测试 |
+| :69 collection state / effect / callbacks | hooks/useCollection.js → App唯一实例 | 首页/库/详情/收藏页共用；3项隔离状态测试+真实页面回归，无跨标签监听 |
+| :433 StatusControl | components/CollectionStatusControl.jsx；App详情插槽、CollectionView消费 | 原 JSX/文案/CSS、默认想买/取消/三状态；组件回调/SSR边界测试 |
+| :437 FavoritesView | components/CollectionView.jsx；App传原 products 数组和共享 callbacks | 原列表/空态/产品对象/顺序；与控件共3项组件测试，无 catalog/App反向导入 |
+
+以上 collection 目标前缀为 `src/features/collection/`。实际17路径：App、collection 的5个源码/4份就近测试、公共 storageClient.js 及其原测试、独立 tests/browser/arch07-collection.mjs、README/本文/两份累计报告。catalog 原源码和测试完全未改；旧收藏实现从App移除。公共 storage 新增原始 JSON 读写复用；既有 readJson 的nullish回退、writeVersioned版本1和访问/序列化错误传播保持，收藏使用raw读取保留null，并在领域层保留原读异常回退。无空目录/空Hook/转发/第二套状态。
+
+- 状态基线保持：`想买 / 正在用 / 会回购`；卡片未收藏时添加“想买”，已收藏时点击移除；详情/收藏控件可切换状态或取消。spread保留对象键序，列表按原产品数组过滤，与插入顺序无关；导航数是Object.keys长度，未知ID/falsy值不显示在列表但仍计键。刷新恢复相同原始对象，没有存储schema修复。缺失/空串/坏JSON和读取拒绝回退{}，effect随状态保存；写入拒绝/序列化错误仍抛出。合法JSON null仍触发Object.keys异常、根视图卸载；写入故障也会卸载根视图，属于保留缺口。没有storage监听/跨标签实时同步、账号、云收藏或服务端持久化。
+- 迁移前实跑（12:54）：相关8文件75/75、全量33文件259/259、build2890模块通过。迁移后 `npm test -- src/features/collection src/lib/storage src/features/catalog src/lib/navigation-history.test.js`：13:06，12文件112/112；`npm test`：13:07，37文件296/296；`npm run build`：2895模块、主JS745.49kB/gzip226.61kB、3D1293.47kB，通过。原259项保留，新增collection35项（Utils14/Storage15/Hook3/组件3）、公共raw存储2项。CSS三产物名称/大小不变；Three.js弃用和>500kB警告仍在。Hook测试为隔离state/effect，组件为真实节点/SSR/回调，不冒称RTL挂载。
+- 独立脚本使用现有Playwright/Chrome157.0.8103.52、1440×900和360×800、reducedMotion=reduce、deviceScaleFactor=1、临时上下文/合成数据。`node tests/browser/arch07-collection.mjs` 前后各16/16；原 `node tests/browser/arch06-catalog.mjs` 前后各14/14。启动命令 `node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5195 --strictPort`，环境和可复跑完整命令见累计报告。浏览器测试用Vite开发服务，生产构建单独验证；未新增生产同源HTTP验收。
+- 覆盖：首页静态回退卡片添加/详情切状态；库卡片添加/取消、抽屉与完整资料添加/取消/三状态、收藏页修改/移除与其他页面立即反映、筛选跨页保持、刷新/深链接恢复、原始对象/目录次序/未知与falsy键、空态、坏JSON/读写故障/null、非收藏当前/旧画像/消息及其他数据保留。catalog原脚本另验证搜索/35单项筛选/四排序/详情色号/相似产品/内部滚动/历史关闭、模拟图片失败及空目录；无API/provider调用，不新增跨标签测试。
+- `node .qa/arch-07-checks/compare-browser.mjs`：16组收藏和14组catalog全部evidence逐项相同（存储字节/状态/产品ID/顺序、页面文字、URL/历史/刷新及记录几何），收藏预期pageerror也相同；不声称严格像素一致。`verify-source.mjs`：两组件主体、App非收藏部分/导航原文不变，10类原始存储输入及既有readJson行为等价；公共lib无features依赖，App仅一个收藏实例；9个变更JS/MJS语法检查通过。`git diff --check`及最终文档/范围核对在交付前再次记录。
+- 正常场景无新增未处理JS错误，故意存储写失败（StrictMode每视口2条）和null（每视口1条）前后均6条预期pageerror、根卸载保留。收藏前后各22次Google Fonts环境ERR_NETWORK_ACCESS_DENIED/对应console资源错误；catalog各22字体失败及44次显式封面拒绝（24桌面/20手机），无其他本地失败/HTTP>=400。不能称控制台/资源错误全为零。已实际查看前桌面列表/手机原始对象列表和后桌面列表/手机列表/手机抽屉；几何断言无横向溢出/所检控件重叠，关闭及键盘选择可用。手机“查看详情”按钮本来隐藏，以产品名称打开详情；不为此改CSS。
+- 失败保留：新收藏脚本首轮14/16，查询“持妆粉底液”误期待唯一商品；改品牌+名称后15/16，手机脚本误点隐藏的桌面详情按钮；再改产品名称入口、原生select Escape/Tab收起后，在生产源码迁移前建立16/16完整基线，迁移后同脚本16/16。只修测试定位/取景，未改产品或业务。证据：`.qa/arch-07-before/`、`before-final/`、`before-complete/`、`after/`（均带arch-07前缀），catalog前后及checks；QA/截图/快照被忽略不提交。
+- README 当前树/37测试文件/真实存储与catalog/App依赖、本文、两累计报告已同步。**本阶段无新增核验，继承上一条结论。** 不改产品事实/价格/评分/素材/来源/授权pending或blocked/公开状态，不改服务端、public、contracts、data、CSS、依赖、API/推荐/小Y数据/视频/比赛材料。测试为合成数据，未读取真实用户档案、照片、对话、Key或私有环境文件，没有新上传/日志/第三方个人数据处理。
+- 未覆盖：真实手机/触摸、其他浏览器/系统、默认动画、字体成功加载后的严格排版、真实断网/弱网、真实存储配额耗尽、provider/生产同源HTTP。本次故障是定向模拟，不代表实际权限或磁盘故障。原懒加载下载拒绝根卸载、大包/弃用、图片授权及商品直接链接政策差异继续保留；收藏null/写失败未修，不把保留缺口当作成功降级。
+- 回退范围为上述17路径；上一已验收归档为e78c87f/arch-stage-06，未提交现场不是Git回退点。获人工确认并归档后按实际SHA及后续home/app对Hook/组件、其他feature对公共storage依赖评估授权revert，必要时从新到旧回退并重新测试/构建/页面；不承诺任意提交无冲突。Git不恢复浏览器数据/环境变量/外部状态，不自动清理/覆盖或丢弃现场。
+- **当前：待人工验收、未提交、未推送、未创建 arch-stage-07。** 无本阶段修改后SHA/人工确认人/日期/通过结果；ARCH-07保持唯一current，08～11pending；未暂存、不打标签、不删分支、不实施08。人工验收由AGENTS13.2和本次任务第七节明确要求，待负责人核对完整结果后才按规则收尾。
+- **13:21 最终自动核对**：`node .qa/arch-07-checks/verify-final.mjs` 退出码0，精确17路径/9个feature文件、空索引、master/HEAD/origin/master/arch-stage-06定位不变、无07标签；两累计报告只追加、00～06历史正文和08～11计划正文原样、12阶段正文/总表一致且07唯一current。README147个实际树路径、13条本地链接/锚点、4个第三方披露源码路径有效；167个相对引用、无循环/反向依赖、原存储断言和源码快照、37个Vitest文件、9个变更JS/MJS语法、UTF-8/末尾换行/行尾空白、源码与浏览器对照及工作树/索引空白检查通过。首轮临时检查器误把JSDoc中的示意import当真实引用，排除注释后通过，只修忽略QA检查器。随后再查看迁移后桌面/手机列表及手机抽屉，未见新增重叠/溢出；追加本结果后再复核，不重跑或扩大原业务验证。**本阶段无新增核验，继承上一条结论。** 当前仍待人工验收，未提交/推送/建标签/删分支或实施08。
+
+
+
+**2026-11-17（北京时间）ARCH-07 人工验收通过与版本收尾**
+
+- 项目负责人在整阶段交付后明确回复原话“人工验收通过”，确认已交付17路径；按AGENTS13.2将07改done、08登记为唯一current，09～11pending。本次只收尾ARCH-07，不实施08，不推定分支删除授权；不虚构负责人使用的设备、操作步骤或未执行检查。
+- 首次收尾在15:08～15:17核验遇本机7890代理未监听、GitHub直连连接重置/无法连接，OpenSSL重试未取得远端，停止挂起查询并只读核对；未暂存/提交/改阶段或配置。负责人随后回复“网络已恢复”并要求继续，授权保持有效。15:26～15:32重新git fetch origin master及实际git ls-remote成功：HEAD/origin/master/实际远端仍为e78c87f6768444138b88adca33b1221aa6c03d89，arch-stage-06对象dc38c7ac170701918cae4e08bf20e2ccee2ffd50及^{}一致，远端无arch-stage-07。普通沙箱写FETCH_HEAD被拒，同命令权限重试成功；未改Git凭据/配置。
+- 验收后只更新README/本文/两累计报告的状态、确认及追溯，13个已验收代码与测试文件保存并逐一复核SHA-256不变。17路径均在范围，索引空，无来源不明改动。沿用本阶段实跑的相关112/112、全量296/296、构建2895模块、前后收藏16/16与catalog14/14；不称验收后重跑或扩大覆盖。提交前核对文档路径/链接/历史/唯一current、源码对照、语法、工作树及暂存空白，真实结果另追加。
+- 收藏Key/对象/三状态/异常及唯一共享实例、UI/CSS、API/规则/产品事实/依赖不变；当前/旧小Y与其他存储不改。入口仍为主站5195、产品库/我的收藏/详情；无新上传、个人数据日志或第三方处理。**本阶段无新增核验，继承上一条结论。** 原存储null/写失败根卸载、字体拒绝/模拟图片失败、lazy下载缺口、大分包、数据来源/授权/直接官方旗舰店链接差异及全部未覆盖项保留。视频/比赛材料未改。
+- 原待验收/current/未提交快照和失败完整保留，最新状态以本条及顶部/总表为准。本条写入时尚无ARCH-07新SHA/标签对象或推送结果；最终状态、人工确认和收尾记录与已验收实现共同纳入规定格式的提交，再在该提交建立唯一带注释arch-stage-07并正常推送、核对实际远端master/对象/^{}。真实结果由本次回执先提供、下次同步回填，不amend、不强推或移动/复用标签。
+- 上一已归档定位仍为e78c87f/arch-stage-06，当前未提交现场不是新恢复点。形成实际归档后按后续home/app和公共storage依赖评估授权revert及复验，保留原历史，Git不恢复浏览器数据/环境变量/外部状态。开始ARCH-08前须先定位07最终归档并重新核对；本次不删分支或实施08。
+
+
+**2026-11-17 15:36（北京时间）验收收尾自动核对**：node .qa/arch-07-checks/verify-acceptance.mjs 退出码0，13个已验收代码/测试文件SHA-256不变，精确17路径/空索引、两累计报告仅追加、00～06历史及09～11计划不变、07原证据保留、08仅登记current/未实施，12阶段正文与总表一致。README147实际路径/13本地链接与锚点/4第三方披露路径、167相对引用/无循环或反向依赖、原断言/源码快照、37测试文件、9个JS/MJS语法、UTF-8/换行/空白、源码及浏览器证据对照通过；git diff --check和git diff --cached --check退出码0。确认后只同步四文档，沿用112/112、296/296、build2895、前后16+14的真实结果，不称重跑。追加本结果后再核对，暂存后再核对精确范围与内容；此时尚无本阶段提交/推送/标签结果，待实际回执。**本阶段无新增核验，继承上一条结论。**
+
+
+**2026-11-17 15:40（北京时间）暂存内容核对**：显式暂存已确认的17路径后，Node只读核对退出码0；暂存清单精确匹配17路径、各暂存blob与工作树按Git过滤后的内容一致、无未暂存或未跟踪文件，13个已验收代码/测试文件SHA-256仍不变，工作树和暂存空白检查均通过。本次仅追加此收尾证据后重新暂存三份记录文档并复核，不改实现、阶段范围或原风险。本条与最终状态/人工确认共同纳入ARCH-07收尾提交，此时新SHA/推送/标签尚未产生，实际结果待回执。**本阶段无新增核验，继承上一条结论。**
+
 ### ARCH-08：`home`
 
-**状态：`pending`**
+**状态：`current`**
 
 **允许范围**：App 中首页代码、新 `features/home/`、首页视觉组件及 CSS、相关测试和文档。
 
@@ -889,7 +935,7 @@ Chrome 157.0.8103.52，1440×900 与 360×800，deviceScaleFactor=1、reducedMot
 
 **验收**：首页布局、Slogan、精选顺序、轮播、滚动动效、CTA、3D/2D 回退和响应式表现不变；测试和构建通过。
 
-**执行记录**：待执行。
+**执行记录**：2026-11-17（北京时间），项目负责人明确确认ARCH-07“人工验收通过”，按AGENTS13.2将本阶段登记为唯一current。本次只确定下一阶段，尚未实施ARCH-08；开始代码前必须定位ARCH-07实际提交及远端arch-stage-07归档并重新核对。
 
 ### ARCH-09：`guide` 与 `culture`
 
@@ -951,9 +997,9 @@ Chrome 157.0.8103.52，1440×900 与 360×800，deviceScaleFactor=1、reducedMot
 | ARCH-03 | assistant | done | 收尾 bf7e225 与 arch-stage-03 对象/指向已核对实际远端；S01–S03 人工验收，S04/S05 人工等待由负责人豁免；历史自动验证和风险保留 |
 | ARCH-04 | lib/api | done | 收尾 `4062153c512107534b88f3bc6011ffa869334c8a`；`arch-stage-04` 对象/指向已核对实际远端；2026-11-17 完整人工验收通过，原验证及风险保留 |
 | ARCH-05 | makeup-table | done | 最终提交 bf988460ae8c9611eaae21adb02a34c3bfc53fa1；arch-stage-05 对象 11b0d3e419b1fe642e3ed650fb07b9fc4ab9ceba 指向该提交，11:38/12:19 实际远端一致；原验收和证据保留 |
-| ARCH-06 | catalog | done | 实现/自动验证/文档同步完成，负责人明确“人工验收通过 继续”；本次收尾提交/正常推送/唯一arch-stage-06的真实结果由回执提供、下次同步回填 |
-| ARCH-07 | collection | current | ARCH-06人工验收后登记为唯一current；本次未实施，先核对06实际归档点 |
-| ARCH-08 | home | pending | 待执行 |
+| ARCH-06 | catalog | done | e78c87f6768444138b88adca33b1221aa6c03d89；arch-stage-06对象dc38c7ac170701918cae4e08bf20e2ccee2ffd50指向该提交，12:52实际远端一致；原人工确认/证据保留 |
+| ARCH-07 | collection | done | 负责人明确“人工验收通过”；17路径完整范围，相关112/全量296/build2895/前后收藏16+catalog14通过；收尾只更新四文档，实际SHA/推送/arch-stage-07由本次回执提供、下次同步回填 |
+| ARCH-08 | home | current | 本次仅登记下一阶段，尚未实施；开始代码前须定位07实际归档并重新核对远端 |
 | ARCH-09 | guide、culture | pending | 待执行 |
 | ARCH-10 | app | pending | 待执行 |
 | ARCH-11 | 整体回归 | pending | 待执行 |

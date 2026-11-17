@@ -1,9 +1,6 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ChevronDown,
   ChevronRight,
-  CircleX,
-  Heart,
   Menu,
   Search,
   Sparkles,
@@ -25,10 +22,11 @@ import LibraryView from './features/catalog/components/LibraryView'
 import ProductCard from './features/catalog/components/ProductCard'
 import ProductProfile from './features/catalog/components/ProductProfile'
 import ProductDetailDrawer from './features/catalog/components/ProductDetailDrawer'
+import { useCollection } from './features/collection/hooks/useCollection'
+import CollectionView from './features/collection/components/CollectionView'
+import CollectionStatusControl from './features/collection/components/CollectionStatusControl'
 
 const products = getCatalogProducts()
-const STORAGE_KEY = 'base-archive-collection'
-const statusOptions = ['想买', '正在用', '会回购']
 
 class EnhancementBoundary extends Component {
   constructor(props) {
@@ -45,14 +43,6 @@ class EnhancementBoundary extends Component {
   }
 }
 
-function getStoredCollection() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
-  } catch {
-    return {}
-  }
-}
-
 function currentNavigationEntry() {
   const entry = resolveNavigationEntry(window.history.state, window.location.pathname)
   if (entry.view === 'product' && !productById(entry.productId)) return createNavigationEntry()
@@ -66,7 +56,7 @@ function App() {
   const [openingActive, setOpeningActive] = useState(() => initialEntry.view === 'home')
   const [view, setView] = useState(initialEntry.view)
   const { filters, sort, filterPanelOpen, filteredProducts, setSort, setFilterPanelOpen, updateFilter, clearFilters, searchCatalog, applyQuickFilter } = useCatalog()
-  const [collection, setCollection] = useState(getStoredCollection)
+  const { collection, favoriteCount, setStatus, removeFavorite } = useCollection()
   const [selectedProduct, setSelectedProduct] = useState(productById(initialEntry.drawerProductId))
   const [profileProduct, setProfileProduct] = useState(initialProfileProduct)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -106,10 +96,6 @@ function App() {
   }, [openingActive, view])
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(collection))
-  }, [collection])
-
-  useEffect(() => {
     const closeOnEscape = (event) => {
       if (event.key === 'Escape') {
         if (selectedProduct) closeProductDrawer()
@@ -135,8 +121,6 @@ function App() {
     }
   }, [initialEntry])
 
-  const favoriteCount = Object.keys(collection).length
-
   function runSearch(keyword) {
     searchCatalog(keyword)
     navigate('library')
@@ -149,18 +133,6 @@ function App() {
 
   function openCategory(category) {
     chooseQuickFilter({ categories: [category] })
-  }
-
-  function setStatus(productId, status) {
-    setCollection((current) => ({ ...current, [productId]: status }))
-  }
-
-  function removeFavorite(productId) {
-    setCollection((current) => {
-      const next = { ...current }
-      delete next[productId]
-      return next
-    })
   }
 
   function applyNavigationEntry(rawEntry, restoreScroll = false) {
@@ -281,7 +253,8 @@ function App() {
         {view === 'assistant' && <XiaoYAssistant onOpenProduct={openProductDrawer} />}
         {view === 'culture' && <CultureView onNavigate={navigate} />}
         {view === 'favorites' && (
-          <FavoritesView
+          <CollectionView
+            products={products}
             collection={collection}
             onOpenProduct={openProductDrawer}
             onFavorite={setStatus}
@@ -292,7 +265,7 @@ function App() {
         {view === 'product' && profileProduct && (
           <ProductProfile
             product={profileProduct}
-            statusControl={<StatusControl productId={profileProduct.id} status={collection[profileProduct.id]} onFavorite={setStatus} onRemoveFavorite={removeFavorite} />}
+            statusControl={<CollectionStatusControl productId={profileProduct.id} status={collection[profileProduct.id]} onFavorite={setStatus} onRemoveFavorite={removeFavorite} />}
             onBack={closeProductProfile}
           />
         )}
@@ -302,7 +275,7 @@ function App() {
       {selectedProduct && (
         <ProductDetailDrawer
           product={selectedProduct}
-          statusControl={<StatusControl productId={selectedProduct.id} status={collection[selectedProduct.id]} onFavorite={setStatus} onRemoveFavorite={removeFavorite} />}
+          statusControl={<CollectionStatusControl productId={selectedProduct.id} status={collection[selectedProduct.id]} onFavorite={setStatus} onRemoveFavorite={removeFavorite} />}
           onClose={closeProductDrawer}
           onOpenProduct={openProductDrawer}
           onOpenFullProfile={openProductProfile}
@@ -428,15 +401,6 @@ function HomeView({ openingReady, onSearch, onQuickFilter, onViewCategory, onNav
       </section>
     </div>
   )
-}
-
-function StatusControl({ productId, status, onFavorite, onRemoveFavorite }) {
-  return <div className="status-control">{status ? <><span className="saved-status"><Heart size={15} fill="currentColor" /> 已标记：{status}</span><button className="icon-text-button" onClick={() => onRemoveFavorite(productId)}><CircleX size={16} /> 取消</button></> : <button className="primary-action" onClick={() => onFavorite(productId, '想买')}><Heart size={16} /> 收藏这款</button>} {status && <label className="status-select"><select value={status} onChange={(event) => onFavorite(productId, event.target.value)} aria-label="收藏状态">{statusOptions.map((option) => <option key={option}>{option}</option>)}</select><ChevronDown size={14} /></label>}</div>
-}
-
-function FavoritesView({ collection, onOpenProduct, onFavorite, onRemoveFavorite, onNavigate }) {
-  const favorites = products.filter((product) => collection[product.id])
-  return <section className="favorites-page content-section"><div className="favorites-heading"><div><p className="eyebrow">MY BEAUTY LIST</p><h1>我的收藏</h1><p>把想试、正在用和愿意回购的彩妆放在同一个清单。</p></div><span className="favorites-count">{favorites.length} 款</span></div>{favorites.length ? <div className="favorite-list">{favorites.map((product) => <article key={product.id} className="favorite-item"><button className="favorite-image" onClick={() => onOpenProduct(product)}><img src={product.image} alt={`${product.name} 产品图`} /></button><div className="favorite-content"><p className="product-brand">{product.brand}</p><button className="favorite-name" onClick={() => onOpenProduct(product)}>{product.name}</button><p>{product.shades[0].name} · {product.skins.join(' / ')} · {product.finish}</p><div className="favorite-bottom"><StatusControl productId={product.id} status={collection[product.id]} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} /><button className="open-link" onClick={() => onOpenProduct(product)}>查看详情 <ChevronRight size={16} /></button></div></div></article>)}</div> : <div className="empty-favorites"><Heart size={28} /><h2>收藏清单还是空的</h2><p>从产品库开始，标记让你想继续了解的彩妆。</p><button className="primary-action" onClick={() => onNavigate('library')}>浏览产品库 <ChevronRight size={16} /></button></div>}</section>
 }
 
 function GuideView({ onApplyFilter }) {

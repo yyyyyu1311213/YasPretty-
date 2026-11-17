@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { readJson, writeVersioned } from './storageClient'
+import { readJson, readJsonValue, writeJson, writeVersioned } from './storageClient'
 
 describe('存储 JSON 与版本包装', () => {
   let values
@@ -56,5 +56,24 @@ describe('存储 JSON 与版本包装', () => {
     value.self = value
     expect(() => writeVersioned('record', value)).toThrow(TypeError)
     expect(storage.setItem).not.toHaveBeenCalled()
+  })
+
+  it('allows a raw consumer to preserve null while the existing reader still falls back', () => {
+    values.set('raw', 'null')
+    expect(readJsonValue('raw', {})).toBeNull()
+    expect(readJson('raw', 'fallback')).toBe('fallback')
+    expect(readJsonValue('missing', {})).toEqual({})
+    values.set('raw', '{broken')
+    expect(readJsonValue('raw', {})).toEqual({})
+  })
+
+  it('writes raw JSON without a version envelope and propagates access errors', () => {
+    writeJson('raw', { id: '想买' })
+    expect(values.get('raw')).toBe('{"id":"想买"}')
+    const error = new Error('denied')
+    storage.getItem.mockImplementation(() => { throw error })
+    storage.setItem.mockImplementation(() => { throw error })
+    expect(() => readJsonValue('raw', {})).toThrow(error)
+    expect(() => writeJson('raw', {})).toThrow(error)
   })
 })
