@@ -206,6 +206,9 @@ async function buildApp(options = {}) {
   const serveStatic = options.serveStatic !== false && fs.existsSync(path.join(DIST, 'index.html'))
   if (serveStatic) {
     await app.register(fastifyStatic, { root: DIST, prefix: '/' })
+    // Product IDs also name image directories. Serve the SPA explicitly so
+    // directory handling cannot finish a product deep link with an empty body.
+    app.get('/products/:id', (request, reply) => reply.sendFile('index.html'))
   }
 
   app.setNotFoundHandler((request, reply) => {

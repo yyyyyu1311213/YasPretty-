@@ -5,7 +5,7 @@
 
 /**
  * 小Y当前对话画像，可为 {}；与标准 UserProfile 独立，不合并或改名。
- * xiaoy-storage.js 当前保存此画像，不在此定义存储读写或迁移。
+ * features/assistant/hooks/useAssistant.js 通过 lib/storage/ 保存此画像；此处不定义读写或迁移。
  * @typedef {object} AssistantProfile
  * @property {string} [skin]
  * @property {string} [finish]

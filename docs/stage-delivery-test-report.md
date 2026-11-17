@@ -2482,3 +2482,215 @@ node .qa/arch-10-checks/smoke.mjs
 
 
 **2026-11-17 18:09:31（北京时间）ARCH-10 提交前暂存核对**：18:09:08以YAS_QA_VERIFY_STAGED=1运行node .qa/arch-10-checks/verify-acceptance.mjs退出码0，暂存清单精确匹配已验收13路径、各blob与工作树经Git过滤内容相同，无未暂存或未跟踪文件；九代码/测试/脚本哈希不变，阶段状态、原历史、两报告只追加、路径/链接/源码等价/语法/页面证据及工作树与索引空白检查通过。只补记本条、重新暂存三份记录并复核，不改实现/验证范围。最终确认与收尾记录纳入本次ARCH-10提交；此时新SHA/推送/标签尚未产生，实际结果由回执提供。**本阶段无新增核验，继承上一条结论。**
+
+
+## 2026-11-17（北京时间）ARCH-11：最终清理与验证，待人工验收
+
+关联既有 **YAS-2026-0055**，未新增问题编号。
+
+
+交付状态：**待人工验收、未提交、未推送、未创建 arch-stage-11**。ARCH-00～10 保持 done，ARCH-11 保持唯一 current；没有提前宣布本轮迁移完成。本次没有新问题编号、功能、依赖、产品事实、素材、存储或降级语义变更。项目负责人在发现生产深链接失败后，明确回复 **“授权这项最小服务端修复”**，例外仅覆盖 `server/app.cjs` 产品深链接路由及相关测试、完整复验；其余原禁止范围保持。不以这项授权推定 Git 收尾授权。
+
+**启动门禁与 ARCH-10 归档回填**
+
+先执行 `git fetch origin master`；首次沙箱写 FETCH_HEAD 失败，同命令权限重试成功。普通 `git ls-remote` 曾报 Schannel 凭据错误，同命令权限重试成功，没有修改凭据、Git 配置或自动审批拒绝。2026-11-17 **18:31:10**（北京时间）再次实际查询远端 `master` 和所有 `arch-stage-*`：
+
+- 分支 master；HEAD、origin/master、实际远端 master、ARCH-10 最终归档提交均为 **f8fcbfa2673af1b9f9f470796f6a206aedeffcc9**，ahead/behind 0/0。启动工作树、暂存区和未跟踪均为空。
+- 本地及实际远端带注释 `arch-stage-10` 对象均为 **d51f5ee44f5140be1c38a2e4b6be133f2ca144c6**，`^{}` 均指向上述提交；ARCH-00～09 标签对象和指向保留，无 arch-stage-11。
+- ARCH-10 整阶段负责人原话“人工审核完毕”、done、实际提交/推送/归档存在；ARCH-00～10 done、11 唯一 current，未自行改阶段状态后启动。上阶段文档写入时尚未产生的 SHA/tag 在此按实际结果回填，历史快照、失败、豁免与风险原文保留。
+- 原始远端结果：`.qa/arch-11-checks/remote-refs.txt`。本次只读核对没有切换、清理、覆盖、暂存、stash、提交、推送、打标签或删除分支。
+
+**最终目录与导入映射**
+
+完整真实 `src/` 树、测试入口和职责见 README“当前实际结构 / 本轮最终职责映射”；AST 全图见 `.qa/arch-11-checks/import-audit-final.json`。
+
+| 阶段/职责 | 最终实际位置与引用 | 旧目标/保留边界 |
+| --- | --- | --- |
+| ARCH-00 契约 | `src/contracts/` 六个 JSDoc 文件，由领域模块/契约通过类型 import 使用 | 没有运行时 schema，不把无运行时可达性当死文件 |
+| ARCH-01 存储 | `lib/storage/{storageClient,storageKeys,migrations,clearUserData}.js` → 小Y/收藏 | 旧 xiaoy-storage.js 无运行入口或转发 |
+| ARCH-02 方案 | `features/makeup-plan/` 的 API、Utils、Hook、四展示组件 | 小Y与工作台共用方案 API；无 assistant 反向依赖 |
+| ARCH-03 小Y | `features/assistant/` 的 API、Utils、intentUtils、Hook、四展示组件 | `components/XiaoYAssistant.jsx` 仍有标题/快捷问题/输入/工作台组合职责；非空转发 |
+| ARCH-04 API | `lib/api/{client,errors}.js` → 两个领域 API | 公共层无领域/React/存储反向依赖；仅此处执行前端 HTTP fetch |
+| ARCH-05 化妆台 | `features/makeup-table/components/` 与 `makeup-table-3d/`、三 CSS | Experience 由 HomeView lazy 导入；内部场景不泄露到 App；2D 为真实降级 |
+| ARCH-06 产品库 | `features/catalog/` Utils/Service/Hook/五展示组件 | App/首页/导航真实消费；产品事实仍唯一来自 data |
+| ARCH-07 收藏 | `features/collection/` Utils/Storage/Hook/两展示组件 | App 单实例，通过 props/插槽共享；catalog 与 collection 不互相导入 |
+| ARCH-08 首页 | `features/home/components/HomeView.jsx` | 负责人确认保持共享视觉原路径，未创建 homeContent、模板或技法预览 |
+| ARCH-09 指南/文化 | `features/guide-culture/components/{GuideView,CultureView}.jsx` | 已确认合并 feature；没有 MainBrowser/文化弹层/useOverlay |
+| ARCH-10 应用 | `App.jsx` → `features/app-shell/components/` 与 `hooks/useAppNavigation.js` | main/BrandOpening/EnhancementBoundary 原路径；无 src/app、侧栏、底部导航 |
+| ARCH-11 最终核对 | 入口 `index.html → main.jsx → App.jsx`，App 当前实际 130 行 | 保留应用组合、唯一 catalog/collection、真实跨页连接和已有视觉边界；没有继续拆分 |
+
+扫描同时覆盖静态/动态导入、re-export、JSDoc 类型引用、字符串模块引用、Vite 入口、测试、大小写、CSS/公开资源、纯转发、重复函数体、未用导出、空目录和依赖环。现有 Vite/Rolldown AST 解析，无新依赖；**117 个 src 文件、122 个解析模块、72 个生产 JS/JSX、214 条相对运行/测试边、39 条类型引用、44 项字符串模块引用、121 项字面资源引用**。缺失/大小写错误/边界错误/循环/纯转发/未用导入/未用导出/空目录均为 0。字符串中的外部 Playwright 环境模块是显式外部测试运行时；历史源拦截用字符串是故障注入，不是运行导入。业务组件没有新增 fetch/localStorage：HTTP 在 lib/api/client，实际持久化在 lib/storage；GhostCursor 的 GLSL `fetch` 是着色器函数。
+
+**实际删除项及证据**
+
+整文件删除 **0**，目录删除 **0**。没有仅凭搜索删除文件。只收回两项无消费者的导出，函数/常量本体和内部引用保留：
+
+| 项目 | 原职责 / 最终去向 | 无引用与验证证据 |
+| --- | --- | --- |
+| navigation-history.js 的 MAIN_VIEWS 导出修饰符 | 导航合法视图列表，仍是本模块内部常量 | 清理前 AST 图及 src/tests/脚本字符串搜索无外部导入；内部 createNavigationEntry/resolve 仍使用；导航测试、全量、构建与 History 回归通过 |
+| StrokeText.jsx 的 prefersReducedMotion 命名导出语句 | 本组件减少动效判断，函数与调用仍留原文件 | 静态/动态/测试/字符串无消费者；BrandOpening 的同名导出是另一函数且有测试，未删除；构建与原开幕/首页回归通过 |
+
+另将 `contracts/assistant.js` 中旧 xiaoy-storage 注释更新为真实 `features/assistant/hooks/useAssistant.js` / `lib/storage/`，不改变类型或运行代码。
+
+**保留的可疑残留与原因**
+
+- 六个 contracts 是唯一未从运行入口到达的生产 JS，含真实 JSDoc 引用；`export {}` 只声明类型模块，非业务转发，按 ARCH-00 约定保留。
+- XiaoYAssistant、BrandOpening、FlexCarousel、ScrollFloat、StrokeText 及相应 CSS 有真实装配/共享视觉职责和静态或动态消费者；没有为追求目标树挪路径。BrandOpening 与 StrokeText 的两段短 reduced-motion 判断体相同，属于局部适配；为此提炼公共函数会扩大本阶段范围，保留。
+- MakeupTableExperience 的装配与错误边界不是无意义转发；`LegacyMakeupTable` 是正在使用的 2D fallback 别名，内部 3D、GhostCursor、cosmetics/performance 均有引用。
+- `src/data/home-featured.test.js` 仍核对受控数据/12 精选及资源，ARCH-08 按确认范围没有创建 homeContent；页面回归覆盖实际精选，未修改 src/data 测试或产品事实。
+- 全局 styles/xiaoy CSS 仍由 main 顺序导入，其他 CSS 随真实组件导入；没有按“看起来没用”删除资源。
+- beauty-assistant.html 是明确保留的历史备份；ARCH-00 清单、旧阶段报告、失败证据、回退记录、服务端旧 memory 数据、生成脚本与比赛材料保留。历史目录目标只在原记录中追溯，不当作当前路径。
+
+**生产深链接失败、重试与最小修复（本次明确授权的范围例外）**
+
+清理前生产构建实际暴露：正常首页 HTML 966 字节，`/products/nars-light-reflecting` / `/products/estee-lauder-double-wear` HTTP 200 但正文 0 字节、无 HTML 类型，桌面/手机空白。三轮实际 HTTP、Fastify inject、Vite 预览对照相同；Vite 返回完整 HTML。最小独立 Fastify/static 服务复现：真实产品 ID 对应同名图片目录，未带末尾 `/` 的目录处理提前结束空响应；带 `/`、未知 ID 和封面 URL 可用。不是字体、导入清理或产品数据问题。具体证据：`production-deep-link-baseline.json`、`deep-link-debug-retry.json`、`deep-link-minimal-reproduction.json`、`deep-link-directory-debug.json`，均在 `.qa/arch-11-checks/`。
+
+首先按原禁止 server 规则只报告，负责人随后明确授权最小服务端修复。实际只在 `server/app.cjs` 的 serveStatic 分支、现有静态注册后增加 `GET /products/:id → reply.sendFile('index.html')` 及两行说明，避免该地址进入静态目录分支；现有 API、CSP、购买/数据门禁、图片静态路径和前端 URL 保持。新增 `tests/architecture/arch11-production-routes.mjs` 检查 HTML MIME/正文与首页完全相同，以及图片类型与真实字节；不是只检查 HTTP200。
+
+相同专项命令修复前 **37/73，退出1**，35 产品直达及带查询参数的 NARS 地址失败；缺失产品、斜杠和35封面通过。修复后 **73/73，退出0**。已有 ARCH-10 “深链接 HTTP200”历史快照保留；本次更严格的正文检查发现原问题，不把旧 HTTP200 当页面通过。
+
+**真实命令与自动结果**
+
+| 命令 | 本次结果 / 证据 |
+| --- | --- |
+| 清理前 `npm test` | 42 文件，336/336；18:20:44，3.04s；baseline-test.log |
+| 清理前 `npm run build` | 2902 模块，1.83s；baseline-build.log |
+| 清理后初次相关测试 | 8 文件49/49；18:34:27；related-test.log |
+| 清理后初次 `npm test` | 42 文件336/336；18:36:18；final-test.log |
+| 授权修复后 `npm test -- src/components/BrandOpening.test.js src/lib/navigation-history.test.js src/features/app-shell src/features/home src/features/makeup-table server/app.test.js` | 9 文件71/71；18:50:06，1.54s；related-test-final.log |
+| 授权修复后 `npm test` | 42 文件336/336；18:50:09，2.30s；final-test-complete.log，原42测试文件均未改 |
+| 授权修复后 `npm run build` | 2902 模块，1.27s；final-build.log；既有 >500kB 提示保留 |
+| `node tests/architecture/arch11-production-routes.mjs` | YAS_QA_BASE_URL=生产5212；73/73，退出0；production-routes-after.json/log；修复前失败保留 |
+| `node tests/architecture/arch11-imports.mjs` | 退出0；上述全图/边界/资源核对，import-audit-final.json/log |
+| `node --check` | navigation-history.js、contracts/assistant.js、server/app.cjs、arch11-imports.mjs、arch11-production-routes.mjs、arch11-final-regression.mjs 六文件通过；JSX 经 Vitest/Vite 解析编译 |
+| lint | **项目未配置 lint 脚本**，未新增依赖或伪造结果 |
+| 架构检查 | package.json 没有独立依赖图/lint 脚本；旧 .qa/arch-XX-checks/verify-final.mjs 为硬编码历史阶段证据，不能冒充11检查；本次新增全局 AST 脚本实际执行 |
+| `git diff --check` / `git diff --cached --check` | 最终实际执行结果见末尾交付核对；索引应为空 |
+
+最终构建原始输出（kB / gzip kB）：index.html **0.96 / 0.50**；FlexCarousel CSS **2.58 / 0.94**；MakeupTableExperience CSS **19.04 / 4.58**；index CSS **70.95 / 15.61**；FlexCarousel JS **7.12 / 2.86**；src 异步 JS **44.20 / 12.91**；主 JS **747.03 / 227.76**；3D Experience JS **1293.47 / 356.09**。构建前后完整 dist 270 文件 SHA-256/大小对照见最终核对；Three.js CJS 弃用提示及大包警告保持，不升级为已解决。
+
+**最终浏览器回归、截图与请求**
+
+使用已存在的外部 Playwright 运行时和本机 Chrome **157.0.8103.52**，未安装依赖；1440×900、360×800，独立临时上下文/合成存储。原脚本中的 reduced-motion、少量默认开幕/轮播与真实 WebGL 场景保留。开发与静态预览成功/失败响应由现有 route 拦截或本地无模型规则合成，必须与真实无 Key Fastify/离线检查区分。
+
+复跑环境：`YAS_QA_PLAYWRIGHT_MODULE=file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs`，`YAS_QA_BROWSER_EXECUTABLE=C:/Program Files/Google/Chrome/Application/chrome.exe`；`YAS_QA_BASE_URL` 选择下表本地服务，`YAS_QA_OUTPUT_DIR` 指定独立输出。
+
+| 命令 / 场景 | 基线 | 最终 |
+| --- | --- | --- |
+| `node tests/browser/arch11-final-regression.mjs`，Vite5211，九套原脚本 | 116/116，.qa/arch-11-before | 116/116，.qa/arch-11-final |
+| 九套数量（storage / plan / assistant / table / catalog / collection / home / guide / app-shell） | 14/14/8/16/14/16/12/10/12 | 同一组断言，未放宽 |
+| `node tests/browser/arch11-final-regression.mjs --static-preview`，Vite5213，原构建 | 36/36，.qa/arch-11-before-static | 最终构建与基线字节比较另核对；不把静态预览当实际网关 |
+| `node tests/browser/arch11-final-regression.mjs --production`，实际无 Key Fastify5212 | 初次60场景32通过，失败保留于 .qa/arch-11-before-production | 38/38，.qa/arch-11-final-production；适用 storage14/guide10/shell12 +真实在线/离线2 |
+| `node tests/browser/arch11-final-regression.mjs --production --live-only` | 修正测试后2/2，.qa/arch-11-before-production-assets | 包含在最终生产组合中 |
+
+真实生产检查：启动时禁止 dotenv 读取 .env，显式空 Key、不发起真实 provider 调用；健康 assistant=false。270 个 dist 文件逐一实际 HTTP200、非 HTML 资源无 HTML 伪响应、字节与本地构建一致；预算-1 API 返回400/VALIDATION_ERROR，浏览器原生非法预算阻止发送；合法表单真实返回本地7步；外部普通问题实际503/PROVIDER_NOT_CONFIGURED；临时浏览器 offline 后外部问答明确失败、本地推荐/已加载产品库仍可用。不是实际智谱、真实联网检索或弱网验证。
+
+开发原脚本覆盖首页CTA/六快捷筛选/小Y四问题与精选/3D、画像/消息存储恢复与清空、工作台字段/优先步骤/生成/改条件重生成、产品搜索/35单项筛选/排序/空态/详情、深链接/刷新/前进后退、收藏新增/三状态/移除/跨页/刷新、指南/文化、顶部/手机菜单、加载/挂起离页重挂载、Escape/焦点/背景及内部滚动。未存在的模板/技法预览、独立单步骤调整/工作台清空、MainBrowser/文化弹层、桌面侧栏/手机底部导航列为不适用，不伪造已验收。busy、离页重挂载可观察，但原实现没有主动取消/序号/过期响应屏障；reset 不取消在途请求，不能称这些能力通过。
+
+实际查看清理前桌面首页、手机工作台/详情，以及清理后同类关键截图；最终生产截图查看结果在交付核对补记。基线与清理后的前端产物和布局证据结合检查，不声称严格像素一致。早期 evidence 对比除几何/计时外状态相同；3D 手机控件曾整体纵向相差240px（取景/滚动位置），两项6秒等待实测时长不同，未把几何差异删除或写为0。关键截图相对仓库路径：
+
+- `.qa/arch-11-after/arch08-home/1440-entry-cta-assistant-hero.png`
+- `.qa/arch-11-after/arch10-app-shell/360-workbench-generation-failures-result.png`
+- `.qa/arch-11-after/arch09-guide-culture/360-catalog-collection-detail-drawer.png`
+- 最终 `.qa/arch-11-final/` 同目录，以及 `.qa/arch-11-final-production/` 的实际无 Key/离线截图和各套页面截图。
+
+所检正常页面无新增文档横向溢出/控件遮挡或不可关闭详情；完整布局稳定性/CLS、全键盘无障碍和焦点陷阱未验收。pageerror/console/request 逐场景原始记录保留；正常场景没有非预期未处理异常。故意收藏 null/写失败导致6条预期 pageerror/根卸载、lazy 下载拒绝导致2条预期 pageerror，既有缺口不因脚本预期而成为通过的产品能力。Google Fonts 环境拒绝、故意图片/超时/HTTP错误及实际离线错误均单列；不声称所有 console.error/失败请求为0。最终实测汇总见交付核对。
+
+**失败记录与修正**
+
+1. AST 审计初稿把示例 JSDoc、资源查询串和测试中的产品 URL 误判为模块/资源；只修扫描器，保留 import-audit-before.json，修正后基线与最终通过。StrokeText 去导出时 EOF 多空行曾触发 diff --check，已修正。
+2. README 临时生成脚本首轮缺少函数闭合括号报 SyntaxError，未写入 README；只修临时工具再执行，不影响生产代码。
+3. 初次生产误把原 plan/assistant 脚本直接当生产通用脚本，0/14、0/8：短导航超时和外部字体环境错误与原严格日志断言冲突。原始60场景32通过：storage14、guide8、shell10，live0；指南/导航4项及live2因真实深链接空白失败。保留全部结果，不把它们改成绿色。最终生产只组合可适用三套与真实HTTP/离线场景；完整plan/assistant断言仍在九套开发回归执行，未删断言或掩盖生产错误。
+4. 新 live 检查初稿给300元预算却要求一定出现候选，实际可为空，导致0/2；改用原已确认能匹配的“不设预算柔雾通勤”场景，重试2/2；此为测试假设修正，没有改产品推荐/预算。资源遍历初稿也误把目录视作文件，已改为递归只检查构建文件并核对真实字节。原失败目录 .qa/arch-11-before-production-live 保留。
+5. 真实产品深链接73项专项37/73为独立真实产品缺陷，按负责人明确范围例外修复，73/73与完整复验后才交付；不删除原失败、不以末尾斜杠绕过最终测试。
+
+**实际修改清单（11路径）**
+
+- `src/lib/navigation-history.js`、`src/components/StrokeText.jsx`、`src/contracts/assistant.js`。
+- 经单独明确授权的 `server/app.cjs`，仅上述产品深链接路由。
+- `tests/architecture/arch11-imports.mjs`、`tests/architecture/arch11-production-routes.mjs`、`tests/browser/arch11-final-regression.mjs`。
+- `README.md`、`docs/frontend-architecture-migration-plan.md`、`docs/stage-delivery-test-report.md`、`docs/product-data-accuracy-audit.md`。
+
+src/data、public、AGENTS、FINAL-PROMPT、依赖锁文件、原42测试文件、素材/视频/比赛材料均未改。临时日志/截图/调试服务均放被忽略的 .qa，不提交，不包含用户档案/真实 Key/用户照片。
+
+**文档、未完成能力、风险与回退**
+
+四文档同步实际树、现有职责/测试、归档回填、本次清理/例外授权/失败与真实复验。README 核对 StrokeText/ScrollFloat/FlexCarousel/GhostCursor 四个第三方源码路径；新增测试只消费 Vite 已有 Rolldown，不新增第三方运行依赖或模型。现有 Google Fonts/网络图片来源与完整许可证清单、公开门禁如实保留。照片分析/MediaPipe 当前未实现；没有升级为可用。**本阶段无新增核验，继承上一条结论。** 产品价格、链接、图片授权 pending/blocked、编辑评分与公开状态不变；原官方商品直接链接/e.tb.cn/品牌官网差异、完整 LICENSE/第三方清单及历史安全/依赖风险保持。
+
+剩余限制：真实智谱/付费调用/实时检索、真机触摸/其他浏览器、字体成功后排版、真实弱网/超时、穷尽GPU/默认动效、跨标签同步、全部无障碍/CLS/像素一致未覆盖；无新照片/隐私处理。存储 null/写失败、lazy 下载拒绝卸载根视图，抽屉无焦点陷阱/背景主动锁滚动/关闭焦点恢复，菜单Escape和在途请求控制缺口保持；不得把回归预期当作修复。
+
+用户入口：主站首页“创建我的妆容方案”→小Y/工作台；顶部或手机下拉“产品库/肤质指南/品牌文化/我的收藏”；产品完整资料与 `/products/nars-light-reflecting` 直接访问/刷新。源环境 Vite5211，实际隔离无 Key 构建5212，均仅本机。可定位恢复基线为上述 ARCH-10 提交/tag；当前11路径未提交、未跟踪脚本不构成新 Git 恢复点。人工验收和实际归档后，按导出清理、路由/测试与原00～10及后续依赖评估获授权的 revert，从新到旧撤销必要范围并重跑；不承诺任意提交无冲突，不 reset/强推/移动标签。Git 不恢复浏览器本地数据、环境变量或外部服务状态。
+
+当前仍 **待人工验收、未提交、未推送、未创建 arch-stage-11**，11唯一current；不提前done，不提前写无新的current，不删分支。仅在负责人明确整阶段人工验收通过后，才另行更新最终状态、正常提交/推送、创建不可复用带注释标签并核对实际远端。
+
+18:55:48（北京时间）交付前再次 fetch 及实际 ls-remote：master/HEAD/origin/master/FETCH_HEAD 仍为上述 ARCH-10 归档提交，00～10 本地与实际远端标签对象/^{} 保留一致，11 未创建；原始结果 remote-refs-final.txt。完整 dist 270 文件 SHA-256/大小与清理前完全相同（dist-comparison.json），不因此宣称浏览器像素严格相同。
+
+
+**2026-11-17 19:00（北京时间）ARCH-11 最终交付核对，YAS-2026-0055**
+
+18:59:52 实际运行 `node .qa/arch-11-checks/verify-final.mjs`，退出0（final-verification.json / final-verification-retry.log）：精确11个授权路径，master/ARCH-10基线及带注释标签/^{}、ahead/behind0/0、空索引/无11标签通过；两累计报告仅追加、ARCH-00～10执行正文不变、12阶段正文与总表一致且11唯一current。README 184实际树路径覆盖全部117个src文件和三新增脚本、18本地链接/锚点、四第三方源码路径有效。原42测试文件未改；三个src文件仅两项导出和一条注释变化，server仅负责人授权的产品HTML路由。六JS/CJS/MJS语法、UTF-8/末尾换行/行尾空白、`git diff --check` 和 `git diff --cached --check` 均通过。AST审计、开发基线/最终各116、原构建预览36、最终实际生产38、路由73、270构建文件HTTP/字节与前后SHA-256证据均核对。文档检查首轮因新累计报告标题漏写YAS编号失败；补入既有YAS-2026-0055后通过，原日志final-verification.log保留，没有生产/测试逻辑变化。
+
+已实际查看最终桌面首页、手机工作台结果、生产桌面/手机直达产品完整页、手机抽屉、真实无Key与离线产品库截图。直达页记录标题“超方瓶粉底液”、pageerror0、无文档横向溢出：`.qa/arch-11-final-production/direct-product-screenshots.json`；对应 `1440-direct-product.png` / `360-direct-product.png`。其余重点为 `.qa/arch-11-final/arch08-home/1440-entry-cta-assistant-hero.png`、`arch10-app-shell/360-workbench-generation-failures-result.png`，以及 `.qa/arch-11-final-production/arch09-guide-culture/360-catalog-collection-detail-drawer.png`、`360-live-no-key.png`、`360-live-offline-catalog.png`。未因截图相似宣称严格像素一致，也未为截图改UI。
+
+最终逐场景日志实测汇总如下；console/request不是全零。数量来自本次保存结果，正常资源与明确故障/环境错误通过原脚本分别断言，未过滤删除原日志。完整 URL/消息见 `.qa/arch-11-checks/browser-error-summary.json` 和各套 results.json。
+
+| 开发套件 | 场景通过 | pageerror | console.error | 失败请求 |
+| --- | --- | --- | --- | --- |
+| storage | 14/14 | 0 | 0 | 原脚本不单列 |
+| makeup-plan | 14/14 | 0（errors） | 6 | 2，故意失败/超时 |
+| assistant | 8/8 | 0 | 12 | 2，故意失败/超时 |
+| makeup-table | 16/16 | 2，故意lazy拒绝 | 6 | 4，字体/故意失败 |
+| catalog | 14/14 | 0 | 68 | 68，字体/故意封面失败 |
+| collection | 16/16 | 6，故意null/写失败 | 22 | 22，字体 |
+| home | 12/12 | 0 | 58 | 58，字体/故意封面失败 |
+| guide-culture | 10/10 | 0 | 22 | 22，字体 |
+| app-shell | 12/12 | 0 | 5 | 5，字体/故意封面/超时 |
+
+最终生产三旧套共36/36、pageerror0；storage的22条console.error为字体失败，guide的22条console.error/22失败请求为字体，app-shell的26条console.error/26失败请求为字体和指定封面/超时故障，badResponses及routeErrors均0。真实在线/离线2/2，pageerror0：桌面console.error13、失败请求12，手机console.error10、失败请求9；各1次真实503，无Key失败明确可见，其余为各1字体拒绝、离线API和未缓存封面请求。离线产品数据/筛选仍可用不代表离线全部图片可用，没有新增Service Worker或离线持久缓存。270文件在线HTTP检查全通过；不把离线预期资源失败称为路径缺失，也不把字体环境拒绝称为已修复。
+
+四文档补记后再次执行同一只读核对及两项diff空白检查，结果应以最终日志为准；没有新生产变更，沿用18:50实跑71/336/build2902及最终116/38/73证据，不冒称再次跑业务测试。**本阶段无新增核验，继承上一条结论。** 当前仍 **待人工验收、未提交、未推送、未创建 arch-stage-11**，ARCH-11唯一current；后续仅等待整阶段人工验收，不自动done或归档。
+
+
+**ARCH-11 本机复跑服务入口（PowerShell，仓库根目录，独立终端）**
+
+开发九套：`node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5211 --strictPort`。原构建静态预览使用 `node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 5213 --strictPort`，只作与真实网关对照。生产先运行 `npm run build`，再启动以下隔离无 Key 服务，不读取 .env、不修改服务器配置文件；已有5212服务时勿重复启动。
+
+```powershell
+@'
+require('dotenv').config = () => ({ parsed: {} })
+const { loadConfig } = require('./server/config.cjs')
+const { buildApp } = require('./server/app.cjs')
+const config = loadConfig({ NODE_ENV: 'production', ZHIPU_API_KEY: '', API_RATE_LIMIT_MAX: 10000, AI_RATE_LIMIT_MAX: 1000, AI_DAILY_LIMIT: 100000 })
+buildApp({ config, logger: false }).then(app => app.listen({ host: '127.0.0.1', port: 5212 }))
+'@ | node
+```
+
+另一个终端设置上文外部Playwright模块/Chrome两个环境变量；`$env:YAS_QA_BASE_URL='http://127.0.0.1:5211'`、`$env:YAS_QA_OUTPUT_DIR='.qa/arch-11-repeat-dev'` 后运行开发组合；改为5212和新的独立输出目录后运行 `node tests/browser/arch11-final-regression.mjs --production`。生产专项先设置 `$env:YAS_QA_ROUTE_OUTPUT='.qa/arch-11-checks/production-routes-repeat.json'` 再运行 `node tests/architecture/arch11-production-routes.mjs`；AST可设置 `$env:YAS_QA_AUDIT_OUTPUT='.qa/arch-11-checks/import-audit-repeat.json'` 再执行审计。新复跑使用独立输出目录，保留本次基线/失败/最终证据。上述脚本无安装步骤，不依赖个人Chrome档案。
+
+
+**2026-11-17 19:08:13（北京时间）ARCH-11 人工验收入口更正，YAS-2026-0055**：负责人截图显示“智能服务暂未配置”。此前提供的5212是专为真实无Key/降级回归启动的隔离服务，刻意禁读.env且使用空Key；将其作为一般人工验收入口不妥，原降级结果和截图继续保留。只读状态核对确认现有服务端配置已存在，模型为glm-5.3-flash，未读取/展示密钥内容、未改配置或代码。另用现有启动入口（FISHTALK_PORT=5214、NODE_ENV=production）启动正常配置服务；实际GET /api/health为200、ok=true、services.assistant=true，产品深链接200且完整HTML为966字节。**正常人工验收入口更正为 http://127.0.0.1:5214/；5212仅用于无Key降级对照。** 本次只执行健康/静态HTTP检查，没有实际模型、天气或联网调用，不把配置启用当真实provider成功验证；不同端口为不同浏览器存储来源，5212对话不会自动迁移到5214。没有新增源代码变更，不重跑或升级此前71/336/build2902、开发116/生产38/路由73的自动覆盖结论。ARCH-11仍唯一current、待人工验收、未提交、未推送、未创建arch-stage-11；不记人工验收通过。**本阶段无新增核验，继承上一条结论。**
+
+
+**2026-11-17 19:13（北京时间）ARCH-11 人工验收外部连接故障定位，YAS-2026-0055**：负责人在正常配置5214页面再次反馈天气“连接失败”和趋势问答“智能服务连接失败”；这不是人工验收通过。服务器日志分别为WEATHER_PROVIDER_UNAVAILABLE/503与PROVIDER_UNAVAILABLE/502，健康检查assistant=true只代表配置存在，不能证明供应商可用。无密钥探测在沙箱进程内对智谱与Open-Meteo均立即失败，底层EACCES；权限对照下智谱站点200、聊天/检索API无鉴权HEAD均401且约240ms，证明原验收服务受到沙箱出站网络限制。已停止本次自行启动的5214沙箱实例，并以普通本机进程在同一端口使用原代码/配置重启；不修改系统代理、TLS校验、密钥或任何源码，保持浏览器存储来源。现有系统/环境没有已配置代理。
+
+天气另有独立外部可用性失败：普通进程两次访问api.open-meteo.com仍为超时，进一步记录UND_ERR_CONNECT_TIMEOUT，尚未解决；不绕过校验、不换供应商或扩大server/provider修改范围。无Key探测的401是预期的未鉴权响应，只证明网络可达，不证明真实Key、额度、模型或联网回答成功；本次没有主动付费模型调用。底层原始证据在.qa/arch-11-checks/network-probe-sandbox.json、network-probe-normal.json和normal-upstream-connectivity.json，不含Key/Authorization。
+
+正常验收地址仍为http://127.0.0.1:5214/；已加载的旧失败消息不会因服务重启自动改写。真实智谱/检索端到端与天气可用性不得标成已验收，天气外部超时作为本次剩余问题保留。此前无Key/合成浏览器116/38与单元336/构建/路由73的证据保持原边界，不升级真实provider覆盖。本次仅重启自己的服务和追加四文档，未新增源码改动，文档/历史/范围/空白核对另跑；ARCH-11仍唯一current、待人工验收，未提交、未推送、未创建arch-stage-11。**本阶段无新增核验，继承上一条结论。** 该句指产品事实审计，不代表没有进行上述网络诊断。
+
+
+**2026-11-17 19:21（北京时间）ARCH-11 整阶段人工验收通过与最终归档收尾，YAS-2026-0055**
+
+- 项目负责人在本会话对本阶段回复原话 **“人工核验完成”**；据此按完整阶段人工验收通过处理，ARCH-11 改为 done，ARCH-00～11 均 done，**无新的 current**。不虚构人工使用的设备、操作或供应商成功结果；本轮架构阶段收尾不等于全部产品能力实现或生产就绪，不推定分支删除授权。
+- 19:17:04及19:20再次实际核对：已执行 git fetch origin master；master、HEAD、origin/master、FETCH_HEAD 与实际远端 master 均为上一归档 **f8fcbfa2673af1b9f9f470796f6a206aedeffcc9**，ahead/behind 0/0。本地/实际远端带注释 arch-stage-10 对象 **d51f5ee44f5140be1c38a2e4b6be133f2ca144c6**，^{} 指向该提交；00～10 标签完整一致、11 尚不存在。精确11个已验收路径、索引空，无来源不明文件；保留 remote-refs-acceptance.txt 与 remote-refs-precommit.txt 原始输出。
+- 19:17:51运行 node .qa/arch-11-checks/verify-final.mjs 退出码0。人工确认后仅同步 README、迁移计划及两累计报告；19:20:49为七个已验收代码/测试文件保存 SHA-256 快照，后续逐一核对不变。实际范围仍为 src/components/StrokeText.jsx、src/contracts/assistant.js、src/lib/navigation-history.js、获明确授权的 server/app.cjs、tests/architecture/arch11-imports.mjs、tests/architecture/arch11-production-routes.mjs、tests/browser/arch11-final-regression.mjs 及上述四文档。无整文件删除，无新增依赖/产品事实/UI/API/存储语义或隐私变更。
+- 沿用本次真实相关9文件71/71、全量42文件336/336、build2902、开发清理前后各116/116、原构建预览36/36、最终真实无Key生产38/38、深链接修复后73/73及270构建文件HTTP/字节/前后哈希证据。项目未配置 lint 脚本。文档收尾只复核范围、状态、历史、源码哈希、路径/链接/披露、语法/编码/空白和既有验证证据，不冒称重跑业务测试；实际收尾核对结果另追加。
+- 原37/73生产失败、扫描/脚本初轮失败、故意存储/lazy异常、字体拒绝、图片/超时/离线日志、构建提示、取消/过期控制与焦点/锁滚动缺口，以及真机/其他浏览器/完整无障碍/像素等未覆盖范围全部保留。正常配置入口仍为 http://127.0.0.1:5214/；5212仅作无Key降级对照。普通进程的天气连接超时尚未解决，智谱无鉴权401只证明网络可达；真实Key/额度/模型/联网端到端未由本次自动化验证，人工接受不升级这些结论。不读取或修改凭据、用户数据、照片、旧memory、素材及比赛材料。
+- **本阶段无新增核验，继承上一条结论。** 此句指产品事实审计；官方旗舰店链接差异、价格/来源/图片授权pending与公开风险不因技术或人工验收升级。四文档与所有历史失败/豁免/回退证据保留；AGENTS.md、FINAL-PROMPT.md 无须且未修改。
+- 本条写入时已人工验收、done，尚未提交/推送/创建 arch-stage-11。按本次确认及 AGENTS.md 13.2，仅暂存已验收11路径，在 master 创建规定格式最终确认提交并正常推送，再于该最终提交建立不可复用的带注释 arch-stage-11，核对实际远端 master、标签对象和^{}后才报告归档成功。实际 SHA/tag 由本次收尾回执先提供、下次文档同步回填；不 amend、自引用、移动标签、强推或删除分支。此前 current/待人工验收记录均为真实历史快照。
+- 归档后如需回退，按最终提交中的两导出/注释/路由/验证脚本与下游依赖评估获授权 git revert，从新到旧撤销必要范围并重新验证；不保证无冲突，不恢复浏览器本地存储、环境变量或外部服务状态，不删除旧提交、标签和失败证据。后续产品能力或天气/provider修复需另行明确范围，不自动开启新架构阶段。
+
+
+**2026-11-17 19:24（北京时间）ARCH-11 验收收尾自动核对，YAS-2026-0055**：首轮临时文档写入器将四文档原LF转成CRLF，git diff --check产生换行/空白报告并使临时Node捕获达到缓冲上限ENOBUFS；原始acceptance-verification.log完整保留。已只恢复四文档原有LF，未改实现或规避空白检查。19:23:35再次运行node .qa/arch-11-checks/verify-acceptance.mjs退出码0：精确11路径、七代码/测试SHA-256不变、索引空、master/ARCH-10基线及本地/实际远端00～10标签一致、无11标签、12阶段正文/总表均done、无新的current、两报告只追加且00～10历史及原42测试不变；README全部117src/184树路径/18本地链接锚点/四披露、两项导出/注释与授权路由等价、原自动化证据、六语法/UTF-8/换行/工作树和索引空白检查通过。后续只补本条并消除README当前摘要的旧待验收措辞，保留带时间历史快照，补记后复核再暂存。沿用71/336/build2902/开发116/生产38/路由73证据，不称重跑业务测试；实际Git归档尚待本次回执，原网络/天气/授权风险保持。**本阶段无新增核验，继承上一条结论。**
+
+
+**2026-11-17 19:26（北京时间）ARCH-11 最终确认提交前暂存核对，YAS-2026-0055**：19:25:18再次fetch并实际ls-remote，master仍为f8fcbfa2673af1b9f9f470796f6a206aedeffcc9，00～10标签对象/指向一致、11不存在；原始远端记录保留。19:25:53以YAS_QA_VERIFY_STAGED=1运行node .qa/arch-11-checks/verify-acceptance.mjs退出码0，暂存清单精确为已验收11路径、每个Git blob与工作树经过滤内容一致，无未暂存/未跟踪文件；七代码/测试哈希不变，12阶段done、无新的current、历史/追加报告/原测试/目录链接披露/语法编码/原自动证据及两项diff检查通过。仅补记本条并重新暂存三份记录、复核后执行本次已授权最终提交/正常推送/唯一带注释标签，不改实现或覆盖结论；此时真实新SHA/tag尚未产生，结果由归档回执提供。不删分支。**本阶段无新增核验，继承上一条结论。**

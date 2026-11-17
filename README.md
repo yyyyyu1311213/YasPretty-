@@ -110,7 +110,7 @@ npm start
 
 ### 当前实际结构
 
-以下主树描述 master 当前实际工作树（2026-11-17，北京时间）。ARCH-00～09 已人工验收并归档；17:26 启动 ARCH-10 时已执行 git fetch origin master 及实际 ls-remote，分支 master，HEAD/origin/master/实际远端 master/ARCH-09 最终提交均为 `8cbac32e0e1cc480f6b573688f05c3caa93c27a3`，本地及实际远端带注释 `arch-stage-09` 对象均为 `72428c4ce8b4dc2a81213fc78a3bda0e489907bc`，`^{}` 指向该提交；起始工作树、暂存区和未跟踪为空、ahead/behind 0/0。原09收尾回执事实在此回填，历史验收前快照、失败和风险保留。ARCH-10 app-shell 已由项目负责人对整阶段回复“人工审核完毕”，按本次人工验收通过记为 done，Git 收尾中；ARCH-11仅登记为唯一 current、尚未实施。提交/推送/arch-stage-10 的实际结果由本次收尾回执提供、下一次文档同步回填，本条不提前描述为已归档。负责人本次明确要求 `features/app-shell/`，覆盖原 `src/app/` 目标；main、BrandOpening、EnhancementBoundary 原路径保持。分支切换历史见[迁移计划分支切换记录](docs/frontend-architecture-migration-plan.md#52-2026-11-17-分支切换记录)。
+以下主树描述 master 当前实际工作树（2026-11-17，北京时间）。ARCH-00～10 已归档；负责人已对 ARCH-11 回复“人工核验完成”，ARCH-00～11 均为 done，无新的 current。ARCH-11 最终提交、正常推送及不可复用标签归档按下方验收收尾记录执行，实际 SHA/tag 由收尾回执提供后续回填。启动已执行 `git fetch origin master`，18:31:10 再次实际查询远端：master、HEAD、origin/master、实际远端 master 及 ARCH-10 最终归档提交均为 `f8fcbfa2673af1b9f9f470796f6a206aedeffcc9`，本地/远端带注释 `arch-stage-10` 对象均为 `d51f5ee44f5140be1c38a2e4b6be133f2ca144c6`，`^{}` 指向该提交；起始工作树、索引、未跟踪为空、ahead/behind 0/0。原10收尾时待产生的 SHA/tag 在此回填；历史失败、人工确认/豁免与风险保留于累计记录。main、品牌开幕、小Y组合入口与共享视觉组件保留实际路径，app-shell/guide-culture 使用负责人已确认的目录。详见[迁移计划](docs/frontend-architecture-migration-plan.md#arch-11整体清理与最终回归)。
 
 ARCH-00 已通过人工验收并归档：S03 为 `f16542c6a84ed9141ab955661008fcb1bbc06b6f`，S04 为 `8c95966cf61367396fd6783da1f86c8569546668`；带注释的 `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向 S04。ARCH-01-S01 已将旧 `src/lib/xiaoy-storage.js` 拆入下列四个 storage 模块并更新小Y直接调用，未保留转发入口；相关 40/40、全量 113/113、构建及桌面/360px 的 14 项 Playwright 页面复测通过。负责人于 2026-11-17 明确确认人工验收通过，实际提交为 `5e58236f6897147b354153ea9b02d080641a3cea`；远端 `arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` 指向该提交，启动预检已核对。两阶段保持 `done`，历史基线与映射分别见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)和[迁移计划 ARCH-01](docs/frontend-architecture-migration-plan.md#arch-01libstorage)。
 
@@ -121,147 +121,152 @@ ARCH-03、ARCH-04 均为 `done`；原归档时无 current 的快照保留于执�
 ```text
 yaspretty/
 ├── src/
-│   ├── App.jsx                         页面/跨领域连接，唯一 catalog/collection Hook 装配
-│   ├── main.jsx                        React 挂载与全局样式入口
-│   ├── styles.css                      全局样式
-│   ├── xiaoy.css                       小Y样式
-│   │
 │   ├── components/
-│   │   ├── BrandOpening.jsx            一次性品牌开幕、跳过与减少动效处理
-│   │   ├── XiaoYAssistant.jsx          小Y组合入口、输入及工作台连接
-│   │   ├── FlexCarousel.jsx            首页产品增强轮播
-│   │   ├── ScrollFloat.jsx             首页滚动文字动效
-│   │   └── StrokeText.jsx              笔画文字动效
-│   │
-│   ├── contracts/                      六个 JSDoc 契约文件，无运行时校验
-│   │   ├── userProfile.js
-│   │   ├── makeupRequest.js
-│   │   ├── makeupPlan.js
+│   │   ├── BrandOpening.jsx  一次性品牌开幕、跳过与减少动效处理
+│   │   ├── BrandOpening.test.js
+│   │   ├── FlexCarousel.css
+│   │   ├── FlexCarousel.jsx  首页产品增强轮播
+│   │   ├── ScrollFloat.css
+│   │   ├── ScrollFloat.jsx  首页滚动文字动效
+│   │   ├── StrokeText.css
+│   │   ├── StrokeText.jsx  笔画文字动效
+│   │   └── XiaoYAssistant.jsx  小Y组合入口、输入及工作台连接
+│   ├── contracts/  六个 JSDoc 契约文件，无运行时校验
 │   │   ├── assistant.js
+│   │   ├── index.js
+│   │   ├── makeupPlan.js
+│   │   ├── makeupRequest.js
 │   │   ├── product.js
-│   │   └── index.js
-│   │
+│   │   └── userProfile.js
+│   ├── data/
+│   │   ├── home-featured.test.js
+│   │   ├── product-image-sources.js  产品封面来源、权利人和授权状态
+│   │   ├── product-shade-verification.js  色号核验资料
+│   │   ├── product-verification.generated.js  证据路径、大小与 SHA-256 清单
+│   │   ├── product-verification.js  核验状态、链接门禁和参数解读边界
+│   │   ├── product-verification.reviewed.js  人工核验事实与单元格追溯
+│   │   ├── product-verification.test.js
+│   │   └── products.js  当前 35 条受控彩妆资料与来源状态
 │   ├── features/
 │   │   ├── app-shell/
-│   │   │   ├── App.test.jsx             页面条件与唯一共享状态/操作连接
 │   │   │   ├── components/
-│   │   │   │   ├── AppShell.jsx         原 opening/header/main/footer/overlay 组合
-│   │   │   │   ├── TopHeader.jsx        原顶部导航/计数/激活项
-│   │   │   │   ├── MobileNavigation.jsx 原手机顶部下拉菜单
-│   │   │   │   └── appShell.test.jsx
-│   │   │   └── hooks/
-│   │   │       ├── useAppNavigation.js  原详情/菜单/History/滚动与四个 Effect
-│   │   │       └── useAppNavigation.test.js
-│   │   ├── collection/
-│   │   │   ├── collectionUtils.js       状态变更、移除、计数与有序产品筛选
-│   │   │   ├── collectionUtils.test.js
-│   │   │   ├── collectionStorage.js     既有 Key/原始 JSON；不新增旧 Key 迁移
-│   │   │   ├── collectionStorage.test.js
+│   │   │   │   ├── AppShell.jsx  原 opening/header/main/footer/overlay 组合
+│   │   │   │   ├── appShell.test.jsx
+│   │   │   │   ├── MobileNavigation.jsx  原手机顶部下拉菜单
+│   │   │   │   └── TopHeader.jsx  原顶部导航/计数/激活项
 │   │   │   ├── hooks/
-│   │   │   │   ├── useCollection.js     App 唯一共享实例、原读写 effect
-│   │   │   │   └── useCollection.test.js
-│   │   │   └── components/
-│   │   │       ├── CollectionView.jsx
-│   │   │       ├── CollectionStatusControl.jsx
-│   │   │       └── collectionComponents.test.jsx
-│   │   ├── home/
-│   │   │   └── components/
-│   │   │       ├── HomeView.jsx          首页组合、搜索草稿、精选和既有视觉连接
-│   │   │       └── HomeView.test.jsx
-│   │   ├── guide-culture/
-│   │   │   └── components/
-│   │   │       ├── GuideView.jsx         原肤质指南与三项筛选入口
-│   │   │       ├── CultureView.jsx       原品牌文化与产品库入口
-│   │   │       └── guideCulture.test.jsx 页面内容、原素材与回调边界
+│   │   │   │   ├── useAppNavigation.js  原详情/菜单/History/滚动与四个 Effect
+│   │   │   │   └── useAppNavigation.test.js
+│   │   │   └── App.test.jsx  页面条件与唯一共享状态/操作连接
 │   │   ├── assistant/
 │   │   │   ├── components/
-│   │   │   │   ├── AssistantMessages.jsx 消息、加载与真实产品 ID 展示
+│   │   │   │   ├── AssistantMessages.jsx  消息、加载与真实产品 ID 展示
 │   │   │   │   ├── AssistantMessages.test.jsx
-│   │   │   │   ├── ProfileSummary.jsx   当前画像摘要
-│   │   │   │   ├── ProfileSummary.test.jsx
-│   │   │   │   ├── AssistantProduct.jsx 推荐产品与详情入口
+│   │   │   │   ├── AssistantProduct.jsx  推荐产品与详情入口
 │   │   │   │   ├── AssistantProduct.test.jsx
-│   │   │   │   ├── SourceList.jsx       来源顺序、链接与展示
+│   │   │   │   ├── ProfileSummary.jsx  当前画像摘要
+│   │   │   │   ├── ProfileSummary.test.jsx
+│   │   │   │   ├── SourceList.jsx  来源顺序、链接与展示
 │   │   │   │   └── SourceList.test.jsx
 │   │   │   ├── hooks/
-│   │   │   │   ├── useAssistant.js     消息、画像、存储、发送与降级
-│   │   │   │   ├── useAssistant.test.js
-│   │   │   │   └── useAssistant.storage.test.js
-│   │   │   ├── intentUtils.js          前端流程判断与共用产品提及匹配
-│   │   │   ├── intentUtils.test.js
-│   │   │   ├── assistantUtils.js       画像、推荐、本地回复与方案消息适配
+│   │   │   │   ├── useAssistant.js  消息、画像、存储、发送与降级
+│   │   │   │   ├── useAssistant.storage.test.js
+│   │   │   │   └── useAssistant.test.js
+│   │   │   ├── assistantApi.js  小Y请求、响应适配与方案 API 复用
+│   │   │   ├── assistantApi.test.js
+│   │   │   ├── assistantUtils.js  画像、推荐、本地回复与方案消息适配
 │   │   │   ├── assistantUtils.test.js
-│   │   │   ├── assistantApi.js         小Y请求、响应适配与方案 API 复用
-│   │   │   └── assistantApi.test.js
+│   │   │   ├── intentUtils.js  前端流程判断与共用产品提及匹配
+│   │   │   └── intentUtils.test.js
+│   │   ├── catalog/
+│   │   │   ├── components/
+│   │   │   │   ├── catalogComponents.test.jsx
+│   │   │   │   ├── FilterPanel.jsx  原筛选组与移动遮罩
+│   │   │   │   ├── LibraryView.jsx  搜索、结果、排序和空态
+│   │   │   │   ├── ProductCard.jsx  产品卡与图片失败状态
+│   │   │   │   ├── ProductDetailDrawer.jsx  色号、详情与相似产品
+│   │   │   │   └── ProductProfile.jsx  产品资料、购买门禁与来源
+│   │   │   ├── hooks/
+│   │   │   │   ├── useCatalog.js  筛选、排序、面板状态与结果
+│   │   │   │   └── useCatalog.test.js
+│   │   │   ├── catalogService.js  受控产品数组读取与稳定 ID 查询
+│   │   │   ├── catalogService.test.js
+│   │   │   ├── catalogUtils.js  文本匹配、硬条件筛选与原排序
+│   │   │   └── catalogUtils.test.js
+│   │   ├── collection/
+│   │   │   ├── components/
+│   │   │   │   ├── collectionComponents.test.jsx
+│   │   │   │   ├── CollectionStatusControl.jsx
+│   │   │   │   └── CollectionView.jsx
+│   │   │   ├── hooks/
+│   │   │   │   ├── useCollection.js  App 唯一共享实例、原读写 effect
+│   │   │   │   └── useCollection.test.js
+│   │   │   ├── collectionStorage.js  既有 Key/原始 JSON；不新增旧 Key 迁移
+│   │   │   ├── collectionStorage.test.js
+│   │   │   ├── collectionUtils.js  状态变更、移除、计数与有序产品筛选
+│   │   │   └── collectionUtils.test.js
+│   │   ├── guide-culture/
+│   │   │   └── components/
+│   │   │       ├── CultureView.jsx  原品牌文化与产品库入口
+│   │   │       ├── guideCulture.test.jsx  页面内容、原素材与回调边界
+│   │   │       └── GuideView.jsx  原肤质指南与三项筛选入口
+│   │   ├── home/
+│   │   │   └── components/
+│   │   │       ├── HomeView.jsx  首页组合、搜索草稿、精选和既有视觉连接
+│   │   │       └── HomeView.test.jsx
 │   │   ├── makeup-plan/
 │   │   │   ├── components/
-│   │   │   │   ├── MakeupWorkbench.jsx 工作台标题、状态、表单和结果组合
 │   │   │   │   ├── MakeupPlanForm.jsx  需求表单与选项
-│   │   │   │   ├── PlanResult.jsx      方案步骤、候选依据与限制
-│   │   │   │   ├── PlanProduct.jsx     真实产品 ID 查询与详情回调
-│   │   │   │   └── PlanProduct.test.jsx
+│   │   │   │   ├── MakeupWorkbench.jsx  工作台标题、状态、表单和结果组合
+│   │   │   │   ├── PlanProduct.jsx  真实产品 ID 查询与详情回调
+│   │   │   │   ├── PlanProduct.test.jsx
+│   │   │   │   └── PlanResult.jsx  方案步骤、候选依据与限制
 │   │   │   ├── hooks/
-│   │   │   │   ├── useMakeupPlan.js    表单、画像同步与生成流程
+│   │   │   │   ├── useMakeupPlan.js  表单、画像同步与生成流程
 │   │   │   │   └── useMakeupPlan.test.js
-│   │   │   ├── makeupPlanApi.js        工作台/小Y共用的方案 HTTP 请求
+│   │   │   ├── makeupPlanApi.js  工作台/小Y共用的方案 HTTP 请求
 │   │   │   ├── makeupPlanApi.test.js
-│   │   │   ├── makeupPlanUtils.js      已验收默认表单及纯转换
+│   │   │   ├── makeupPlanUtils.js  已验收默认表单及纯转换
 │   │   │   └── makeupPlanUtils.test.js
-│   │   ├── catalog/
-│   │   │   ├── catalogUtils.js          文本匹配、硬条件筛选与原排序
-│   │   │   ├── catalogUtils.test.js
-│   │   │   ├── catalogService.js        受控产品数组读取与稳定 ID 查询
-│   │   │   ├── catalogService.test.js
-│   │   │   ├── hooks/
-│   │   │   │   ├── useCatalog.js        筛选、排序、面板状态与结果
-│   │   │   │   └── useCatalog.test.js
-│   │   │   └── components/
-│   │   │       ├── LibraryView.jsx      搜索、结果、排序和空态
-│   │   │       ├── FilterPanel.jsx      原筛选组与移动遮罩
-│   │   │       ├── ProductCard.jsx      产品卡与图片失败状态
-│   │   │       ├── ProductProfile.jsx   产品资料、购买门禁与来源
-│   │   │       ├── ProductDetailDrawer.jsx 色号、详情与相似产品
-│   │   │       └── catalogComponents.test.jsx
 │   │   └── makeup-table/
 │   │       ├── components/
-│   │       │   ├── MakeupTableExperience.jsx 能力检测、状态时序、3D/2D 与失败回退
-│   │       │   ├── MakeupTable3D.jsx    3D 展示、工具与品类轨道
-│   │       │   ├── MakeupTable3D.css
-│   │       │   ├── MakeupTable3D.test.js
-│   │       │   ├── MakeupTable.jsx      原 2D 品类/产品桌
 │   │       │   ├── MakeupTable.css
-│   │       │   └── MakeupTable.test.js
+│   │       │   ├── MakeupTable.jsx  原 2D 品类/产品桌
+│   │       │   ├── MakeupTable.test.js
+│   │       │   ├── MakeupTable3D.css
+│   │       │   ├── MakeupTable3D.jsx  3D 展示、工具与品类轨道
+│   │       │   ├── MakeupTable3D.test.js
+│   │       │   └── MakeupTableExperience.jsx  能力检测、状态时序、3D/2D 与失败回退
 │   │       └── makeup-table-3d/
-│   │           ├── Scene.jsx           R3F Canvas、相机和场景装配
 │   │           ├── CosmeticItem.jsx
-│   │           ├── DressingTable.jsx
-│   │           ├── ParticleBurst.jsx
-│   │           ├── GhostCursor.jsx
-│   │           ├── GhostCursor.css
 │   │           ├── cosmetics.js
-│   │           └── performance-profile.js
-│   │
-│   ├── data/
-│   │   ├── products.js                 当前 35 条受控彩妆资料与来源状态
-│   │   ├── product-image-sources.js    产品封面来源、权利人和授权状态
-│   │   ├── product-verification.js     核验状态、链接门禁和参数解读边界
-│   │   ├── product-verification.generated.js 证据路径、大小与 SHA-256 清单
-│   │   ├── product-verification.reviewed.js  人工核验事实与单元格追溯
-│   │   └── product-shade-verification.js     色号核验资料
-│   │
-│   └── lib/
-│       ├── navigation-history.js       导航与浏览器历史工具
-│       ├── api/
-│       │   ├── client.js               共用 POST、JSON 读取与 HTTP 检查
-│       │   ├── client.test.js
-│       │   ├── errors.js               原 Error/code 边界，无网络错误包装
-│       │   ├── errors.test.js
-│       │   └── endpoints.js            现有两枚 YasPretty API 路径
-│       └── storage/
-│           ├── storageClient.js        原始 JSON/版本包装；各调用方保留原异常语义
-│           ├── storageKeys.js          当前/旧 Key 与版本 1
-│           ├── migrations.js           当前值读取与旧画像/消息迁移
-│           └── clearUserData.js        仅清理两枚旧配置键，不新增全量删除
+│   │           ├── DressingTable.jsx
+│   │           ├── GhostCursor.css
+│   │           ├── GhostCursor.jsx
+│   │           ├── ParticleBurst.jsx
+│   │           ├── performance-profile.js
+│   │           └── Scene.jsx  R3F Canvas、相机和场景装配
+│   ├── lib/
+│   │   ├── api/
+│   │   │   ├── client.js  共用 POST、JSON 读取与 HTTP 检查
+│   │   │   ├── client.test.js
+│   │   │   ├── endpoints.js  现有两枚 YasPretty API 路径
+│   │   │   ├── errors.js  原 Error/code 边界，无网络错误包装
+│   │   │   └── errors.test.js
+│   │   ├── storage/
+│   │   │   ├── clearUserData.js  仅清理两枚旧配置键，不新增全量删除
+│   │   │   ├── clearUserData.test.js
+│   │   │   ├── migrations.js  当前值读取与旧画像/消息迁移
+│   │   │   ├── migrations.test.js
+│   │   │   ├── storageClient.js  原始 JSON/版本包装；各调用方保留原异常语义
+│   │   │   ├── storageClient.test.js
+│   │   │   └── storageKeys.js  当前/旧 Key 与版本 1
+│   │   ├── navigation-history.js  导航与浏览器历史工具
+│   │   └── navigation-history.test.js
+│   ├── App.jsx  页面/跨领域连接，唯一 catalog/collection Hook 装配
+│   ├── main.jsx  React 挂载与全局样式入口
+│   ├── styles.css  全局样式
+│   └── xiaoy.css  小Y样式
 │
 ├── public/
 │   ├── products/                       按稳定产品 ID 存放的 WebP 产品封面
@@ -285,7 +290,11 @@ yaspretty/
 │   ├── arch07-collection.mjs           收藏共享、刷新、原始值与既有存储故障回归
 │   ├── arch08-home.mjs                 首页 CTA/小Y、筛选、轮播、共享收藏及降级对照
 │   ├── arch09-guide-culture.mjs        指南/文化、History/Hash/刷新与跨页状态对照
-│   └── arch10-app-shell.mjs            导航/开幕/History/加载/重挂载/方案失败对照
+│   ├── arch10-app-shell.mjs            导航/开幕/History/加载/重挂载/方案失败对照
+│   └── arch11-final-regression.mjs     九套开发回归与构建/真实无 Key/离线组合验证
+├── tests/architecture/
+│   ├── arch11-imports.mjs              AST 导入/大小写/循环/资源及残余审计，无新依赖
+│   └── arch11-production-routes.mjs    构建后73项产品HTML正文/封面实际HTTP检查
 ├── netlify/
 │   └── functions/api.js                复用 Fastify 网关的 Functions 适配器
 ├── docs/
@@ -294,7 +303,8 @@ yaspretty/
 │   ├── phase-0-baseline.md             安全扫描、功能与构建基线
 │   ├── phase-1-ai-gateway.md           阶段 1 架构、测试与风险记录
 │   ├── stage-delivery-test-report.md   各阶段作用、测试证据与剩余风险
-│   └── product-image-collection.md     图片采集与授权要求
+│   ├── product-image-collection.md     图片采集与授权要求
+│   └── product-data-accuracy-audit.md   产品事实/来源/授权累计审计
 ├── netlify.toml                        Netlify 构建与同源 API 重写配置
 └── beauty-assistant.html               旧独立页备份，不继续扩展
 ```
@@ -331,121 +341,60 @@ ARCH-06（2026-11-17，北京时间，YAS-2026-0055）已由项目负责人明�
 
 ARCH-07（2026-11-17，北京时间，YAS-2026-0055）已由项目负责人明确回复“人工验收通过”，状态 done：App 只创建一次 useCollection，共享状态和操作传给首页、产品库、两种详情和收藏页；纯函数、原始 JSON 存储、Hook、页面与状态控件各有实际职责。唯一收藏 Key、三状态、原始对象/键序、目录展示顺序及异常语义保持，无另一个收藏旧 Key、版本包装或跨标签监听。相关 112/112、全量 296/296、构建 2895 模块通过；现有 Playwright/Chrome、1440×900 和 360×800 下，收藏脚本迁移前后各 16/16，原 catalog 脚本各 14/14，已记录的状态/存储字节/ID/URL/刷新及控件几何相同。已查看关键截图，无新增横向溢出/所检控件重叠；故意写失败和 null 保留前后各 6 条预期 pageerror/根卸载，外部字体拒绝与显式图片失败日志保留，不声称所有错误为零或严格像素一致。真实手机、默认动效、其他浏览器、实际存储配额/权限故障、弱网和生产 HTTP/provider 未新增验证。详细映射、复跑命令、两轮测试定位失败、截图及限制见[迁移计划 ARCH-07](docs/frontend-architecture-migration-plan.md#arch-07collection)、[累计交付报告](docs/stage-delivery-test-report.md)和[产品审计](docs/product-data-accuracy-audit.md)。本次确认只收尾四份文档，13个已验收代码/测试文件哈希不变，沿用上述实跑结果；实际最终提交为 7f71699ddea914c36a1ad3b0c877ad0d6eb31755，唯一带注释 arch-stage-07 对象 c7765c37a83ce0dc4806d2db50ae84ebfbd9c4a9 指向该提交，本次 15:52 核对实际远端一致。ARCH-08/09 人工确认与收尾状态见下段；原09仅登记current的快照保留于历史记录；原待验收快照和失败/风险保留，人工通过不扩大未执行检查的结论。
 
-ARCH-08（2026-11-17，北京时间，YAS-2026-0055）已由项目负责人对完整9路径回复“人工核验完毕”，状态 done、已归档：App 原 HomeView 主体原样迁入 `src/features/home/components/HomeView.jsx`，只移动首页专用引用并注入 App 现有 EnhancementBoundary；不提前收敛 app。实际基线没有 QuickQuestionSheet、TemplatePreview、TechniquePreview 或新手流程，CTA 只有 assistant 目标、小Y四问题直接发送；桌面及手机均为完整可见 hero，本次保持此事实，不补造任务中描述的功能或修改 CSS。首页本地草稿、六筛选、rating 降序前12项及原 ProductCard/详情/收藏共享保持。相关81/81、全量303/303、build2896通过；Chrome157、1440×900/360×800，新首页脚本前后各12/12，原 catalog/collection 在归档源码参考服务与迁移后分别14/14、16/16，非几何记录一致；化妆台原脚本必要入口发现已适配，归档参考/当前各16/16，操作/清理与记录几何相同。首页默认动效轮播的瞬时几何比较有约2–3px差异，保留严格比较未通过结论；所检控件无重叠/文档横向溢出，不声称像素一致。已看前后hero、网格、轮播和抽屉截图；首页/catalog pageerror为0，收藏定向故障各6条预期pageerror/根卸载保持，字体拒绝和封面故障日志保留。真实手机/触摸、其他浏览器、字体成功加载后的排版、弱网/生产HTTP/provider、其他GPU/驱动、全部默认动效和穷尽资源泄漏未完整验收。首轮轮播测试配置错误和补充共享基线跨过源码迁移的过程保留，完整命令/证据/风险见[迁移计划 ARCH-08](docs/frontend-architecture-migration-plan.md#arch-08home)与两份累计报告。本次确认后仅同步四文档；五个已验收代码/测试文件保持原内容，沿用上述实跑结果。ARCH-08实际提交为aee4175bd09be01b065d5875c0f1305e55410cd9，arch-stage-08对象be773944bdae29408bc3eecdfc6789dc831ab0d1指向该提交，本次16:51实际远端一致。原验收前快照保留于累计记录。ARCH-09已整阶段人工验收并归档；ARCH-10已整阶段人工验收通过、done，Git收尾中；ARCH-11仅登记为唯一current、尚未实施；人工确认不扩大设备/provider等未执行检查，不推定分支删除授权。
+ARCH-08（2026-11-17，北京时间，YAS-2026-0055）已由项目负责人对完整9路径回复“人工核验完毕”，状态 done、已归档：App 原 HomeView 主体原样迁入 `src/features/home/components/HomeView.jsx`，只移动首页专用引用并注入 App 现有 EnhancementBoundary；不提前收敛 app。实际基线没有 QuickQuestionSheet、TemplatePreview、TechniquePreview 或新手流程，CTA 只有 assistant 目标、小Y四问题直接发送；桌面及手机均为完整可见 hero，本次保持此事实，不补造任务中描述的功能或修改 CSS。首页本地草稿、六筛选、rating 降序前12项及原 ProductCard/详情/收藏共享保持。相关81/81、全量303/303、build2896通过；Chrome157、1440×900/360×800，新首页脚本前后各12/12，原 catalog/collection 在归档源码参考服务与迁移后分别14/14、16/16，非几何记录一致；化妆台原脚本必要入口发现已适配，归档参考/当前各16/16，操作/清理与记录几何相同。首页默认动效轮播的瞬时几何比较有约2–3px差异，保留严格比较未通过结论；所检控件无重叠/文档横向溢出，不声称像素一致。已看前后hero、网格、轮播和抽屉截图；首页/catalog pageerror为0，收藏定向故障各6条预期pageerror/根卸载保持，字体拒绝和封面故障日志保留。真实手机/触摸、其他浏览器、字体成功加载后的排版、弱网/生产HTTP/provider、其他GPU/驱动、全部默认动效和穷尽资源泄漏未完整验收。首轮轮播测试配置错误和补充共享基线跨过源码迁移的过程保留，完整命令/证据/风险见[迁移计划 ARCH-08](docs/frontend-architecture-migration-plan.md#arch-08home)与两份累计报告。本次确认后仅同步四文档；五个已验收代码/测试文件保持原内容，沿用上述实跑结果。ARCH-08实际提交为aee4175bd09be01b065d5875c0f1305e55410cd9，arch-stage-08对象be773944bdae29408bc3eecdfc6789dc831ab0d1指向该提交，本次16:51实际远端一致。原验收前快照保留于累计记录。ARCH-09已整阶段人工验收并归档；ARCH-10已人工验收归档；ARCH-11已整阶段人工验收、done，无新的current；人工确认不扩大设备/provider等未执行检查，不推定分支删除授权。
 
-ARCH-09（2026-11-17，北京时间，YAS-2026-0055）：按负责人确认只迁移两个实际页面。相关86/86、全量39文件309/309、构建2898模块通过；原303项断言保留。新增独立 `tests/browser/arch09-guide-culture.mjs`，Chrome157.0.8103.52、1440×900/360×800、减少动效，迁移前后同脚本各10/10，全部记录的文案、入口、URL/Hash/标题、History长度/状态、焦点/滚动、筛选排序和收藏/小Y状态及控件几何差异0；已查看关键截图，所检控件无重叠/文档横向溢出。无pageerror、非预期console.error、本地失败资源或API调用；前后各22次Google Fonts请求被环境拒绝并完整记录，不能称所有资源错误为零。首轮Hash预期错误和减少动效开幕跳过按钮自动卸载竞态只修测试，失败记录保留。不存在的文化弹层/MainBrowser/useOverlay明确不适用；原产品详情Escape/内部滚动/焦点行为保留，未增加焦点陷阱。真实手机/其他浏览器、默认动效、字体成功后的排版、弱网/生产HTTP/provider未新增验证，不声称严格像素一致。完整映射、命令、证据和回退见[迁移计划 ARCH-09](docs/frontend-architecture-migration-plan.md#arch-09guide-与-culture)及两份累计报告。项目负责人已对完整阶段明确回复“人工核验通过”，ARCH-09为done且已归档，最终提交为 `8cbac32e0e1cc480f6b573688f05c3caa93c27a3`；`arch-stage-09` 对象 `72428c4ce8b4dc2a81213fc78a3bda0e489907bc` 指向该提交，17:26本地/实际远端一致。验收后只同步四文档，原五个代码/测试文件保持已验收内容；ARCH-10已整阶段人工验收通过、done，Git收尾中；ARCH-11仅登记为唯一current、尚未实施。原待验收快照、失败和风险保留于累计记录；本阶段无新增核验，继承上一条结论。
+ARCH-09（2026-11-17，北京时间，YAS-2026-0055）：按负责人确认只迁移两个实际页面。相关86/86、全量39文件309/309、构建2898模块通过；原303项断言保留。新增独立 `tests/browser/arch09-guide-culture.mjs`，Chrome157.0.8103.52、1440×900/360×800、减少动效，迁移前后同脚本各10/10，全部记录的文案、入口、URL/Hash/标题、History长度/状态、焦点/滚动、筛选排序和收藏/小Y状态及控件几何差异0；已查看关键截图，所检控件无重叠/文档横向溢出。无pageerror、非预期console.error、本地失败资源或API调用；前后各22次Google Fonts请求被环境拒绝并完整记录，不能称所有资源错误为零。首轮Hash预期错误和减少动效开幕跳过按钮自动卸载竞态只修测试，失败记录保留。不存在的文化弹层/MainBrowser/useOverlay明确不适用；原产品详情Escape/内部滚动/焦点行为保留，未增加焦点陷阱。真实手机/其他浏览器、默认动效、字体成功后的排版、弱网/生产HTTP/provider未新增验证，不声称严格像素一致。完整映射、命令、证据和回退见[迁移计划 ARCH-09](docs/frontend-architecture-migration-plan.md#arch-09guide-与-culture)及两份累计报告。项目负责人已对完整阶段明确回复“人工核验通过”，ARCH-09为done且已归档，最终提交为 `8cbac32e0e1cc480f6b573688f05c3caa93c27a3`；`arch-stage-09` 对象 `72428c4ce8b4dc2a81213fc78a3bda0e489907bc` 指向该提交，17:26本地/实际远端一致。验收后只同步四文档，原五个代码/测试文件保持已验收内容；ARCH-10已人工验收归档；ARCH-11已整阶段人工验收、done，无新的current。原待验收快照、失败和风险保留于累计记录；本阶段无新增核验，继承上一条结论。
 
 ARCH-10（2026-11-17，北京时间，YAS-2026-0055）只收敛应用结构：App 保留 initialEntry/openingActive/view、唯一 useCatalog/useCollection、搜索/筛选跨域回调、七类页面条件与详情/收藏连接；useAppNavigation 持有原 selectedProduct/profileProduct/mobileMenuOpen/ref/callback、四个原 Effect 和 History 操作，展开后 Hook 顺序与依赖保持。AppShell 组合原 opening/header/main/footer/overlay，TopHeader/MobileNavigation 保持现有桌面导航和手机顶部下拉菜单；无新增 DOM 层、Context、侧栏、底部导航或 MainBrowser。App 328→142 行，未把小Y/工作台状态提升为新的全局仓库。消息/画像按原存储恢复；草稿、工作台结果及手填条件仍随页面重挂载重置。
 
-相关148/148、全量336/336、build2902通过；Chrome157.0.8103.52、1440×900/360×800，同脚本迁移前后分别 app-shell12/12、catalog14/14、guide-culture10/10，共各36/36；记录的导航、URL/Hash/History、ID/收藏、请求、焦点/滚动及控件布局 evidence 差异0，不声称像素一致。生产构建预览另跑app-shell12/12，实际无Key同源HTTP首页/JS/深链接200、问答503/PROVIDER_NOT_CONFIGURED、方案200/local/7步。浏览器API失败/挂起为合成响应或现有无模型规则，与真实HTTP冒烟分开记录；无真实provider调用。已查看前后桌面/手机关键截图，无所检控件重叠或横向溢出；pageerror0、无非预期console.error/本地失败，字体环境拒绝及故意图片/超时错误保留，未称资源错误全零。原无请求序号/主动取消/过期屏障、抽屉无焦点陷阱/主动背景锁滚动、Escape不关手机菜单等边界保留，真机/其他浏览器/字体成功排版/全部动效/真实弱网及完整无障碍未覆盖。详细13路径、迁移映射、可复跑命令、失败记录及回退见[迁移计划 ARCH-10](docs/frontend-architecture-migration-plan.md#arch-10收敛-app)和两份累计报告。项目负责人于2026-11-17对上述完整13路径回复原话“人工审核完毕”，本次按整阶段人工验收通过收尾，ARCH-10为done；ARCH-11仅登记为唯一current、未实施。确认后只更新四文档，九个代码/测试/脚本文件以SHA-256核对保持已验收内容，沿用148/148、336/336、build2902、前后各36/36与生产12/12及真实无KeyHTTP证据；不把文档收尾称为重跑业务测试，不扩充未执行检查。2026-11-17 18:06:54（北京时间）本条写入时尚未提交、推送或创建arch-stage-10；实际最终SHA、标签对象/^{}与远端核验由回执提供、下次同步回填。原待验收快照/失败和风险保留于计划及累计报告；本阶段无新增核验，继承上一条结论。
+相关148/148、全量336/336、build2902通过；Chrome157.0.8103.52、1440×900/360×800，同脚本迁移前后分别 app-shell12/12、catalog14/14、guide-culture10/10，共各36/36；记录的导航、URL/Hash/History、ID/收藏、请求、焦点/滚动及控件布局 evidence 差异0，不声称像素一致。生产构建预览另跑app-shell12/12，实际无Key同源HTTP首页/JS/深链接200、问答503/PROVIDER_NOT_CONFIGURED、方案200/local/7步。浏览器API失败/挂起为合成响应或现有无模型规则，与真实HTTP冒烟分开记录；无真实provider调用。已查看前后桌面/手机关键截图，无所检控件重叠或横向溢出；pageerror0、无非预期console.error/本地失败，字体环境拒绝及故意图片/超时错误保留，未称资源错误全零。原无请求序号/主动取消/过期屏障、抽屉无焦点陷阱/主动背景锁滚动、Escape不关手机菜单等边界保留，真机/其他浏览器/字体成功排版/全部动效/真实弱网及完整无障碍未覆盖。详细13路径、迁移映射、可复跑命令、失败记录及回退见[迁移计划 ARCH-10](docs/frontend-architecture-migration-plan.md#arch-10收敛-app)和两份累计报告。项目负责人于2026-11-17对上述完整13路径回复原话“人工审核完毕”，本次按整阶段人工验收通过收尾，ARCH-10为done；当时ARCH-11仅登记为唯一current、未实施，现已整阶段人工验收done，无新的current。确认后只更新四文档，九个代码/测试/脚本文件以SHA-256核对保持已验收内容，沿用148/148、336/336、build2902、前后各36/36与生产12/12及真实无KeyHTTP证据；不把文档收尾称为重跑业务测试，不扩充未执行检查。2026-11-17 18:06:54（北京时间）本条写入时尚未提交、推送或创建arch-stage-10；实际最终SHA、标签对象/^{}与远端核验由回执提供、下次同步回填。原待验收快照/失败和风险保留于计划及累计报告；本阶段无新增核验，继承上一条结论。
 
-### 前端目标结构（迁移中）
 
-原开发分支的 `86b25b3` 建立了上述 `src/contracts/` 六个文件，本次保留原提交合入 master 工作树。原演示材料、生成脚本及历史报告均保留，不因切换分支删除；本次不修改材料内容。
 
-下列树展示目标职责；本次ARCH-10按负责人指定使用 `features/app-shell/`，App/main/开幕/视觉边界保持原路径，覆盖旧 `src/app/` 目标。guide-culture已人工验收归档，按原确认合并为同一feature，覆盖原guide/culture分目录目标。`lib/storage/`、makeup-plan、assistant、lib/api、makeup-table、catalog 和 collection 已归档，home 的以下 HomeView 已整阶段人工验收通过并归档。原首页视觉迁移/homeContent 等目标被本次具体任务范围覆盖，未实施；其余目标不得据此描述为已完成。assistant 的 S04/S05 人工等待由负责人取消，历史豁免不扩张到本阶段。迁移时不改变现有 UI、API、推荐规则、存储 Key 或产品事实，也不创建没有实际职责的空目录和空文件。
+ARCH-10 归档回填（ARCH-11 启动实查）：最终提交 `f8fcbfa2673af1b9f9f470796f6a206aedeffcc9` 已在 master 与实际远端一致，带注释 `arch-stage-10` 对象 `d51f5ee44f5140be1c38a2e4b6be133f2ca144c6` 的本地/远端 `^{}` 均指向该提交。上文18:06收尾时尚未产生结果的描述保留为历史快照。
 
-```text
-src/
-├── App.jsx                             页面装配与跨领域连接（含原视觉边界）
-├── components/BrandOpening.jsx          原应用开场入口保留
-│
-├── features/
-│   ├── app-shell/                       ARCH-10 人工验收通过
-│   │   ├── components/
-│   │   │   ├── AppShell.jsx             内含原 Footer
-│   │   │   ├── TopHeader.jsx
-│   │   │   └── MobileNavigation.jsx
-│   │   └── hooks/useAppNavigation.js
-│   │
-│   ├── home/                           首页组合；ARCH-08 人工验收通过
-│   │   └── components/
-│   │       ├── HomeView.jsx
-│   │       └── HomeView.test.jsx
-│   │
-│   ├── makeup-table/                   2D/3D 化妆台体验及降级
-│   │   ├── components/
-│   │   │   ├── MakeupTableExperience.jsx
-│   │   │   ├── MakeupTable3D.jsx
-│   │   │   └── MakeupTable.jsx
-│   │   └── makeup-table-3d/            Three.js 场景内部实现
-│   │
-│   ├── catalog/                        产品浏览、筛选和详情
-│   │   ├── components/
-│   │   │   ├── LibraryView.jsx
-│   │   │   ├── ProductCard.jsx
-│   │   │   ├── FilterPanel.jsx
-│   │   │   ├── ProductProfile.jsx
-│   │   │   └── ProductDetailDrawer.jsx
-│   │   ├── hooks/useCatalog.js
-│   │   ├── catalogService.js           产品读取和按 ID 查询
-│   │   └── catalogUtils.js             文本匹配、筛选和排序纯函数
-│   │
-│   ├── assistant/                      小Y智能助手
-│   │   ├── components/
-│   │   │   ├── XiaoYAssistant.jsx
-│   │   │   ├── AssistantMessages.jsx
-│   │   │   ├── ProfileSummary.jsx
-│   │   │   ├── AssistantProduct.jsx
-│   │   │   └── SourceList.jsx
-│   │   ├── hooks/useAssistant.js       消息、画像、发送和降级流程
-│   │   ├── assistantApi.js             /api/assistant 业务请求
-│   │   ├── intentUtils.js              前端流程意图判断
-│   │   └── assistantUtils.js           画像提取、本地推荐和消息格式化
-│   │
-│   ├── makeup-plan/                    结构化妆容方案
-│   │   ├── components/
-│   │   │   ├── MakeupWorkbench.jsx
-│   │   │   ├── MakeupPlanForm.jsx
-│   │   │   ├── PlanResult.jsx
-│   │   │   └── PlanProduct.jsx
-│   │   ├── hooks/useMakeupPlan.js
-│   │   ├── makeupPlanApi.js            /api/makeup-plans 业务请求
-│   │   └── makeupPlanUtils.js          表单与 API 数据结构转换
-│   │
-│   ├── collection/                     收藏与试用状态
-│   │   ├── components/
-│   │   │   ├── CollectionView.jsx
-│   │   │   └── CollectionStatusControl.jsx
-│   │   ├── hooks/useCollection.js
-│   │   ├── collectionStorage.js        沿用既有 Key/原始格式，无新增迁移
-│   │   └── collectionUtils.js
-│   │
-│   └── guide-culture/components/
-│       ├── GuideView.jsx              肤质与美妆指南
-│       └── CultureView.jsx            品牌文化页面
-│
-├── lib/                                不含具体业务的公共技术能力
-│   ├── api/
-│   │   ├── client.js                   共用 POST/JSON/HTTP 检查；无新增定时超时
-│   │   ├── errors.js                   保留原生错误与业务 Error/code 区别
-│   │   └── endpoints.js                API 路径常量
-│   ├── storage/
-│   │   ├── storageClient.js            JSON 读写、版本包装和异常处理
-│   │   ├── storageKeys.js              当前 Key 和旧 Key
-│   │   ├── migrations.js               本地数据迁移
-│   │   └── clearUserData.js            用户数据和旧凭据清理
-│   └── navigation-history.js
-│
-├── contracts/                          JSDoc 数据契约，不复制服务端 Zod
-│   ├── userProfile.js
-│   ├── makeupRequest.js
-│   ├── makeupPlan.js
-│   ├── assistant.js
-│   ├── product.js
-│   └── index.js
-│
-├── data/                               沿用当前受控产品事实和核验资料
-├── main.jsx
-├── styles.css
-└── xiaoy.css
-```
 
-测试文件与对应源码就近放置。`data/` 继续作为产品事实唯一数据源；`homeContent.js` 只保存精选产品 ID 和展示内容，不复制产品信息。图片、模型、纹理等静态资源继续放在 `public/`。
 
-### 依赖边界（目标，尚未全面落地）
+ARCH-11（2026-11-17，北京时间，YAS-2026-0055）最终清理与验证：无整文件删除；两项无消费者的导出收回为内部实现，一条旧存储路径注释更新。AST 检查117个src文件、122解析模块、214相对运行/测试引用与39类型引用，未发现缺失/大小写/循环/转发/未用导入导出/空目录。六个类型契约、共享视觉、真实2D降级与历史备份保留。
 
-当前真实入口为 `main.jsx → App.jsx → AppShell → TopHeader / MobileNavigation`；App 通过 children/opening/overlay 插槽连接原页面、开幕与抽屉，Shell 不负责领域状态、请求或持久化。App 组合 features/home 的 HomeView、features/guide-culture 的 GuideView/CultureView及 `components/` 中的小Y和品牌开幕，小Y再组合工作台；HomeView 直接组合既有视觉组件。产品库/详情展示与筛选状态已迁入 catalog；App 调用唯一 `useCollection()`，向首页、产品库、详情和收藏页传递同一份状态/操作。两个业务 API 的 fetch 共用 `lib/api/client.js`，参数、响应和具体错误映射仍在 features。小Y的 useAssistant 组合 `lib/storage/` 的版本读取/迁移、写入、Key 和旧凭据清理，消息保存仍在原 effect 中使用 `slice(-20)`。`migrations` 依赖 `storageClient` 和 `storageKeys`，`storageClient` 与 `clearUserData` 仅依赖 `storageKeys`；没有反向依赖 UI 或桶式转发。小Y原存储异常继续抛出；收藏读取异常仍回退、写入异常仍抛出，详细边界见下文。contracts 只有 JSDoc，没有运行时校验。下面的目标依赖图尚未全面落地。
+真实生产回归发现产品ID与图片目录重名导致不带末尾斜杠的深链接返回200空正文；负责人另行明确“授权这项最小服务端修复”，仅在server/app.cjs静态服务分支增加GET /products/:id返回index.html，封面和API保持。新专项在修复前37/73、修复后73/73；原失败保留。最终相关9文件71/71、全量42文件336/336、build2902通过，主JS747.03kB/gzip227.76、3D块1293.47kB/gzip356.09；270个构建文件与清理前SHA-256相同，并逐个实际HTTP/字节检查通过。开发九套基线/最终各116/116，原构建静态预览36/36，最终真实无Key生产桌面/360px共38/38；包含reduced-motion、真实503/离线与本地7步。已有故障注入/合成响应与真实HTTP分开，未调用真实智谱/联网。项目未配置lint脚本。六文件语法和最终空白/历史/文档核对详见迁移计划。
+
+已查看关键桌面、手机、详情、工作台和真实失败/恢复截图；正常页面无新增所检横向溢出/遮挡或非预期未处理错误。故意存储/lazy卸载、图片/超时、字体拒绝和真实离线日志保留，不能称错误全零。未实现照片分析、模板/技法预览、MainBrowser/文化弹层、侧栏/底部导航、独立单步骤调整；原请求取消/过期控制、焦点陷阱/背景锁滚动和存储/lazy风险未修复。真机/其他浏览器、字体成功排版、真实provider/弱网、完整无障碍与像素一致未覆盖。完整证据、失败修正、11个实际路径和回退范围见[ARCH-11记录](docs/frontend-architecture-migration-plan.md#arch-11整体清理与最终回归)及两累计报告。上述为18:55待验收交付快照；负责人随后回复“人工核验完成”，ARCH-11现为done、无新的current，Git收尾及剩余外部连接限制见下方最新记录。
+
+
+
+**2026-11-17 19:08:13（北京时间）ARCH-11 人工验收入口更正，YAS-2026-0055**：负责人截图显示“智能服务暂未配置”。此前提供的5212是专为真实无Key/降级回归启动的隔离服务，刻意禁读.env且使用空Key；将其作为一般人工验收入口不妥，原降级结果和截图继续保留。只读状态核对确认现有服务端配置已存在，模型为glm-5.3-flash，未读取/展示密钥内容、未改配置或代码。另用现有启动入口（FISHTALK_PORT=5214、NODE_ENV=production）启动正常配置服务；实际GET /api/health为200、ok=true、services.assistant=true，产品深链接200且完整HTML为966字节。**正常人工验收入口更正为 http://127.0.0.1:5214/；5212仅用于无Key降级对照。** 本次只执行健康/静态HTTP检查，没有实际模型、天气或联网调用，不把配置启用当真实provider成功验证；不同端口为不同浏览器存储来源，5212对话不会自动迁移到5214。没有新增源代码变更，不重跑或升级此前71/336/build2902、开发116/生产38/路由73的自动覆盖结论。ARCH-11仍唯一current、待人工验收、未提交、未推送、未创建arch-stage-11；不记人工验收通过。**本阶段无新增核验，继承上一条结论。**
+
+
+
+**2026-11-17 19:13（北京时间）ARCH-11 人工验收外部连接故障定位，YAS-2026-0055**：负责人在正常配置5214页面再次反馈天气“连接失败”和趋势问答“智能服务连接失败”；这不是人工验收通过。服务器日志分别为WEATHER_PROVIDER_UNAVAILABLE/503与PROVIDER_UNAVAILABLE/502，健康检查assistant=true只代表配置存在，不能证明供应商可用。无密钥探测在沙箱进程内对智谱与Open-Meteo均立即失败，底层EACCES；权限对照下智谱站点200、聊天/检索API无鉴权HEAD均401且约240ms，证明原验收服务受到沙箱出站网络限制。已停止本次自行启动的5214沙箱实例，并以普通本机进程在同一端口使用原代码/配置重启；不修改系统代理、TLS校验、密钥或任何源码，保持浏览器存储来源。现有系统/环境没有已配置代理。
+
+天气另有独立外部可用性失败：普通进程两次访问api.open-meteo.com仍为超时，进一步记录UND_ERR_CONNECT_TIMEOUT，尚未解决；不绕过校验、不换供应商或扩大server/provider修改范围。无Key探测的401是预期的未鉴权响应，只证明网络可达，不证明真实Key、额度、模型或联网回答成功；本次没有主动付费模型调用。底层原始证据在.qa/arch-11-checks/network-probe-sandbox.json、network-probe-normal.json和normal-upstream-connectivity.json，不含Key/Authorization。
+
+正常验收地址仍为http://127.0.0.1:5214/；已加载的旧失败消息不会因服务重启自动改写。真实智谱/检索端到端与天气可用性不得标成已验收，天气外部超时作为本次剩余问题保留。此前无Key/合成浏览器116/38与单元336/构建/路由73的证据保持原边界，不升级真实provider覆盖。本次仅重启自己的服务和追加四文档，未新增源码改动，文档/历史/范围/空白核对另跑；ARCH-11仍唯一current、待人工验收，未提交、未推送、未创建arch-stage-11。**本阶段无新增核验，继承上一条结论。** 该句指产品事实审计，不代表没有进行上述网络诊断。
+
+**2026-11-17 19:21（北京时间）ARCH-11 整阶段验收收尾，YAS-2026-0055**：负责人原话“人工核验完成”，ARCH-00～11均done，**无新的current**。19:17及19:20重新fetch并实际查询远端，master仍为ARCH-10归档点f8fcbfa2673af1b9f9f470796f6a206aedeffcc9，10标签对象/指向一致、11未创建。仅更新四文档，七个已验收代码/测试文件以SHA-256保持原内容；沿用上述真实自动验证，不声称重跑业务测试。只按已验收11路径提交、正常推送并建立唯一带注释arch-stage-11；本条写入时Git操作尚未完成，实际SHA/标签和远端核对由收尾回执提供、后续文档回填，不amend或移动标签，不删除分支。
+
+人工接受不等于真实智谱/检索端到端验证；天气外部连接超时仍未解决，照片/其他未实现能力、请求/存储/焦点缺口、图片授权和来源风险全部保留。本阶段无新增核验，继承上一条结论。正常本机入口为http://127.0.0.1:5214/。本轮架构阶段收尾不等于生产就绪；完整验收证据、限制和按依赖获授权revert的安排见迁移计划及两累计报告。
+
+### 本轮最终职责映射
+
+| 职责 | 实际位置与依赖 |
+| --- | --- |
+| 应用装配/导航 | App.jsx 连接唯一 catalog/collection 实例与原页面；features/app-shell 承担 Shell、顶部/手机下拉导航和 History Hook |
+| 首页/视觉 | features/home/components/HomeView.jsx 组合原 Hero、精选与化妆台；三个共享视觉组件及 CSS 继续在 components，不复制实现 |
+| 小Y/方案 | components/XiaoYAssistant.jsx 仍有标题、快捷问题、输入与工作台组合职责；features/assistant → features/makeup-plan，API/Hook/展示就近 |
+| 化妆台 | features/makeup-table/components 的 Experience 及 2D/3D；makeup-table-3d 是异步场景内部实现，2D 是有效降级 |
+| 产品库/收藏 | features/catalog 提供产品读取、筛选、详情；features/collection 提供共享收藏，App 用 statusControl 插槽连接两者 |
+| 指南/文化 | features/guide-culture/components 的两个实际页面；不访问存储/网络/History |
+| 公共基础/类型 | lib/api、lib/storage、lib/navigation-history；contracts 六文件仅 JSDoc，含真实类型引用，保留 export {} 模块标记 |
+| 数据/资源 | data 仍为唯一产品事实源，public 原路径与来源/授权状态保持 |
+
+历史计划中的额外首页拆分、homeContent、移动开幕/共享视觉/小Y入口、独立 guide/culture 与 src/app 目录等目标，已被各阶段负责人确认的具体范围覆盖；未创建的目标不描述成已落地。完整原始映射与失败/豁免保留于 ARCH-00 清单和迁移计划。当前没有模板/技法预览、MainBrowser、文化弹层、侧栏或移动底部导航；局部方案调整仍是修改原条件后重新生成，没有独立步骤调整或工作台清空按钮。
+
+### 当前依赖边界与保留限制
+
+当前真实入口为 `main.jsx → App.jsx → AppShell → TopHeader / MobileNavigation`；App 通过 children/opening/overlay 插槽连接原页面、开幕与抽屉，Shell 不负责领域状态、请求或持久化。App 组合 features/home 的 HomeView、features/guide-culture 的 GuideView/CultureView及 `components/` 中的小Y和品牌开幕，小Y再组合工作台；HomeView 直接组合既有视觉组件。产品库/详情展示与筛选状态已迁入 catalog；App 调用唯一 `useCollection()`，向首页、产品库、详情和收藏页传递同一份状态/操作。两个业务 API 的 fetch 共用 `lib/api/client.js`，参数、响应和具体错误映射仍在 features。小Y的 useAssistant 组合 `lib/storage/` 的版本读取/迁移、写入、Key 和旧凭据清理，消息保存仍在原 effect 中使用 `slice(-20)`。`migrations` 依赖 `storageClient` 和 `storageKeys`，`storageClient` 与 `clearUserData` 仅依赖 `storageKeys`；没有反向依赖 UI 或桶式转发。小Y原存储异常继续抛出；收藏读取异常仍回退、写入异常仍抛出，详细边界见下文。contracts 只有 JSDoc，没有运行时校验。下面的图表示本轮实际依赖方向；contracts 是 JSDoc 类型引用，不增加运行时校验。
 
 当前指南/文化依赖为 `App → GuideView / CultureView → Lucide ChevronRight`。GuideView保留内嵌三项指南及onApplyFilter，App连接原useCatalog筛选与导航；CultureView通过onNavigate进入产品库。页面不访问History、存储或网络，也不反向导入App。实际没有BeautyView、CultureSheet、MainBrowser或文化弹层；不创建useOverlay。App保留条件渲染及跨领域连接，导航/History/原详情和菜单状态与四Effect进入useAppNavigation。桌面“肤质指南/品牌文化”直接可见，手机沿用现有折叠菜单，按本次负责人确认保留实际基线。
 
@@ -473,9 +422,9 @@ catalog    → data
 
 `lib` 不依赖 `features`，`contracts` 不保存业务数据，`makeup-plan` 不反向依赖 `assistant`。组件负责展示，Hooks 负责状态和流程，业务 API 负责请求适配，Utils 保持为可独立测试的纯函数。
 
-实际引用还要求在相应阶段复核：BrandOpening 也使用 StrokeText；首页精选由 App 通过组件属性注入其现有 EnhancementBoundary，HomeView 不反向导入 App；产品详情现由 App 注入收藏控件。迁移不得产生 app/home 或 catalog/collection 循环依赖，也不得复制共享实现。全局 `styles.css`、`xiaoy.css` 仍由 main 按现有顺序加载，后者也包含工作台及首页 CTA 样式；ARCH-08已归档，ARCH-09已人工验收归档，ARCH-10已整阶段人工验收通过、done，Git收尾中；ARCH-11仅登记为唯一current、尚未实施。原字体、文化品牌SVG及第三方视觉源码路径未移动。
+实际引用还要求在相应阶段复核：BrandOpening 也使用 StrokeText；首页精选由 App 通过组件属性注入其现有 EnhancementBoundary，HomeView 不反向导入 App；产品详情现由 App 注入收藏控件。迁移不得产生 app/home 或 catalog/collection 循环依赖，也不得复制共享实现。全局 `styles.css`、`xiaoy.css` 仍由 main 按现有顺序加载，后者也包含工作台及首页 CTA 样式；ARCH-08已归档，ARCH-09已人工验收归档，ARCH-10已人工验收归档；ARCH-11已整阶段人工验收done，无新的current。原字体、文化品牌SVG及第三方视觉源码路径未移动。
 
-App-shell 无反向导入 App，没有 appContext、Redux 或路由依赖。App 保留 initialEntry/openingActive/view 与唯一 catalog/collection 实例；导航 Hook 只持有原导航 UI/产品状态并使用传入的 setter，沿用 lib/navigation-history 与 catalogService。四个原 Effect 的顺序、依赖、监听清理、History 写入及 RAF/2600ms 滚动时机保持；小Y/方案的 busy、消息、草稿、请求和来源弹层继续由既有领域模块持有，不复制或增加持久化。第三方披露的四个视觉源码路径和现有 Lucide 图标依赖均未改变；未新增包/素材。ARCH-11 的最终导入核对、全局死文件清理和文档迁移尚未实施。
+App-shell 无反向导入 App，没有 appContext、Redux 或路由依赖。App 保留 initialEntry/openingActive/view 与唯一 catalog/collection 实例；导航 Hook 只持有原导航 UI/产品状态并使用传入的 setter，沿用 lib/navigation-history 与 catalogService。四个原 Effect 的顺序、依赖、监听清理、History 写入及 RAF/2600ms 滚动时机保持；小Y/方案的 busy、消息、草稿、请求和来源弹层继续由既有领域模块持有，不复制或增加持久化。第三方披露的四个视觉源码路径和现有 Lucide 图标依赖均未改变；未新增包/素材。ARCH-11 已执行最终导入/残余审计：无整文件删除；两项未被导入的导出收回为内部实现，一条存储旧路径注释更新。运行模块均从入口可达，六个类型契约保留；ARCH-11已整阶段人工验收done，无新的current，完整命令、证据和剩余限制见迁移计划。
 
 ### 架构文档同步规则
 
@@ -501,6 +450,7 @@ ARCH-05～ARCH-11 按完整阶段连续实施，只处理唯一 current，不再
 - 首页滚动标题：参考 React Bits `ScrollFloat` 的字符拆分和 GSAP/ScrollTrigger 生命周期（[源码说明](https://reactbits.dev/components/scroll-float)，[上游仓库](https://github.com/DavidHDev/react-bits)，MIT + Commons Clause，检索于 2026-11-05）；`src/components/ScrollFloat.jsx` 仅保留 transform/opacity 滚动进入、语义标签、中文字符拆分和 reduced-motion 处理。
 - 首页产品增强轮播：参考 React Bits `FlexCarousel` 的受控产品项、拖动/键盘/滚轮交互和 OGL 资源清理（[源码说明](https://reactbits.dev/components/flex-carousel)，[上游仓库](https://github.com/DavidHDev/react-bits)，MIT + Commons Clause，检索于 2026-11-05）；`src/components/FlexCarousel.jsx` 使用 YasPretty 本地产品图片，不使用示例远程图片，`ogl@1.0.11` 为 Unlicense，懒加载并在 WebGL/增强层不可用时回退现有 `ProductCard` 网格。
 - 化妆桌幽灵光标：使用 React Bits `GhostCursor` 的 WebGL 烟雾实现（[组件说明与源码](https://reactbits.dev/components/ghost-cursor)，[上游仓库](https://github.com/DavidHDev/react-bits)，[许可证](https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md)，MIT + Commons Clause，代码接入于 2026-11-04）；本地仅调整颜色、粒子预算、移动端性能参数和化妆桌显示生命周期，源码位于 `src/features/makeup-table/makeup-table-3d/GhostCursor.jsx`。
+- 字体：`src/styles.css` 通过 Google Fonts 请求 DM Mono、Noto Sans SC、Noto Serif SC，字体文件由 fonts.gstatic.com 提供；本次环境拒绝这些外部请求，使用回退字体，未改字体或声明许可证/授权核验已完成。完整第三方资源/许可证清单的既有公开门禁仍保留。
 - YasPretty 原创品牌素材：首页 Hero、字标和手绘元素由项目视觉规范衍生并以代码绘制，来源与创建方式见 `public/assets/asset-manifest.json`。
 - 3D 化妆桌视觉参考：项目负责人于 2026-11-04 提供两张粉色手绘妆台/妆具参考图，仅用于构图、品类与色彩方向；原图不进入生产包，不作为产品图片，也不宣称由项目创作或已获再利用授权。
 - 产品封面：23 张来自品牌官网页面、11 张来自零售商页面、1 张来自媒体页面；逐张链接见产品详情，授权状态均为待核验。
@@ -509,6 +459,8 @@ ARCH-05～ARCH-11 按完整阶段连续实施，只处理唯一 current，不再
 依赖许可证以各项目自身许可证为准。仓库自己的 LICENSE 和完整第三方资源清单尚未补齐，因此当前仓库不可视为已具备公开发布条件。
 
 ## 验证状态
+
+最新ARCH-11结果见上方架构执行记录及[完整迁移计划](docs/frontend-architecture-migration-plan.md#arch-11整体清理与最终回归)。可复跑：`node tests/architecture/arch11-imports.mjs`；构建并启动隔离生产服务后运行 `node tests/architecture/arch11-production-routes.mjs`；浏览器组合脚本 `node tests/browser/arch11-final-regression.mjs` 支持开发九套、`--static-preview` 纯构建预览和 `--production` 真实无Key服务三种模式。外部Playwright模块、Chrome路径、端口及证据环境变量详见计划；以下旧日期数字是历史快照。
 
 首页全组件入场与轮播节奏复核（2026-11-05，北京时间，`YAS-2026-0032`）：Hero 的眉标、说明、两行 slogan、描述、方案入口、搜索框、快捷筛选和背景素材均加入分层入场；产品轮播自动切换间隔调整为 3.2 秒，卡片过渡改为更平滑的缓动，拖动时暂时关闭过渡并提前加载当前/下一张图片，以减少停顿感。`npm test -- --run` 通过，9 个测试文件、49/49 项；`npm run build` 通过，Vite 转换 2859 个模块；`git diff --check` 通过。真实触摸和 GPU 透镜效果仍需现场复验。
 Hero 图片与整区动效复核（2026-11-05，北京时间，`YAS-2026-0034`）：Hero 背景图片增加慢速进入、轻微漂移和柔和扫光层，Hero 外壳、内容列、角标、按钮、搜索框和快捷筛选保持分层入场；桌面端描述文案保持单行，680px 以下移动端恢复自然换行。动效仅使用 opacity、transform 和背景叠层，不改变搜索、方案入口或产品数据。`npm test -- --run` 通过，9 个测试文件、49/49 项；`npm run build` 通过；`git diff --check` 通过。真实 GPU 像素效果仍需现场复验。

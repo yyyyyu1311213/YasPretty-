@@ -157,5 +157,3 @@ export default function StrokeText({
     </span>
   )
 }
-
-export { prefersReducedMotion }
