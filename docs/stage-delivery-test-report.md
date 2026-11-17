@@ -2169,3 +2169,112 @@ node tests/browser/arch06-catalog.mjs
 **2026-11-17 15:36（北京时间）验收收尾自动核对**：node .qa/arch-07-checks/verify-acceptance.mjs 退出码0，13个已验收代码/测试文件SHA-256不变，精确17路径/空索引、两累计报告仅追加、00～06历史及09～11计划不变、07原证据保留、08仅登记current/未实施，12阶段正文与总表一致。README147实际路径/13本地链接与锚点/4第三方披露路径、167相对引用/无循环或反向依赖、原断言/源码快照、37测试文件、9个JS/MJS语法、UTF-8/换行/空白、源码及浏览器证据对照通过；git diff --check和git diff --cached --check退出码0。确认后只同步四文档，沿用112/112、296/296、build2895、前后16+14的真实结果，不称重跑。追加本结果后再核对，暂存后再核对精确范围与内容；此时尚无本阶段提交/推送/标签结果，待实际回执。**本阶段无新增核验，继承上一条结论。**
 
 **2026-11-17 15:40（北京时间）暂存内容核对**：显式暂存已确认的17路径后，Node只读核对退出码0；暂存清单精确匹配17路径、各暂存blob与工作树按Git过滤后的内容一致、无未暂存或未跟踪文件，13个已验收代码/测试文件SHA-256仍不变，工作树和暂存空白检查均通过。本次仅追加此收尾证据后重新暂存三份记录文档并复核，不改实现、阶段范围或原风险。本条与最终状态/人工确认共同纳入ARCH-07收尾提交，此时新SHA/推送/标签尚未产生，实际结果待回执。**本阶段无新增核验，继承上一条结论。**
+
+
+## 2026-11-17（北京时间）ARCH-08 home：整阶段迁移与自动验证，待人工验收
+
+关联既有 **YAS-2026-0055**。本阶段只调整现有首页代码组织；ARCH-08 唯一 current、09～11 pending，无本阶段人工确认或修改后提交。以下为本地工作树事实，不能视为远端已实现。
+
+### 启动基线、实际差异与迁移范围
+
+15:52 先执行 `git fetch origin master`，再实际 `git ls-remote origin refs/heads/master refs/tags/arch-stage-07 'refs/tags/arch-stage-07^{}'`：分支master，HEAD/origin/master/实际远端/ARCH-07最终归档提交均为 **7f71699ddea914c36a1ad3b0c877ad0d6eb31755**，ahead/behind 0/0；本地/实际远端带注释arch-stage-07对象均 **c7765c37a83ce0dc4806d2db50ae84ebfbd9c4a9**、^{} 指向该提交。起始工作树/索引/未跟踪均空；07已有负责人“人工验收通过”及实际归档，08唯一current、09～11pending。本条回填上次真实归档，不改原快照。普通沙箱fetch写FETCH_HEAD及ls-remote schannel通道失败，同命令权限重试成功，未改Git配置/凭据，没有自动审批拒绝。
+
+任务文字与实际归档版本存在差异，实施前已说明：无首页快捷问题弹层、新手流程、模板/技法预览；不存在 QuickQuestionSheet/TemplatePreview/TechniquePreview。CTA仅调用onNavigate('assistant')，不传预填参数；小Y自己显示四个快捷问题并直接sendMessage(prompt)、清空输入。桌面/360px均显示完整hero，display:block、高度至少500px，不存在所描述的桌面隐藏/手机短banner。早期沟通曾误判隐藏/短banner存在，随后已纠正。遵循本次“不改变实际UI/CSS、不造假区块、按真实职责落地”的明确要求，只迁移实际HomeView，不创建空组件/重复homeContent，不把缺失场景冒充验收通过。迁移计划原视觉搬迁/机械细拆目标保留为历史快照，被本次具体范围覆盖；未执行ARCH-09/10/11。
+
+| 原位置（7f71699d） | 实际位置及依赖 | 共享状态、验证和缺口 |
+| --- | --- | --- |
+| src/App.jsx:328 HomeView | src/features/home/components/HomeView.jsx，App唯一直接消费，main间接装配 | 原主体原文相同；保留搜索草稿、CTA、六筛选、rating降序前12个原产品对象、文案/素材/动效参数 |
+| App首页专用import/lazy | HomeView依赖原catalog/ProductCard/catalogService、原components视觉及lazy MakeupTableExperience/FlexCarousel | 同一ProductCard与真实ID查询，不复制事实、收藏或详情；原Suspense占位/三层精选fallback保留 |
+| App:31边界/:224首页组合 | EnhancementBoundary原类留App，作为稳定组件属性注入HomeView | 不反向导入App，不提前拆App；唯一useCollection、导航/history、详情/资料页/状态插槽原样 |
+| 原化妆台浏览器脚本只查App lazy | tests/browser/arch05-makeup-table.mjs从App或HomeView按所属目录解析lazy路径 | 必要直接引用适配，原行为断言全部保留，旧快照仍能运行 |
+
+完整 **9路径**：src/App.jsx；src/features/home/components/HomeView.jsx；同目录HomeView.test.jsx；tests/browser/arch08-home.mjs；tests/browser/arch05-makeup-table.mjs；README.md；docs/frontend-architecture-migration-plan.md；本报告；docs/product-data-accuracy-audit.md。旧HomeView定义移除，无空目录、转发、重复实现或新依赖。catalog/collection/assistant/makeup-plan/makeup-table原源码及测试、server/public/data/contracts/CSS/依赖版本未改。
+
+### 真实命令与结果
+
+| 命令 | 迁移前 | 迁移后 |
+| --- | --- | --- |
+| npm test -- src/features/catalog src/features/collection src/data/home-featured.test.js src/lib/navigation-history.test.js | 15:53，10文件74/74，938ms | 增加src/features/home参数，16:10:17，11文件81/81，841ms |
+| npm test | 15:54前，37文件296/296，4.77s | 16:10:52，38文件303/303，3.00s |
+| npm run build | 2895模块，1.84s；主JS745.49kB/gzip226.61kB | 2896模块，2.30s；主JS745.63kB/gzip227.05kB；3D1293.47kB/gzip356.09kB |
+| node tests/browser/arch08-home.mjs | 原工作树最终12/12 | 当前工作树12/12 |
+| node tests/browser/arch06-catalog.mjs | 归档App参考服务14/14 | 当前工作树14/14 |
+| node tests/browser/arch07-collection.mjs | 归档App参考服务16/16 | 当前工作树16/16 |
+| node tests/browser/arch05-makeup-table.mjs | 归档App参考服务16/16 | 当前工作树16/16 |
+| node .qa/arch-08-checks/verify-source.mjs | 保存before.json，并核对与HEAD App原文相同 | 首页主体/App其余代码原文等价、唯一收藏实例/真实参考服务通过 |
+| node .qa/arch-08-checks/compare-browser.mjs | 首页真实基线、catalog/collection归档参考基线 | 首页全部非几何记录相同；catalog/collection全部evidence相同，首页33个瞬时几何字段差异保留 |
+| node .qa/arch-08-checks/compare-table.mjs | 原化妆台脚本完整16场景 | 操作/回调/状态/清理一致，所记录几何/Canvas尺寸相同；真实计时单列 |
+
+上述完成命令均退出码0；初次失败另见下节。原296项有效断言保留，新增首页7项检查真实React节点、SSR markup和回调：CTA/草稿/提交、原筛选对象、ProductCard/原对象/共享收藏回调、openingReady/lazy占位/品类连接、同一错误边界/Suspense/轮播fallback及合法/非法选择ID、原媒体路径与文案。隔离useState、静态markup与事件断言不冒称RTL/DOM挂载；真实交互由浏览器覆盖。CSS三个产物仍FlexCarousel-BXfJaBAn 2.58kB、MakeupTableExperience-DUcrjJjC 19.04kB、index-BTPGBce7 70.95kB，hash/大小不变。THREE_CJS_DEPRECATED与>500kB提示保留，不声称性能优化。
+
+启动当前体验服务：`node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5198 --strictPort`。参考服务仅为忽略目录的 `node .qa/arch-08-checks/reference-server.mjs`，5199以Vite load插件加载保存的归档App，其余源码本次未改，未切分支/覆盖当前源文件。参考服务源码与实际响应经verify-source核对。复跑示例：
+
+~~~powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE = 'file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_BASE_URL = 'http://127.0.0.1:5198'
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-08-home-recheck'
+node tests/browser/arch08-home.mjs
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-08-catalog-recheck'
+node tests/browser/arch06-catalog.mjs
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-08-collection-recheck'
+node tests/browser/arch07-collection.mjs
+$env:YAS_QA_OUTPUT_DIR = '.qa/arch-08-table-recheck'
+node tests/browser/arch05-makeup-table.mjs
+~~~
+
+参考服务复跑把base URL改5199；化妆台另设YAS_QA_REFERENCE_SNAPSHOT='.qa/arch-08-checks/arch05-reference.json'（包含原App的sources对象），当前源码运行不设置该变量。没有安装依赖、调用付费provider或读取私有环境文件。JSX经Vitest转换和生产构建验证；两个浏览器MJS经node --check通过，最终文档/范围/空白检查另追加。
+
+### 页面对照、截图、错误与失败保留
+
+Chrome157.0.8103.52、1440×900/360×800、DPR1，每场景独立临时上下文与合成画像/收藏/对话。新首页脚本每视口6组；增强轮播no-preference，其余reduce，原化妆台脚本另覆盖默认动效和低性能/减少动效。
+
+- 首页真实入口、化妆台介绍、完整hero及主CTA到主站工作台；小Y原四问题直接发送、合成草稿被清空、纯本地回复/画像、切页和刷新恢复；搜索nArS、六快捷筛选和返回后首页草稿清空；查看产品库空查询。
+- 12个真实产品ID/顺序、增强轮播Home/ArrowRight/Enter打开真实详情，抽屉滚动（桌面956px/手机1404px）、关闭按钮键盘焦点、Escape/关闭/返回和history；关闭后焦点BODY、body overflow空字符串，前后一致。未新增焦点恢复/焦点陷阱，不称所有键盘无障碍问题已解决。
+- 静态网格的想买/会回购/正在用、首页/产品库/详情/完整资料深链接/收藏列表共享、刷新/移除及原始存储；图片拒绝原占位可继续详情，空目录保留原首页空精选和产品库空态。故障为开发模块/请求定向注入，不是外部商品核验。
+- 原catalog另验证35单项筛选、组合/四排序、色号/相似商品/完整资料/深链接/滚动/历史；collection另验证坏JSON/缺失/空串/读写拒绝/null、未知/falsy对象/键序与目录序、非收藏值保留。两组全部evidence逐项相同；首页除增强轮播瞬时几何外全部记录相同，包括文案、链接、输入/消息、产品ID/次序、收藏、URL、焦点和滚动。
+- 首页严格几何有33字段差异：轮播最大横向约2.93px、纵向约0.24px，宽高仅浮点微差；记录时仍有原CSS过渡，未另证成因，不把此比较写成通过。其他首页记录几何相同；脚本所检控件无重叠/文档横向溢出。没有进行严格像素一致验收，轮播沿用原轨道定位，不借迁移修视觉。
+- 化妆台真实WebGL使用ANGLE Intel UHD Graphics/D3D11；开幕/跳过、自动展开收拢/拖动/品类导航/重新进入、无WebGL的原2D详情/Escape、Scene抛错、6秒未就绪回退、在途卸载和计时器/RAF/监听/Observer/光标清理，前后16/16。未就绪回退实测桌面6454→6471ms、手机6688→6499ms（含轮询/2D就绪），不是性能承诺。lazy下载拒绝前后仍有未捕获动态导入错误及根卸载，属于保留缺口，场景通过表示验证了原缺口。
+- 首页/catalog pageerror为0；collection显式写失败/null各6条预期pageerror/根卸载保持。首页前后各58条资源错误（16字体环境拒绝、42显式封面失败）；catalog参考52/后58（各22字体，30/36定向封面失败，数量随懒加载调度变化）；collection各22字体错误。正常本地资源无失败，HTTP>=400为0，不是所有控制台/资源错误为零。化妆台Scene抛错/下载拒绝的原预期日志另保留在results.json，正常场景只有已记录外部字体拒绝；未隐藏意外错误。
+- 已实际查看前后桌面/手机hero、前后桌面轮播、前后手机静态网格/抽屉等截图；化妆台补充关键截图的查看与最终核对在本节末尾记录。不把无头360px视口称为真机/触摸验收。
+
+首次首页基线10/12：脚本全部reduce令轮播按既有策略正常回退网格，两个增强定位超时；只修配置为该场景no-preference，在修改生产代码前得到12/12完整基线，失败JSON/截图保留 `.qa/arch-08-before/`。原catalog/collection补充前轮跨过生产迁移时间，不作为纯迁移前证据；用归档App参考服务补足前后完整场景，原混合过程保留。参考服务首次Vite相对导入路径错误，改为既有包导入后启动成功。原化妆台脚本首次参考/当前两次都在启动入口发现断言退出，未运行场景；只改该脚本从App或HomeView按所属目录找入口，保留全部行为断言后，前后各16/16。以上不是修改业务去迎合测试。
+
+证据在忽略目录 `.qa/arch-08-before-final/`、`after/`、`catalog-{reference,after}/`、`collection-{reference,after}/`、`makeup-table-{reference,after}/`（均带arch-08前缀），及 `.qa/arch-08-checks/` 的原文快照、源码/浏览器/table对照。QA、截图、临时下载和合成数据不提交。
+
+### 入口、数据隐私、剩余风险和回退
+
+体验入口为[本地首页](http://127.0.0.1:5198/)，向下到“创建我的妆容方案”、搜索/六筛选、精选产品详情和收藏；主导航可检查产品库、完整资料和我的收藏。工作台/小Y仍在主站；无新预填或预览弹层。四文档同步当前树/38测试文件/实际边界与媒体、字体和第三方源码路径，不把未来guide/culture/app迁移写成落地；视频、PPT和比赛材料未改，本次不宣称新增AI/产品能力。
+
+**本阶段无新增核验，继承上一条结论。** 价格、评分、色号、产品事实、图片/来源/授权pending或blocked、旧品牌官网商品页/e.tb.cn与现行直接官方旗舰店规则差异及全部公开门禁保持。没有读取真实Key/.env/旧memory/照片/画像/对话，没有新上传、个人数据日志、保存位置或第三方处理；测试无API/provider调用，匿名收藏/对话不称服务端永久保存。
+
+未覆盖真实手机/触摸、其他浏览器/系统/GPU驱动、穷尽内存泄漏、全部默认动效、字体成功加载后的严格排版、真实断网/弱网/配额耗尽/存储权限、生产同源HTTP/provider和严格像素。原收藏null/写失败根卸载、lazy下载拒绝根卸载、大包/弃用、产品授权/来源公开风险保留，不作为成功降级或已整改结论。
+
+回退范围为上述9路径，上一已验收归档点 `7f71699ddea914c36a1ad3b0c877ad0d6eb31755 / arch-stage-07`。当前未提交现场不是新Git恢复点；不以备份为由暂存、stash、覆盖或丢弃。人工通过并实际归档后，按实际SHA和后续ARCH-09/10/11对App/Home/脚本的依赖评估授权revert，从新到旧处理必要范围并重新验证；Git不恢复浏览器数据、环境变量或外部服务状态，不强推/改写历史/移动标签。
+
+**待人工验收、未提交、未推送、未创建 arch-stage-08，暂存区为空。** 无本阶段修改后SHA、人工确认人/日期/通过结果。按本次任务第七节及AGENTS13.2统一交完整结果后等待负责人验收；08保持唯一current、09～11pending，确认前不提交/推送/建标签/删分支/实施09。
+
+
+**2026-11-17 16:27（北京时间）补充化妆台与最终自动核对**：原arch05脚本仅适配lazy入口发现后，归档App参考服务与当前工作树各16/16；真实WebGL/2D/运行失败/未就绪/卸载/清理及下载拒绝缺口均验证。compare-table确认非计时行为和记录几何/Canvas尺寸相同，实际计时单列，不声称严格像素或全部GPU通过。已查看前后桌面真实展开和手机2D截图。前后各2条下载拒绝pageerror、6条console.error（2字体+2Scene抛错+2下载拒绝）与4次失败请求原样，正常本地资源无失败。node .qa/arch-08-checks/verify-final.mjs退出码0：精确9路径、2个home文件、空索引/master/基线/标签/无08标签、两报告只追加、00～07历史和09～11计划不变、唯一08 current、38测试文件；README152树路径/14本地链接锚点/4第三方源码路径、172相对引用/无循环反向依赖、原首页/App其余源码及原化妆台全部行为断言、两MJS语法/UTF-8/换行/空白、git diff --check和git diff --cached --check通过。补记后再次复核，不重复已通过业务测试/构建。当前仍待人工验收、未提交、未推送、未创建 arch-stage-08；**本阶段无新增核验，继承上一条结论。**
+
+
+## 2026-11-17（北京时间）ARCH-08：人工验收通过与版本收尾
+
+
+关联YAS-2026-0055。项目负责人对本阶段整阶段交付明确回复原话“人工核验完毕”，确认已交付9路径；按AGENTS13.2将ARCH-08改done、ARCH-09仅登记为唯一current且未实施、10～11pending。不虚构负责人设备、操作或未执行验证，不推定分支删除授权。
+
+16:36起重新执行git fetch origin master及实际git ls-remote，master/HEAD/origin/master仍为 **7f71699ddea914c36a1ad3b0c877ad0d6eb31755**，ahead/behind0/0；arch-stage-07本地/远端对象 **c7765c37a83ce0dc4806d2db50ae84ebfbd9c4a9**、^{}指向该提交，远端无arch-stage-08。沙箱FETCH_HEAD写权限及Schannel通道失败后，同命令权限重试成功，未改Git配置/凭据，没有自动审批拒绝。工作树仍精确为已交付9路径，起始索引空。
+
+验收后仅同步README、迁移计划和两累计报告；五个已验收代码/测试文件以SHA-256逐一核对不变，代码/测试不作实质修改。README开头遗留296项计数同步为已实跑303项，修正文档内部不一致。沿用相关81/81、全量38文件303/303、build2896、桌面/360px首页前后12/12、catalog14/14、collection16/16、化妆台16/16，不称验收后重跑。收尾重新检查范围、阶段状态、路径/链接、源码与行为证据、语法/空白及暂存内容，真实结果另追加。
+
+原失败与风险全部保留：首页33个瞬时几何字段差异、严格几何比较未通过，收藏null/写失败与lazy下载拒绝根卸载，字体拒绝、模拟封面/Scene故障、大包/弃用及首次测试定位/参考服务失败不抹去；真机/触摸、其他浏览器/GPU、全部默认动效、字体成功排版、真实弱网/存储权限/配额、生产HTTP/provider、穷尽泄漏和严格像素未扩大验证。人工确认不等于这些问题已整改。入口仍为主站5198首页/工作台/产品库/详情/收藏；参考5199已在最终核对后停止，原源码与浏览器结果保留在忽略.qa。
+
+**本阶段无新增核验，继承上一条结论。** 产品事实、价格/评分、来源、图片授权pending或blocked、历史商品链接与现行直接官方旗舰店规则差异和公开门禁不升级；无新上传、个人数据日志、第三方处理或存储位置变化，未读真实Key/.env/用户照片/画像/对话。AGENTS/FINAL-PROMPT、视频及比赛材料未改。
+
+本次收尾将已验收App、HomeView/测试、arch08浏览器脚本、arch05入口发现适配及四文档共9路径纳入规定格式的[ARCH-08]提交。本条写入时未提交、未推送、未创建arch-stage-08，实际新SHA/带注释标签对象及^{}远端核验由本次回执先提供、下次同步回填，不amend或虚构自引用；原待验收/current快照保留。上一归档为7f71699d/arch-stage-07；实际归档后按后续ARCH-09/10/11的App/Home/脚本依赖评估授权revert，从新到旧处理必要范围并复验，Git不恢复浏览器数据/环境变量/外部状态。此确认不授权实施09或删除分支。
+
+
+**2026-11-17 16:41（北京时间）验收收尾自动核对**：node .qa/arch-08-checks/verify-acceptance.mjs退出码0；五个已验收代码/测试文件SHA-256不变，精确9路径、空索引、master/原基线/07标签/无08标签、两报告只追加、00～07历史及10～11计划不变，08原证据保留，09仅登记current且未实施。12阶段正文/总表一致，README152实际树路径/14本地链接锚点/4第三方源码路径、172相对引用/无循环反向依赖、原首页/App其余源码/arch05行为断言、38测试文件、两MJS语法/UTF-8/换行/空白、已保存浏览器与化妆台对照、git diff --check及git diff --cached --check均通过。参考服务已停止，本次源检查验证保存原文与HEAD一致，不冒称重新检查参考服务响应。确认后只更新四文档，沿用81/303/build2896及前后12+14+16+16实跑结果；补记后再复核，并在暂存后核对精确范围与blob。此时实际提交/推送/新标签尚未产生，待回执。**本阶段无新增核验，继承上一条结论。**
+
+
+**2026-11-17 16:43（北京时间）提交前与暂存内容核对**：再次fetch及实际ls-remote确认master仍为7f71699ddea914c36a1ad3b0c877ad0d6eb31755、07标签对象/指向不变、无08标签。显式暂存已确认9路径后，YAS_QA_VERIFY_STAGED=1运行node .qa/arch-08-checks/verify-acceptance.mjs退出码0：暂存清单精确匹配9路径、每个暂存blob与工作树经Git过滤后内容相同，无未暂存/未跟踪文件，五个代码/测试哈希仍不变，全部状态/文档/源码/语法/证据及工作树和暂存空白检查通过。本次仅追加此收尾证据后重新暂存三份记录文档并复核，不改实现或验证范围。本条与人工确认和最终阶段状态共同纳入ARCH-08收尾提交，此时新SHA/推送/标签尚未产生，实际结果待回执。**本阶段无新增核验，继承上一条结论。**

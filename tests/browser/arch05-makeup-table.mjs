@@ -10,12 +10,19 @@ const baseURL = process.env.YAS_QA_BASE_URL || 'http://127.0.0.1:5192'
 assert(['127.0.0.1', 'localhost', '[::1]'].includes(new URL(baseURL).hostname))
 const outputDir = path.resolve(process.env.YAS_QA_OUTPUT_DIR || '.qa/arch-05-before')
 await fs.mkdir(outputDir, { recursive: true })
-const appSource = process.env.YAS_QA_REFERENCE_SNAPSHOT
-  ? JSON.parse(await fs.readFile(process.env.YAS_QA_REFERENCE_SNAPSHOT, 'utf8')).sources['src/App.jsx']
-  : await fs.readFile('src/App.jsx', 'utf8')
-const lazyImport = appSource.match(/const MakeupTable(?:Experience)? = lazy\(\(\) => import\('(.+?)'\)\)/)?.[1]
-assert(lazyImport, 'Find the actual lazy table entry from App')
-const lazyPath = `/src/${lazyImport.replace(/^\.\//, '')}.jsx`
+const referenceSources = process.env.YAS_QA_REFERENCE_SNAPSHOT
+  ? JSON.parse(await fs.readFile(process.env.YAS_QA_REFERENCE_SNAPSHOT, 'utf8')).sources
+  : null
+let lazyPath
+for (const owner of ['src/App.jsx', 'src/features/home/components/HomeView.jsx']) {
+  const source = referenceSources ? referenceSources[owner] : await fs.readFile(owner, 'utf8')
+  const lazyImport = source?.match(/const MakeupTable(?:Experience)? = lazy\(\(\) => import\('(.+?)'\)\)/)?.[1]
+  if (lazyImport) {
+    lazyPath = `/${path.posix.normalize(path.posix.join(path.posix.dirname(owner), `${lazyImport}.jsx`))}`
+    break
+  }
+}
+assert(lazyPath, 'Find the actual lazy table entry from App or HomeView')
 const migrated = lazyPath.includes('/features/')
 const browser = await chromium.launch({ headless: true, ...(process.env.YAS_QA_BROWSER_EXECUTABLE ? { executablePath: process.env.YAS_QA_BROWSER_EXECUTABLE } : {}) })
 const results = []
