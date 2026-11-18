@@ -66,7 +66,7 @@ describe('home composition', () => {
   it('passes all six original quick-filter queries and the empty library search', () => {
     const p = props(), tree = HomeView(p)
     const buttons = byClass(tree, 'quick-links hero-motion-control').props.children
-    expect(buttons.map((n) => n.props.children[0])).toEqual(quickFilters.map((f) => f.label))
+    expect(buttons.map((n) => n.props.children)).toEqual(quickFilters.map((f) => f.label))
     buttons.forEach((button, i) => {
       button.props.onClick()
       expect(p.onQuickFilter.mock.calls[i][0]).toBe(quickFilters[i].query)
