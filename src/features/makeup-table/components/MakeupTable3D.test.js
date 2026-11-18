@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { COSMETIC_ITEMS, categoryForCosmetic } from '../makeup-table-3d/cosmetics'
 import { getScenePerformanceProfile } from '../makeup-table-3d/performance-profile'
-import { AUTO_BLOOM_DELAY_MS, SCENE_READY_TIMEOUT_MS } from './MakeupTableExperience'
+import { SCENE_READY_TIMEOUT_MS } from './MakeupTableExperience'
 
 describe('3D 化妆桌受控数据', () => {
   it('只包含八件具有唯一 ID 的品类符号', () => {
@@ -45,12 +45,7 @@ describe('3D 化妆桌受控数据', () => {
   })
 
   it('场景未就绪时使用有限等待后回退', () => {
-    expect(SCENE_READY_TIMEOUT_MS).toBeGreaterThanOrEqual(4000)
-    expect(SCENE_READY_TIMEOUT_MS).toBeLessThanOrEqual(8000)
-  })
-
-  it('视角推进完成后再自动触发花瓣陈列', () => {
-    expect(AUTO_BLOOM_DELAY_MS).toBeGreaterThanOrEqual(1080)
-    expect(AUTO_BLOOM_DELAY_MS).toBeLessThanOrEqual(1400)
+    expect(SCENE_READY_TIMEOUT_MS).toBeGreaterThanOrEqual(10000)
+    expect(SCENE_READY_TIMEOUT_MS).toBeLessThanOrEqual(20000)
   })
 })

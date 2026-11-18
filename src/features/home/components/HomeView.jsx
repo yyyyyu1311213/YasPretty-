@@ -26,8 +26,7 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
   return (
     <div className={`home-motion-stage${openingReady ? ' is-ready' : ''}`}>
       {openingReady && <section className="makeup-table-intro-section content-section" aria-labelledby="makeup-table-intro-title">
-        <ScrollFloat as="h2" containerClassName="makeup-table-intro-title" textClassName="makeup-table-intro-text" effect="float" splitBy="chars" distance={56} stretch={1.15} stagger={0.018} animationDuration={1.45} smoothing={0.18} scrollStart="top 90%" scrollEnd="bottom 48%" ease="power3.out">从化妆台开始，整理你的选择</ScrollFloat>
-        <p>先从品类和使用场景开始，再打开对应的真实产品档案。</p>
+        <ScrollFloat as="h2" containerClassName="makeup-table-intro-title" textClassName="makeup-table-intro-text" effect="float" splitBy="chars" distance={56} stretch={1.15} stagger={0.018} animationDuration={1.45} smoothing={0.18} scrollStart="top 90%" scrollEnd="bottom 48%" ease="power3.out">YasPretty 美妆店</ScrollFloat>
       </section>}
       <Suspense fallback={<div className="makeup-table-lazy-placeholder" aria-label="正在准备交互式化妆桌" />}>
         <MakeupTableExperience openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />

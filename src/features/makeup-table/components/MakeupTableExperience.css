@@ -1,0 +1,14 @@
+.beauty-shop-section { width: min(1360px, calc(100% - 64px)); padding: 0 0 58px; }
+.beauty-shop-stage { position: relative; height: clamp(540px, 52vw, 640px); overflow: hidden; background: #f1dfd6; isolation: isolate; }
+.beauty-shop-frame { display: block; width: 100%; height: 100%; border: 0; }
+.beauty-shop-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--yp-ink); background: #f4e6df; font-size: 13px; }
+.beauty-shop-keyboard-entry { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); border: 0; padding: 0; }
+.beauty-shop-keyboard-entry:focus-visible { z-index: 4; top: 18px; left: 18px; width: auto; height: 42px; clip-path: none; padding: 0 16px; color: var(--yp-ink); background: #fff9f5; outline: 2px solid var(--yp-rose-deep); }
+.beauty-shop-back { position: absolute; z-index: 4; top: 18px; left: 18px; display: inline-flex; height: 42px; align-items: center; gap: 8px; border: 1px solid rgba(112, 69, 70, .2); padding: 0 15px; color: #67464b; background: rgba(255, 249, 245, .94); font-size: 12px; cursor: pointer; }
+.beauty-shop-back:hover { background: #fff; }
+.beauty-shop-categories { position: absolute; z-index: 4; right: 18px; bottom: 18px; left: 18px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); border: 1px solid rgba(112, 69, 70, .18); background: rgba(255, 249, 245, .96); }
+.beauty-shop-categories button { min-width: 0; height: 46px; border: 0; border-right: 1px solid rgba(112, 69, 70, .14); color: #67464b; background: transparent; font-size: 11px; cursor: pointer; }
+.beauty-shop-categories button:last-child { border-right: 0; }
+.beauty-shop-categories button:hover, .beauty-shop-categories button:focus-visible { color: #fff; background: var(--yp-rose-deep); }
+@media (max-width: 900px) { .beauty-shop-categories { grid-template-columns: repeat(4, minmax(0, 1fr)); }.beauty-shop-categories button:nth-child(-n+4) { border-bottom: 1px solid rgba(112, 69, 70, .14); }.beauty-shop-categories button:nth-child(4n) { border-right: 0; } }
+@media (max-width: 680px) { .beauty-shop-section { width: 100%; padding-bottom: 48px; }.beauty-shop-stage { height: 600px; }.beauty-shop-back { top: 12px; left: 12px; }.beauty-shop-categories { right: 10px; bottom: 10px; left: 10px; }.beauty-shop-categories button { height: 42px; } }

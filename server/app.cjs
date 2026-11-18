@@ -75,13 +75,14 @@ async function buildApp(options = {}) {
   })
 
   await app.register(helmet, {
+    frameguard: { action: 'sameorigin' },
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
         baseUri: ["'self'"],
         connectSrc: ["'self'"],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        frameAncestors: ["'none'"],
+        frameAncestors: ["'self'"],
         imgSrc: ["'self'", 'data:', 'https://images.unsplash.com'],
         objectSrc: ["'none'"],
         scriptSrc: ["'self'"],

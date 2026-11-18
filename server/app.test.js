@@ -93,6 +93,13 @@ afterEach(async () => {
 })
 
 describe('YasPretty API gateway', () => {
+  it('permits only same-origin frames for the embedded beauty shop', async () => {
+    const app = await createApp()
+    const response = await app.inject({ method: 'GET', url: '/api/health' })
+    expect(response.headers['x-frame-options']).toBe('SAMEORIGIN')
+    expect(response.headers['content-security-policy']).toContain("frame-ancestors 'self'")
+  })
+
   it('routes catalog, product fact, external, and time-sensitive questions through intentRouter', () => {
     expect(intentRouter('推荐一款通勤粉底', [product])).toBe('catalog_recommendation')
     expect(intentRouter('我明天要约会，帮我设计一个妆容')).toBe('makeup_plan')

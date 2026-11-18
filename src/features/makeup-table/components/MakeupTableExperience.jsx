@@ -1,10 +1,10 @@
-import { Component, useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
+import { categoryOptions } from '../../../data/products'
 import LegacyMakeupTable from './MakeupTable'
-import MakeupTable3D from './MakeupTable3D'
-import { readScenePerformanceProfile } from '../makeup-table-3d/performance-profile'
+import './MakeupTableExperience.css'
 
-export const SCENE_READY_TIMEOUT_MS = 6000
-export const AUTO_BLOOM_DELAY_MS = 1180
+export const SCENE_READY_TIMEOUT_MS = 15000
 
 function canUseWebGL() {
   try {
@@ -15,123 +15,58 @@ function canUseWebGL() {
   }
 }
 
-class SceneErrorBoundary extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { failed: false }
-  }
-
-  static getDerivedStateFromError() {
-    return { failed: true }
-  }
-
-  componentDidCatch(error) {
-    console.warn('YasPretty 3D scene unavailable; using the accessible table fallback.', error?.message || error)
-  }
-
-  render() {
-    if (this.state.failed) return this.props.fallback
-    return this.props.children
-  }
-}
-
-function useReducedMotionPreference() {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const media = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-    if (!media) return undefined
-    const update = () => setReduced(media.matches)
-    update()
-    media.addEventListener?.('change', update)
-    return () => media.removeEventListener?.('change', update)
-  }, [])
-  return reduced
-}
-
-function useScenePerformanceProfile() {
-  const [profile, setProfile] = useState(readScenePerformanceProfile)
-  useEffect(() => {
-    const pointer = window.matchMedia?.('(pointer: coarse)')
-    const update = () => setProfile(readScenePerformanceProfile())
-    window.addEventListener('resize', update, { passive: true })
-    pointer?.addEventListener?.('change', update)
-    return () => {
-      window.removeEventListener('resize', update)
-      pointer?.removeEventListener?.('change', update)
-    }
-  }, [])
-  return profile
-}
-
-export default function MakeupTableExperience(props) {
-  const { openingReady = false, onViewCategory } = props
+export default function MakeupTableExperience({ openingReady = false, onOpenProduct, onViewCategory }) {
+  const frameRef = useRef(null)
   const [webGLAvailable] = useState(canUseWebGL)
-  const [ready, setReady] = useState(false)
-  const [sceneMounted, setSceneMounted] = useState(false)
-  const [sceneUnavailable, setSceneUnavailable] = useState(false)
-  const [exploded, setExploded] = useState(false)
-  const [introFocus, setIntroFocus] = useState(false)
-  const [autoBloomPlayed, setAutoBloomPlayed] = useState(false)
-  const reducedMotion = useReducedMotionPreference()
-  const performanceProfile = useScenePerformanceProfile()
-  const fallback = useMemo(() => <LegacyMakeupTable {...props} />, [props])
+  const [stage, setStage] = useState('loading')
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    if (!openingReady) {
-      setSceneMounted(false)
-      setSceneUnavailable(false)
-      setReady(false)
-      setExploded(false)
-      setAutoBloomPlayed(false)
-      return undefined
+    if (!openingReady || !webGLAvailable) return undefined
+    const timer = window.setTimeout(() => setFailed((current) => current || stage === 'loading'), SCENE_READY_TIMEOUT_MS)
+    return () => window.clearTimeout(timer)
+  }, [openingReady, stage, webGLAvailable])
+
+  useEffect(() => {
+    if (openingReady && stage === 'shop') send('start-intro')
+  }, [openingReady, stage])
+
+  useEffect(() => {
+    function receive(event) {
+      if (event.origin !== window.location.origin || event.source !== frameRef.current?.contentWindow) return
+      if (event.data?.source !== 'yaspretty-beauty-shop') return
+      if (event.data.type === 'ready' || event.data.type === 'stage') {
+        if (['shop', 'vanity', 'transition'].includes(event.data.stage)) setStage(event.data.stage)
+      }
+      if (event.data.type === 'category' && stage === 'vanity' && categoryOptions.includes(event.data.category)) {
+        onViewCategory(event.data.category)
+      }
     }
-    const frame = window.requestAnimationFrame(() => setSceneMounted(true))
-    return () => window.cancelAnimationFrame(frame)
-  }, [openingReady])
+    window.addEventListener('message', receive)
+    return () => window.removeEventListener('message', receive)
+  }, [onViewCategory, stage])
 
-  useEffect(() => {
-    if (!sceneMounted || ready) return undefined
-    const timer = window.setTimeout(() => setSceneUnavailable(true), SCENE_READY_TIMEOUT_MS)
-    return () => window.clearTimeout(timer)
-  }, [ready, sceneMounted])
-
-  useEffect(() => {
-    setIntroFocus(false)
-    if (!openingReady || reducedMotion) {
-      if (openingReady && reducedMotion) setIntroFocus(true)
-      return undefined
-    }
-    const timer = window.setTimeout(() => setIntroFocus(true), 620)
-    return () => window.clearTimeout(timer)
-  }, [openingReady, reducedMotion])
-
-  useEffect(() => {
-    if (!ready || !introFocus || autoBloomPlayed) return undefined
-    const timer = window.setTimeout(() => {
-      setAutoBloomPlayed(true)
-      setExploded(true)
-    }, reducedMotion ? 0 : AUTO_BLOOM_DELAY_MS)
-    return () => window.clearTimeout(timer)
-  }, [autoBloomPlayed, introFocus, ready, reducedMotion])
-
-  if (!webGLAvailable || sceneUnavailable) return fallback
-
-  function handleItemClick(item) {
-    onViewCategory(item.category)
+  function send(type) {
+    frameRef.current?.contentWindow?.postMessage({ source: 'yaspretty-site', type }, window.location.origin)
   }
 
-  function handleCategory(item) {
-    onViewCategory(item.category)
-  }
-
-  function handleCollapse() {
-    setAutoBloomPlayed(true)
-    setExploded(false)
+  if (!webGLAvailable || failed) {
+    return <LegacyMakeupTable openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
   }
 
   return (
-    <SceneErrorBoundary fallback={fallback}>
-      <MakeupTable3D openingReady={openingReady} ready={ready} sceneMounted={sceneMounted} exploded={exploded} introFocus={introFocus} reducedMotion={reducedMotion} performanceProfile={performanceProfile} onItemClick={handleItemClick} onCategory={handleCategory} onCollapse={handleCollapse} onReady={() => setReady(true)} />
-    </SceneErrorBoundary>
+    <section className="beauty-shop-section content-section" aria-label="YasPretty 美妆店">
+      <div className="beauty-shop-stage" data-stage={stage}>
+        <iframe ref={frameRef} className="beauty-shop-frame" src="/beauty-shop-3d.html" title="YasPretty 交互式美妆店" loading="eager" />
+        {stage === 'loading' && <div className="beauty-shop-loading" role="status">正在准备美妆店</div>}
+        {stage === 'shop' && <button className="beauty-shop-keyboard-entry" type="button" onClick={() => send('enter')}>进入妆台</button>}
+        {stage === 'vanity' && <>
+          <button className="beauty-shop-back" type="button" onClick={() => send('return')}><ArrowLeft size={17} />返回店铺</button>
+          <nav className="beauty-shop-categories" aria-label="选择彩妆品类">
+            {categoryOptions.map((category) => <button key={category} type="button" onClick={() => onViewCategory(category)}>{category}</button>)}
+          </nav>
+        </>}
+      </div>
+    </section>
   )
 }

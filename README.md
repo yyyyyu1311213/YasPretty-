@@ -7,7 +7,7 @@ YasPretty 是一个面向普通消费者的个性化美妆决策项目。当前�
 ## 当前真实能力
 
 - React + Vite 单页主站。
-- 首页使用项目原创本地 Hero、字标与一次性品牌开幕；品牌开幕结束后提供可操作的 3D 化妆桌，WebGL 不可用时回退到 2D 品类桌，并支持跳过和减少动效偏好。
+- 首页使用项目原创本地 Hero、字标与一次性品牌开幕。`dev` 待核验版本在原妆台位置提供 3D 美妆店：点击店内妆台进入八品类近景，返回可复原店铺；WebGL 不可用或店铺初始化失败时回退到 2D 品类桌。品牌开幕期间预加载场景，已移除雨、积水反射和 Bloom 后处理；静止场景降低绘制频率，离开视口暂停绘制。品牌开幕支持跳过和减少动效偏好，实际设备流畅度仍待负责人核验。
 - 35 条彩妆资料：22 款粉底液、3 款气垫、3 款遮瑕、3 款散粉，以及阶段 3 新增的腮红、唇妆、睫毛膏和眼影资料。
 - 35 张按稳定产品 ID 落位的 WebP 封面图；详情页展示逐张来源、权利人、采集日期、授权待核验状态和联系删除入口。
 - 35 个可深链接访问的完整产品核验档案；111 份商品详情、参数和店铺截图按产品 ID 映射并记录 SHA-256，企业资质原图仅作内部留档。
@@ -16,6 +16,7 @@ YasPretty 是一个面向普通消费者的个性化美妆决策项目。当前�
 - 集成在主站中的小Y页面。
 - 小Y的本地规则推荐，以及由服务端 `intentRouter` 编排的智谱对话、专门天气数据和联网搜索；产品库之外的问题统一从 `/api/assistant` 路由，不新增天气页面或独立天气 API。天气问题由服务端 Open-Meteo provider 返回经过校验的日期、温度、天气代码、降雨概率、风力和来源，不让模型改写天气数字。妆容类问题使用结构化 `/api/makeup-plans`，上游限流或模型输出无效时返回经过 schema 校验的本地 7 步方案。
 - Fastify API 网关：服务端密钥、Zod schema、64 KiB 请求限制、超时、有限重试、每 IP 限流、单进程每日额度、安全头和脱敏日志。
+- `dev` 待核验版本将页面嵌入限制收敛为仅允许同源 iframe，以加载本地构建的美妆店场景；外站仍不能嵌入。
 - master 当前工作树包含 336 项 Vitest 测试，覆盖小Y规则、统一意图路由、受控知识库、回答执行来源、专门天气 provider、天气缺少城市时的追问、参考来源、网关、智谱 provider、结构化方案及其限流降级、阶段 3 品类候选、产品证据文件、人工核验字段、淘宝/天猫商品链接门禁、品牌开幕、导航历史、3D 化妆桌性能档位、catalog筛选/排序/状态/组件边界、collection状态/存储/Hook/组件边界、首页组合/回调、指南/文化页面与筛选回调、AppShell 结构/页面连接/导航 Hook 及 Netlify API 适配。
 - Windows 启动脚本和可通过的 Vite 生产构建。
 
@@ -120,6 +121,8 @@ npm start
 
 ### 当前实际结构
 
+`dev` 分支包含一批待负责人本地核验的首页美妆店体验改动：店内妆台点击后同场景散开街景并推近，八件品类模型与近景按钮接入现有产品库，返回时复原店铺。旧 3D 妆台源码暂留仓库但首页不再加载，2D 桌仍作为 WebGL/初始化失败回退。下方树叠加本次 `dev` 增量；不表示它已在 master 提交、推送或经人工验收。
+
 以下主树描述 master 当前实际工作树（2026-11-17，北京时间）。ARCH-00～12 均 `done` 且已归档收尾；当前无新的 `current`。修改前基线为 `57b0a877a9a6bbd769fdb079c2c4ef71629e28e9`；本次收尾前已 fetch 并实际核对远端，master/HEAD/origin/master/FETCH_HEAD 一致、ahead/behind 0/0。ARCH-11 带注释标签对象为 `89aa7c31466b3d270bab4820d0b34c6c38730c4e`，`^{}` 指向上述提交并保持不变；ARCH-12 的归档提交和标签对象由本次回执核验。ARCH-11 在原批准范围内已经归档；ARCH-12 是后续新增的展示层归属整改，不是对 ARCH-11 测试或验收结论的否定。历史记录、失败与风险完整保留；旧日期的“无新的 current”和待验收路径仅为当时快照，最新映射见 [ARCH-12](docs/frontend-architecture-migration-plan.md#arch-12展示层所有权收敛)。
 
 ARCH-00 已通过人工验收并归档：S03 为 `f16542c6a84ed9141ab955661008fcb1bbc06b6f`，S04 为 `8c95966cf61367396fd6783da1f86c8569546668`；带注释的 `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` 指向 S04。ARCH-01-S01 已将旧 `src/lib/xiaoy-storage.js` 拆入下列四个 storage 模块并更新小Y直接调用，未保留转发入口；相关 40/40、全量 113/113、构建及桌面/360px 的 14 项 Playwright 页面复测通过。负责人于 2026-11-17 明确确认人工验收通过，实际提交为 `5e58236f6897147b354153ea9b02d080641a3cea`；远端 `arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` 指向该提交，启动预检已核对。两阶段保持 `done`，历史基线与映射分别见 [ARCH-00 迁移清单](docs/frontend-architecture-migration-inventory.md)和[迁移计划 ARCH-01](docs/frontend-architecture-migration-plan.md#arch-01libstorage)。
@@ -130,6 +133,7 @@ ARCH-03、ARCH-04 均为 `done`；原归档时无 current 的快照保留于执�
 
 ```text
 yaspretty/
+├── beauty-shop-3d.html  首页美妆店 Three.js 场景，由 Vite 作为独立 HTML 入口本地构建
 ├── src/
 │   ├── components/
 │   │   └── visual/  共享视觉组件，自行导入同名 CSS
@@ -249,9 +253,10 @@ yaspretty/
 │   │       │   ├── MakeupTable.jsx  原 2D 品类/产品桌
 │   │       │   ├── MakeupTable.test.js
 │   │       │   ├── MakeupTable3D.css
-│   │       │   ├── MakeupTable3D.jsx  3D 展示、工具与品类轨道
+│   │       │   ├── MakeupTable3D.jsx  旧 3D 妆台源码，当前首页不加载
 │   │       │   ├── MakeupTable3D.test.js
-│   │       │   └── MakeupTableExperience.jsx  能力检测、状态时序、3D/2D 与失败回退
+│   │       │   ├── MakeupTableExperience.css  店铺外层、返回和品类轨道
+│   │       │   └── MakeupTableExperience.jsx  店铺嵌入、品类导航与 2D 回退
 │   │       └── makeup-table-3d/
 │   │           ├── CosmeticItem.jsx
 │   │           ├── cosmetics.js
@@ -306,7 +311,8 @@ yaspretty/
 │   ├── arch09-guide-culture.mjs        指南/文化、History/Hash/刷新与跨页状态对照
 │   ├── arch10-app-shell.mjs            导航/开幕/History/加载/重挂载/方案失败对照
 │   ├── arch11-final-regression.mjs     九套开发回归与构建/真实无 Key/离线组合验证
-│   └── arch12-style-ownership.mjs      前后计算样式/相对几何与截图对照
+│   ├── arch12-style-ownership.mjs      前后计算样式/相对几何与截图对照
+│   └── beauty-shop-experience.mjs      店铺/妆台转场、返回和品类真实点击回归
 ├── tests/architecture/
 │   ├── arch11-imports.mjs              AST 导入/大小写/循环/资源及残余审计，无新依赖
 │   ├── arch11-production-routes.mjs    构建后73项产品HTML正文/封面实际HTTP检查
