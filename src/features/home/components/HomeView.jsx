@@ -25,9 +25,11 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
   const staticFeatured = <div className="product-grid featured-grid">{featured.map((product) => <ProductCard key={product.id} product={product} collection={collection} onOpen={onOpenProduct} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} />)}</div>
   return (
     <div className={`home-motion-stage${openingReady ? ' is-ready' : ''}`}>
-      {openingReady && <section className="makeup-table-intro-section content-section" aria-labelledby="makeup-table-intro-title">
-        <ScrollFloat as="h2" containerClassName="makeup-table-intro-title" textClassName="makeup-table-intro-text" effect="float" splitBy="chars" distance={56} stretch={1.15} stagger={0.018} animationDuration={1.45} smoothing={0.18} scrollStart="top 90%" scrollEnd="bottom 48%" ease="power3.out">YasPretty 美妆店</ScrollFloat>
-      </section>}
+      <section className="makeup-table-intro-section content-section" aria-labelledby="makeup-table-intro-title">
+        {openingReady
+          ? <ScrollFloat as="h2" containerClassName="makeup-table-intro-title" textClassName="makeup-table-intro-text" effect="float" splitBy="chars" distance={56} stretch={1.15} stagger={0.018} animationDuration={1.45} smoothing={0.18} scrollStart="top 90%" scrollEnd="bottom 48%" ease="power3.out">YasPretty 美妆店</ScrollFloat>
+          : <h2 id="makeup-table-intro-title" className="makeup-table-intro-title">YasPretty 美妆店</h2>}
+      </section>
       <Suspense fallback={<div className="makeup-table-lazy-placeholder" aria-label="正在准备交互式化妆桌" />}>
         <MakeupTableExperience openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
       </Suspense>

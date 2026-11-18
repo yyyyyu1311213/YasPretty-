@@ -92,7 +92,7 @@ describe('home composition', () => {
 
   it('keeps the opening gate, lazy table placeholder and existing category/product connections', () => {
     const p = props(), closed = HomeView(p)
-    expect([...nodes(closed)].some((n) => n.props?.['aria-labelledby'] === 'makeup-table-intro-title')).toBe(false)
+    expect(find(closed, (n) => n.props?.['aria-labelledby'] === 'makeup-table-intro-title')).toBeDefined()
     const suspense = find(closed, (n) => n.type === Suspense)
     expect(suspense.props.fallback.props['aria-label']).toBe('正在准备交互式化妆桌')
     const table = suspense.props.children

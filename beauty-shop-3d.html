@@ -8,7 +8,7 @@
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
     body {
-      background: #f4e6df;
+      background: #f8eee9;
       font-family: "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
     }
 
@@ -21,7 +21,7 @@
       overflow: hidden;
       background:
         radial-gradient(90% 70% at 50% 62%, rgba(255, 170, 120, 0.16) 0%, rgba(255, 170, 120, 0) 60%),
-        radial-gradient(120% 95% at 50% 4%, #f8ede7 0%, #f2ded5 46%, #e8d1c8 100%);
+        radial-gradient(120% 95% at 50% 4%, #fff7f2 0%, #f5e5dd 46%, #ecd8cf 100%);
       touch-action: none;     /* 触屏手势交给 OrbitControls */
       cursor: grab;
     }
@@ -40,7 +40,7 @@
       inset: 0;
       pointer-events: none;
       z-index: 2;
-      background: radial-gradient(70% 65% at 52% 48%, rgba(0, 0, 0, 0) 48%, rgba(120, 88, 74, 0.16) 100%);
+      background: radial-gradient(70% 65% at 52% 48%, rgba(0, 0, 0, 0) 48%, rgba(120, 88, 74, 0.08) 100%);
     }
 
   </style>
@@ -104,9 +104,9 @@
 
     const INTRO_DURATION = 4.8;
 
-    // 入场时间轴：地面环形显影 / 街景缩放 / 店铺竖向生长 / 店内陈设保留原节奏
+    // 入场时间轴：地台先出现，地面再从中心向外扩散，随后进入街景与店铺生长
     const TIMELINE = {
-      ground: [0.05, 1.05],
+      ground: [0.65, 1.45],
       lamps: [0.9, 1.5],
       streetProps: [1.25, 1.9],
       shop: [1.5, 2.85],
@@ -139,7 +139,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.maxPixelRatio));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.95;
+    renderer.toneMappingExposure = 1.06;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     // 静态场景：阴影只算一次；入场动画期间会临时逐帧刷新
@@ -241,13 +241,13 @@
     /* ===============================================================
      * 4. 夜间灯光：弱月光 + 冷环境，暖光交给店铺橱窗与路灯
      * ============================================================= */
-    const ambientLight = new THREE.AmbientLight(0x7f9dc4, 0.2);
+    const ambientLight = new THREE.AmbientLight(0xffe9df, 0.3);
     scene.add(ambientLight);
 
-    const hemiLight = new THREE.HemisphereLight(0x3c5a7a, 0x0b1118, 0.5);
+    const hemiLight = new THREE.HemisphereLight(0xffe8dc, 0x5f4a52, 0.68);
     scene.add(hemiLight);
 
-    const keyLight = new THREE.DirectionalLight(0xaac4ea, 0.36);
+    const keyLight = new THREE.DirectionalLight(0xffeee3, 0.48);
     keyLight.position.set(6.5, 12, 7.5);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.set(1024, 1024);
@@ -263,7 +263,7 @@
     scene.add(keyLight);
 
     // 冷色补光：让夜晚的店外墙不至于死黑
-    const fillLight = new THREE.DirectionalLight(0x6f8cb8, 0.22);
+    const fillLight = new THREE.DirectionalLight(0xf5c9bd, 0.32);
     fillLight.position.set(-9, 6, -5);
     scene.add(fillLight);
 
@@ -933,6 +933,13 @@
           );
       };
       material.customProgramCacheKey = () => 'ground-reveal';
+      const cloneMaterial = material.clone.bind(material);
+      material.clone = (...args) => {
+        const clone = cloneMaterial(...args);
+        clone.onBeforeCompile = material.onBeforeCompile;
+        clone.customProgramCacheKey = material.customProgramCacheKey;
+        return clone;
+      };
       material.needsUpdate = true;
       groundRevealMaterials.push({ material, wasTransparent });
       return material;
@@ -2080,6 +2087,9 @@
     const fixtures = new THREE.Group();
     fixtures.name = 'shop-fixtures';
     shop.add(fixtures);
+    const categoryDisplay = new THREE.Group();
+    categoryDisplay.name = 'shop-category-display';
+    shop.add(categoryDisplay);
 
     const L = {
       leftX: -4.6,
@@ -2229,17 +2239,17 @@
       const spacing = 28;
       ctx.font = '700 128px "Helvetica Neue", "Segoe UI", Arial, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = glow ? 'rgba(255, 231, 208, 0.95)' : '#fff8f1';
+      ctx.fillStyle = glow ? 'rgba(255, 220, 190, 0.42)' : '#fff8f1';
 
       if (glow) {
-        ctx.shadowColor = 'rgba(255, 214, 175, 0.9)';
-        ctx.shadowBlur = 42;
+        ctx.shadowColor = 'rgba(255, 207, 164, 0.82)';
+        ctx.shadowBlur = 52;
       }
 
       const widths = [...text].map((ch) => ctx.measureText(ch).width);
       const total = widths.reduce((sum, w) => sum + w, 0) + spacing * (text.length - 1);
 
-      const passes = glow ? 2 : 1;
+      const passes = 1;
       for (let p = 0; p < passes; p++) {
         let x = (canvas.width - total) / 2;
         [...text].forEach((ch, i) => {
@@ -2263,7 +2273,7 @@
       map: signTex,
       emissive: 0xfff0dd,
       emissiveMap: signTex,
-      emissiveIntensity: 1.9,
+      emissiveIntensity: 1.45,
       transparent: true,
       depthWrite: false,
       roughness: 0.35,
@@ -2280,13 +2290,13 @@
       new THREE.MeshBasicMaterial({
         map: signGlowTex,
         transparent: true,
-        opacity: 0.36,
+        opacity: 0.17,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         toneMapped: false,
       })
     );
-    signGlow.position.set(-0.8, 3.7, 0.705);
+    signGlow.position.set(-0.8, 3.7, 0.69);
     signGlow.name = 'sign-glow';
     signGlow.layers.set(1);
     shop.add(signGlow);
@@ -2786,6 +2796,13 @@
       top.castShadow = true;
       top.receiveShadow = true;
       g.add(top);
+      const underglowMaterial = new THREE.MeshBasicMaterial({ color: 0xffc8b8, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
+      const underglow = new THREE.Mesh(new THREE.TorusGeometry(0.94, 0.018, 8, 96), underglowMaterial);
+      underglow.rotation.x = Math.PI / 2;
+      underglow.position.y = 0.79;
+      underglow.name = 'vanity-underglow';
+      g.add(underglow);
+      g.userData.underglow = underglow;
       for (const [radius, height, thickness] of [[1.02, 0.915, 0.018], [0.98, 0.82, 0.012], [0.78, 0.18, 0.012]]) {
         const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, thickness, 8, 72), brushedGold);
         ring.rotation.x = Math.PI / 2;
@@ -2838,6 +2855,30 @@
       return texture;
     }
 
+    function createCategoryLabel(text) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 384;
+      canvas.height = 96;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'rgba(255, 250, 246, 0.96)';
+      ctx.beginPath();
+      ctx.roundRect(8, 8, 368, 80, 18);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(154, 104, 93, 0.34)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#67464b';
+      ctx.font = '600 36px "Microsoft YaHei", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 192, 48);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
+      sprite.scale.set(0.78, 0.195, 1);
+      return sprite;
+    }
+
     const vanityWordmark = new THREE.MeshBasicMaterial({
       map: createVanityLabelTexture('YAS PRETTY', '#f7e9e2', '#75494d'),
     });
@@ -2871,7 +2912,8 @@
       const gold = new THREE.MeshStandardMaterial({ color: 0xd7ab6e, metalness: 0.76, roughness: 0.25 });
       g.add(mkMesh(new THREE.TorusGeometry(0.76, 0.052, 12, 72), gold, 0, 0, 0));
       g.add(mkMesh(new THREE.TorusGeometry(0.69, 0.014, 8, 72), matCream, 0, 0, 0.018));
-      g.add(mkMesh(new THREE.CircleGeometry(0.677, 72), new THREE.MeshBasicMaterial({ map: createMirrorGlassTexture() }), 0, 0, 0.025));
+      const mirrorGlass = new THREE.MeshBasicMaterial({ map: createMirrorGlassTexture(), side: THREE.DoubleSide });
+      g.add(mkMesh(new THREE.CircleGeometry(0.677, 72), mirrorGlass, 0, 0, 0.025));
       const bulb = new THREE.MeshStandardMaterial({ color: 0xffefe1, emissive: 0xffcfa0, emissiveIntensity: 0.45 });
       for (let index = 0; index < 18; index++) {
         const angle = index / 18 * Math.PI * 2;
@@ -2959,25 +3001,34 @@
     }
 
     // ---------- C 位：圆形化妆台 + 大圆镜（正对橱窗的打卡区） ----------
-    const vanityProduct = addProduct(createRoundVanity(), 'vanity', 0.7, L.floorY, -1.35, 0,
+    const vanityProduct = addProduct(createRoundVanity(), 'vanity', 1.08, L.floorY, -1.82, 0,
       '圆形化妆台', '进入妆台，选择彩妆品类。');
-    const mirrorProduct = addProduct(createMirror(), 'round-mirror', 0.7, 1.58, -2.18, 0,
+    const mirrorProduct = addProduct(createMirror(), 'round-mirror', 1.08, 1.58, -2.65, 0,
       '大圆化妆镜', '妆台背景镜。');
 
     const categoryData = [
-      ['foundation', '粉底液', -0.02, -1.59],
-      ['eyeshadow', '眼影', 0.39, -1.76],
-      ['cushion', '气垫', 0.91, -1.72],
-      ['mascara', '睫毛膏', 1.34, -1.56],
-      ['concealer', '遮瑕', 0.08, -1.14],
-      ['blush', '腮红', 0.5, -1.05],
-      ['powder', '散粉', 0.98, -1.06],
-      ['lip', '唇妆', 1.36, -1.16],
+      ['foundation', '粉底液', -3.85, 0.78, -0.62, 0.55, -2.3],
+      ['eyeshadow', '眼影', -3.72, 1.025, -2.85, 0.9, -2.35],
+      ['cushion', '气垫', -2.15, 0.72, -1.9, 1.42, -2.33],
+      ['mascara', '睫毛膏', -4.14, 0.645, -2.45, 1.78, -1.96],
+      ['concealer', '遮瑕', -2.82, 0.78, -0.64, 0.55, -1.82],
+      ['blush', '腮红', 2.45, 0.78, -1.6, 1.0, -1.7],
+      ['powder', '散粉', 2.45, 1.025, -2.8, 1.44, -1.74],
+      ['lip', '唇妆', -1.55, 0.72, -1.95, 1.8, -2.2],
     ];
-    const categoryObjects = categoryData.map(([kind, category, x, z]) => {
-      const object = addProduct(createCategoryCosmetic(kind), `category-${kind}`, x, L.floorY + 0.92, z, 0,
+    const categoryObjects = categoryData.map(([kind, category, x, y, z, targetX, targetZ], index) => {
+      const object = addProduct(createCategoryCosmetic(kind), `category-${kind}`, x, y, z, (index % 2 ? -1 : 1) * 0.12,
         category, `查看${category}产品`);
+      categoryDisplay.attach(object);
       object.userData.category = category;
+      object.userData.gatherTarget = new THREE.Vector3(targetX, L.floorY + 0.94, targetZ);
+      object.userData.gatherStart = new THREE.Vector3(x, y, z);
+      object.userData.gatherRotation = object.rotation.y;
+      object.userData.labelSprite = createCategoryLabel(category);
+      object.userData.labelSprite.position.set(0, 0.72, 0);
+      object.userData.labelSprite.visible = false;
+      object.userData.labelSprite.userData = object.userData;
+      object.add(object.userData.labelSprite);
       object.traverse((child) => { if (child.isMesh) child.userData = object.userData; });
       return object;
     });
@@ -3033,7 +3084,7 @@
 
     // The exterior only picks the table; category objects are enabled after the camera move.
     interactiveObjects.length = 0;
-    interactiveObjects.push(vanityProduct);
+    interactiveObjects.push(shop);
 
     const staticProductMeshSet = new Set();
     fixtures.children.forEach((child) => {
@@ -3148,11 +3199,11 @@
       group.add(light);
       group.add(light.target);
 
-      return { group, light, glow, baseIntensity: 24 };
+      return { group, light, glow, baseIntensity: 32 };
     }
 
     const streetLights = [];
-    [[-5.6, 0.9], [4.0, 0.9]].forEach(([x, z], index) => {
+    [[-5.6, 1.9], [4.0, 1.9]].forEach(([x, z], index) => {
       const lamp = createStreetLight();
       lamp.group.position.set(x, SIDEWALK_Y, z);
       // 左右两盏路灯以店铺中心对称，灯臂都朝向店内
@@ -3171,7 +3222,7 @@
         0xff9f55,
         0
       );
-      lamp.poolBaseOpacity = 0.07;
+      lamp.poolBaseOpacity = 0.1;
 
       streetLights.push(lamp);
     });
@@ -3320,7 +3371,8 @@
       }
 
       const hit = raycast()[0];
-      const next = hit ? hit.object : null;
+      const hitInShop = hit && shop.getObjectById(hit.object.id);
+      const next = hitInShop ? shop : (hit ? hit.object : null);
       if (next === hoveredObject) return;
 
       hoveredObject = next;
@@ -3360,7 +3412,7 @@
 
       updatePointer(event);
       const hit = raycast()[0];
-      if (phase === 'shop' && hit?.object.userData.root === vanityProduct) enterVanity();
+      if (phase === 'shop' && hit && shop.getObjectById(hit.object.id)) enterVanity();
       if (phase === 'vanity' && hit?.object.userData.category) {
         sendToSite('category', { category: hit.object.userData.category });
       }
@@ -3377,10 +3429,10 @@
     const SHOP_MIN_SCALE = 0.015; // 店铺初始压扁到 1.5% 高度
     const FIXTURE_BURY = 2.8;     // 室内陈设整组从地面下方升起（保留原动效）
     const PRODUCT_SETTLE = 0.45;  // 商品落位的最后一段小落差
-    const SIGN_EMISSIVE = 1.9;
-    const SIGN_GLOW = 0.36;
-    const EXPOSURE_FROM = 0.72;
-    const EXPOSURE_TO = 0.95;
+    const SIGN_EMISSIVE = 2.15;
+    const SIGN_GLOW = 0.18;
+    const EXPOSURE_FROM = 0.86;
+    const EXPOSURE_TO = 1.08;
 
     // 记录店体网格原本的投影状态（动画期间按进度开关，避免埋在地下时乱投影）
     const shopShadowMeshes = [];
@@ -3392,7 +3444,7 @@
     const RISE_DELAYS = [0.30, 0.36, 0.16, 0.24, 0.06, 0.20, 0.10, 0.02];
     const RISE_DURATIONS = [0.32, 0.34, 0.28, 0.30, 0.32, 0.28, 0.30, 0.26];
 
-    const productStates = interactiveObjects.map((object, index) => {
+    const productStates = [vanityProduct].map((object, index) => {
       const meshes = [];
       object.traverse((child) => { if (child.isMesh) meshes.push(child); });
       return {
@@ -3411,10 +3463,10 @@
     productStates.forEach((item) => item.meshes.forEach((mesh) => productMeshSet.add(mesh)));
 
     // 店铺的可见网格：灯光保持可见，避免入场时灯数变化触发着色器重新编译
-    const shopVisualChildren = shop.children.filter((child) => !child.isLight && child !== fixtures);
+    const shopVisualChildren = shop.children.filter((child) => !child.isLight && child !== fixtures && child !== categoryDisplay);
 
     function applyIntro(t) {
-      // ---------- 1) 地台先整体淡入，铺装层随后从中心环形扩散 ----------
+      // ---------- 1) 地台先整体淡入，完成后铺装层从中心环形扩散 ----------
       const baseP = smooth(span(t, 0.1, 0.6));
       baseMaterials.forEach((material) => {
         material.opacity = baseP;
@@ -3503,6 +3555,15 @@
       const fixtureShadowOn = fixtureP > 0.5;
       fixtures.traverse((mesh) => {
         if (mesh.isMesh && !staticProductMeshSet.has(mesh)) mesh.castShadow = fixtureShadowOn;
+      });
+
+      categoryDisplay.visible = t >= TIMELINE.products[0];
+      categoryDisplay.position.y = 0;
+      categoryObjects.forEach((object, index) => {
+        const start = TIMELINE.products[0] + index * 0.055;
+        const p = span(t, start, start + 0.3);
+        object.position.y = object.userData.gatherStart.y + 0.18 * (1 - easeOutCubic(p));
+        object.scale.setScalar(Math.max(0.001, easeOutBack(p)));
       });
 
       // ---------- 6) 门口小物件：原地弹性缩放 ----------
@@ -3610,6 +3671,13 @@
         decalMaterials.forEach((material) => { material.opacity = 0.8; });
         fixtures.visible = true;
         fixtures.position.y = 0;
+        categoryDisplay.visible = true;
+        categoryDisplay.position.y = 0;
+        categoryObjects.forEach((object) => {
+          object.position.copy(object.userData.gatherStart);
+          object.scale.setScalar(1);
+          object.rotation.set(0, object.userData.gatherRotation, 0);
+        });
         shop.visible = true;
         shop.scale.set(1, 1, 1);
         shop.position.y = 0;
@@ -3676,19 +3744,53 @@
     focusGroup.name = 'vanity-focus';
     scene.add(focusGroup);
     const focusLight = new THREE.PointLight(0xffdfc7, 0, 8);
-    focusLight.position.set(1.1, 3.1, 0.8);
+      focusLight.position.set(1.35, 3.1, -0.25);
     scene.add(focusLight);
     const focusFill = new THREE.HemisphereLight(0xfff6ed, 0x9d7775, 0);
     scene.add(focusFill);
     let focusPrepared = false;
     let scatterRecords = [];
     let scatterProgress = 0;
+    let categoryGatherProgress = 0;
+    let shopHover = 0;
     const transition = {
       active: false, elapsed: 0, duration: 2.25, from: 0, to: 0,
       fromPosition: new THREE.Vector3(), toPosition: new THREE.Vector3(),
       fromTarget: new THREE.Vector3(), toTarget: new THREE.Vector3(),
       destination: 'shop',
     };
+
+    const shopHoverLight = new THREE.PointLight(0xffd4c2, 0, 12, 2);
+    shopHoverLight.position.set(-0.15, 2.4, -2.5);
+    scene.add(shopHoverLight);
+    const shopHoverFill = new THREE.PointLight(0xffe3d2, 0, 9, 2);
+    shopHoverFill.position.set(1.7, 2.25, 0.8);
+    scene.add(shopHoverFill);
+
+    const exteriorMaterials = new Map();
+    const exteriorRoots = [baseGroup, streetSurface, streetCurbs, roadMarkings, streetProps, signal, ...forecourtItems];
+    exteriorRoots.forEach((root) => root.traverse((object) => {
+      if (!object.isMesh || !object.material) return;
+      const originalMaterials = Array.isArray(object.material) ? object.material : [object.material];
+      const localMaterials = originalMaterials.map((material) => {
+        if (!exteriorMaterials.has(material)) {
+          const local = material.clone();
+          const baseIndex = baseMaterials.indexOf(material);
+          if (baseIndex >= 0) baseMaterials[baseIndex] = local;
+          groundRevealMaterials.forEach((entry) => {
+            if (entry.material === material) entry.material = local;
+          });
+          exteriorMaterials.set(material, {
+            material: local,
+            color: local.color?.clone(),
+            emissive: local.emissive?.clone(),
+          });
+          return local;
+        }
+        return exteriorMaterials.get(material).material;
+      });
+      object.material = Array.isArray(object.material) ? localMaterials : localMaterials[0];
+    }));
 
     function prepareFocus() {
       if (focusPrepared) return;
@@ -3700,25 +3802,32 @@
         new THREE.CylinderGeometry(1.26, 1.29, 0.035, 64),
         new THREE.MeshStandardMaterial({ color: 0xecc9bd, roughness: 0.9 })
       );
-      rug.position.set(0.7, L.floorY + 0.015, -1.35);
+      rug.position.set(1.08, L.floorY + 0.015, -1.82);
       rug.receiveShadow = true;
       focusGroup.add(rug);
 
       const movingObjects = [
         ...scene.children.filter((object) => object !== shop && object !== focusGroup && !object.isLight),
-        ...shop.children.filter((object) => object !== fixtures && !object.isLight),
+        ...shop.children.filter((object) => object !== fixtures && object !== categoryDisplay && !object.isLight),
         ...fixtures.children,
       ];
       scatterRecords = movingObjects.map((object, index) => {
         const world = object.getWorldPosition(new THREE.Vector3());
         const angle = Math.atan2(world.z + 1.35, world.x - 0.7) + (index % 5 - 2) * 0.17;
         const distance = 10 + index % 4 * 1.7;
+      const groundLike = /floor|ground|surface|paving|tile|road|sidewalk|curb|base|plinth|marking|rug|threshold/i.test(object.name || '');
+        const underVanity = Math.abs(world.x - 1.08) < 1.45 && world.z > -3.0 && world.z < -0.55 && world.y < 1.35;
         return {
           object,
           position: object.position.clone(),
           rotation: object.rotation.clone(),
           scale: object.scale.clone(),
-          offset: new THREE.Vector3(Math.cos(angle) * distance, (index % 4 - 1) * 2.1, Math.sin(angle) * distance),
+          groundLike,
+          offset: groundLike
+            ? new THREE.Vector3(Math.cos(angle) * 2.4, 0, Math.sin(angle) * 2.4)
+            : underVanity
+            ? new THREE.Vector3(Math.cos(angle) * 1.1, -(4.8 + index % 3 * 0.8), Math.sin(angle) * 1.1)
+            : new THREE.Vector3(Math.cos(angle) * distance, (index % 4 - 1) * 2.1, Math.sin(angle) * distance),
           turn: (index % 2 ? -1 : 1) * (0.12 + index % 3 * 0.08),
         };
       });
@@ -3728,18 +3837,46 @@
       for (const item of scatterRecords) {
         item.object.position.copy(item.position).addScaledVector(item.offset, amount);
         item.object.rotation.set(item.rotation.x + item.turn * amount * 0.4, item.rotation.y + item.turn * amount, item.rotation.z + item.turn * amount * 0.55);
-        item.object.scale.copy(item.scale).multiplyScalar(1 - smooth(clamp01((amount - 0.62) / 0.38)));
+        const fade = item.groundLike
+          ? smooth(clamp01(amount / 0.3))
+          : smooth(clamp01((amount - 0.62) / 0.38));
+        if (item.groundLike) {
+          const leaveGround = smooth(clamp01((amount - 0.3) / 0.45));
+          item.object.position.y = item.position.y - leaveGround * (1.2 + (item.object.id % 3) * 0.15);
+        }
+        item.object.scale.copy(item.scale).multiplyScalar(1 - fade);
       }
       focusLight.intensity = amount * 1.8;
       focusFill.intensity = amount * 1.2;
       interiorLights.forEach((light) => { light.intensity = light.userData.baseIntensity * (1 - amount * 0.65); });
       renderer.toneMappingExposure = THREE.MathUtils.lerp(EXPOSURE_TO, 1.02, amount);
+      shopHoverLight.intensity = 3.2 * amount;
       apron.visible = amount < 0.82;
       renderer.shadowMap.needsUpdate = true;
     }
 
+    function applyCategoryGather(amount) {
+      categoryGatherProgress = amount;
+      const eased = smooth(clamp01(amount));
+      categoryObjects.forEach((object, index) => {
+        const start = object.userData.gatherStart;
+        const target = object.userData.gatherTarget;
+        const lift = smooth(clamp01(eased / 0.24));
+        const descend = smooth(clamp01((eased - 0.18) / 0.82));
+        const angle = index * Math.PI * 0.72 + descend * Math.PI * 4.2;
+        const spiralRadius = lift * (1 - descend) * 1.25 + Math.sin(Math.PI * descend) * 0.42;
+        object.position.lerpVectors(start, target, descend);
+        object.position.x += Math.cos(angle) * spiralRadius;
+        object.position.y += lift * (1 - descend) * 4.8 + Math.sin(Math.PI * descend) * 0.82;
+        object.position.z += Math.sin(angle) * spiralRadius;
+        object.rotation.y = object.userData.gatherRotation + (index % 2 ? -1 : 1) * eased * (Math.PI * 1.6 + index * 0.12);
+        object.rotation.x = Math.sin(angle) * eased * 0.22;
+        object.scale.setScalar(1 - eased * 0.04);
+      });
+    }
+
     function focusCameraPosition() {
-      const target = new THREE.Vector3(0.7, 1.25, -1.37);
+      const target = new THREE.Vector3(1.08, 1.25, -1.82);
       const direction = new THREE.Vector3(0.55, 0.78, 1.35).normalize();
       return { target, position: target.clone().addScaledVector(direction, camera.aspect < 0.8 ? 5.45 : 3.65) };
     }
@@ -3781,16 +3918,21 @@
         : smooth(clamp01((progress - 0.12) / 0.88));
       scatterProgress = THREE.MathUtils.lerp(transition.from, transition.to, scatterTiming);
       applyScatter(scatterProgress);
+      applyCategoryGather(transition.destination === 'vanity' ? smooth(clamp01(progress * 1.08)) : 1 - smooth(clamp01((progress - 0.08) / 0.92)));
       camera.position.lerpVectors(transition.fromPosition, transition.toPosition, amount);
       controls.target.lerpVectors(transition.fromTarget, transition.toTarget, amount);
       controls.update();
       if (transition.elapsed < transition.duration) return;
       transition.active = false;
       phase = transition.destination;
+      applyCategoryGather(transition.destination === 'vanity' ? 1 : 0);
+      categoryObjects.forEach((object) => {
+        object.userData.labelSprite.visible = false;
+      });
       controls.enabled = true;
       controls.minDistance = phase === 'vanity' ? 2.5 : CONFIG.minDistance;
       controls.maxDistance = phase === 'vanity' ? 9 : Math.max(CONFIG.maxDistance, homeView.position.length() + 6);
-      interactiveObjects.push(...(phase === 'vanity' ? categoryObjects : [vanityProduct]));
+      interactiveObjects.push(...(phase === 'vanity' ? categoryObjects : [shop]));
       sendToSite('stage', { stage: phase });
     }
 
@@ -3813,6 +3955,24 @@
     // 悬浮高亮：整组轻微抬起 + 放大（材质是共享的，所以不改 per-mesh 颜色）
     function updateProductHover(delta) {
       const k = Math.min(1, delta * 9);
+      const shopTarget = phase === 'shop' && hoveredRoot === shop ? 1 : 0;
+      shopHover = THREE.MathUtils.lerp(shopHover, shopTarget, k);
+      const introScaleY = intro.active ? shop.scale.y : 1;
+      const shopScale = 1 + shopHover * 0.055;
+      if (intro.active) shop.scale.set(1, introScaleY, 1);
+      else shop.scale.setScalar(shopScale);
+      shop.position.y = intro.active ? shop.position.y : shopHover * 0.045;
+      shopHoverLight.intensity = shopHover * 8.5;
+      shopHoverFill.intensity = shopHover * 5.5;
+      exteriorMaterials.forEach(({ material, color, emissive }) => {
+        if (color) material.color.copy(color).multiplyScalar(1 - shopHover * 0.58);
+        if (emissive) material.emissive.copy(emissive).multiplyScalar(1 - shopHover * 0.42);
+      });
+      if (!intro.active) {
+        interiorLights.forEach((light) => {
+          light.intensity = light.userData.baseIntensity * (1 + shopHover * 0.24);
+        });
+      }
       for (let i = 0; i < productStates.length; i++) {
         const item = productStates[i];
         const target = (!intro.active && phase === 'shop' && item.object === hoveredRoot) ? 1 : 0;
@@ -3823,16 +3983,19 @@
           item.object.scale.setScalar(1 + item.hover * 0.06);
         }
       }
+      const vanityGlow = vanityProduct.getObjectByName('vanity-underglow');
+      if (vanityGlow) vanityGlow.material.opacity = 0.18 + (shopHover * 0.18);
       for (const object of categoryObjects) {
         const target = phase === 'vanity' && object === hoveredRoot ? 1 : 0;
         object.userData.hover = THREE.MathUtils.lerp(object.userData.hover || 0, target, k);
         object.scale.setScalar(1 + object.userData.hover * 0.1);
+        if (object.userData.labelSprite) object.userData.labelSprite.visible = phase === 'vanity' && (object === hoveredRoot || object.userData.hover > 0.18);
       }
     }
 
     let reportedReady = false;
     function renderFrame(time) {
-      const active = (intro.active && !intro.paused) || transition.active || viewTween.active || hoveredRoot || time - lastActivityAt < 600;
+      const active = (intro.active && !intro.paused) || transition.active || viewTween.active || hoveredRoot || shopHover > 0.001 || time - lastActivityAt < 600;
       if (!active && time - lastDrawAt < 33) return;
       lastDrawAt = time;
       const delta = Math.min(clock.getDelta(), 0.05);
@@ -3887,6 +4050,7 @@
       streetProps, forecourtItems, roadMarkings, streetSurface, streetCurbs,
       markingBoxes, debugCheckMarkings, doorLampMat,
       decalMaterials, intro, TIMELINE, resetView, enterVanity, returnToShop, categoryObjects,
+      get categoryGatherProgress() { return categoryGatherProgress; },
     };
   </script>
 </body>

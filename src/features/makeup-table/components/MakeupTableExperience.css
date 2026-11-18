@@ -1,7 +1,7 @@
 .beauty-shop-section { width: min(1360px, calc(100% - 64px)); padding: 0 0 58px; }
-.beauty-shop-stage { position: relative; height: clamp(540px, 52vw, 640px); overflow: hidden; background: #f1dfd6; isolation: isolate; }
+.beauty-shop-stage { position: relative; height: clamp(540px, 52vw, 640px); overflow: hidden; background: #f7e9e1; isolation: isolate; }
 .beauty-shop-frame { display: block; width: 100%; height: 100%; border: 0; }
-.beauty-shop-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--yp-ink); background: #f4e6df; font-size: 13px; }
+.beauty-shop-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--yp-ink); background: #f8eee9; font-size: 13px; }
 .beauty-shop-keyboard-entry { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); border: 0; padding: 0; }
 .beauty-shop-keyboard-entry:focus-visible { z-index: 4; top: 18px; left: 18px; width: auto; height: 42px; clip-path: none; padding: 0 16px; color: var(--yp-ink); background: #fff9f5; outline: 2px solid var(--yp-rose-deep); }
 .beauty-shop-back { position: absolute; z-index: 4; top: 18px; left: 18px; display: inline-flex; height: 42px; align-items: center; gap: 8px; border: 1px solid rgba(112, 69, 70, .2); padding: 0 15px; color: #67464b; background: rgba(255, 249, 245, .94); font-size: 12px; cursor: pointer; }

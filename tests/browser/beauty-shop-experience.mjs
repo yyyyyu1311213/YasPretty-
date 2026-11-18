@@ -99,6 +99,7 @@ try {
 
     const projected = await frame.locator('#beautyShop3d canvas').evaluate((canvas) => {
       const shop = window.BeautyShop
+      if (shop.interactiveObjects[0] !== shop.shop) throw new Error('the whole storefront should be the shop interaction target')
       const target = shop.scene.getObjectByName('vanity')
       const point = target.getWorldPosition(new shop.THREE.Vector3()).add(new shop.THREE.Vector3(0, 0.5, 0)).project(shop.camera)
       return { x: (point.x + 1) * canvas.clientWidth / 2, y: (1 - point.y) * canvas.clientHeight / 2 }
@@ -107,6 +108,16 @@ try {
     await page.mouse.click(bounds.x + projected.x, bounds.y + projected.y)
     await page.locator('.beauty-shop-stage[data-stage="transition"]').waitFor()
     await page.waitForTimeout(850)
+    const spiralDescent = await frame.locator('#beautyShop3d canvas').evaluate(() => {
+      const shop = window.BeautyShop
+      const object = shop.categoryObjects[0]
+      return {
+        progress: shop.categoryGatherProgress,
+        y: object.getWorldPosition(new shop.THREE.Vector3()).y,
+        startY: object.userData.gatherStart.y,
+      }
+    })
+    assert(spiralDescent.y > spiralDescent.startY + 2.5, `category did not descend from above: ${JSON.stringify(spiralDescent)}`)
     await page.screenshot({ path: path.join(output, `${viewport.width}-transition.png`), animations: 'disabled' })
     await page.locator('.beauty-shop-stage[data-stage="vanity"]').waitFor({ timeout: 12000 })
     assert.equal(await page.locator('.beauty-shop-categories button').count(), 8)
@@ -117,7 +128,7 @@ try {
     await page.getByRole('button', { name: '返回店铺' }).click()
     await page.locator('.beauty-shop-stage[data-stage="shop"]').waitFor({ timeout: 12000 })
     assert.equal(await page.locator('.beauty-shop-categories').count(), 0)
-    assert.equal(await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.interactiveObjects.length), 1)
+    assert.equal(await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.interactiveObjects[0] === window.BeautyShop.shop), true)
 
     await page.locator('.beauty-shop-keyboard-entry').evaluate((button) => button.click())
     await page.locator('.beauty-shop-stage[data-stage="vanity"]').waitFor({ timeout: 12000 })
