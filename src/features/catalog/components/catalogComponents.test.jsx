@@ -115,7 +115,7 @@ describe('catalog filters and results', () => {
     expect(props.onClear).toHaveBeenCalledOnce()
     const markup = renderToStaticMarkup(empty)
     expect(markup).toContain('没有找到对应档案')
-    expect(markup).toContain('35 条资料')
+    expect(markup).toContain('101 条资料')
   })
 })
 

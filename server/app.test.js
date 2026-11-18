@@ -121,18 +121,23 @@ describe('YasPretty API gateway', () => {
     ])
   })
 
-  it('validates every catalog record against the stage 3 evidence fields', () => {
-    expect(products).toHaveLength(35)
+  it('validates legacy and expansion catalog records against their evidence states', () => {
+    expect(products).toHaveLength(101)
     products.forEach((item) => expect(productRecordSchema.parse(item)).toMatchObject({ id: item.id }))
     expect(products.filter((item) => item.factVerificationStatus === 'verified')).toHaveLength(35)
+    expect(products.filter((item) => item.factVerificationStatus === 'pending')).toHaveLength(66)
     expect(products.filter((item) => item.verificationStatus === 'verified')).toHaveLength(0)
     expect(products.every((item) => item.image === `/products/${item.id}/cover.webp`)).toBe(true)
-    const pendingOriginalSources = products.filter((item) => !item.imageSource.sourcePageUrl)
+    const legacyProducts = products.filter((item) => !item.id.startsWith('catalog-'))
+    const expansionProducts = products.filter((item) => item.id.startsWith('catalog-'))
+    const pendingOriginalSources = legacyProducts.filter((item) => !item.imageSource.sourcePageUrl)
     expect(pendingOriginalSources.map((item) => item.id).sort()).toEqual(['fenty-pro-filtr', 'loreal-paris-single-eyeshadow'])
     expect(pendingOriginalSources.every((item) => item.imageSource.publicUseDecision === 'internal_review_pending_source')).toBe(true)
     expect(pendingOriginalSources.every((item) => item.publicStatus === 'blocked_missing_original_image_source')).toBe(true)
-    expect(products.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.imageSource.publicUseDecision === 'public_with_source_notice')).toBe(true)
-    expect(products.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.publicStatus === 'public_with_source_notice_pending_authorization')).toBe(true)
+    expect(legacyProducts.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.imageSource.publicUseDecision === 'public_with_source_notice')).toBe(true)
+    expect(legacyProducts.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.publicStatus === 'public_with_source_notice_pending_authorization')).toBe(true)
+    expect(expansionProducts.every((item) => item.imageSource.sourcePageUrl && item.imageAuthorizationStatus === 'pending')).toBe(true)
+    expect(expansionProducts.every((item) => item.publicStatus === 'blocked_pending_product_evidence' && item.recommendationReady === false)).toBe(true)
   })
 
   it('returns a minimal health response and security headers', async () => {

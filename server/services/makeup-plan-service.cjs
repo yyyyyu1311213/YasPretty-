@@ -5,7 +5,7 @@ const {
 } = require('../schemas.cjs')
 
 const BASE_CATEGORIES = new Set(['粉底液', '气垫'])
-const EYE_CATEGORIES = new Set(['眼影', '睫毛膏', '眼线', '眉笔'])
+const EYE_CATEGORIES = new Set(['眉妆', '眼影', '睫毛膏', '眼线', '眉笔'])
 
 function normalize(value) {
   return String(value || '').trim().toLowerCase()

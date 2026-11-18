@@ -1,8 +1,9 @@
 import { productImageNotice, productImageSources } from './product-image-sources.js'
 import { reviewedProductShades } from './product-shade-verification.js'
 import { reviewedProductFacts } from './product-verification.reviewed.js'
+import { expansionCatalogProducts } from './product-expansion.js'
 
-export const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉', '眼影', '睫毛膏', '腮红', '唇妆']
+export const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉', '眉妆', '眼影', '眼线', '睫毛膏', '腮红', '唇妆', '修容']
 export const skinOptions = ['油皮', '混油皮', '干皮', '混干皮', '敏感肌']
 export const finishOptions = ['哑光', '柔雾', '奶油肌', '自然光泽']
 
@@ -222,6 +223,7 @@ export const products = [
   },
   ...internationalFoundations,
   ...stage3Products,
+  ...expansionCatalogProducts,
 ].map(enrichProductRecord)
 
 export const quickFilters = [
