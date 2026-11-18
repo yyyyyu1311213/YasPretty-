@@ -3250,12 +3250,22 @@
      * ============================================================= */
     let framingMode = null;
     let phase = 'shop';
+    let scrollHandoffActive = false;
+    let scrollReleased = false;
+    const scrollAnchor = {
+      position: new THREE.Vector3(),
+      target: new THREE.Vector3(),
+      direction: new THREE.Vector3(),
+      distance: CONFIG.maxDistance,
+    };
 
     // “重置视角”回到的机位（随屏幕比例更新）
     const homeView = {
       position: CONFIG.camera.position.clone(),
       target: CONFIG.camera.target.clone(),
     };
+    let scrollBaselineDistance = homeView.position.distanceTo(homeView.target);
+    const SCROLL_BASELINE_EPSILON = 0.08;
 
     // 重置视角的平滑回位
     const viewTween = {
@@ -3323,6 +3333,7 @@
 
       homeView.position.copy(camera.position);
       homeView.target.copy(CONFIG.camera.target);
+      scrollBaselineDistance = homeView.position.distanceTo(homeView.target);
 
       camera.updateProjectionMatrix();
       controls.update();
@@ -3417,6 +3428,37 @@
         sendToSite('category', { category: hit.object.userData.category });
       }
     });
+
+    function startScrollHandoff() {
+      scrollAnchor.position.copy(camera.position);
+      scrollAnchor.target.copy(controls.target);
+      scrollAnchor.direction.copy(camera.position).sub(controls.target).normalize();
+      scrollAnchor.distance = scrollBaselineDistance;
+      camera.position.copy(scrollAnchor.target).addScaledVector(scrollAnchor.direction, scrollAnchor.distance);
+      controls.update();
+      scrollHandoffActive = true;
+      scrollReleased = false;
+      controls.enabled = false;
+    }
+
+    // 文档捕获阶段统一接管 iframe 内滚轮，避免 OrbitControls 或页面默认滚动偶发抢走事件。
+    document.addEventListener('wheel', (event) => {
+      if (intro.active || phase !== 'shop' || transition.active) return;
+      const deltaY = event.deltaY;
+      if (!Number.isFinite(deltaY) || Math.abs(deltaY) < 0.5) return;
+
+      // 初始基准以内仍由 OrbitControls 自己缩放；只有继续缩小才进入画幅过渡。
+      if (!scrollHandoffActive && deltaY > 0 && camera.position.distanceTo(controls.target) < scrollBaselineDistance - SCROLL_BASELINE_EPSILON) return;
+      event.preventDefault();
+      if (!scrollHandoffActive && deltaY > 0) startScrollHandoff();
+      if (!scrollHandoffActive) return;
+      if (scrollReleased && deltaY > 0) {
+        sendToSite('scroll-handoff', { deltaY, released: true });
+        return;
+      }
+      if (scrollReleased && deltaY < 0) scrollReleased = false;
+      sendToSite('scroll-handoff', { deltaY });
+    }, { capture: true, passive: false });
 
     /* ===============================================================
      * 13. 入场动画时间轴（分层差异化生长）
@@ -3941,6 +3983,21 @@
       if (event.data.type === 'return') returnToShop();
       if (event.data.type === 'enter') enterVanity();
       if (event.data.type === 'start-intro') intro.resume();
+      if (event.data.type === 'scroll-exit-progress') {
+        const progress = THREE.MathUtils.clamp(Number(event.data.progress) || 0, 0, 1);
+        scrollReleased = progress >= 1;
+        if (scrollHandoffActive) {
+          const distance = THREE.MathUtils.lerp(scrollAnchor.distance, controls.maxDistance, progress);
+          camera.position.copy(scrollAnchor.target).addScaledVector(scrollAnchor.direction, distance);
+          controls.target.copy(scrollAnchor.target);
+          controls.update();
+        }
+        if (progress <= 0) {
+          scrollHandoffActive = false;
+          scrollReleased = false;
+          controls.enabled = true;
+        }
+      }
     });
 
     /* ===============================================================
@@ -3956,6 +4013,7 @@
     function updateProductHover(delta) {
       const k = Math.min(1, delta * 9);
       const shopTarget = phase === 'shop' && hoveredRoot === shop ? 1 : 0;
+      const previousShopHover = shopHover;
       shopHover = THREE.MathUtils.lerp(shopHover, shopTarget, k);
       const introScaleY = intro.active ? shop.scale.y : 1;
       const shopScale = 1 + shopHover * 0.055;
@@ -3964,10 +4022,12 @@
       shop.position.y = intro.active ? shop.position.y : shopHover * 0.045;
       shopHoverLight.intensity = shopHover * 8.5;
       shopHoverFill.intensity = shopHover * 5.5;
-      exteriorMaterials.forEach(({ material, color, emissive }) => {
-        if (color) material.color.copy(color).multiplyScalar(1 - shopHover * 0.58);
-        if (emissive) material.emissive.copy(emissive).multiplyScalar(1 - shopHover * 0.42);
-      });
+      if (Math.abs(shopHover - previousShopHover) > 0.0005) {
+        exteriorMaterials.forEach(({ material, color, emissive }) => {
+          if (color) material.color.copy(color).multiplyScalar(1 - shopHover * 0.58);
+          if (emissive) material.emissive.copy(emissive).multiplyScalar(1 - shopHover * 0.42);
+        });
+      }
       if (!intro.active) {
         interiorLights.forEach((light) => {
           light.intensity = light.userData.baseIntensity * (1 + shopHover * 0.24);
@@ -3996,7 +4056,7 @@
     let reportedReady = false;
     function renderFrame(time) {
       const active = (intro.active && !intro.paused) || transition.active || viewTween.active || hoveredRoot || shopHover > 0.001 || time - lastActivityAt < 600;
-      if (!active && time - lastDrawAt < 33) return;
+      if (!active && time - lastDrawAt < 66) return;
       lastDrawAt = time;
       const delta = Math.min(clock.getDelta(), 0.05);
 

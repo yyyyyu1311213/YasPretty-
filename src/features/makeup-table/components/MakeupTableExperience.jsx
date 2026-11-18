@@ -20,6 +20,8 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
   const [webGLAvailable] = useState(canUseWebGL)
   const [stage, setStage] = useState('loading')
   const [failed, setFailed] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const scrollProgressRef = useRef(0)
 
   useEffect(() => {
     if (!openingReady || !webGLAvailable) return undefined
@@ -41,13 +43,34 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
       if (event.data.type === 'category' && stage === 'vanity' && categoryOptions.includes(event.data.category)) {
         onViewCategory(event.data.category)
       }
+      if (event.data.type === 'scroll-handoff') {
+        const deltaY = Number(event.data.deltaY) || 0
+        const current = scrollProgressRef.current
+        const next = Math.max(0, Math.min(1, current + deltaY / 900))
+        scrollProgressRef.current = next
+        setScrollProgress(next)
+        send('scroll-exit-progress', { progress: next })
+        if (event.data.released || (next >= 1 && deltaY > 0)) {
+          window.scrollBy({ top: deltaY, left: 0, behavior: 'auto' })
+        }
+      }
     }
     window.addEventListener('message', receive)
     return () => window.removeEventListener('message', receive)
   }, [onViewCategory, stage])
 
-  function send(type) {
-    frameRef.current?.contentWindow?.postMessage({ source: 'yaspretty-site', type }, window.location.origin)
+  function send(type, detail = {}) {
+    frameRef.current?.contentWindow?.postMessage({ source: 'yaspretty-site', type, ...detail }, window.location.origin)
+  }
+
+  const transitionStyle = {
+    '--scroll-progress': scrollProgress,
+    '--scroll-underlay-opacity': 0.04 + scrollProgress * 0.96,
+    '--scroll-stage-scale': 1 - scrollProgress * 0.5,
+    '--scroll-inset-y': `${scrollProgress * 4}%`,
+    '--scroll-inset-x': `${scrollProgress * 4}%`,
+    '--scroll-radius': `${scrollProgress * 22}px`,
+    '--scroll-cover-opacity': Math.max(0, (scrollProgress - 0.58) * 2.38),
   }
 
   if (!webGLAvailable || failed) {
@@ -56,16 +79,39 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
 
   return (
     <section className="beauty-shop-section content-section" aria-label="YasPretty 美妆店">
-      <div className="beauty-shop-stage" data-stage={stage}>
-        <iframe ref={frameRef} className="beauty-shop-frame" src="/beauty-shop-3d.html" title="YasPretty 交互式美妆店" loading="eager" />
-        {stage === 'loading' && <div className="beauty-shop-loading" role="status">正在准备美妆店</div>}
-        {stage === 'shop' && <button className="beauty-shop-keyboard-entry" type="button" onClick={() => send('enter')}>进入妆台</button>}
-        {stage === 'vanity' && <>
-          <button className="beauty-shop-back" type="button" onClick={() => send('return')}><ArrowLeft size={17} />返回店铺</button>
-          <nav className="beauty-shop-categories" aria-label="选择彩妆品类">
-            {categoryOptions.map((category) => <button key={category} type="button" onClick={() => onViewCategory(category)}>{category}</button>)}
-          </nav>
-        </>}
+      <div className="beauty-shop-scroll-shell" style={transitionStyle}>
+        <div className={`beauty-shop-scroll-underlay${scrollProgress > 0.005 ? ' is-active' : ''}`} aria-hidden="true">
+          <div className="beauty-shop-scroll-lines" />
+          <div className="beauty-shop-scroll-marquee beauty-shop-scroll-marquee--top">
+            <div className="beauty-shop-scroll-marquee-track">
+              <span>CURATED BEAUTY</span><b>✦</b><span>SOFT COLOR</span><b>✦</b><span>FIND YOUR FIT</span><b>✦</b><span>YASPRETTY</span><b>✦</b>
+              <span>CURATED BEAUTY</span><b>✦</b><span>SOFT COLOR</span><b>✦</b><span>FIND YOUR FIT</span><b>✦</b><span>YASPRETTY</span><b>✦</b>
+            </div>
+          </div>
+          <div className="beauty-shop-scroll-marquee beauty-shop-scroll-marquee--bottom">
+            <div className="beauty-shop-scroll-marquee-track">
+              <span>YOUR SHADE, YOUR STORY</span><b>✦</b><span>EVERYDAY RITUALS</span><b>✦</b><span>YOU ARE SO PRETTY</span><b>✦</b>
+              <span>YOUR SHADE, YOUR STORY</span><b>✦</b><span>EVERYDAY RITUALS</span><b>✦</b><span>YOU ARE SO PRETTY</span><b>✦</b>
+            </div>
+          </div>
+          <img src="/assets/logo/yaspretty-wordmark-light.svg" alt="" />
+          <span>PERSONAL BEAUTY DECISION LIBRARY</span>
+          <p>向下探索 YasPretty 的产品世界</p>
+        </div>
+        <div className="beauty-shop-stage" data-stage={stage}>
+          <iframe ref={frameRef} className="beauty-shop-frame" src="/beauty-shop-3d.html" title="YasPretty 交互式美妆店" loading="eager" />
+          {stage === 'loading' && <div className="beauty-shop-loading" role="status">正在准备美妆店</div>}
+          {stage === 'shop' && <button className="beauty-shop-keyboard-entry" type="button" onClick={() => send('enter')}>进入妆台</button>}
+          {stage === 'vanity' && <>
+            <button className="beauty-shop-back" type="button" onClick={() => send('return')}><ArrowLeft size={17} />返回店铺</button>
+            <nav className="beauty-shop-categories" aria-label="选择彩妆品类">
+              {categoryOptions.map((category) => <button key={category} type="button" onClick={() => onViewCategory(category)}>{category}</button>)}
+            </nav>
+          </>}
+        </div>
+        <div className="beauty-shop-scroll-cover" aria-hidden="true">
+          <img src="/assets/logo/yaspretty-wordmark-light.svg" alt="" />
+        </div>
       </div>
     </section>
   )
