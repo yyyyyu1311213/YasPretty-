@@ -44,13 +44,15 @@ button { cursor: pointer; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #a86866; outline-offset: 3px; }
 button, input, select { -webkit-tap-highlight-color: transparent; }
 
-.app-shell { min-height: 100vh; overflow: hidden; }
+.app-shell { position: relative; isolation: isolate; display: flex; min-height: 100svh; flex-direction: column; overflow: clip; }
+.app-shell > main { display: flex; flex: 1; flex-direction: column; }
+.app-shell > main > :is(.library-page, .xiaoy-page, .guide-page, .culture-page, .favorites-page) { flex: 1; }
 .content-section { width: min(1240px, calc(100% - 64px)); margin: 0 auto; }
 .eyebrow { display: flex; align-items: center; gap: 7px; margin: 0 0 12px; color: var(--yp-rose-deep); font: 500 11px/1.4 'DM Mono', monospace; letter-spacing: .03em; }
 h1, h2, h3, p { margin-top: 0; }
 h1, h2 { font-family: var(--yp-display); font-weight: 600; }
 
-.site-header { position: relative; z-index: 20; border-bottom: 1px solid var(--yp-line); background: rgba(251, 247, 242, .98); }
+.site-header { position: sticky; z-index: 20; top: 0; border-bottom: 1px solid var(--yp-line); background: rgba(251, 247, 242, .98); }
 .header-inner { width: min(1240px, calc(100% - 64px)); height: 72px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
 .brand { display: inline-flex; align-items: center; gap: 9px; width: auto; height: 42px; border: 0; padding: 0; color: #5b3635; background: transparent; transition: transform var(--yp-motion-base) var(--yp-ease-standard); }
 .brand-wordmark-image { display: block; width: 144px; height: auto; transition: transform 220ms var(--yp-ease-standard), filter 220ms var(--yp-ease-standard); }
@@ -313,7 +315,7 @@ h1, h2 { font-family: var(--yp-display); font-weight: 600; }
   max-width: min(1400px, 100%);
 }
 
-.app-shell:has(.library-page, .xiaoy-page, .guide-page, .culture-page, .favorites-page) .header-inner {
+.header-inner {
   width: 100%;
   padding-right: clamp(20px, 4vw, 72px);
   padding-left: clamp(20px, 4vw, 72px);
@@ -339,7 +341,7 @@ h1, h2 { font-family: var(--yp-display); font-weight: 600; }
     padding-left: 16px;
   }
 
-  .app-shell:has(.library-page, .xiaoy-page, .guide-page, .culture-page, .favorites-page) .header-inner {
+  .header-inner {
     padding-right: 16px;
     padding-left: 16px;
   }
@@ -360,7 +362,7 @@ h1, h2 { font-family: var(--yp-display); font-weight: 600; }
 }
 
 /* Unified site surface layer: the opening keeps its own pearl-pink mood. */
-body { color: var(--yp-ink); background: var(--yp-page-wash, var(--yp-paper)); }
+body { color: var(--yp-ink); background: #211b20; }
 .site-header { border-color: var(--yp-line); background: rgba(251, 247, 242, .98); }
 .nav-link { color: var(--yp-muted); }
 .nav-link.active, .nav-link:hover { color: var(--yp-ink); }
@@ -372,11 +374,11 @@ body { color: var(--yp-ink); background: var(--yp-page-wash, var(--yp-paper)); }
 .primary-action:hover { background: #744b49; }
 .filter-chip, .tag-row span, .scene-row span, .guide-card i { border-color: var(--yp-line); color: var(--yp-muted); background: rgba(255, 253, 250, .72); }
 .filter-chip.selected, .tag-row span.active { border-color: var(--yp-rose); color: var(--yp-rose-deep); background: var(--yp-peach); }
-.library-page, .favorites-page, .guide-page, .culture-page, .product-profile-page { background: var(--yp-paper); }
+.library-page, .favorites-page, .guide-page, .culture-page, .product-profile-page { background: rgba(251, 247, 242, .84); }
 .library-heading, .favorites-heading, .guide-intro, .culture-lead, .culture-statement, .culture-closing { border-color: var(--yp-line); }
 .culture-principles article:nth-child(2) { border-top-color: var(--yp-sage); }
 .culture-principles article:nth-child(3) { border-top-color: var(--yp-rose); }
-.site-footer { border-color: var(--yp-line); color: var(--yp-muted); background: #f3e9e3; }
+.site-footer { border-color: var(--yp-line); color: var(--yp-muted); background: rgba(243, 233, 227, .88); }
 .product-card:hover .product-photo { border-color: var(--yp-rose); }
 .product-photo, .favorite-image, .detail-hero, .product-profile-media { background: #f5f2ee; border-color: var(--yp-line); }
 .detail-section, .profile-section, .parameter-table, .parameter-table > div { border-color: var(--yp-line); }

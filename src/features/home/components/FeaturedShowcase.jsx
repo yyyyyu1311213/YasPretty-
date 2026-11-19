@@ -3,7 +3,6 @@ import { ArrowDown, Heart } from 'lucide-react'
 import './FeaturedShowcase.css'
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
-const smoothstep = (value) => value * value * (3 - 2 * value)
 const easeOutCubic = (value) => 1 - ((1 - value) ** 3)
 const easeInCubic = (value) => value ** 3
 
@@ -67,11 +66,6 @@ export default function FeaturedShowcase({ products, collection, onOpenProduct, 
         }
         track.style.transform = `translate3d(${-distance * progress + diagonalX}px, ${diagonal}px, 0)`
         section.style.setProperty('--featured-progress', progress)
-        const wash = smoothstep(Math.sin(scrollProgress * Math.PI))
-        const red = Math.round(251 - wash * 8)
-        const green = Math.round(247 - wash * 10)
-        const blue = Math.round(242 - wash * 10)
-        document.documentElement.style.setProperty('--yp-page-wash', `rgb(${red}, ${green}, ${blue})`)
         pin.classList.toggle('is-pinned', scrollOffset > 0 && scrollOffset < scrollDistance)
         pin.classList.toggle('is-complete', scrollOffset >= scrollDistance)
       })
@@ -90,7 +84,6 @@ export default function FeaturedShowcase({ products, collection, onOpenProduct, 
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', measure)
       pin.classList.remove('is-pinned', 'is-complete')
-      document.documentElement.style.removeProperty('--yp-page-wash')
     }
   }, [products.length])
 

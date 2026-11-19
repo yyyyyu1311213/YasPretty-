@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import AppShell from './AppShell'
 import TopHeader from './TopHeader'
 import MobileNavigation from './MobileNavigation'
+import SiteBackdrop from './SiteBackdrop'
 import { imageRightsContactUrl, productImageNotice } from '../../../data/product-image-sources'
 
 // Element/callback + SSR boundaries; real React/navigation lives in Playwright.
@@ -50,20 +51,22 @@ describe('existing app structure', () => {
     expect(renderToStaticMarkup(TopHeader({ favoriteCount: 0, mobileMenuOpen: true }))).not.toContain('nav-count')
   })
 
-  it('keeps opening/header/main/footer/overlay sibling order and original notices without wrappers', () => {
+  it('keeps the fixed backdrop and opening/header/main/footer/overlay sibling order', () => {
     const opening = <div data-opening="true" />, page = <section data-page="true" />, overlay = <aside role="dialog" />
     const navigate = vi.fn()
     const tree = AppShell({ opening, children: page, overlay, activeView: 'library', favoriteCount: 1, onNavigate: navigate })
     expect(tree.type).toBe('div')
     expect(tree.props.className).toBe('app-shell')
     const children = tree.props.children
-    expect(children[0]).toBe(opening)
-    expect(children[1].type).toBe(TopHeader)
-    expect(children[1].props.onNavigate).toBe(navigate)
-    expect(children[2].type).toBe('main')
-    expect(children[2].props.children).toBe(page)
-    expect(children[4]).toBe(overlay)
+    expect(children[0].type).toBe(SiteBackdrop)
+    expect(children[1]).toBe(opening)
+    expect(children[2].type).toBe(TopHeader)
+    expect(children[2].props.onNavigate).toBe(navigate)
+    expect(children[3].type).toBe('main')
+    expect(children[3].props.children).toBe(page)
+    expect(children[5]).toBe(overlay)
     const markup = renderToStaticMarkup(tree)
+    expect(markup).toContain('class="site-backdrop" aria-hidden="true"')
     expect(markup).toContain(productImageNotice)
     expect(markup).toContain(imageRightsContactUrl)
     expect(markup.indexOf('data-opening')).toBeLessThan(markup.indexOf('site-header'))

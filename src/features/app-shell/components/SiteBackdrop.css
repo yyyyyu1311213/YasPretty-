@@ -1,0 +1,20 @@
+.site-backdrop { position: fixed; z-index: -1; inset: 0; overflow: hidden; background: radial-gradient(circle at 50% 46%, #493239 0%, #211b20 64%, #171317 100%); pointer-events: none; }
+.site-backdrop__lines { position: absolute; inset: 0; overflow: hidden; opacity: .76; }
+.site-backdrop__lines::before, .site-backdrop__lines::after { position: absolute; width: 132%; height: 190%; left: -16%; top: -45%; border: 1px solid rgba(225, 177, 174, .18); border-radius: 50%; content: ''; transform: rotate(-19deg); }
+.site-backdrop__lines::after { width: 106%; height: 154%; left: -3%; top: -26%; border-color: rgba(225, 177, 174, .12); transform: rotate(24deg); }
+.site-backdrop__marquee { position: absolute; right: 0; left: 0; overflow: hidden; color: rgba(242, 213, 207, .28); white-space: nowrap; }
+.site-backdrop__marquee--top { top: 15%; }
+.site-backdrop__marquee--bottom { bottom: 14%; color: rgba(242, 213, 207, .22); }
+.site-backdrop__track { display: flex; width: max-content; align-items: center; gap: 32px; font: italic 72px/1 Georgia, 'Times New Roman', serif; }
+.site-backdrop__track b { color: rgba(212, 151, 153, .7); font: 24px/1 Georgia, serif; }
+.site-backdrop__marquee--top .site-backdrop__track { animation: site-marquee-left 34s linear infinite; }
+.site-backdrop__marquee--bottom .site-backdrop__track { animation: site-marquee-right 40s linear infinite; }
+@keyframes site-marquee-left { to { transform: translateX(-50%); } }
+@keyframes site-marquee-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+@media (max-width: 680px) {
+  .site-backdrop__track { gap: 18px; font-size: 42px; }
+  .site-backdrop__track b { font-size: 16px; }
+  .site-backdrop__marquee--top { top: 20%; }
+  .site-backdrop__marquee--bottom { bottom: 18%; }
+}
+@media (prefers-reduced-motion: reduce) { .site-backdrop__track { animation: none !important; } }

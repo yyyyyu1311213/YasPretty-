@@ -117,7 +117,7 @@
 @media (prefers-reduced-motion: reduce) {
   .xiaoy-message.loading svg { animation: none; }
 }
-.xiaoy-page { color: var(--yp-ink); background: var(--yp-paper); }
+.xiaoy-page { color: var(--yp-ink); background: rgba(251, 247, 242, .84); }
 .xiaoy-panel, .xiaoy-settings { border-color: var(--yp-line); background: var(--yp-surface); }
 .xiaoy-composer button { border-color: var(--yp-rose-deep); background: var(--yp-rose-deep); }
 .xiaoy-composer button:hover { background: #744b49; }

@@ -1,5 +1,5 @@
-.featured-showcase { position: relative; min-height: 100svh; background: var(--yp-page-wash, var(--yp-paper)); color: #332b29; transition: background-color 260ms ease; }
-.featured-showcase__pin { position: sticky; top: 72px; height: calc(100svh - 72px); min-height: min(608px, calc(100svh - 72px)); overflow: hidden; isolation: isolate; background: var(--yp-page-wash, var(--yp-paper)); transition: background-color 260ms ease; }
+.featured-showcase { position: relative; min-height: 100svh; background: rgba(251, 247, 242, .82); color: #332b29; }
+.featured-showcase__pin { position: sticky; top: 72px; height: calc(100svh - 72px); min-height: min(608px, calc(100svh - 72px)); overflow: hidden; isolation: isolate; background: transparent; }
 .featured-showcase__pin.is-pinned { position: fixed; z-index: 4; top: 72px; right: 0; left: 0; }
 .featured-showcase__pin.is-complete { position: absolute; right: 0; bottom: 0; left: 0; top: auto; }
 .featured-showcase__texture { position: absolute; inset: 0; z-index: -1; opacity: .7; background: radial-gradient(ellipse at 20% 52%, rgba(255, 250, 246, .5), transparent 45%), radial-gradient(ellipse at 82% 32%, rgba(201, 151, 146, .08), transparent 38%), repeating-linear-gradient(133deg, transparent 0 105px, rgba(107, 83, 77, .035) 106px, transparent 107px 221px); }

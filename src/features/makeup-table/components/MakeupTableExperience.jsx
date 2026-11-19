@@ -66,9 +66,9 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
   const transitionStyle = {
     '--scroll-progress': scrollProgress,
     '--scroll-underlay-opacity': 0.04 + scrollProgress * 0.96,
-    '--scroll-stage-scale': 1 - scrollProgress * 0.5,
-    '--scroll-inset-y': `${scrollProgress * 4}%`,
-    '--scroll-inset-x': `${scrollProgress * 4}%`,
+    '--scroll-stage-scale': 1 - scrollProgress * 0.56,
+    '--scroll-inset-y': `${scrollProgress * 3}%`,
+    '--scroll-inset-x': `${scrollProgress * 3}%`,
     '--scroll-radius': `${scrollProgress * 22}px`,
     '--scroll-cover-opacity': Math.max(0, (scrollProgress - 0.58) * 2.38),
   }
@@ -81,19 +81,6 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
     <section className="beauty-shop-section content-section" aria-label="YasPretty 美妆店">
       <div className="beauty-shop-scroll-shell" style={transitionStyle}>
         <div className={`beauty-shop-scroll-underlay${scrollProgress > 0.005 ? ' is-active' : ''}`} aria-hidden="true">
-          <div className="beauty-shop-scroll-lines" />
-          <div className="beauty-shop-scroll-marquee beauty-shop-scroll-marquee--top">
-            <div className="beauty-shop-scroll-marquee-track">
-              <span>CURATED BEAUTY</span><b>✦</b><span>SOFT COLOR</span><b>✦</b><span>FIND YOUR FIT</span><b>✦</b><span>YASPRETTY</span><b>✦</b>
-              <span>CURATED BEAUTY</span><b>✦</b><span>SOFT COLOR</span><b>✦</b><span>FIND YOUR FIT</span><b>✦</b><span>YASPRETTY</span><b>✦</b>
-            </div>
-          </div>
-          <div className="beauty-shop-scroll-marquee beauty-shop-scroll-marquee--bottom">
-            <div className="beauty-shop-scroll-marquee-track">
-              <span>YOUR SHADE, YOUR STORY</span><b>✦</b><span>EVERYDAY RITUALS</span><b>✦</b><span>YOU ARE SO PRETTY</span><b>✦</b>
-              <span>YOUR SHADE, YOUR STORY</span><b>✦</b><span>EVERYDAY RITUALS</span><b>✦</b><span>YOU ARE SO PRETTY</span><b>✦</b>
-            </div>
-          </div>
           <img src="/assets/logo/yaspretty-wordmark-light.svg" alt="" />
           <span>PERSONAL BEAUTY DECISION LIBRARY</span>
           <p>向下探索 YasPretty 的产品世界</p>

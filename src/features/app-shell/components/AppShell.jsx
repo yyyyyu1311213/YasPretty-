@@ -1,11 +1,13 @@
 import { ChevronRight } from 'lucide-react'
 import { imageRightsContactUrl, productImageNotice } from '../../../data/product-image-sources'
 import TopHeader from './TopHeader'
+import SiteBackdrop from './SiteBackdrop'
 
 // App supplies the page, opening and domain overlay without adding DOM wrappers.
 export default function AppShell({ opening, activeView, favoriteCount, mobileMenuOpen, onNavigate, onMobileMenu, children, overlay }) {
   return (
     <div className="app-shell">
+      <SiteBackdrop />
       {opening}
       <TopHeader
         activeView={activeView}

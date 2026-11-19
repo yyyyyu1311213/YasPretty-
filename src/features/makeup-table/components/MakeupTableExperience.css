@@ -1,18 +1,6 @@
-.beauty-shop-section { width: min(1360px, calc(100% - 64px)); padding: 0 0 58px; }
-.beauty-shop-scroll-shell { position: relative; height: clamp(540px, 52vw, 640px); overflow: hidden; isolation: isolate; background: #211b20; --scroll-progress: 0; }
-.beauty-shop-scroll-underlay { position: absolute; inset: 0; z-index: 0; display: grid; place-content: center; justify-items: center; gap: 12px; overflow: hidden; padding: 32px; color: rgba(255, 246, 241, .8); background: radial-gradient(circle at 50% 46%, #493239 0%, #211b20 64%, #171317 100%); opacity: var(--scroll-underlay-opacity, .04); pointer-events: none; text-align: center; }
-.beauty-shop-scroll-lines { position: absolute; inset: 0; overflow: hidden; opacity: .76; }
-.beauty-shop-scroll-lines::before, .beauty-shop-scroll-lines::after { position: absolute; width: 132%; height: 190%; left: -16%; top: -45%; border: 1px solid rgba(225, 177, 174, .18); border-radius: 50%; content: ''; transform: rotate(-19deg); }
-.beauty-shop-scroll-lines::after { width: 106%; height: 154%; left: -3%; top: -26%; border-color: rgba(225, 177, 174, .12); transform: rotate(24deg); }
-.beauty-shop-scroll-marquee { position: absolute; right: 0; left: 0; overflow: hidden; color: rgba(242, 213, 207, .28); white-space: nowrap; }
-.beauty-shop-scroll-marquee--top { top: 15%; }
-.beauty-shop-scroll-marquee--bottom { bottom: 14%; color: rgba(242, 213, 207, .22); }
-.beauty-shop-scroll-marquee-track { display: flex; width: max-content; align-items: center; gap: 32px; font: italic 72px/1 Georgia, 'Times New Roman', serif; }
-.beauty-shop-scroll-marquee-track b { color: rgba(212, 151, 153, .7); font: 24px/1 Georgia, serif; }
-.beauty-shop-scroll-underlay.is-active .beauty-shop-scroll-marquee--top .beauty-shop-scroll-marquee-track { animation: beauty-marquee-left 34s linear infinite; }
-.beauty-shop-scroll-underlay.is-active .beauty-shop-scroll-marquee--bottom .beauty-shop-scroll-marquee-track { animation: beauty-marquee-right 40s linear infinite; }
-@keyframes beauty-marquee-left { to { transform: translateX(-50%); } }
-@keyframes beauty-marquee-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.beauty-shop-section { width: 100%; height: calc(100svh - 72px); padding: 0; }
+.beauty-shop-scroll-shell { position: relative; height: 100%; overflow: hidden; isolation: isolate; background: transparent; --scroll-progress: 0; }
+.beauty-shop-scroll-underlay { position: absolute; inset: 0; z-index: 0; display: grid; place-content: center; justify-items: center; gap: 12px; overflow: hidden; padding: 32px; color: rgba(255, 246, 241, .8); opacity: var(--scroll-underlay-opacity, .04); pointer-events: none; text-align: center; }
 .beauty-shop-scroll-underlay img { width: min(250px, 52vw); height: auto; opacity: .94; }
 .beauty-shop-scroll-underlay > span { color: rgba(255, 225, 217, .62); font: 500 10px/1.4 'DM Mono', monospace; letter-spacing: .09em; }
 .beauty-shop-scroll-underlay p { margin: 0; color: rgba(255, 246, 241, .76); font-size: 13px; }
@@ -30,5 +18,4 @@
 .beauty-shop-categories button:last-child { border-right: 0; }
 .beauty-shop-categories button:hover, .beauty-shop-categories button:focus-visible { color: #fff; background: var(--yp-rose-deep); }
 @media (max-width: 900px) { .beauty-shop-categories { grid-template-columns: repeat(4, minmax(0, 1fr)); }.beauty-shop-categories button:nth-child(-n+4) { border-bottom: 1px solid rgba(112, 69, 70, .14); }.beauty-shop-categories button:nth-child(4n) { border-right: 0; } }
-@media (max-width: 680px) { .beauty-shop-section { width: 100%; padding-bottom: 48px; }.beauty-shop-scroll-shell { height: 600px; }.beauty-shop-scroll-underlay { gap: 9px; }.beauty-shop-scroll-underlay p { font-size: 12px; }.beauty-shop-scroll-marquee-track { gap: 18px; font-size: 42px; }.beauty-shop-scroll-marquee-track b { font-size: 16px; }.beauty-shop-scroll-marquee--top { top: 20%; }.beauty-shop-scroll-marquee--bottom { bottom: 18%; }.beauty-shop-scroll-underlay img { width: min(210px, 58vw); }.beauty-shop-back { top: 12px; left: 12px; }.beauty-shop-categories { right: 10px; bottom: 10px; left: 10px; }.beauty-shop-categories button { height: 42px; } }
-@media (prefers-reduced-motion: reduce) { .beauty-shop-scroll-marquee-track { animation: none !important; } }
+@media (max-width: 680px) { .beauty-shop-section { height: calc(100svh - 60px); }.beauty-shop-scroll-underlay { gap: 9px; }.beauty-shop-scroll-underlay p { font-size: 12px; }.beauty-shop-scroll-underlay img { width: min(210px, 58vw); }.beauty-shop-back { top: 12px; left: 12px; }.beauty-shop-categories { right: 10px; bottom: 10px; left: 10px; }.beauty-shop-categories button { height: 42px; } }

@@ -18,12 +18,14 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
     .filter(Boolean)
   return (
     <div className={`home-motion-stage${openingReady ? ' is-ready' : ''}`}>
-      <section className="makeup-table-intro-section content-section" aria-labelledby="makeup-table-intro-title">
-        <h2 id="makeup-table-intro-title" className="makeup-table-intro-title">YasPretty 美妆店</h2>
-      </section>
-      <Suspense fallback={<div className="makeup-table-lazy-placeholder" aria-label="正在准备交互式化妆桌" />}>
-        <MakeupTableExperience openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
-      </Suspense>
+      <div className="home-shop">
+        <section className="makeup-table-intro-section content-section" aria-labelledby="makeup-table-intro-title">
+          <h2 id="makeup-table-intro-title" className="makeup-table-intro-title">YasPretty 美妆店</h2>
+        </section>
+        <Suspense fallback={<div className="makeup-table-lazy-placeholder" aria-label="正在准备交互式化妆桌" />}>
+          <MakeupTableExperience openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
+        </Suspense>
+      </div>
       <EnhancementBoundary fallback={<div className="featured-showcase-placeholder" aria-label="编辑精选暂不可用" />}>
         <Suspense fallback={<div className="featured-showcase-placeholder" aria-label="正在准备编辑精选" />}>
           <FeaturedShowcase products={featured} collection={collection} onOpenProduct={onOpenProduct} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} />
@@ -33,8 +35,8 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
         <StrokeText
           text="You are so pretty"
           trigger="view"
-          strokeColor="var(--yp-rose-deep)"
-          fillColor="var(--yp-rose-deep)"
+          strokeColor="#f2d5cf"
+          fillColor="#f2d5cf"
           strokeWidth={1.8}
           drawDuration={1.6}
           fillDelay={0.15}

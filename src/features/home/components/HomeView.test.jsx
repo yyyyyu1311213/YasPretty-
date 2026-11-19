@@ -47,11 +47,12 @@ describe('home composition', () => {
     expect(byClass(tree, 'home-motion-stage')).toBe(tree)
     expect(find(tree, (n) => n.type === 'input').props.value).toBe('')
     const children = tree.props.children
-    expect(children[0].props.className).toBe('makeup-table-intro-section content-section')
-    expect(children[1].type).toBe(Suspense)
-    expect(children[2].type).toBe(Boundary)
-    expect(children[3].props.className).toBe('story-closing')
-    expect(children[4].props.className).toContain('home-hero')
+    expect(children[0].props.className).toBe('home-shop')
+    expect(children[0].props.children[0].props.className).toBe('makeup-table-intro-section content-section')
+    expect(children[0].props.children[1].type).toBe(Suspense)
+    expect(children[1].type).toBe(Boundary)
+    expect(children[2].props.className).toBe('story-closing')
+    expect(children[3].props.className).toContain('home-hero')
   })
 
   it('updates the local draft and submits the exact value without normalizing it', () => {

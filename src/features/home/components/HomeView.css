@@ -1,4 +1,9 @@
 .home-motion-stage { overflow: clip; }
+.home-shop { position: relative; }
+.home-shop .makeup-table-intro-section { position: absolute; z-index: 3; top: 0; left: 0; width: 100%; padding: 28px clamp(20px, 4vw, 72px); pointer-events: none; transition: opacity 280ms ease; }
+.home-shop:has(.beauty-shop-scroll-underlay.is-active) .makeup-table-intro-section { opacity: 0; }
+.home-shop:has(.makeup-table-section) { background: rgba(251, 247, 242, .9); }
+.home-shop:has(.makeup-table-section) .makeup-table-intro-section { position: relative; padding-bottom: 0; }
 .home-hero { position: relative; width: min(1360px, calc(100% - 64px)); min-height: clamp(480px, calc(100svh - 132px), 600px); margin: 0 auto; overflow: hidden; border-bottom: 1px solid var(--yp-line); background: var(--yp-hero-surface); }
 .hero-media { position: absolute; inset: 0; }.hero-media::after { position: absolute; inset: 0; background: transparent; content: ''; pointer-events: none; }.hero-media picture, .hero-media img { width: 100%; height: 100%; display: block; }.hero-media img { object-fit: cover; object-position: center; }.hero-caption { position: absolute; z-index: 1; right: 32px; bottom: 24px; display: flex; flex-direction: column; align-items: end; gap: 5px; color: var(--yp-ink); font: 500 11px/1 'DM Mono', monospace; }.hero-caption i { color: var(--yp-muted); font-size: 9px; font-style: normal; }
 .makeup-table-intro-section { padding: 40px 0 16px; }
@@ -45,9 +50,9 @@
 .quick-links button:hover { border-color: var(--yp-rose); color: var(--yp-rose-deep); background: var(--yp-peach); }
 .featured-card:hover .product-photo { border-color: var(--yp-rose); }
 
-.makeup-table-lazy-placeholder { width: min(1360px, calc(100% - 64px)); height: clamp(540px, 52vw, 640px); margin: 0 auto 58px; background: #f3e4df; }
+.makeup-table-lazy-placeholder { width: 100%; height: calc(100svh - 72px); margin: 0; background: #f3e4df; }
 .featured-showcase-placeholder { height: 100svh; min-height: 680px; background: var(--yp-paper); }
-@media (max-width: 680px) { .makeup-table-lazy-placeholder { width: 100%; height: 600px; margin: 0 0 48px; } }
+@media (max-width: 680px) { .makeup-table-lazy-placeholder { height: calc(100svh - 60px); }.home-shop .makeup-table-intro-section { padding: 20px 16px; } }
 .assistant-entry-button { display: inline-flex; align-items: center; gap: 7px; margin: -2px 0 23px; border: 1px solid var(--yp-hero-button); border-radius: var(--yp-radius-control); padding: 11px 14px; color: #5b4a43; background: var(--yp-hero-button); font-size: 12px; font-weight: 600; transition: background var(--yp-motion-fast) var(--yp-ease-standard), transform var(--yp-motion-fast) var(--yp-ease-standard); }
 .assistant-entry-button:hover { background: var(--yp-hero-button-hover); transform: translateY(-1px); }
 .assistant-entry-button:active { transform: translateY(0); }
