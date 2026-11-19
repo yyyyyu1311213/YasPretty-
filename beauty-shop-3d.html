@@ -74,7 +74,7 @@
         near: 0.1,
         far: 160,
         // 斜俯视 45° 方位：一次看全整个沙盘，底座前侧与右侧可见
-        position: new THREE.Vector3(13.485, 11.3166, 13.5305),
+        position: new THREE.Vector3(12.00165, 10.150974, 12.080645),
         target: new THREE.Vector3(0, 0.72, 0.35),
       },
       maxPixelRatio: 1.25,
@@ -2858,25 +2858,36 @@
 
     function createCategoryLabel(text) {
       const canvas = document.createElement('canvas');
-      canvas.width = 384;
-      canvas.height = 96;
+      const width = text.length * 13 + 28;
+      const height = 32;
+      canvas.width = width * 3;
+      canvas.height = height * 3;
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = 'rgba(255, 250, 246, 0.96)';
+      ctx.scale(3, 3);
+      ctx.fillStyle = '#e4efe5';
       ctx.beginPath();
-      ctx.roundRect(8, 8, 368, 80, 18);
+      ctx.roundRect(1, 1, width - 2, height - 6, 9);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(154, 104, 93, 0.34)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#91ab98';
+      ctx.lineWidth = 1;
       ctx.stroke();
-      ctx.fillStyle = '#67464b';
-      ctx.font = '600 36px "Microsoft YaHei", sans-serif';
+      ctx.beginPath();
+      ctx.moveTo(width / 2 - 4, height - 5);
+      ctx.lineTo(width / 2, height - 1);
+      ctx.lineTo(width / 2 + 4, height - 5);
+      ctx.fill();
+      ctx.fillStyle = '#365747';
+      ctx.font = '500 12px "Microsoft YaHei", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(text, 192, 48);
+      ctx.fillText(text, width / 2, 14);
       const texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
-      sprite.scale.set(0.78, 0.195, 1);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false, depthTest: false, toneMapped: false }));
+      sprite.userData.labelSize = { width, height };
+      sprite.center.set(.5, 0);
+      sprite.renderOrder = 10;
+      sprite.raycast = () => {};
       return sprite;
     }
 
@@ -3033,9 +3044,10 @@
       object.position.copy(object.userData.gatherStart);
       object.rotation.y = object.userData.startRotation;
       object.userData.labelSprite = createCategoryLabel(category);
-      object.userData.labelSprite.position.set(0, 0.72, 0);
+      object.updateWorldMatrix(true, true);
+      const modelBounds = new THREE.Box3().setFromObject(object.children[0]);
+      object.userData.labelSprite.position.set(0, modelBounds.max.y - object.position.y + .07, 0);
       object.userData.labelSprite.visible = false;
-      object.userData.labelSprite.userData = object.userData;
       object.add(object.userData.labelSprite);
       object.traverse((child) => { if (child.isMesh) child.userData = object.userData; });
       return object;
@@ -3372,6 +3384,7 @@
     const pointer = new THREE.Vector2(-10, -10);
     let hoveredObject = null;
     let hoveredRoot = null;
+    let navigationHoveredRoot = null;
 
     function raycast() {
       if (interactiveObjects.length === 0) return [];
@@ -3407,6 +3420,7 @@
     }
 
     renderer.domElement.addEventListener('pointermove', (event) => {
+      navigationHoveredRoot = null;
       updatePointer(event);
       updateHover();
     });
@@ -3905,7 +3919,7 @@
     function applyCategoryGather(amount) {
       categoryGatherProgress = amount;
       const progress = clamp01(amount);
-      const gatherCenter = new THREE.Vector3(vanityCenter[0], 7.1, vanityCenter[2]);
+      const gatherCenter = new THREE.Vector3(vanityCenter[0], 3.95, vanityCenter[2]);
       categoryObjects.forEach((object, index) => {
         const start = object.userData.gatherStart;
         const target = object.userData.gatherTarget;
@@ -3920,7 +3934,7 @@
         if (progress <= 0.34) {
           const t = smooth(progress / 0.34);
           object.position.lerpVectors(start, orbitPoint, t);
-          object.position.y += Math.sin(t * Math.PI) * 1.0;
+          object.position.y += Math.sin(t * Math.PI) * 0.3;
         } else if (progress <= 0.66) {
           const t = (progress - 0.34) / 0.32;
           const circle = phaseOffset + t * Math.PI * 2;
@@ -3965,6 +3979,8 @@
       prepareFocus();
       viewTween.active = false;
       hoveredRoot = null;
+      hoveredObject = null;
+      navigationHoveredRoot = null;
       pointer.set(-10, -10);
       transition.active = true;
       transition.elapsed = 0;
@@ -4020,6 +4036,15 @@
       if (event.data.type === 'return') returnToShop();
       if (event.data.type === 'enter') enterVanity();
       if (event.data.type === 'start-intro') intro.resume();
+      if (event.data.type === 'category-hover' && phase === 'vanity') {
+        navigationHoveredRoot = categoryObjects.find((object) => object.userData.category === event.data.category) || null;
+        if (navigationHoveredRoot) {
+          pointer.set(-10, -10);
+          hoveredObject = null;
+          hoveredRoot = null;
+        }
+        lastActivityAt = performance.now();
+      }
       if (event.data.type === 'scroll-exit-progress') {
         const progress = THREE.MathUtils.clamp(Number(event.data.progress) || 0, 0, 1);
         scrollReleased = progress >= 1;
@@ -4085,16 +4110,34 @@
       const vanityGlow = vanityProduct.getObjectByName('vanity-underglow');
       if (vanityGlow) vanityGlow.material.opacity = 0.18 + (shopHover * 0.18);
       for (const object of categoryObjects) {
-        const target = phase === 'vanity' && object === hoveredRoot ? 1 : 0;
+        const target = phase === 'vanity' && object === (hoveredRoot || navigationHoveredRoot) ? 1 : 0;
         object.userData.hover = THREE.MathUtils.lerp(object.userData.hover || 0, target, k);
         object.scale.setScalar(1 + object.userData.hover * 0.1);
-        if (object.userData.labelSprite) object.userData.labelSprite.visible = phase === 'vanity' && (object === hoveredRoot || object.userData.hover > 0.18);
+        if (object.userData.labelSprite) {
+          object.userData.labelSprite.visible = phase === 'vanity' && object.userData.hover > .02;
+          object.userData.labelSprite.material.opacity = object.userData.hover;
+        }
+      }
+    }
+
+    // Keep labels at a readable CSS-pixel size when zooming, including on narrow screens.
+    const labelCameraPoint = new THREE.Vector3();
+    const labelWorldScale = new THREE.Vector3();
+    function updateCategoryLabels() {
+      for (const object of categoryObjects) {
+        const label = object.userData.labelSprite;
+        if (!label.visible) continue;
+        label.getWorldPosition(labelCameraPoint).applyMatrix4(camera.matrixWorldInverse);
+        object.getWorldScale(labelWorldScale);
+        const unitsPerPixel = 2 * Math.max(.1, -labelCameraPoint.z) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / container.clientHeight;
+        const { width, height } = label.userData.labelSize;
+        label.scale.set(width * unitsPerPixel / labelWorldScale.x, height * unitsPerPixel / labelWorldScale.y, 1);
       }
     }
 
     let reportedReady = false;
     function renderFrame(time) {
-      const active = (intro.active && !intro.paused) || transition.active || viewTween.active || hoveredRoot || shopHover > 0.001 || time - lastActivityAt < 600;
+      const active = (intro.active && !intro.paused) || transition.active || viewTween.active || hoveredRoot || navigationHoveredRoot || shopHover > 0.001 || time - lastActivityAt < 600;
       if (!active && time - lastDrawAt < 66) return;
       lastDrawAt = time;
       const delta = Math.min(clock.getDelta(), 0.05);
@@ -4110,6 +4153,7 @@
       updateViewTween(delta);
       updateTransition(delta);
       controls.update();
+      updateCategoryLabels();
       renderer.render(scene, camera);
       if (!reportedReady) {
         reportedReady = true;

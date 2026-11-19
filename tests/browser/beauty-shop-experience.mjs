@@ -84,7 +84,7 @@ try {
         const { camera, controls } = window.BeautyShop
         return camera.position.distanceTo(controls.target)
       })
-      assert(distance < 24, `initial street camera is too distant: ${distance}`)
+      assert(distance < 20, `initial street camera is too distant: ${distance}`)
     }
     const shopProductLayout = await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.categoryObjects.map((object) => ({
       distanceFromVanity: object.position.distanceTo(object.userData.gatherTarget),
@@ -120,9 +120,32 @@ try {
     const bounds = await page.locator('.beauty-shop-frame').boundingBox()
     await page.mouse.move(bounds.x + projected.x, bounds.y + projected.y)
     await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.shop.scale.x > 1.05)
+    await frame.locator('canvas').evaluate(() => {
+      const shop = window.BeautyShop
+      window.motionSamples = []
+      function sample() {
+        const progress = shop.categoryGatherProgress
+        if (progress >= .34 && progress <= .66) {
+          shop.scene.updateMatrixWorld(true)
+          window.motionSamples.push(shop.categoryObjects.map((object) => {
+            const box = new shop.THREE.Box3().setFromObject(object.children[0])
+            const corners = []
+            for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+              corners.push(new shop.THREE.Vector3(x, y, z).project(shop.camera))
+            }
+            return { category: object.userData.category, top: box.max.y, visible: corners.every((p) => Math.abs(p.x) < .96 && Math.abs(p.y) < .96 && p.z > -1 && p.z < 1) }
+          }))
+        }
+        if (progress < 1) requestAnimationFrame(sample)
+      }
+      requestAnimationFrame(sample)
+    })
     await page.mouse.click(bounds.x + projected.x, bounds.y + projected.y)
     await page.locator('.beauty-shop-stage[data-stage="transition"]').waitFor()
-    await page.waitForTimeout(850)
+    await page.waitForFunction(() => {
+      const progress = document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.categoryGatherProgress
+      return progress >= .38 && progress < .66
+    })
     const spiralDescent = await frame.locator('#beautyShop3d canvas').evaluate(() => {
       const shop = window.BeautyShop
       const object = shop.categoryObjects[0]
@@ -135,6 +158,9 @@ try {
     assert(spiralDescent.y > spiralDescent.startY + 2.5, `category did not descend from above: ${JSON.stringify(spiralDescent)}`)
     await page.screenshot({ path: path.join(output, `${viewport.width}-transition.png`), animations: 'disabled' })
     await page.locator('.beauty-shop-stage[data-stage="vanity"]').waitFor({ timeout: 12000 })
+    const motionSamples = await frame.locator('canvas').evaluate(() => window.motionSamples)
+    assert(motionSamples.length >= 3, 'capture several frames of the airborne circle')
+    assert(motionSamples.flat().every((item) => item.top < 4.7 && item.visible), `orbit must stay near the roof and inside the viewport: ${JSON.stringify(motionSamples.filter((items) => items.some((item) => item.top >= 4.7 || !item.visible)))}`)
     const backBox = await page.locator('.beauty-shop-back').boundingBox()
     const titleBox = await page.locator('.makeup-table-intro-title').boundingBox()
     assert(backBox.y >= titleBox.y + titleBox.height + 8, 'return button must sit below the title with a gap')
@@ -182,6 +208,36 @@ try {
     }))
     await page.screenshot({ path: path.join(output, `${viewport.width}-vanity.png`), animations: 'disabled' })
 
+    const categoryButtons = page.locator('.beauty-shop-categories button')
+    for (const button of await categoryButtons.all()) {
+      const category = await button.innerText()
+      await button.hover()
+      await page.waitForFunction((category) => {
+        const objects = document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.categoryObjects || []
+        return objects.every((o) => o.userData.category === category
+          ? o.scale.x > 1.09 && o.userData.labelSprite.visible
+          : o.userData.hover < .02)
+      }, category)
+    }
+    await categoryButtons.filter({ hasText: /^气垫$/ }).hover()
+    await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.categoryObjects.find((o) => o.userData.category === '气垫')?.userData.hover > .99)
+    const labelSize = await frame.locator('canvas').evaluate((canvas) => {
+      const { THREE, camera, categoryObjects } = window.BeautyShop
+      const label = categoryObjects.find((o) => o.userData.category === '气垫').userData.labelSprite
+      const scale = label.getWorldScale(new THREE.Vector3())
+      const depth = -label.getWorldPosition(new THREE.Vector3()).applyMatrix4(camera.matrixWorldInverse).z
+      const pixelsPerUnit = canvas.clientHeight / (2 * depth * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))
+      return { width: scale.x * pixelsPerUnit, height: scale.y * pixelsPerUnit }
+    })
+    assert(labelSize.width >= 50 && labelSize.width < 80 && Math.abs(labelSize.height - 32) < 1, `label should stay compact: ${JSON.stringify(labelSize)}`)
+    await page.screenshot({ path: path.join(output, `${viewport.width}-category-hover.png`), animations: 'disabled' })
+    await page.mouse.move(5, 5)
+    await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.categoryObjects.every((o) => !o.userData.labelSprite.visible && o.userData.hover < .02))
+    await categoryButtons.first().focus()
+    await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.categoryObjects.find((o) => o.userData.category === '粉底液')?.userData.hover > .9)
+    await page.getByRole('button', { name: '返回店铺' }).focus()
+    await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.categoryObjects.every((o) => !o.userData.labelSprite.visible))
+
     await page.getByRole('button', { name: '返回店铺' }).click()
     await page.locator('.beauty-shop-stage[data-stage="shop"]').waitFor({ timeout: 12000 })
     const returnedProducts = await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.categoryObjects.every((object) => (
@@ -200,7 +256,28 @@ try {
       const point = target.getWorldPosition(new shop.THREE.Vector3()).add(new shop.THREE.Vector3(0, 0.12, 0)).project(shop.camera)
       return { x: (point.x + 1) * canvas.clientWidth / 2, y: (1 - point.y) * canvas.clientHeight / 2 }
     })
-    await page.mouse.click(bounds.x + eyeshadow.x, bounds.y + eyeshadow.y)
+    await page.mouse.move(bounds.x + eyeshadow.x, bounds.y + eyeshadow.y)
+    await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.categoryObjects.find((o) => o.userData.category === '眼影')?.userData.hover > .99)
+    await page.mouse.wheel(0, -160)
+    await page.waitForFunction(() => {
+      const s = document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop
+      return s && s.camera.position.distanceTo(s.controls.target) < (innerWidth > innerHeight ? 3.5 : 5.3)
+    })
+    const zoomedLabelSize = await frame.locator('canvas').evaluate((canvas) => {
+      const { THREE, camera, categoryObjects } = window.BeautyShop
+      const label = categoryObjects.find((o) => o.userData.category === '眼影').userData.labelSprite
+      const depth = -label.getWorldPosition(new THREE.Vector3()).applyMatrix4(camera.matrixWorldInverse).z
+      const scale = label.getWorldScale(new THREE.Vector3())
+      return scale.y * canvas.clientHeight / (2 * depth * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))
+    })
+    assert(Math.abs(zoomedLabelSize - 32) < 1, `label grows when zooming: ${zoomedLabelSize}`)
+    const zoomedEyeshadow = await frame.locator('canvas').evaluate((canvas) => {
+      const { THREE, camera, categoryObjects } = window.BeautyShop
+      const target = categoryObjects.find((o) => o.userData.category === '眼影')
+      const point = target.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, .12, 0)).project(camera)
+      return { x: (point.x + 1) * canvas.clientWidth / 2, y: (1 - point.y) * canvas.clientHeight / 2 }
+    })
+    await page.mouse.click(bounds.x + zoomedEyeshadow.x, bounds.y + zoomedEyeshadow.y)
     await page.locator('.library-page').waitFor({ timeout: 10000 })
     assert.equal(pageErrors.length, 0, pageErrors.join('\n'))
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))

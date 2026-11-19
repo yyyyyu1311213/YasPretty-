@@ -22,6 +22,15 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
   const [failed, setFailed] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
   const scrollProgressRef = useRef(0)
+  const pointerCategoryRef = useRef(null)
+  const focusedCategoryRef = useRef(null)
+
+  useEffect(() => {
+    if (stage !== 'vanity') {
+      pointerCategoryRef.current = null
+      focusedCategoryRef.current = null
+    }
+  }, [stage])
 
   useEffect(() => {
     if (!openingReady || !webGLAvailable) return undefined
@@ -63,6 +72,12 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
     frameRef.current?.contentWindow?.postMessage({ source: 'yaspretty-site', type, ...detail }, window.location.origin)
   }
 
+  function highlightCategory(source, category) {
+    const ref = source === 'pointer' ? pointerCategoryRef : focusedCategoryRef
+    ref.current = category
+    send('category-hover', { category: pointerCategoryRef.current || focusedCategoryRef.current })
+  }
+
   const transitionStyle = {
     '--scroll-progress': scrollProgress,
     '--scroll-underlay-opacity': 0.04 + scrollProgress * 0.96,
@@ -92,7 +107,15 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
           {stage === 'vanity' && <>
             <button className="beauty-shop-back" type="button" onClick={() => send('return')}><ArrowLeft size={17} />返回店铺</button>
             <nav className="beauty-shop-categories" aria-label="选择彩妆品类">
-              {categoryOptions.map((category) => <button key={category} type="button" onClick={() => onViewCategory(category)}>{category}</button>)}
+              {categoryOptions.map((category) => <button
+                key={category}
+                type="button"
+                onPointerEnter={(event) => { if (event.pointerType !== 'touch') highlightCategory('pointer', category) }}
+                onPointerLeave={() => highlightCategory('pointer', null)}
+                onFocus={() => highlightCategory('focus', category)}
+                onBlur={() => highlightCategory('focus', null)}
+                onClick={() => onViewCategory(category)}
+              >{category}</button>)}
             </nav>
           </>}
         </div>
