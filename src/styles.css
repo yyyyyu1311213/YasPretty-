@@ -38,7 +38,7 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; background: var(--yp-paper); }
+body { margin: 0; min-width: 320px; background: var(--yp-page-wash, var(--yp-paper)); transition: background-color 260ms ease; }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #a86866; outline-offset: 3px; }
@@ -311,7 +311,7 @@ h1, h2 { font-family: var(--yp-display); font-weight: 600; }
 }
 
 /* Unified site surface layer: the opening keeps its own pearl-pink mood. */
-body { color: var(--yp-ink); background: var(--yp-paper); }
+body { color: var(--yp-ink); background: var(--yp-page-wash, var(--yp-paper)); }
 .site-header { border-color: var(--yp-line); background: rgba(251, 247, 242, .98); }
 .nav-link { color: var(--yp-muted); }
 .nav-link.active, .nav-link:hover { color: var(--yp-ink); }

@@ -46,7 +46,7 @@
 .featured-card:hover .product-photo { border-color: var(--yp-rose); }
 
 .makeup-table-lazy-placeholder { width: min(1360px, calc(100% - 64px)); height: clamp(540px, 52vw, 640px); margin: 0 auto 58px; background: #f3e4df; }
-.featured-showcase-placeholder { height: 100svh; min-height: 680px; background: #e9ded7; }
+.featured-showcase-placeholder { height: 100svh; min-height: 680px; background: var(--yp-paper); }
 @media (max-width: 680px) { .makeup-table-lazy-placeholder { width: 100%; height: 600px; margin: 0 0 48px; } }
 .assistant-entry-button { display: inline-flex; align-items: center; gap: 7px; margin: -2px 0 23px; border: 1px solid var(--yp-hero-button); border-radius: var(--yp-radius-control); padding: 11px 14px; color: #5b4a43; background: var(--yp-hero-button); font-size: 12px; font-weight: 600; transition: background var(--yp-motion-fast) var(--yp-ease-standard), transform var(--yp-motion-fast) var(--yp-ease-standard); }
 .assistant-entry-button:hover { background: var(--yp-hero-button-hover); transform: translateY(-1px); }

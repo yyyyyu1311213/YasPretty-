@@ -1,8 +1,23 @@
 import { useEffect, useRef } from 'react'
-import { ArrowDown, ArrowRight, Heart } from 'lucide-react'
+import { ArrowDown, Heart } from 'lucide-react'
 import './FeaturedShowcase.css'
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
+const smoothstep = (value) => value * value * (3 - 2 * value)
+const easeOutCubic = (value) => 1 - ((1 - value) ** 3)
+const easeInCubic = (value) => value ** 3
+
+const pieceLayouts = [
+  { x: 0, y: 48, width: 560, imageWidth: 340, imageHeight: 450, copy: 'side' },
+  { x: 600, y: 432, width: 390, imageWidth: 220, imageHeight: 278, copy: 'below' },
+  { x: 1010, y: 16, width: 650, imageWidth: 400, imageHeight: 510, copy: 'side' },
+  { x: 1690, y: 394, width: 400, imageWidth: 232, imageHeight: 292, copy: 'below' },
+  { x: 2110, y: 82, width: 470, imageWidth: 275, imageHeight: 360, copy: 'below' },
+  { x: 2600, y: 326, width: 630, imageWidth: 375, imageHeight: 480, copy: 'side' },
+  { x: 3270, y: 34, width: 410, imageWidth: 225, imageHeight: 292, copy: 'below' },
+  { x: 3700, y: 270, width: 660, imageWidth: 390, imageHeight: 500, copy: 'side' },
+]
+const galleryWidth = 4380
 
 export default function FeaturedShowcase({ products, collection, onOpenProduct, onFavorite, onRemoveFavorite }) {
   const sectionRef = useRef(null)
@@ -16,16 +31,15 @@ export default function FeaturedShowcase({ products, collection, onOpenProduct, 
     if (!section || !pin || !track) return undefined
 
     let travel = 0
+    let leadIn = 0
+    let leadOut = 0
     let frame = 0
     const headerOffset = () => window.matchMedia('(max-width: 680px)').matches ? 60 : 72
-    const setPinState = (progress) => {
-      pin.classList.toggle('is-pinned', progress > 0 && progress < 1)
-      pin.classList.toggle('is-complete', progress >= 1)
-    }
-
     const measure = () => {
       travel = Math.max(0, track.scrollWidth - pin.clientWidth)
-      section.style.height = `${pin.offsetHeight + travel}px`
+      leadIn = Math.min(180, Math.max(110, pin.clientHeight * 0.2))
+      leadOut = leadIn
+      section.style.height = `${pin.offsetHeight + travel + leadIn + leadOut}px`
       section.style.setProperty('--featured-travel', `${travel}px`)
       update()
     }
@@ -34,10 +48,32 @@ export default function FeaturedShowcase({ products, collection, onOpenProduct, 
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
         const distance = travel
-        const progress = distance ? clamp((headerOffset() - section.getBoundingClientRect().top) / distance, 0, 1) : 0
-        track.style.transform = `translate3d(${-distance * progress}px, 0, 0)`
+        const scrollDistance = distance + leadIn + leadOut
+        const scrollProgress = clamp((headerOffset() - section.getBoundingClientRect().top) / scrollDistance, 0, 1)
+        const scrollOffset = scrollProgress * scrollDistance
+        const progress = distance ? clamp((scrollOffset - leadIn) / distance, 0, 1) : 0
+        let diagonal = 0
+        let diagonalX = 0
+        if (scrollOffset < leadIn) {
+          const entryProgress = clamp(scrollOffset / leadIn, 0, 1)
+          const entry = easeOutCubic(entryProgress)
+          diagonal = 18 * (1 - entry)
+          diagonalX = 24 * (1 - entry)
+        } else if (scrollOffset > leadIn + distance) {
+          const exitProgress = clamp((scrollOffset - leadIn - distance) / leadOut, 0, 1)
+          const exit = easeInCubic(exitProgress)
+          diagonal = -18 * exit
+          diagonalX = -24 * exit
+        }
+        track.style.transform = `translate3d(${-distance * progress + diagonalX}px, ${diagonal}px, 0)`
         section.style.setProperty('--featured-progress', progress)
-        setPinState(progress)
+        const wash = smoothstep(Math.sin(scrollProgress * Math.PI))
+        const red = Math.round(251 - wash * 8)
+        const green = Math.round(247 - wash * 10)
+        const blue = Math.round(242 - wash * 10)
+        document.documentElement.style.setProperty('--yp-page-wash', `rgb(${red}, ${green}, ${blue})`)
+        pin.classList.toggle('is-pinned', scrollOffset > 0 && scrollOffset < scrollDistance)
+        pin.classList.toggle('is-complete', scrollOffset >= scrollDistance)
       })
     }
 
@@ -54,13 +90,9 @@ export default function FeaturedShowcase({ products, collection, onOpenProduct, 
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', measure)
       pin.classList.remove('is-pinned', 'is-complete')
+      document.documentElement.style.removeProperty('--yp-page-wash')
     }
   }, [products.length])
-
-  const notes = [
-    { eyebrow: 'A MORE CONSIDERED CHOICE', title: '先了解妆效，再决定适不适合。', body: '从品类、肤质到妆面方向，产品档案帮助你按自己的条件慢慢筛选。' },
-    { eyebrow: 'DETAILS WITH CONTEXT', title: '资料来源与核验状态，随档案一起查看。', body: '我们把可确认的信息与仍需留意的部分分开呈现，让每个选择都有来处。' },
-  ]
 
   return (
     <section ref={sectionRef} className="featured-showcase" aria-labelledby="featured-showcase-title">
@@ -69,36 +101,55 @@ export default function FeaturedShowcase({ products, collection, onOpenProduct, 
         <div ref={trackRef} className="featured-showcase__track">
           <header className="featured-showcase__intro">
             <p className="featured-showcase__eyebrow">YASPRETTY / THE BEAUTY EDIT</p>
-            <h2 id="featured-showcase-title">找到适合你的<br />那一件。</h2>
-            <p className="featured-showcase__lead">从八个彩妆品类开始，沿着妆效与肤质，发现新的选择方向。</p>
-            <div className="featured-showcase__stats"><span><strong>{products.length.toString().padStart(2, '0')}</strong> 件产品档案</span><i /><span><strong>08</strong> 个彩妆品类</span></div>
-            <span className="featured-showcase__scroll-hint"><ArrowDown size={15} /> 向下滚动，横向浏览</span>
+            <h2 id="featured-showcase-title">上百种商品库，<br />总能找到适合你的<br />那一件。</h2>
+            <p className="featured-showcase__lead">沿着妆效与肤质，发现新的选择方向。</p>
+            <span className="featured-showcase__scroll-hint"><ArrowDown size={15} /> 向下滚动</span>
           </header>
 
-          {products.flatMap((product, index) => [<article className={`featured-piece featured-piece--${index % 2 ? 'high' : 'low'}`} key={product.id}>
-            <button className="featured-piece__image" type="button" onClick={() => onOpenProduct(product)} aria-label={`查看 ${product.brand} ${product.name} 详情`}>
-              <img src={product.image} alt={`${product.brand} ${product.name} 产品图`} loading={index < 3 ? 'eager' : 'lazy'} />
-              <span>{String(index + 1).padStart(2, '0')} / {product.category}</span>
-            </button>
-            <div className="featured-piece__copy">
-              <p className="featured-piece__brand">{product.brand}</p>
-              <button className="featured-piece__name" type="button" onClick={() => onOpenProduct(product)}>{product.name}</button>
-              <p className="featured-piece__detail">{product.finish} <i /> {product.priceLabel}</p>
-              <p className="featured-piece__note">{product.note}</p>
-              <div className="featured-piece__actions">
-                <button className="featured-piece__open" type="button" onClick={() => onOpenProduct(product)}>查看产品资料 <ArrowRight size={15} /></button>
-                <button className={`featured-piece__favorite${collection[product.id] ? ' is-saved' : ''}`} type="button" aria-label={collection[product.id] ? '取消收藏' : '收藏'} title={collection[product.id] ? '取消收藏' : '收藏'} onClick={() => collection[product.id] ? onRemoveFavorite(product.id) : onFavorite(product.id, '想买')}><Heart size={17} fill={collection[product.id] ? 'currentColor' : 'none'} /></button>
-              </div>
-            </div>
-          </article>, ...(index === 2 || index === 5 ? [<aside className="featured-showcase__note" key={notes[index === 2 ? 0 : 1].eyebrow}>
-            <p>{notes[index === 2 ? 0 : 1].eyebrow}</p><h3>{notes[index === 2 ? 0 : 1].title}</h3><span>{notes[index === 2 ? 0 : 1].body}</span>
-          </aside>] : [])])}
-
+          <div className="featured-showcase__gallery" style={{ '--gallery-width': `${galleryWidth}px` }}>
+            {products.map((product, index) => {
+              const layout = pieceLayouts[index % pieceLayouts.length]
+              return <article
+                className={`featured-piece featured-piece--${layout.copy}`}
+                key={product.id}
+                style={{
+                  '--piece-x': `${layout.x}px`,
+                  '--piece-y': `${layout.y}px`,
+                  '--piece-width': `${layout.width}px`,
+                  '--piece-image-width': `${layout.imageWidth}px`,
+                  '--piece-image-height': `${layout.imageHeight}px`,
+                }}
+              >
+                <div className="featured-piece__copy">
+                  <p className="featured-piece__brand">{product.brand}</p>
+                  <button className="featured-piece__name" type="button" onClick={() => onOpenProduct(product)}>{product.name}</button>
+                </div>
+                <button className="featured-piece__image" type="button" onClick={() => onOpenProduct(product)} aria-label={`查看 ${product.brand} ${product.name} 详情`}>
+                  <img src={product.image} alt={`${product.brand} ${product.name} 产品图`} loading={index < 3 ? 'eager' : 'lazy'} />
+                </button>
+                <div className="featured-piece__footer">
+                  <p className="featured-piece__detail">{product.priceLabel}</p>
+                  <div className="featured-piece__actions">
+                    <button className={`featured-piece__favorite${collection[product.id] ? ' is-saved' : ''}`} type="button" aria-label={collection[product.id] ? '取消收藏' : '收藏'} title={collection[product.id] ? '取消收藏' : '收藏'} onClick={() => collection[product.id] ? onRemoveFavorite(product.id) : onFavorite(product.id, '想买')}><Heart size={17} fill={collection[product.id] ? 'currentColor' : 'none'} /></button>
+                  </div>
+                </div>
+              </article>
+            })}
+            <aside className="featured-editorial featured-editorial--brand">
+              <p className="featured-editorial__eyebrow">BEAUTY, IN YOUR OWN WAY</p>
+              <h3>美，不必被一种标准定义。</h3>
+              <p>YasPretty 从真实需求出发，整理值得了解的彩妆与护理选择，让每一次尝试都更贴近你自己。</p>
+            </aside>
+            <aside className="featured-editorial featured-editorial--method">
+              <p className="featured-editorial__eyebrow">A THOUGHTFUL BEAUTY EDIT</p>
+              <h3>先看妆效，再看适配。</h3>
+              <p>从质地、肤感到日常场景，给选择多一点依据，也给探索多一点余地。</p>
+            </aside>
+          </div>
           <footer className="featured-showcase__outro">
-            <span className="featured-showcase__outro-mark">YP</span>
-            <p>YOUR BEAUTY,<br />YOUR WAY.</p>
-            <span>继续向下，开启你的美妆探索</span>
-            <ArrowDown size={16} />
+            <p className="featured-showcase__outro-eyebrow">YASPRETTY / YOUR BEAUTY LIBRARY</p>
+            <h3>找到喜欢的，<br />也找到适合自己的。</h3>
+            <p>让每一份美，都有自己的答案。</p>
           </footer>
         </div>
         <div className="featured-showcase__progress" aria-hidden="true"><span /></div>
