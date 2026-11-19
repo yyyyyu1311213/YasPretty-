@@ -54,16 +54,14 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
       <GuideView onApplyFilter={onApplyGuideFilter} />
       <section className={`home-hero${openingReady ? ' home-hero--ready' : ''}`}>
         <div className={`hero-media${openingReady ? ' hero-media--ready' : ''}`} aria-hidden="true">
-          <picture>
-            <source media="(max-width: 680px)" srcSet="/assets/logo/hero/hero-mobile.jpg" />
-            <img src="/assets/logo/hero/hero-desktop.jpg" alt="" />
-          </picture>
+          <img src="/assets/logo/hero/hero-still-life.svg" alt="" width="600" height="620" loading="lazy" decoding="async" />
           <div className="hero-caption"><span>YASPRETTY</span><i>PERSONAL BEAUTY DECISION LIBRARY</i></div>
         </div>
         <div className={`hero-copy${openingReady ? ' hero-copy--ready' : ''}`}>
           <p className="hero-kicker">YASPRETTY · BEAUTY DECISION LIBRARY</p>
           <p className="eyebrow hero-motion-control">按肤质、妆效与预算，找到适合自己的彩妆</p>
           <h1 className="hero-slogan">{'甄选好物，\n找到适配你的美'}</h1>
+          <div className="hero-selection-line" aria-hidden="true"><span>BEAUTY SELECTION</span></div>
           <p className="hero-description">浏览经过整理的产品资料，或让小Y根据你的条件规划妆容。</p>
           <button className="assistant-entry-button hero-motion-control" onClick={() => onNavigate('assistant')}>创建我的妆容方案 <ChevronRight size={16} /></button>
           <form className="hero-search hero-motion-control" onSubmit={(event) => { event.preventDefault(); onSearch(keyword) }}>

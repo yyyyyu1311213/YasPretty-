@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 620" fill="none">
+  <!-- Project-original vector refinement of the existing YasPretty hero illustration.
+       Same foundation / lipstick / oval composition; no third-party assets. -->
+  <defs>
+    <linearGradient id="glass" x1="130" y1="240" x2="325" y2="550" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fffdf9"/>
+      <stop offset=".45" stop-color="#f4e9df"/>
+      <stop offset="1" stop-color="#e6cfc0"/>
+    </linearGradient>
+    <linearGradient id="lip" x1="401" y1="310" x2="452" y2="427" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e7bcb8"/>
+      <stop offset="1" stop-color="#c79190"/>
+    </linearGradient>
+    <linearGradient id="collar" x1="185" y1="190" x2="270" y2="265" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ccb1a0"/>
+      <stop offset="1" stop-color="#b29381"/>
+    </linearGradient>
+    <linearGradient id="halo" x1="230" y1="30" x2="500" y2="475" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d6b7aa" stop-opacity=".65"/>
+      <stop offset="1" stop-color="#e4c9b9" stop-opacity=".35"/>
+    </linearGradient>
+    <radialGradient id="shadow">
+      <stop stop-color="#987664" stop-opacity=".23"/>
+      <stop offset="1" stop-color="#987664" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="341" cy="251" rx="181" ry="220" stroke="url(#halo)" stroke-width="4"/>
+  <ellipse cx="315" cy="557" rx="223" ry="17" fill="url(#shadow)"/>
+  <g stroke="#625047" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M200 201V161Q200 156 205 156H242Q247 156 247 161V201" fill="#66534b"/>
+    <path d="M185 257V201H266V257" fill="url(#collar)"/>
+    <path d="M167 257H284L309 547H143Z" fill="url(#glass)"/>
+    <path d="M180 273H271L292 531H160Z" stroke="#fffaf3" stroke-width="3" opacity=".85"/>
+    <path d="M184 380Q225 357 265 380" stroke="#d6aaa5" stroke-width="10"/>
+    <path d="M181 287L170 421" stroke="#fffef9" stroke-width="7" opacity=".8"/>
+    <path d="M204 170V190" stroke="#9a8070" stroke-width="3" opacity=".7"/>
+    <path d="M403 422V336Q403 318 420 312L440 305Q450 302 450 315V422Z" fill="url(#lip)"/>
+    <path d="M404 337Q426 330 450 314" stroke-width="4"/>
+    <path d="M413 321L439 312" stroke="#fff0e8" stroke-width="3" opacity=".8"/>
+    <path d="M393 457V422Q393 410 405 410H449Q461 410 461 422V457" fill="url(#collar)"/>
+    <path d="M380 547V469Q380 454 395 454H459Q474 454 474 469V547Z" fill="url(#glass)"/>
+    <path d="M391 535V472Q391 465 398 465H455Q463 465 463 472V535Z" stroke="#fffaf3" stroke-width="3"/>
+    <path d="M396 474V491" stroke="#fffef9" stroke-width="6" opacity=".85"/>
+    <path d="M103 554H508" stroke-width="5"/>
+  </g>
+</svg>

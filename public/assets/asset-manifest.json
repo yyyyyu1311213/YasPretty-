@@ -80,6 +80,17 @@
       "status": "ready"
     },
     {
+      "id": "hero-still-life",
+      "files": ["logo/hero/hero-still-life.svg"],
+      "dimensions": "600x620",
+      "type": "hero-illustration",
+      "status": "ready",
+      "createdAt": "2026-11-20",
+      "originType": "project-original",
+      "creationMethod": "Code-authored vector refinement of the existing foundation, lipstick and oval hero composition; gradients and highlights added for the home selection section.",
+      "authorizationStatus": "self-created"
+    },
+    {
       "id": "share-cover",
       "files": ["social/share-cover.svg", "social/share-cover.png"],
       "dimensions": "1200x630",

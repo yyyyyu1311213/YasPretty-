@@ -126,12 +126,10 @@ describe('home composition', () => {
     expect(showcase.props.products).toEqual(featured)
   })
 
-  it('preserves visible copy, responsive media paths and closing text in static markup', () => {
+  it('preserves visible copy, the scalable hero illustration and closing text in static markup', () => {
     const markup = renderToStaticMarkup(HomeView(props()))
     for (const text of ['甄选好物，', '找到适配你的美', '创建我的妆容方案', 'You are so pretty', '正在准备编辑精选']) expect(markup).toContain(text)
-    expect(markup).toContain('media="(max-width: 680px)"')
-    expect(markup).toContain('/assets/logo/hero/hero-mobile.jpg')
-    expect(markup).toContain('/assets/logo/hero/hero-desktop.jpg')
+    expect(markup).toContain('/assets/logo/hero/hero-still-life.svg')
     expect(markup).toContain('makeup-table-lazy-placeholder')
   })
 })

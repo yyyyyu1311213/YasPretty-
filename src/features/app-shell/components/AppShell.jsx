@@ -19,12 +19,12 @@ export default function AppShell({ opening, activeView, favoriteCount, mobileMen
 
       <main>{children}</main>
 
-      <Footer />
+      <Footer isHome={activeView === 'home'} />
       {overlay}
     </div>
   )
 }
 
-function Footer() {
-  return <footer className="site-footer"><div><img className="footer-wordmark-image" src="/assets/logo/yaspretty-wordmark-dark.svg" alt="YasPretty" /></div><p>{productImageNotice} 产品信息与编辑评价仍需结合详情页来源状态判断。</p><a className="source-contact-link" href={imageRightsContactUrl} target="_blank" rel="noreferrer">权利人联系删除 <ChevronRight size={15} /></a></footer>
+function Footer({ isHome }) {
+  return <footer className={`site-footer${isHome ? ' site-footer--home' : ''}`}><div><img className="footer-wordmark-image" src={`/assets/logo/yaspretty-wordmark-${isHome ? 'light' : 'dark'}.svg`} alt="YasPretty" /></div><p>{productImageNotice} 产品信息与编辑评价仍需结合详情页来源状态判断。</p><a className="source-contact-link" href={imageRightsContactUrl} target="_blank" rel="noreferrer">权利人联系删除 <ChevronRight size={15} /></a></footer>
 }
