@@ -45,5 +45,6 @@ describe('站内导航历史', () => {
       scrollY: 0,
       depth: 0,
     })
+    expect(createNavigationEntry({ view: 'guide' }).view).toBe('home')
   })
 })

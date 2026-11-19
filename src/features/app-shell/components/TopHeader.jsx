@@ -5,7 +5,6 @@ export default function TopHeader({ activeView, favoriteCount, mobileMenuOpen, o
   const navItems = [
     { id: 'assistant', label: '小Y智能选妆' },
     { id: 'library', label: '产品库' },
-    { id: 'guide', label: '肤质指南' },
     { id: 'culture', label: '品牌文化' },
     { id: 'favorites', label: '我的收藏' },
   ]

@@ -1,0 +1,29 @@
+[
+  {
+    "asset": "oily-skin.jpg",
+    "title": "Beautiful Woman is Asian Looking",
+    "author": "epSos.de",
+    "source": "https://commons.wikimedia.org/wiki/File:Beautiful_Woman_is_Asian_Looking.jpg",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "changes": "Cropped to a face close-up and resized for the card."
+  },
+  {
+    "asset": "dry-skin.jpg",
+    "title": "Woman applying serum on her face closeup",
+    "author": "Shixart1985",
+    "source": "https://commons.wikimedia.org/wiki/File:Woman_applying_serum_on_her_face_closeup.jpg",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "changes": "Resized for the card."
+  },
+  {
+    "asset": "camera-ready-skin.jpg",
+    "title": "Woman applying makeup with a brush closeup",
+    "author": "Shixart1985",
+    "source": "https://commons.wikimedia.org/wiki/File:Woman_applying_makeup_with_a_brush_closeup.jpg",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "changes": "Resized for the card."
+  }
+]

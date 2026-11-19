@@ -3,6 +3,7 @@ import { ChevronRight, Search } from 'lucide-react'
 import { categoryOptions, quickFilters } from '../../../data/products'
 import { getCatalogProducts } from '../../catalog/catalogService'
 import StrokeText from '../../../components/visual/StrokeText'
+import GuideView from '../../guide-culture/components/GuideView'
 import './HomeView.css'
 
 const MakeupTableExperience = lazy(() => import('../../makeup-table/components/MakeupTableExperience'))
@@ -10,7 +11,7 @@ const FeaturedShowcase = lazy(() => import('./FeaturedShowcase'))
 const products = getCatalogProducts()
 
 // App supplies its existing error boundary until the ARCH-10 app migration.
-export default function HomeView({ EnhancementBoundary, openingReady, onSearch, onQuickFilter, onViewCategory, onNavigate, onOpenProduct, collection, onFavorite, onRemoveFavorite }) {
+export default function HomeView({ EnhancementBoundary, openingReady, onSearch, onQuickFilter, onViewCategory, onApplyGuideFilter, onNavigate, onOpenProduct, collection, onFavorite, onRemoveFavorite }) {
   const [keyword, setKeyword] = useState('')
   const featured = categoryOptions.map((category) => [...products]
     .filter((product) => product.category === category)
@@ -50,6 +51,7 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
           className="story-closing-text"
         />
       </section>
+      <GuideView onApplyFilter={onApplyGuideFilter} />
       <section className={`home-hero${openingReady ? ' home-hero--ready' : ''}`}>
         <div className={`hero-media${openingReady ? ' hero-media--ready' : ''}`} aria-hidden="true">
           <picture>

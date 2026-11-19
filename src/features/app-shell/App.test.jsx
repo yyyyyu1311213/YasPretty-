@@ -3,7 +3,6 @@ import App from '../../App'
 import AppShell from './components/AppShell'
 import HomeView from '../home/components/HomeView'
 import LibraryView from '../catalog/components/LibraryView'
-import GuideView from '../guide-culture/components/GuideView'
 import CultureView from '../guide-culture/components/CultureView'
 import CollectionView from '../collection/components/CollectionView'
 import ProductProfile from '../catalog/components/ProductProfile'
@@ -30,7 +29,7 @@ beforeEach(() => {
 })
 
 describe('App domain composition', () => {
-  it.each([['home', HomeView], ['library', LibraryView], ['guide', GuideView], ['assistant', XiaoYAssistant], ['culture', CultureView], ['favorites', CollectionView], ['product', ProductProfile]])('only supplies the existing %s page', (view, type) => {
+  it.each([['home', HomeView], ['library', LibraryView], ['assistant', XiaoYAssistant], ['culture', CultureView], ['favorites', CollectionView], ['product', ProductProfile]])('only supplies the existing %s page', (view, type) => {
     const tree = render(view)
     expect(tree.type).toBe(AppShell)
     expect(tree.props.children.filter(Boolean)).toHaveLength(1)
@@ -67,7 +66,7 @@ describe('App domain composition', () => {
     home.props.onSearch('nArS')
     expect(h.catalog.searchCatalog).toHaveBeenCalledExactlyOnceWith('nArS')
     home.props.onViewCategory('气垫')
-    page(render('guide')).props.onApplyFilter({ skins: ['干皮'] })
+    home.props.onApplyGuideFilter({ skins: ['干皮'] })
     expect(h.catalog.applyQuickFilter.mock.calls).toEqual([[{ categories: ['气垫'] }], [{ skins: ['干皮'] }]])
     expect(h.navigation.navigate.mock.calls).toEqual([['library'], ['library'], ['library']])
     const library = page(render('library'))

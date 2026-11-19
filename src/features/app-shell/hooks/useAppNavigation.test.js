@@ -90,10 +90,10 @@ describe('app navigation state and lifecycle', () => {
 
   it('snapshots scroll and increases depth only for a new page, then scrolls on RAF', () => {
     render().setMobileMenuOpen(true); window.scrollY = 740
-    render().navigate('guide')
+    render().navigate('culture')
     expect(stack[0].entry.scrollY).toBe(740)
-    expect(window.history.state).toMatchObject({ view: 'guide', depth: 1, scrollY: 0 })
-    expect(options.view).toBe('guide')
+    expect(window.history.state).toMatchObject({ view: 'culture', depth: 1, scrollY: 0 })
+    expect(options.view).toBe('culture')
     expect(render().mobileMenuOpen).toBe(false)
     expect(options.setFilterPanelOpen).toHaveBeenCalledWith(false)
     expect(window.scrollTo).not.toHaveBeenCalled()
@@ -127,14 +127,14 @@ describe('app navigation state and lifecycle', () => {
   })
 
   it('root drawer closes by replacement and preserves source scroll; unrelated keys do nothing', () => {
-    options.initialEntry = createNavigationEntry({ view: 'guide', drawerProductId: product.id, scrollY: 240 })
-    options.view = 'guide'
+    options.initialEntry = createNavigationEntry({ view: 'culture', drawerProductId: product.id, scrollY: 240 })
+    options.view = 'culture'
     render()
     dispatch('keydown', { key: 'Enter' })
     expect(options.setFilterPanelOpen).not.toHaveBeenCalled()
     render().closeProductDrawer(); render(); flushScroll()
     expect(window.history.back).not.toHaveBeenCalled()
-    expect(window.history.state).toMatchObject({ view: 'guide', drawerProductId: null, scrollY: 240 })
+    expect(window.history.state).toMatchObject({ view: 'culture', drawerProductId: null, scrollY: 240 })
     expect(window.scrollY).toBe(240)
   })
 
@@ -183,7 +183,7 @@ describe('app navigation state and lifecycle', () => {
     vi.advanceTimersByTime(1)
     expect(document.body.style.overflow).toBe('scroll')
     expect(document.documentElement.style.overflow).toBe('clip')
-    options.view = 'guide'; render(); options.view = 'home'; render()
+    options.view = 'culture'; render(); options.view = 'home'; render()
     expect(document.body.style.overflow).toBe('scroll')
     expect(vi.getTimerCount()).toBe(0)
   })

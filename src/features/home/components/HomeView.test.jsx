@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { categoryOptions, products, quickFilters } from '../../../data/products'
 import HomeView from './HomeView'
+import GuideView from '../../guide-culture/components/GuideView'
 
 // Inspect actual React elements/callbacks. Lifecycle and DOM behavior run in Playwright.
 const draft = vi.hoisted(() => ({ value: '', set: vi.fn() }))
@@ -33,7 +34,7 @@ const props = () => ({
   openingReady: false,
   collection: { 'estee-lauder-double-wear': '正在用' },
   onNavigate: vi.fn(), onSearch: vi.fn(), onQuickFilter: vi.fn(),
-  onOpenProduct: vi.fn(), onViewCategory: vi.fn(),
+  onOpenProduct: vi.fn(), onViewCategory: vi.fn(), onApplyGuideFilter: vi.fn(),
   onFavorite: vi.fn(), onRemoveFavorite: vi.fn(),
 })
 const featured = categoryOptions.map((category) => products.filter((product) => product.category === category).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0]).filter(Boolean)
@@ -52,7 +53,9 @@ describe('home composition', () => {
     expect(children[0].props.children[1].type).toBe(Suspense)
     expect(children[1].type).toBe(Boundary)
     expect(children[2].props.className).toBe('story-closing')
-    expect(children[3].props.className).toContain('home-hero')
+    expect(children[3].type).toBe(GuideView)
+    expect(children[3].props.onApplyFilter).toBe(p.onApplyGuideFilter)
+    expect(children[4].props.className).toContain('home-hero')
   })
 
   it('updates the local draft and submits the exact value without normalizing it', () => {

@@ -4,7 +4,6 @@ import { currentNavigationEntry, useAppNavigation } from './features/app-shell/h
 import BrandOpening from './features/app-shell/components/BrandOpening'
 import XiaoYAssistant from './features/assistant/components/XiaoYAssistant'
 import HomeView from './features/home/components/HomeView'
-import GuideView from './features/guide-culture/components/GuideView'
 import CultureView from './features/guide-culture/components/CultureView'
 
 import { getCatalogProducts } from './features/catalog/catalogService'
@@ -80,6 +79,7 @@ function App() {
           onSearch={runSearch}
           onQuickFilter={chooseQuickFilter}
           onViewCategory={openCategory}
+          onApplyGuideFilter={chooseQuickFilter}
           onNavigate={navigate}
           onOpenProduct={openProductDrawer}
           collection={collection}
@@ -103,7 +103,6 @@ function App() {
           onRemoveFavorite={removeFavorite}
         />
       )}
-      {view === 'guide' && <GuideView onApplyFilter={chooseQuickFilter} />}
       {view === 'assistant' && <XiaoYAssistant onOpenProduct={openProductDrawer} />}
       {view === 'culture' && <CultureView onNavigate={navigate} />}
       {view === 'favorites' && (

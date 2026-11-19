@@ -3,6 +3,13 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import GuideView from './GuideView'
 import CultureView from './CultureView'
 
+vi.mock('react', async (original) => ({
+  ...await original(),
+  useEffect: vi.fn(),
+  useRef: () => ({ current: null }),
+  useState: () => [false, vi.fn()],
+}))
+
 // Element/callback and SSR checks; real navigation, focus and scroll run in Playwright.
 function* nodes(value) {
   if (Array.isArray(value)) { for (const child of value) yield* nodes(child); return }
@@ -12,14 +19,16 @@ function* nodes(value) {
 }
 
 describe('guide and culture pages', () => {
-  it('renders the original three guide cards, tags and limits without extra controls', () => {
+  it('renders the three home guide cards, tags, image credits and limits', () => {
     const tree = GuideView({ onApplyFilter: vi.fn() })
     expect(tree.type).toBe('section')
-    expect(tree.props.className).toBe('guide-page content-section')
+    expect(tree.props.className).toBe('skin-guide')
     const markup = renderToStaticMarkup(tree)
-    for (const text of ['先读懂皮肤，再挑底妆。', '这里的建议只帮助你建立筛选方向。', '油皮 / 混油皮', '干皮 / 混干皮', '想要镜头感', '低卡粉', '拍照']) expect(markup).toContain(text)
+    for (const text of ['先读懂皮肤，', '再挑底妆。', '这里的建议只帮助你建立筛选方向。', '油皮 / 混油皮', '干皮 / 混干皮', '想要镜头感', '低卡粉', '拍照']) expect(markup).toContain(text)
     expect([...nodes(tree)].filter((n) => n.type === 'article')).toHaveLength(3)
     expect([...nodes(tree)].filter((n) => n.type === 'button')).toHaveLength(3)
+    expect(markup).toContain('CC BY 2.0')
+    expect(markup).toContain('/assets/skin-guide/oily-skin.jpg')
     expect(markup).not.toContain('role="dialog"')
   })
 

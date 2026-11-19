@@ -13,8 +13,8 @@ function* nodes(value) {
   yield value
   yield* nodes(value.props?.children)
 }
-const names = ['小Y智能选妆', '产品库', '肤质指南', '品牌文化', '我的收藏']
-const ids = ['assistant', 'library', 'guide', 'culture', 'favorites']
+const names = ['小Y智能选妆', '产品库', '品牌文化', '我的收藏']
+const ids = ['assistant', 'library', 'culture', 'favorites']
 
 describe('existing app structure', () => {
   it.each(ids)('keeps desktop navigation order and active item %s', (activeView) => {
@@ -44,7 +44,7 @@ describe('existing app structure', () => {
     expect(nav.type).toBe('nav')
     expect(nav.props['aria-label']).toBe('移动端主导航')
     const buttons = [...nodes(nav)].filter((n) => n.type === 'button')
-    expect(buttons.map((n) => n.props.className)).toEqual(['', '', '', '', 'active'])
+    expect(buttons.map((n) => n.props.className)).toEqual(['', '', '', 'active'])
     expect(renderToStaticMarkup(nav)).toContain('我的收藏 (3)')
     buttons.forEach((n) => n.props.onClick())
     expect(onNavigate.mock.calls).toEqual(ids.map((id) => [id]))

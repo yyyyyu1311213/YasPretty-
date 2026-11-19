@@ -1,6 +1,6 @@
 export const APP_HISTORY_MARKER = 'yaspretty-navigation-v1'
 
-const MAIN_VIEWS = ['home', 'library', 'guide', 'assistant', 'culture', 'favorites']
+const MAIN_VIEWS = ['home', 'library', 'assistant', 'culture', 'favorites']
 
 function productIdFromPathname(pathname = '') {
   const match = pathname.match(/^\/products\/([^/]+)\/?$/)
