@@ -54,6 +54,7 @@
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { createVanityCosmetic, createVanitySceneModel, vanityProductPosition } from '/src/features/makeup-table/makeup-table-3d/vanity-models.js';
 
     /* ===============================================================
      * 0. 基础配置与工具
@@ -3001,29 +3002,36 @@
     }
 
     // ---------- C 位：圆形化妆台 + 大圆镜（正对橱窗的打卡区） ----------
-    const vanityProduct = addProduct(createRoundVanity(), 'vanity', 1.08, L.floorY, -1.82, 0,
+    const vanityCenter = [1.08, L.floorY, -1.82];
+    const vanityProduct = addProduct(createVanitySceneModel(), 'vanity', ...vanityCenter, 0,
       '圆形化妆台', '进入妆台，选择彩妆品类。');
-    const mirrorProduct = addProduct(createMirror(), 'round-mirror', 1.08, 1.58, -2.65, 0,
-      '大圆化妆镜', '妆台背景镜。');
 
     const categoryData = [
-      ['foundation', '粉底液', -3.85, 0.78, -0.62, 0.55, -2.3],
-      ['eyeshadow', '眼影', -3.72, 1.025, -2.85, 0.9, -2.35],
-      ['cushion', '气垫', -2.15, 0.72, -1.9, 1.42, -2.33],
-      ['mascara', '睫毛膏', -4.14, 0.645, -2.45, 1.78, -1.96],
-      ['concealer', '遮瑕', -2.82, 0.78, -0.64, 0.55, -1.82],
-      ['blush', '腮红', 2.45, 0.78, -1.6, 1.0, -1.7],
-      ['powder', '散粉', 2.45, 1.025, -2.8, 1.44, -1.74],
-      ['lip', '唇妆', -1.55, 0.72, -1.95, 1.8, -2.2],
+      ['foundation', 'foundation', '粉底液'],
+      ['eyeshadow', 'eyeshadow', '眼影'],
+      ['cushion', 'cushion', '气垫'],
+      ['mascara', 'mascara', '睫毛膏'],
+      ['concealer', 'concealer', '遮瑕'],
+      ['blush', 'blush', '腮红'],
+      ['powder', 'powder', '散粉'],
+      ['lip', 'lipstick', '唇妆'],
     ];
-    const categoryObjects = categoryData.map(([kind, category, x, y, z, targetX, targetZ], index) => {
-      const object = addProduct(createCategoryCosmetic(kind), `category-${kind}`, x, y, z, (index % 2 ? -1 : 1) * 0.12,
+    const categoryObjects = categoryData.map(([kind, modelKind, category], index) => {
+      const [x, y, z] = vanityProductPosition(modelKind, vanityCenter);
+      const object = addProduct(createVanityCosmetic(modelKind), `category-${kind}`, x, y, z, 0,
         category, `查看${category}产品`);
       categoryDisplay.attach(object);
       object.userData.category = category;
-      object.userData.gatherTarget = new THREE.Vector3(targetX, L.floorY + 0.94, targetZ);
-      object.userData.gatherStart = new THREE.Vector3(x, y, z);
+      object.userData.gatherTarget = new THREE.Vector3(x, y, z);
+      object.userData.gatherStart = new THREE.Vector3(
+        [-3.85, -3.7, -2.15, -4.14, -2.82, 2.45, 2.45, -1.55][index],
+        [0.78, 1.025, 0.72, 0.645, 0.78, 0.78, 1.025, 0.72][index],
+        [-0.62, -2.85, -1.9, -2.45, -0.64, -1.6, -2.8, -1.95][index]
+      );
       object.userData.gatherRotation = object.rotation.y;
+      object.userData.startRotation = (index % 2 ? -1 : 1) * (0.16 + index * 0.045);
+      object.position.copy(object.userData.gatherStart);
+      object.rotation.y = object.userData.startRotation;
       object.userData.labelSprite = createCategoryLabel(category);
       object.userData.labelSprite.position.set(0, 0.72, 0);
       object.userData.labelSprite.visible = false;
@@ -3088,7 +3096,7 @@
 
     const staticProductMeshSet = new Set();
     fixtures.children.forEach((child) => {
-      if (child === vanityProduct || child === mirrorProduct || categoryObjects.includes(child)) return;
+      if (child === vanityProduct || categoryObjects.includes(child)) return;
       child.traverse((mesh) => {
         if (mesh.isMesh) {
           mesh.castShadow = false;
@@ -3719,7 +3727,7 @@
         categoryObjects.forEach((object) => {
           object.position.copy(object.userData.gatherStart);
           object.scale.setScalar(1);
-          object.rotation.set(0, object.userData.gatherRotation, 0);
+        object.rotation.set(0, object.userData.startRotation, 0);
         });
         shop.visible = true;
         shop.scale.set(1, 1, 1);
@@ -3839,15 +3847,7 @@
       if (focusPrepared) return;
       focusPrepared = true;
       focusGroup.attach(vanityProduct);
-      focusGroup.attach(mirrorProduct);
       categoryObjects.forEach((object) => focusGroup.attach(object));
-      const rug = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.26, 1.29, 0.035, 64),
-        new THREE.MeshStandardMaterial({ color: 0xecc9bd, roughness: 0.9 })
-      );
-      rug.position.set(1.08, L.floorY + 0.015, -1.82);
-      rug.receiveShadow = true;
-      focusGroup.add(rug);
 
       const movingObjects = [
         ...scene.children.filter((object) => object !== shop && object !== focusGroup && !object.isLight),
@@ -3900,21 +3900,50 @@
 
     function applyCategoryGather(amount) {
       categoryGatherProgress = amount;
-      const eased = smooth(clamp01(amount));
+      const progress = clamp01(amount);
+      const gatherCenter = new THREE.Vector3(vanityCenter[0], 7.1, vanityCenter[2]);
       categoryObjects.forEach((object, index) => {
         const start = object.userData.gatherStart;
         const target = object.userData.gatherTarget;
-        const lift = smooth(clamp01(eased / 0.24));
-        const descend = smooth(clamp01((eased - 0.18) / 0.82));
-        const angle = index * Math.PI * 0.72 + descend * Math.PI * 4.2;
-        const spiralRadius = lift * (1 - descend) * 1.25 + Math.sin(Math.PI * descend) * 0.42;
-        object.position.lerpVectors(start, target, descend);
-        object.position.x += Math.cos(angle) * spiralRadius;
-        object.position.y += lift * (1 - descend) * 4.8 + Math.sin(Math.PI * descend) * 0.82;
-        object.position.z += Math.sin(angle) * spiralRadius;
-        object.rotation.y = object.userData.gatherRotation + (index % 2 ? -1 : 1) * eased * (Math.PI * 1.6 + index * 0.12);
-        object.rotation.x = Math.sin(angle) * eased * 0.22;
-        object.scale.setScalar(1 - eased * 0.04);
+        const phaseOffset = index * Math.PI * 0.25;
+        const orbitAngle = phaseOffset;
+        const orbitPoint = gatherCenter.clone().add(new THREE.Vector3(
+          Math.cos(orbitAngle) * 1.35,
+          Math.sin(orbitAngle * 0.5) * 0.2,
+          Math.sin(orbitAngle) * 1.0
+        ));
+
+        if (progress <= 0.34) {
+          const t = smooth(progress / 0.34);
+          object.position.lerpVectors(start, orbitPoint, t);
+          object.position.y += Math.sin(t * Math.PI) * 1.0;
+        } else if (progress <= 0.66) {
+          const t = (progress - 0.34) / 0.32;
+          const circle = phaseOffset + t * Math.PI * 2;
+          object.position.set(
+            gatherCenter.x + Math.cos(circle) * 1.35,
+            gatherCenter.y + Math.sin(circle * 2) * 0.2,
+            gatherCenter.z + Math.sin(circle) * 1.0
+          );
+        } else {
+          const t = smooth((progress - 0.66) / 0.34);
+          const landingAngle = phaseOffset + (1 - t) * Math.PI * 3;
+          const radius = (1 - t) * 0.65;
+          const spiralPoint = target.clone().add(new THREE.Vector3(
+            Math.cos(landingAngle) * radius,
+            Math.sin(Math.PI * t) * 0.6,
+            Math.sin(landingAngle) * radius
+          ));
+          object.position.lerpVectors(orbitPoint, spiralPoint, t);
+        }
+
+        const spin = progress * Math.PI * 6;
+        object.rotation.set(
+          Math.sin(progress * Math.PI * 2 + phaseOffset) * 0.16,
+          object.userData.startRotation + spin,
+          Math.cos(progress * Math.PI * 2 + phaseOffset) * 0.12
+        );
+        object.scale.setScalar(1);
       });
     }
 

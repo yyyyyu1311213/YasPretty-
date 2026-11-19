@@ -79,6 +79,12 @@ try {
     const frame = page.frameLocator('.beauty-shop-frame')
     await frame.locator('#beautyShop3d canvas').waitFor()
     await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.intro.active === false, { timeout: 30000 })
+    const shopProductLayout = await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.categoryObjects.map((object) => ({
+      distanceFromVanity: object.position.distanceTo(object.userData.gatherTarget),
+      position: object.position.toArray(),
+    })))
+    assert.equal(shopProductLayout.length, 8)
+    assert(shopProductLayout.every((item) => item.distanceFromVanity > 1), `products should be scattered around the shop: ${JSON.stringify(shopProductLayout)}`)
     const brightness = await frame.locator('#beautyShop3d canvas').evaluate((canvas) => {
       const shop = window.BeautyShop
       shop.renderer.render(shop.scene, shop.camera)
@@ -122,11 +128,24 @@ try {
     await page.locator('.beauty-shop-stage[data-stage="vanity"]').waitFor({ timeout: 12000 })
     assert.equal(await page.locator('.beauty-shop-categories button').count(), 8)
     assert.equal(await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.interactiveObjects.length), 8)
-    assert(await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.scene.getObjectByName('diorama-base').position.length() > 5))
+    assert(await frame.locator('#beautyShop3d canvas').evaluate(() => {
+      const scene = window.BeautyShop.scene
+      const vanity = scene.getObjectByName('vanity')
+      const model = vanity?.getObjectByName('vanity-model-scale')
+      const modelParts = ['vanity-diorama-base', 'vanity-rug', 'vanity-table-model', 'vanity-mirror-model', 'vanity-stool', 'vanity-trinket-dish', 'vanity-petals']
+      return Boolean(model && modelParts.every((name) => model.getObjectByName(name)))
+        && window.BeautyShop.categoryObjects.length === 8
+        && window.BeautyShop.categoryObjects.every((item) => item.children.some((child) => child.name.startsWith('vanity-cosmetic-model-')))
+    }))
     await page.screenshot({ path: path.join(output, `${viewport.width}-vanity.png`), animations: 'disabled' })
 
     await page.getByRole('button', { name: '返回店铺' }).click()
     await page.locator('.beauty-shop-stage[data-stage="shop"]').waitFor({ timeout: 12000 })
+    const returnedProducts = await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.categoryObjects.every((object) => (
+      object.position.distanceTo(object.userData.gatherStart) < 0.001
+      && Math.abs(object.rotation.y - object.userData.startRotation) < 0.001
+    )))
+    assert.equal(returnedProducts, true, 'products should return to their original shop positions and rotations')
     assert.equal(await page.locator('.beauty-shop-categories').count(), 0)
     assert.equal(await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.interactiveObjects[0] === window.BeautyShop.shop), true)
 
