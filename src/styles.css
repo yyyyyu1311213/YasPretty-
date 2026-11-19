@@ -296,6 +296,55 @@ h1, h2 { font-family: var(--yp-display); font-weight: 600; }
   .product-profile-toolbar, .product-profile-content { width: calc(100% - 32px); }.product-profile-toolbar { min-height: 52px; gap: 12px; }.product-profile-toolbar > span { flex: 1; max-width: none; font-size: 9px; line-height: 1.4; }.product-profile-hero { display: block; min-height: 0; }.product-profile-media { min-height: 310px; }.product-profile-media img { height: 310px; }.product-profile-heading { padding: 34px 20px 38px; }.product-profile-heading h1 { font-size: 29px; }.profile-summary { font-size: 13px; }.profile-section { padding: 34px 0; }.profile-section-heading h2 { font-size: 21px; }.commerce-ready, .commerce-pending { align-items: flex-start; flex-direction: column; gap: 13px; }.commerce-pending > span { max-width: none; text-align: left; }.parameter-table > div { grid-template-columns: 92px minmax(0, 1fr); gap: 8px 12px; padding: 12px 0; }.parameter-status { grid-column: 2; justify-self: start; }.assessment-grid { grid-template-columns: 1fr; }.assessment-grid > div, .assessment-grid > div + div { min-height: 0; border-right: 0; border-bottom: 1px solid #ddd6cf; padding: 16px 0; }.assessment-grid > div:last-child { border-bottom: 0; }.assessment-grid strong { margin: 8px 0 9px; }.assessment-columns { grid-template-columns: 1fr; gap: 28px; }.assessment-columns > div + div { border-top: 1px solid #ddd6cf; border-left: 0; padding: 28px 0 0; }.evidence-grid { grid-template-columns: 1fr; }.evidence-item { grid-template-columns: 88px minmax(0, 1fr) auto; }.evidence-item img { width: 88px; height: 76px; }.business-evidence-row { grid-template-columns: 1fr; gap: 7px; padding: 14px 0; }.full-profile-action { width: 100%; justify-content: center; margin-right: 0; }
 }
 
+/* Secondary pages use the full viewport as their canvas. */
+.library-page,
+.favorites-page,
+.guide-page,
+.culture-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding-right: clamp(20px, 4vw, 72px);
+  padding-left: clamp(20px, 4vw, 72px);
+  background: var(--yp-paper);
+}
+
+.culture-lead {
+  max-width: min(1400px, 100%);
+}
+
+.app-shell:has(.library-page, .xiaoy-page, .guide-page, .culture-page, .favorites-page) .header-inner {
+  width: 100%;
+  padding-right: clamp(20px, 4vw, 72px);
+  padding-left: clamp(20px, 4vw, 72px);
+}
+
+@media (min-width: 1101px) {
+  .library-layout {
+    grid-template-columns: clamp(212px, 16vw, 270px) minmax(0, 1fr);
+    gap: clamp(32px, 3vw, 56px);
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .library-page,
+  .favorites-page,
+  .guide-page,
+  .culture-page {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .app-shell:has(.library-page, .xiaoy-page, .guide-page, .culture-page, .favorites-page) .header-inner {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;
