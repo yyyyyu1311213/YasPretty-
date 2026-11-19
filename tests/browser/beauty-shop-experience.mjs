@@ -79,6 +79,13 @@ try {
     const frame = page.frameLocator('.beauty-shop-frame')
     await frame.locator('#beautyShop3d canvas').waitFor()
     await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.intro.active === false, { timeout: 30000 })
+    if (viewport.width > viewport.height) {
+      const distance = await frame.locator('canvas').evaluate(() => {
+        const { camera, controls } = window.BeautyShop
+        return camera.position.distanceTo(controls.target)
+      })
+      assert(distance < 24, `initial street camera is too distant: ${distance}`)
+    }
     const shopProductLayout = await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.categoryObjects.map((object) => ({
       distanceFromVanity: object.position.distanceTo(object.userData.gatherTarget),
       position: object.position.toArray(),
@@ -111,6 +118,8 @@ try {
       return { x: (point.x + 1) * canvas.clientWidth / 2, y: (1 - point.y) * canvas.clientHeight / 2 }
     })
     const bounds = await page.locator('.beauty-shop-frame').boundingBox()
+    await page.mouse.move(bounds.x + projected.x, bounds.y + projected.y)
+    await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.shop.scale.x > 1.05)
     await page.mouse.click(bounds.x + projected.x, bounds.y + projected.y)
     await page.locator('.beauty-shop-stage[data-stage="transition"]').waitFor()
     await page.waitForTimeout(850)
@@ -126,6 +135,40 @@ try {
     assert(spiralDescent.y > spiralDescent.startY + 2.5, `category did not descend from above: ${JSON.stringify(spiralDescent)}`)
     await page.screenshot({ path: path.join(output, `${viewport.width}-transition.png`), animations: 'disabled' })
     await page.locator('.beauty-shop-stage[data-stage="vanity"]').waitFor({ timeout: 12000 })
+    const backBox = await page.locator('.beauty-shop-back').boundingBox()
+    const titleBox = await page.locator('.makeup-table-intro-title').boundingBox()
+    assert(backBox.y >= titleBox.y + titleBox.height + 8, 'return button must sit below the title with a gap')
+    const layout = await frame.locator('canvas').evaluate(() => {
+      const { THREE, scene, categoryObjects } = window.BeautyShop
+      scene.updateMatrixWorld(true)
+      const vanity = scene.getObjectByName('vanity')
+      const table = vanity.getObjectByName('vanity-table-model')
+      const center = table.getWorldPosition(new THREE.Vector3())
+      const scale = table.getWorldScale(new THREE.Vector3()).x
+      const surfaceY = center.y + 2.6535 * scale
+      const mirror = new THREE.Box3().setFromObject(vanity.getObjectByName('vanity-mirror-model'))
+      const boxes = categoryObjects.map((root) => {
+        // Measure physical geometry only; labels are billboards, not collision volumes.
+        const model = root.children.find((child) => child.name.startsWith('vanity-cosmetic-model-'))
+        const box = new THREE.Box3().setFromObject(model)
+        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion()))
+        return { category: root.userData.category, box, upright: up.distanceTo(new THREE.Vector3(0, 1, 0)) < .001 }
+      })
+      return boxes.map(({ category, box, upright }, index) => ({
+        category, upright,
+        surfaceGap: box.min.y - surfaceY,
+        onTable: [box.min.x, box.max.x].every((x) => [box.min.z, box.max.z].every((z) => Math.hypot(x - center.x, z - center.z) < 2.49 * scale)),
+        hitsMirror: box.intersectsBox(mirror),
+        overlaps: boxes.slice(index + 1).filter((other) => box.intersectsBox(other.box)).map((other) => other.category),
+      }))
+    })
+    for (const item of layout) {
+      assert(item.upright, `${item.category} did not land upright`)
+      assert(item.surfaceGap >= -.001 && item.surfaceGap < .003, `${item.category} is floating or embedded: ${item.surfaceGap}`)
+      assert(item.onTable, `${item.category} extends beyond the table`)
+      assert.equal(item.hitsMirror, false, `${item.category} intersects the mirror`)
+      assert.deepEqual(item.overlaps, [], `${item.category} intersects another cosmetic`)
+    }
     assert.equal(await page.locator('.beauty-shop-categories button').count(), 8)
     assert.equal(await frame.locator('#beautyShop3d canvas').evaluate(() => window.BeautyShop.interactiveObjects.length), 8)
     assert(await frame.locator('#beautyShop3d canvas').evaluate(() => {

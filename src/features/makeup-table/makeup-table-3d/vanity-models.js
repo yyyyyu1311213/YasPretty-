@@ -516,7 +516,7 @@ function buildEyeshadow() {
   lid.add(mesh(new RoundedBoxGeometry(1.32, .1, .8, 4, .04), materials.cocoa, { position: [0, 0, .4], outline: .0017, outlineColor: 0x221413 }))
   lid.add(mesh(new RoundedBoxGeometry(1.36, .03, .84, 4, .035), materials.champagne, { position: [0, 0, .4] }))
   lid.add(mesh(new THREE.PlaneGeometry(1.02, .48), new THREE.MeshBasicMaterial({ map: compactMirror, toneMapped: false }), { position: [0, -.062, .4], rotation: [Math.PI / 2, 0, 0] }))
-  lid.rotation.x = -2.92
+  lid.rotation.x = -2.05
   group.add(lid)
   group.add(mesh(cylinder(.028, .028, 1.24, 16), materials.gold, { position: [0, .125, -.4], rotation: [0, 0, Math.PI / 2] }))
   return group
@@ -550,14 +550,14 @@ const builders = {
 
 export const VANITY_MODEL_SCALE = .34
 export const VANITY_PRODUCT_LAYOUT = {
-  foundation: [-1.45, 2.655, .72],
-  concealer: [-1.8, 2.655, -.3],
-  blush: [-1.35, 2.655, 1.48],
-  lipstick: [-.1, 2.655, 1.85],
-  cushion: [1.35, 2.655, 1.45],
-  powder: [1.62, 2.655, .32],
-  eyeshadow: [0, 2.655, .12],
-  mascara: [1.78, 2.655, -.72],
+  foundation: [-1.45, 2.655, -.65],
+  concealer: [-1.85, 2.655, .25],
+  blush: [-1.15, 2.655, 1.15],
+  lipstick: [0, 2.655, 1.7],
+  cushion: [1.15, 2.655, 1.15],
+  powder: [1.65, 2.655, .1],
+  eyeshadow: [0, 2.655, .25],
+  mascara: [1.5, 2.655, -.75],
 }
 
 export function createVanitySceneModel() {
@@ -584,7 +584,7 @@ export function createVanityCosmetic(kind) {
   const root = new THREE.Group()
   root.name = `vanity-cosmetic-${kind}`
   group.name = `vanity-cosmetic-model-${kind}`
-  group.scale.setScalar(VANITY_MODEL_SCALE * 1.1)
+  group.scale.setScalar(VANITY_MODEL_SCALE * .9)
   root.add(group)
   return gradeVanityMaterials(root)
 }

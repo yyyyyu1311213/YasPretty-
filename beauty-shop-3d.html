@@ -74,7 +74,7 @@
         near: 0.1,
         far: 160,
         // 斜俯视 45° 方位：一次看全整个沙盘，底座前侧与右侧可见
-        position: new THREE.Vector3(15.5, 12.9, 15.5),
+        position: new THREE.Vector3(13.485, 11.3166, 13.5305),
         target: new THREE.Vector3(0, 0.72, 0.35),
       },
       maxPixelRatio: 1.25,
@@ -3846,6 +3846,10 @@
     function prepareFocus() {
       if (focusPrepared) return;
       focusPrepared = true;
+      // Detach from the neutral shop transform, not its temporary hover enlargement.
+      shop.scale.setScalar(1);
+      shop.position.y = 0;
+      shop.updateMatrixWorld(true);
       focusGroup.attach(vanityProduct);
       categoryObjects.forEach((object) => focusGroup.attach(object));
 
@@ -3937,11 +3941,14 @@
           object.position.lerpVectors(orbitPoint, spiralPoint, t);
         }
 
+        // Keep the flight spin, but land upright at the table's intended orientation.
+        const settling = smooth(clamp01((progress - 0.66) / 0.34));
+        const wobble = Math.sin(progress * Math.PI);
         const spin = progress * Math.PI * 6;
         object.rotation.set(
-          Math.sin(progress * Math.PI * 2 + phaseOffset) * 0.16,
-          object.userData.startRotation + spin,
-          Math.cos(progress * Math.PI * 2 + phaseOffset) * 0.12
+          Math.sin(progress * Math.PI * 2 + phaseOffset) * 0.16 * wobble,
+          THREE.MathUtils.lerp(object.userData.startRotation, object.userData.gatherRotation, settling) + spin,
+          Math.cos(progress * Math.PI * 2 + phaseOffset) * 0.12 * wobble
         );
         object.scale.setScalar(1);
       });
