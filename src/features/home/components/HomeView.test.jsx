@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Suspense } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { products, quickFilters } from '../../../data/products'
-import ProductCard from '../../catalog/components/ProductCard'
+import { categoryOptions, products, quickFilters } from '../../../data/products'
 import HomeView from './HomeView'
 
 // Inspect actual React elements/callbacks. Lifecycle and DOM behavior run in Playwright.
@@ -14,7 +13,7 @@ vi.mock('react', async (original) => ({
 vi.mock('../../../components/visual/ScrollFloat', () => ({ default: ({ as: Tag = 'h2', containerClassName, children }) => <Tag className={containerClassName}>{children}</Tag> }))
 vi.mock('../../../components/visual/StrokeText', () => ({ default: ({ text, className }) => <span className={className}>{text}</span> }))
 vi.mock('../../makeup-table/components/MakeupTableExperience', () => ({ default: () => null }))
-vi.mock('../../../components/visual/FlexCarousel', () => ({ default: () => null }))
+vi.mock('./FeaturedShowcase', () => ({ default: () => null }))
 
 function* nodes(value) {
   if (Array.isArray(value)) { for (const child of value) yield* nodes(child); return }
@@ -37,7 +36,7 @@ const props = () => ({
   onOpenProduct: vi.fn(), onViewCategory: vi.fn(),
   onFavorite: vi.fn(), onRemoveFavorite: vi.fn(),
 })
-const featured = [...products].sort((a, b) => b.rating - a.rating).slice(0, 12)
+const featured = categoryOptions.map((category) => products.filter((product) => product.category === category).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0]).filter(Boolean)
 beforeEach(() => { draft.value = ''; draft.set.mockClear() })
 
 describe('home composition', () => {
@@ -47,6 +46,12 @@ describe('home composition', () => {
     expect(p.onNavigate).toHaveBeenCalledExactlyOnceWith('assistant')
     expect(byClass(tree, 'home-motion-stage')).toBe(tree)
     expect(find(tree, (n) => n.type === 'input').props.value).toBe('')
+    const children = tree.props.children
+    expect(children[0].props.className).toBe('makeup-table-intro-section content-section')
+    expect(children[1].type).toBe(Suspense)
+    expect(children[2].type).toBe(Boundary)
+    expect(children[3].props.className).toBe('story-closing')
+    expect(children[4].props.className).toContain('home-hero')
   })
 
   it('updates the local draft and submits the exact value without normalizing it', () => {
@@ -63,7 +68,7 @@ describe('home composition', () => {
     expect(find(tree, (n) => n.type === 'input').props.value).toBe(' nArS ')
   })
 
-  it('passes all six original quick-filter queries and the empty library search', () => {
+  it('keeps all six original quick-filter queries', () => {
     const p = props(), tree = HomeView(p)
     const buttons = byClass(tree, 'quick-links hero-motion-control').props.children
     expect(buttons.map((n) => n.props.children)).toEqual(quickFilters.map((f) => f.label))
@@ -71,23 +76,25 @@ describe('home composition', () => {
       button.props.onClick()
       expect(p.onQuickFilter.mock.calls[i][0]).toBe(quickFilters[i].query)
     })
-    byClass(tree, 'text-action').props.onClick()
-    expect(p.onSearch).toHaveBeenCalledExactlyOnceWith('')
   })
 
-  it('reuses the real ProductCard, original product objects/order and shared collection callbacks', () => {
+  it('selects a real, highest-rated product from each available makeup category', () => {
     const p = props(), tree = HomeView(p)
-    const cards = byClass(tree, 'product-grid featured-grid').props.children
-    expect(cards).toHaveLength(12)
-    expect(cards.map((n) => n.key)).toEqual(featured.map((item) => item.id))
-    cards.forEach((card, i) => {
-      expect(card.type).toBe(ProductCard)
-      expect(card.props.product).toBe(featured[i])
-      expect(card.props.collection).toBe(p.collection)
-      expect(card.props.onOpen).toBe(p.onOpenProduct)
-      expect(card.props.onFavorite).toBe(p.onFavorite)
-      expect(card.props.onRemoveFavorite).toBe(p.onRemoveFavorite)
+    const boundary = find(tree, (n) => n.type === Boundary)
+    const suspense = boundary.props.children
+    const showcase = suspense.props.children
+    expect(suspense.type).toBe(Suspense)
+    expect(showcase.type.$$typeof).toBe(Symbol.for('react.lazy'))
+    expect(showcase.props.products).toHaveLength(categoryOptions.length)
+    expect(showcase.props.products.map((item) => item.category)).toEqual(categoryOptions)
+    showcase.props.products.forEach((product, index) => {
+      const candidates = products.filter((item) => item.category === categoryOptions[index]).sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      expect(product).toBe(candidates[0])
     })
+    expect(showcase.props.collection).toBe(p.collection)
+    expect(showcase.props.onOpenProduct).toBe(p.onOpenProduct)
+    expect(showcase.props.onFavorite).toBe(p.onFavorite)
+    expect(showcase.props.onRemoveFavorite).toBe(p.onRemoveFavorite)
   })
 
   it('keeps the opening gate, lazy table placeholder and existing category/product connections', () => {
@@ -104,25 +111,20 @@ describe('home composition', () => {
     expect(find(ready, (n) => n.type === table.type).props.openingReady).toBe(true)
   })
 
-  it('keeps the same static fallback in the supplied error boundary, Suspense and carousel', () => {
+  it('keeps the showcase inside the supplied error boundary and lazy fallback', () => {
     const p = props(), tree = HomeView({ ...p, openingReady: true })
     const boundary = find(tree, (n) => n.type === Boundary)
-    const suspense = boundary.props.children, carousel = suspense.props.children
+    const suspense = boundary.props.children, showcase = suspense.props.children
     expect(suspense.type).toBe(Suspense)
-    expect(suspense.props.fallback).toBe(boundary.props.fallback)
-    expect(carousel.props.fallback).toBe(boundary.props.fallback)
-    expect(carousel.type.$$typeof).toBe(Symbol.for('react.lazy'))
-    expect(carousel.props.items).toEqual(featured.map((item) => ({ id: item.id, src: item.image, alt: `${item.brand} ${item.name} 产品图`, title: item.name, subtitle: `${item.brand} · ${item.category}` })))
-    expect(carousel.props).toMatchObject({ preset: 'ribbon', intro: 'rise', fit: 'portrait', cardHeight: 0.58, gap: 16, squeeze: 0.08, focusOnClick: true, captions: true, autoplay: true, interval: 3.1 })
-    carousel.props.onSelect(0, { id: featured[0].id })
-    expect(p.onOpenProduct).toHaveBeenCalledExactlyOnceWith(featured[0])
-    for (const item of [undefined, {}, { id: 'unknown' }, { id: 123 }]) carousel.props.onSelect(0, item)
-    expect(p.onOpenProduct).toHaveBeenCalledOnce()
+    expect(suspense.props.fallback.props['aria-label']).toBe('正在准备编辑精选')
+    expect(boundary.props.fallback.props['aria-label']).toBe('编辑精选暂不可用')
+    expect(showcase.type.$$typeof).toBe(Symbol.for('react.lazy'))
+    expect(showcase.props.products).toEqual(featured)
   })
 
   it('preserves visible copy, responsive media paths and closing text in static markup', () => {
     const markup = renderToStaticMarkup(HomeView(props()))
-    for (const text of ['甄选好物，', '找到适配你的美', '创建我的妆容方案', '编辑精选', 'You are so pretty']) expect(markup).toContain(text)
+    for (const text of ['甄选好物，', '找到适配你的美', '创建我的妆容方案', 'You are so pretty', '正在准备编辑精选']) expect(markup).toContain(text)
     expect(markup).toContain('media="(max-width: 680px)"')
     expect(markup).toContain('/assets/logo/hero/hero-mobile.jpg')
     expect(markup).toContain('/assets/logo/hero/hero-desktop.jpg')

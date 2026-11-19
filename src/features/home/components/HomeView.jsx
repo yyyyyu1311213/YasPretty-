@@ -1,27 +1,21 @@
 import { lazy, Suspense, useState } from 'react'
 import { ChevronRight, Search } from 'lucide-react'
-import { quickFilters } from '../../../data/products'
-import { getCatalogProducts, productById } from '../../catalog/catalogService'
-import ProductCard from '../../catalog/components/ProductCard'
+import { categoryOptions, quickFilters } from '../../../data/products'
+import { getCatalogProducts } from '../../catalog/catalogService'
 import StrokeText from '../../../components/visual/StrokeText'
 import './HomeView.css'
 
 const MakeupTableExperience = lazy(() => import('../../makeup-table/components/MakeupTableExperience'))
-const FlexCarousel = lazy(() => import('../../../components/visual/FlexCarousel'))
+const FeaturedShowcase = lazy(() => import('./FeaturedShowcase'))
 const products = getCatalogProducts()
 
 // App supplies its existing error boundary until the ARCH-10 app migration.
 export default function HomeView({ EnhancementBoundary, openingReady, onSearch, onQuickFilter, onViewCategory, onNavigate, onOpenProduct, collection, onFavorite, onRemoveFavorite }) {
   const [keyword, setKeyword] = useState('')
-  const featured = [...products].sort((a, b) => b.rating - a.rating).slice(0, 12)
-  const featuredItems = featured.map((product) => ({
-    id: product.id,
-    src: product.image,
-    alt: `${product.brand} ${product.name} 产品图`,
-    title: product.name,
-    subtitle: `${product.brand} · ${product.category}`,
-  }))
-  const staticFeatured = <div className="product-grid featured-grid">{featured.map((product) => <ProductCard key={product.id} product={product} collection={collection} onOpen={onOpenProduct} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} />)}</div>
+  const featured = categoryOptions.map((category) => [...products]
+    .filter((product) => product.category === category)
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))[0])
+    .filter(Boolean)
   return (
     <div className={`home-motion-stage${openingReady ? ' is-ready' : ''}`}>
       <section className="makeup-table-intro-section content-section" aria-labelledby="makeup-table-intro-title">
@@ -30,6 +24,30 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
       <Suspense fallback={<div className="makeup-table-lazy-placeholder" aria-label="正在准备交互式化妆桌" />}>
         <MakeupTableExperience openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
       </Suspense>
+      <EnhancementBoundary fallback={<div className="featured-showcase-placeholder" aria-label="编辑精选暂不可用" />}>
+        <Suspense fallback={<div className="featured-showcase-placeholder" aria-label="正在准备编辑精选" />}>
+          <FeaturedShowcase products={featured} collection={collection} onOpenProduct={onOpenProduct} onFavorite={onFavorite} onRemoveFavorite={onRemoveFavorite} />
+        </Suspense>
+      </EnhancementBoundary>
+      <section className="story-closing" aria-label="You are so pretty">
+        <StrokeText
+          text="You are so pretty"
+          trigger="view"
+          strokeColor="var(--yp-rose-deep)"
+          fillColor="var(--yp-rose-deep)"
+          strokeWidth={1.8}
+          drawDuration={1.6}
+          fillDelay={0.15}
+          stagger={0.04}
+          ease="power2.out"
+          fontSize={72}
+          fontWeight={700}
+          fontFamily="'Segoe Script', 'Snell Roundhand', 'Brush Script MT', cursive"
+          fontStyle="italic"
+          letterSpacing={-1}
+          className="story-closing-text"
+        />
+      </section>
       <section className={`home-hero${openingReady ? ' home-hero--ready' : ''}`}>
         <div className={`hero-media${openingReady ? ' hero-media--ready' : ''}`} aria-hidden="true">
           <picture>
@@ -53,36 +71,6 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
             {quickFilters.map((filter) => <button key={filter.label} onClick={() => onQuickFilter(filter.query)}>{filter.label}</button>)}
           </div>
         </div>
-      </section>
-      <section className="content-section home-selection">
-        <div className="section-heading">
-          <div><h2 className="featured-heading">编辑精选</h2></div>
-          <button className="text-action" onClick={() => onSearch('')}>查看产品库 <ChevronRight size={16} /></button>
-        </div>
-        {openingReady ? <EnhancementBoundary fallback={staticFeatured}>
-          <Suspense fallback={staticFeatured}>
-            <FlexCarousel items={featuredItems} preset="ribbon" intro="rise" fit="portrait" cardHeight={0.58} gap={16} squeeze={0.08} focusOnClick captions autoplay interval={3.1} fallback={staticFeatured} onSelect={(_, item) => { const product = productById(item?.id); if (product) onOpenProduct(product) }} />
-          </Suspense>
-        </EnhancementBoundary> : staticFeatured}
-      </section>
-      <section className="story-closing" aria-label="You are so pretty">
-        <StrokeText
-          text="You are so pretty"
-          trigger="view"
-          strokeColor="var(--yp-rose-deep)"
-          fillColor="var(--yp-rose-deep)"
-          strokeWidth={1.8}
-          drawDuration={1.6}
-          fillDelay={0.15}
-          stagger={0.04}
-          ease="power2.out"
-          fontSize={72}
-          fontWeight={700}
-          fontFamily="'Segoe Script', 'Snell Roundhand', 'Brush Script MT', cursive"
-          fontStyle="italic"
-          letterSpacing={-1}
-          className="story-closing-text"
-        />
       </section>
     </div>
   )
