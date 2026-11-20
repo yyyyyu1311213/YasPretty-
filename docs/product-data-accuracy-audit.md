@@ -1203,3 +1203,23 @@ README、迁移计划和两份累计记录已同步；视频/比赛材料、AGEN
 - 全量测试 353/353 通过，生产构建成功；Edge 1440px/360px 资料页截图在 `.qa/profile-copy-visuals/`。
 - 目录浏览器回归 15/16，唯一失败为既有 `favicon.svg net::ERR_ABORTED`；未修改断言规避。
 - 剩余风险：品类级文案可能无法体现单品差异；对外材料不得表述为产品已验证、已适配或具有功效保证。
+
+## 2026-11-20（北京时间）YAS-2026-0062：36–111 事实与推荐状态按项目负责人确认对齐前 35 款
+
+### 变更依据
+
+- 项目负责人明确说明人工核验表已完成，并要求把 36–111 的状态改为与前 35 款一致。
+- 本次只对齐已有记录的状态字段，不新增价格、色号、功效、评分、链接或授权证据。
+
+### 数据状态
+
+- `src/data/product-expansion.js`：36–111 的 `factVerificationStatus` 由 `pending` 改为 `verified`，`recommendationReady` 由 `false` 改为 `true`；`verificationStatus` 保持 `pending`，`shadeRecommendationReady` 保持 `false`。
+- `reviewedFacts.reviewStatus` 与 `commerce.status` 按人工核验表已完成状态对齐为 `verified`；序号 37、41 的身份/版本冲突继续保留 `identity_conflict`，不随本次调整升级。
+- `recommendationReview.decision` 由 `remain_blocked` 改为 `verified_manual`，推荐开放依据人工核验表与参数截图；2026-11-20 在线复核仍未取得合格直接页面，未生成编辑评分。
+- 图片 `authorizationStatus` 继续为 `pending`，公开策略仍为来源披露、授权待核验；评分继续为 `null`，metrics 为空。
+
+### 验证与剩余风险
+
+- `npm test`：42 个测试文件、362/362 项通过；`npm run build` 通过；`git diff --check` 无输出。
+- 适用肤质、遮瑕、持妆、氧化、色号适配和独立实测仍无核验证据；推荐与回答只能按已记录的品牌、品类、规格、价格和参数原文表达，不得表述为“已适配”或“实测推荐”。
+- 本次修改处于工作树，提交 SHA 待本次提交后回填。

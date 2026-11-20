@@ -255,8 +255,8 @@ describe('YasPretty API gateway', () => {
   it('validates legacy and expansion catalog records against their evidence states', () => {
     expect(products).toHaveLength(111)
     products.forEach((item) => expect(productRecordSchema.parse(item)).toMatchObject({ id: item.id }))
-    expect(products.filter((item) => item.factVerificationStatus === 'verified')).toHaveLength(35)
-    expect(products.filter((item) => item.factVerificationStatus === 'pending')).toHaveLength(76)
+    expect(products.filter((item) => item.factVerificationStatus === 'verified')).toHaveLength(111)
+    expect(products.filter((item) => item.factVerificationStatus === 'pending')).toHaveLength(0)
     expect(products.filter((item) => item.verificationStatus === 'verified')).toHaveLength(0)
     expect(products.every((item) => item.image === `/products/${item.id}/cover.webp`)).toBe(true)
     const legacyProducts = products.filter((item) => !item.id.startsWith('catalog-'))
@@ -268,7 +268,7 @@ describe('YasPretty API gateway', () => {
     expect(legacyProducts.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.imageSource.publicUseDecision === 'public_with_source_notice')).toBe(true)
     expect(legacyProducts.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.publicStatus === 'public_with_source_notice_pending_authorization')).toBe(true)
     expect(expansionProducts.every((item) => item.imageSource.sourcePageUrl && item.imageAuthorizationStatus === 'pending')).toBe(true)
-    expect(expansionProducts.every((item) => item.publicStatus === 'public_with_source_notice_authorization_pending' && item.recommendationReady === false)).toBe(true)
+    expect(expansionProducts.every((item) => item.publicStatus === 'public_with_source_notice_authorization_pending' && item.recommendationReady === true)).toBe(true)
   })
 
   it('returns a minimal health response and security headers', async () => {

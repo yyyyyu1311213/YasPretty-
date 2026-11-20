@@ -40,7 +40,7 @@ describe('小Y业务请求', () => {
   })
 
   it('filters ineligible product cards from online recommendations but not product facts', async () => {
-    const pending = products.find((product) => product.id === 'catalog-111')
+    const pending = products.find((product) => product.recommendationReady === false)
     const ready = products.find((product) => product.recommendationReady !== false)
     const answer = `合成回答。\n[[PRODUCT:${pending.id}]]\n[[PRODUCT:${ready.id}]]`
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({

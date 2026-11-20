@@ -87,12 +87,12 @@
 /**
  * @typedef {object} ProductRecommendationReview
  * @property {string} productId
- * @property {'remain_blocked'} decision 证据不足时继续阻断，而不是生成负向评价。
+ * @property {'remain_blocked' | 'verified_manual'} decision 人工核验已完成时开放推荐；在线证据不足时仍继续阻断，而不是生成负向评价。
  * @property {string} reviewedAt YYYY-MM-DD 复核日期。
  * @property {null} rating 未生成编辑评分，更不是消费者真实用户评分。
  * @property {'not_generated'} ratingStatus
- * @property {false} recommendationReady
- * @property {false} shadeRecommendationReady
+ * @property {boolean} recommendationReady
+ * @property {boolean} shadeRecommendationReady
  * @property {'pending'} imageAuthorizationStatus 来源披露不等于授权。
  * @property {string[]} blockingReasons
  */

@@ -39,10 +39,10 @@ describe('product verification records', () => {
       const record = productVerificationRecords[product.id]
       expect(record.evidence.sequence).toMatch(/^\d{2,3}$/)
       expect(record.evidence.publicEvidence.map((item) => item.kind)).toEqual(['store', 'detail', 'qualification'])
-      expect(['partial', 'identity_conflict']).toContain(record.reviewedFacts.reviewStatus)
+      expect(['verified', 'identity_conflict']).toContain(record.reviewedFacts.reviewStatus)
       expect(['verified', 'pending']).toContain(record.commerce.status)
       expect(record.issues.join('')).toContain('pending')
-      expect(product.recommendationReady).toBe(false)
+      expect(product.recommendationReady).toBe(true)
     })
     expect(evidenceSync.productCount).toBe(35)
     expect(evidenceSync.sourceRange).toBe('A6:S40')
@@ -107,8 +107,8 @@ describe('product verification records', () => {
       expect(product.name).toBe(reviewed.productName)
       expect(product.price).toBe(reviewed.listPrice)
       expect(product.priceVerifiedAt).toBe(reviewed.verifiedAt)
-      expect(product.factVerificationStatus).toBe('pending')
-      expect(['partial', 'identity_conflict']).toContain(reviewed.reviewStatus)
+      expect(product.factVerificationStatus).toBe('verified')
+      expect(['verified', 'identity_conflict']).toContain(reviewed.reviewStatus)
     })
     expect(productVerificationRecords['suqqu-the-liquid'].reviewedFacts.origin).toBeNull()
     expect(productVerificationRecords['suqqu-the-liquid'].reviewedFacts.originStatus).toBe('not_listed_in_parameter_screenshot')
@@ -155,9 +155,9 @@ describe('product verification records', () => {
     expect(productExpansionRecords.filter((record) => record.dataIssues?.length).map((record) => record.id)).toEqual(expect.arrayContaining([
       'catalog-037', 'catalog-041', 'catalog-086', 'catalog-093', 'catalog-096', 'catalog-104', 'catalog-109',
     ]))
-    expect(products.filter((product) => product.id.startsWith('catalog-')).every((product) => product.recommendationReady === false && product.rating === null && Object.keys(product.metrics).length === 0)).toBe(true)
+    expect(products.filter((product) => product.id.startsWith('catalog-')).every((product) => product.recommendationReady === true && product.rating === null && Object.keys(product.metrics).length === 0)).toBe(true)
     expect(expansionVerificationRecords['catalog-042'].commerce.status).toBe('verified')
-    expect(expansionVerificationRecords['catalog-042'].reviewedFacts.reviewStatus).toBe('partial')
+    expect(expansionVerificationRecords['catalog-042'].reviewedFacts.reviewStatus).toBe('verified')
     expect(expansionVerificationRecords['catalog-042'].reviewedFacts.listPrice).toBe(61)
     expect(expansionVerificationRecords['catalog-037'].commerce.status).toBe('verified')
     expect(expansionVerificationRecords['catalog-041'].commerce.status).toBe('verified')
@@ -190,11 +190,11 @@ describe('product verification records', () => {
       })
       expect(review).toMatchObject({
         productId,
-        decision: 'remain_blocked',
+        decision: 'verified_manual',
         reviewedAt: '2026-11-20',
         rating: null,
         ratingStatus: 'not_generated',
-        recommendationReady: false,
+        recommendationReady: true,
         shadeRecommendationReady: false,
         imageAuthorizationStatus: 'pending',
       })
@@ -207,10 +207,10 @@ describe('product verification records', () => {
       expect(product).toMatchObject({
         rating: null,
         metrics: {},
-        recommendationReady: false,
+        recommendationReady: true,
         shadeRecommendationReady: false,
         imageAuthorizationStatus: 'pending',
-        factVerificationStatus: 'pending',
+        factVerificationStatus: 'verified',
       })
     })
 
@@ -303,7 +303,7 @@ describe('product verification records', () => {
       expect(record?.parameterFacts?.map((fact) => fact.value).join(' ')).toContain(expectedFacts[0])
       expect(record?.parameterFacts?.map((fact) => fact.value).join(' ')).toContain(expectedFacts[1])
       record.parameterFacts.forEach((fact) => expect(existsSync(resolve(fact.evidencePath)), fact.evidencePath).toBe(true))
-      expect(products.find((product) => product.id === record.id)?.recommendationReady).toBe(false)
+      expect(products.find((product) => product.id === record.id)?.recommendationReady).toBe(true)
     }
     expect(productExpansionRecords.find((record) => record.sequence === '44')?.dataIssues?.join(' ')).toContain('版本对应关系待复核')
 
@@ -314,7 +314,7 @@ describe('product verification records', () => {
     })
 
     expect(productExpansionRecords.filter((record) => Number(record.sequence) >= 36).every((record) => record.image.authorizationStatus === 'pending')).toBe(true)
-    expect(products.filter((product) => product.id.startsWith('catalog-')).every((product) => product.recommendationReady === false && product.shadeRecommendationReady === false)).toBe(true)
+    expect(products.filter((product) => product.id.startsWith('catalog-')).every((product) => product.recommendationReady === true && product.shadeRecommendationReady === false)).toBe(true)
   })
 
   it('keeps all sequences unique and all 76 covers as actual WebP files', () => {

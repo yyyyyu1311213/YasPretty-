@@ -3119,3 +3119,29 @@ node -e "require('dotenv').config=()=>({parsed:{}});const {loadConfig}=require('
 - 品类级文案和参数截图原文复述不代表单品实测；不得表述为“已核验适配”或功效结论。
 - 图片授权仍为 `pending`，未因文案调整改变。
 - 未提交、未推送、未建 tag；基线仍为 `9ca5395a0eb14f8ba5eef764d79326e894a718ba`。
+
+## 2026-11-20（北京时间）YAS-2026-0062 36–111 事实与推荐状态对齐前 35 款（阶段 3 数据状态修正）
+
+### 目的与范围
+
+- 项目负责人确认人工核验表已完成后，把 36–111 的商品事实状态和推荐开关对齐前 35 款，消除“人工核验已完成但程序字段仍为 pending”的不一致。
+- 仅修改状态字段及对应测试、文档；不新增价格、色号、功效、评分、授权或在线复核证据。
+
+### 修改文件
+
+- `src/data/product-expansion.js`：`factVerificationStatus=verified`、`recommendationReady=true`；`reviewedFacts.reviewStatus`、`commerce.status` 对齐人工核验表已完成状态；`recommendationReview.decision=verified_manual`。
+- `src/contracts/product.js`：更新推荐复核结论字段的类型说明。
+- `src/data/product-verification.test.js`、`server/app.test.js`、`src/features/assistant/assistantUtils.test.js`、`src/features/assistant/assistantApi.test.js`：更新状态期望；推荐门禁用例改用仍为 `recommendationReady=false` 的 FENTY 红毯气垫。
+- `README.md`：同步 111 款状态、推荐门禁范围和 362 项测试。
+
+### 验证结果
+
+- `npm test`：42 个测试文件、362/362 通过。
+- `npm run build` 通过；`git diff --check` 无输出。
+
+### 边界与剩余风险
+
+- `verificationStatus` 仍为 `pending`、`shadeRecommendationReady=false`、图片授权 `pending`、评分 `null`。
+- 序号 37、41 的身份/版本冲突、40 的普通店铺、42 的海外旗舰店链接等风险原样保留。
+- 适用肤质、遮瑕、持妆、氧化、色号适配仍待核验；对外材料不得称“已适配”或“实测推荐”。
+- 工作树待提交，提交 SHA/tag 待回填。

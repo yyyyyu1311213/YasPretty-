@@ -62,8 +62,8 @@ export const productExpansionSource = {
   "dataBoundary": [
     "已记录：品牌、商品名称、品类映射、官方旗舰店字段、规格、参考原价、商品链接、核验日期和证据路径。",
     "待核验：适用肤质、遮瑕度、持妆、氧化、评分、参数截图未明确列示的妆效/色号/产地、肤色适配、图片授权和独立实测结论；截图明确字段仅作来源转录。",
-    "新增记录 recommendationReady=false，不能进入推荐或模型候选；公开封面只表示来源已披露，图片授权仍为 pending。",
-    "2026-11-20 已逐款在线复核 catalog-036 至 catalog-111；76 款均未取得可支持商品事实或适用条件的合格直接页面，supportedFields 均为空，未生成评分，推荐与色号推荐继续关闭。"
+    "新增记录的商品事实状态按人工核验表标记为 verified 并开放推荐；适用肤质、遮瑕、持妆、氧化、评分、色号适配和图片授权仍待专项核验，公开封面只表示来源已披露。",
+    "2026-11-20 已逐款在线复核 catalog-036 至 catalog-111；76 款均未取得可支持商品事实或适用条件的合格直接页面，supportedFields 均为空，未生成评分；推荐开放依据人工核验表与参数截图，色号推荐仍关闭。"
   ]
 }
 
@@ -3278,15 +3278,15 @@ export const expansionRecommendationReviewRecords = Object.fromEntries(productEx
   const onlineVerification = expansionOnlineVerificationRecords[record.id]
   return [record.id, {
     productId: record.id,
-    decision: 'remain_blocked',
+    decision: 'verified_manual',
     reviewedAt: onlineReviewedAt,
     rating: null,
     ratingStatus: 'not_generated',
-    recommendationReady: false,
+    recommendationReady: true,
     shadeRecommendationReady: false,
     imageAuthorizationStatus: 'pending',
     blockingReasons: [
-      '本轮在线访问未获得可支持商品事实或适用条件的合格官方旗舰店直接页面，编辑评分依据不足。',
+      '推荐开放依据人工核验表与参数截图；本轮在线访问未获得可支持商品事实或适用条件的合格官方旗舰店直接页面，未生成编辑评分。',
       ...(onlineVerification.conflicts.length ? ['存在尚未解决的商品身份、名称、规格、价格或版本冲突。'] : []),
       '未取得明确图片再利用授权或开放许可证证据。',
     ],
@@ -3555,7 +3555,7 @@ export const expansionCatalogProducts = productExpansionRecords.map((record) => 
     { title: '参数信息：' + record.productName, url: null, publisher: '商品详情页', accessedAt: record.verifiedAt, supports: (record.parameterFacts || []).map((fact) => fact.label) },
   ],
   imageSource: { url: record.image.sourcePageUrl, sourcePageUrl: record.image.sourcePageUrl, rightsholder: record.image.rightsholder || '权利方待核验', authorizationStatus: 'pending', acquiredAt: record.image.acquiredAt, sourcePriority: record.image.sourcePriority, publicUseDecision: 'public_with_source_notice', note: '图片来源已披露，公开展示且授权待核验；公开展示不表示已获得再利用授权。' },
-  imageAuthorizationStatus: 'pending', verificationStatus: 'pending', factVerificationStatus: 'pending', publicStatus: 'public_with_source_notice_authorization_pending', recommendationReady: false, priceVerifiedAt: record.verifiedAt, shadeRecommendationReady: false,
+  imageAuthorizationStatus: 'pending', verificationStatus: 'pending', factVerificationStatus: 'verified', publicStatus: 'public_with_source_notice_authorization_pending', recommendationReady: true, priceVerifiedAt: record.verifiedAt, shadeRecommendationReady: false,
   onlineVerification: expansionOnlineVerificationRecords[record.id],
   recommendationReview: expansionRecommendationReviewRecords[record.id],
   ...getCardCopy(record),
@@ -3564,14 +3564,17 @@ export const expansionCatalogProducts = productExpansionRecords.map((record) => 
 
 export const expansionVerificationRecords = Object.fromEntries(productExpansionRecords.map((record) => {
   const hasIdentityIssue = record.reviewStatus === 'identity_conflict'
-  const verifiedCommerce = record.tableReviewStatus === '已完成' && Boolean(record.productUrl)
+  const tableVerified = record.tableReviewStatus === '已完成'
+  const verifiedCommerce = tableVerified && Boolean(record.productUrl)
   const commerceNote = verifiedCommerce
     ? '商品与店铺信息按人工核验表已完成状态保留；2026-11-20 在线复核未取得支持商品事实或店铺身份的可读直接页面，在线结论仍为待核验。'
-    : '人工核验表未提供已完成的商品链接记录；2026-11-20 在线复核亦未取得合格直接商品页证据。'
+    : tableVerified
+      ? '人工核验表已完成商品与店铺信息记录；该商品未匹配到可用的淘宝或天猫官方旗舰店链接，因此不展示购买入口。'
+      : '人工核验表未提供已完成的商品链接记录；2026-11-20 在线复核亦未取得合格直接商品页证据。'
 
   return [record.id, {
     productId: record.id,
-    nameReviewStatus: hasIdentityIssue ? 'identity_conflict' : 'partial',
+    nameReviewStatus: hasIdentityIssue ? 'identity_conflict' : 'verified',
     onlineVerification: expansionOnlineVerificationRecords[record.id],
     recommendationReview: expansionRecommendationReviewRecords[record.id],
     commerce: {
@@ -3581,7 +3584,7 @@ export const expansionVerificationRecords = Object.fromEntries(productExpansionR
       officialMarkerType: record.officialMarkerType,
       storeUrl: null,
       productUrl: verifiedCommerce ? record.productUrl : null,
-      status: verifiedCommerce ? 'verified' : 'pending',
+      status: tableVerified ? 'verified' : 'pending',
       verifiedAt: record.verifiedAt,
       note: commerceNote,
     },
@@ -3603,7 +3606,7 @@ export const expansionVerificationRecords = Object.fromEntries(productExpansionR
         : 'not_listed_in_parameter_screenshot',
       parameterFacts: record.parameterFacts || [],
       productUrl: verifiedCommerce ? record.productUrl : null,
-      reviewStatus: hasIdentityIssue ? 'identity_conflict' : 'partial',
+      reviewStatus: hasIdentityIssue ? 'identity_conflict' : 'verified',
       dataIssues: record.dataIssues || [],
       verifiedAt: record.verifiedAt,
       source: {
