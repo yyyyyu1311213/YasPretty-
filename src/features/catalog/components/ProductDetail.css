@@ -1,0 +1,72 @@
+/* YAS-2026-0057: every selector is scoped to the two product-detail views. */
+:is(.detail-drawer, .product-profile-page) .detail-scenes .scene-row {
+  gap: 10px;
+  align-items: flex-start;
+}
+:is(.detail-drawer, .product-profile-page) .detail-scenes .scene-row span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  line-height: 1.5;
+}
+:is(.detail-drawer, .product-profile-page) .detail-scenes-note {
+  margin: 14px 0 0;
+  color: #81766f;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.detail-drawer .detail-list { gap: 12px; }
+.detail-drawer .detail-list li { line-height: 1.85; }
+.detail-drawer .facts-grid dd { overflow-wrap: anywhere; }
+:is(.detail-drawer, .product-profile-page) .detail-origin-note {
+  display: block;
+  margin-top: 6px;
+  color: #81766f;
+  font-size: 10px;
+  line-height: 1.7;
+  font-weight: normal;
+}
+.product-profile-page .parameter-table > div { grid-template-columns: 150px minmax(0, 1fr); }
+.product-profile-page .assessment-columns { padding-top: 18px; }
+.product-profile-page .assessment-columns li { line-height: 1.85; }
+:is(.detail-drawer, .product-profile-page) .detail-source-facts {
+  display: grid;
+  gap: 15px;
+  margin: 0;
+}
+:is(.detail-drawer, .product-profile-page) .detail-source-facts > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 16px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+:is(.detail-drawer, .product-profile-page) .detail-source-facts dt { color: #81766f; }
+:is(.detail-drawer, .product-profile-page) .detail-source-facts dd { margin: 0; color: #514a45; overflow-wrap: anywhere; }
+:is(.detail-drawer, .product-profile-page) .product-detail-sources a { color: #76514d; text-underline-offset: 3px; }
+:is(.detail-drawer, .product-profile-page) .product-detail-sources a svg { vertical-align: middle; }
+:is(.detail-drawer, .product-profile-page) .detail-source-notice {
+  margin: 22px 0 0;
+  max-width: 70ch;
+  color: #81766f;
+  font-size: 11px;
+  line-height: 1.9;
+}
+:is(.detail-drawer, .product-profile-page) .detail-source-records {
+  margin-top: 22px;
+  border-top: 1px solid #ded7d0;
+  padding-top: 16px;
+  color: #645c56;
+  font-size: 11px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+:is(.detail-drawer, .product-profile-page) .detail-source-records summary { cursor: pointer; }
+:is(.detail-drawer, .product-profile-page) .detail-source-records p { margin: 12px 0; }
+:is(.detail-drawer, .product-profile-page) .detail-source-records ul { display: grid; gap: 14px; padding: 0; margin: 14px 0 0; list-style: none; }
+:is(.detail-drawer, .product-profile-page) .detail-source-records small { display: block; margin-top: 4px; color: #81766f; }
+@media (max-width: 600px) {
+  .product-profile-page .parameter-table > div { grid-template-columns: 92px minmax(0, 1fr); }
+  :is(.detail-drawer, .product-profile-page) .detail-source-facts > div { grid-template-columns: 90px minmax(0, 1fr); gap: 12px; }
+}

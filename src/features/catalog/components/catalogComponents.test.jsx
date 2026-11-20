@@ -49,7 +49,7 @@ describe('catalog product card', () => {
     expect(props.onRemoveFavorite).not.toHaveBeenCalled()
     const markup = renderToStaticMarkup(tree)
     expect(markup).toContain(product.image)
-    expect(markup).toContain('编辑示例')
+    expect(markup).not.toContain('编辑示例')
     expect(markup).toContain('loading="lazy"')
     expect(markup).not.toContain('shade-dot')
   })
@@ -67,12 +67,21 @@ describe('catalog product card', () => {
     expect([...nodes(failed)].some((n) => n.type === 'img')).toBe(false)
   })
 
-  it('keeps color swatches and the non-rating disclosure for the existing expanded categories', () => {
+  it('keeps color swatches and only the details action in every product footer', () => {
     const item = products.find((p) => p.category === '腮红')
     const markup = renderToStaticMarkup(<ProductCard product={item} collection={{}} {...callbacks()} />)
     expect(markup).toContain('shade-dot')
-    expect(markup).toContain('官网资料，非用户统计')
+    expect(markup).not.toContain('官网资料，非用户统计')
     expect(markup).toContain(item.shades[0].name)
+    for (const entry of products) {
+      const tree = ProductCard({ product: entry, collection: {}, ...callbacks() })
+      const footer = byClass(tree, 'rating-row')
+      expect(footer.props.children.type).toBe('button')
+      expect(footer.props.children.props.style.marginLeft).toBe('auto')
+      const html = renderToStaticMarkup(footer)
+      expect(html).toContain('查看详情')
+      expect(html).not.toMatch(/编辑示例|非用户统计|人工核验|官方旗舰店|<span|lucide-star/)
+    }
   })
 })
 
@@ -140,7 +149,7 @@ describe('catalog profile and drawer', () => {
       expect(card).toContain(item.name.replaceAll('&', '&amp;'))
       for (const markup of [drawer, profile]) {
         expect(markup).toContain('权利人联系删除')
-        expect(markup).toContain('来源已披露、授权待核验')
+        expect(markup).toContain('版权归原权利人所有')
         expect(markup).not.toContain('编辑示例')
         expect(markup).not.toContain('适合 适配方向待核验')
         expect(markup).not.toContain('href="null"')
@@ -213,7 +222,9 @@ describe('catalog profile and drawer', () => {
     expect(find(tree, (n) => n.props?.['data-status-slot'])).toBe(statusControl)
     const markup = renderToStaticMarkup(tree)
     expect(markup).toContain('aria-modal="true"')
-    expect(markup).toContain('非用户统计')
+    expect(markup).not.toContain('编辑示例')
+    expect(markup).not.toContain('class="shade-description"')
+    expect(markup).not.toContain('class="metric-grid"')
     expect(markup).toContain('版权归原权利人所有')
   })
 })
