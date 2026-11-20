@@ -3,6 +3,7 @@ import MobileNavigation from './MobileNavigation'
 
 export default function TopHeader({ activeView, favoriteCount, mobileMenuOpen, onNavigate, onMobileMenu }) {
   const navItems = [
+    { id: 'home', label: '首页' },
     { id: 'assistant', label: '小Y智能选妆' },
     { id: 'library', label: '产品库' },
     { id: 'culture', label: '品牌文化' },
