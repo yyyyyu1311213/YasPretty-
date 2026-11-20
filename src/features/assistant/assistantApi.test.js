@@ -54,6 +54,23 @@ describe('小Y业务请求', () => {
     expect(fact.productIds).toEqual([pending.id, ready.id])
   })
 
+  it('keeps catalog product cards when frontend intent differs from the server product-fact route', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        answer: '花知晓产品回答。\n[[PRODUCT:catalog-107]]',
+        sources: [],
+        answerMode: 'catalog',
+        model: null,
+      }),
+    }))
+
+    const result = await requestAssistant({ text: '花知晓修容盘怎么样', messages: [], profile: {} })
+    expect(result.text).toBe('花知晓产品回答。')
+    expect(result.productIds).toEqual(['catalog-107'])
+  })
+
   it('keeps response defaults and the existing HTTP-success acceptance boundary', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true, status: 200, json: async () => ({ ok: false, answer: '合成回答', sources: null, answerMode: '', model: null }),

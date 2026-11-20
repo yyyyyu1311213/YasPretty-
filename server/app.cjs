@@ -57,6 +57,12 @@ async function loadProducts() {
   return module.products
 }
 
+async function loadProductVerifications() {
+  const moduleUrl = pathToFileURL(path.join(ROOT, 'src', 'data', 'product-verification.js')).href
+  const module = await import(moduleUrl)
+  return module.productVerificationRecords
+}
+
 async function buildApp(options = {}) {
   const config = options.config || loadConfig()
   const logger = options.logger === undefined ? {
@@ -101,6 +107,7 @@ async function buildApp(options = {}) {
   })
 
   const products = options.products || await loadProducts()
+  const productVerifications = options.productVerifications || await loadProductVerifications()
   const zhipuProvider = options.providers?.zhipu || createZhipuProvider({
     apiKey: config.zhipuApiKey,
     model: config.zhipuModel,
@@ -111,7 +118,7 @@ async function buildApp(options = {}) {
   const weatherProvider = options.providers?.weather || createWeatherProvider({
     timeoutMs: Math.min(config.upstreamTimeoutMs, 8000),
   })
-  const assistantService = createAssistantService({ zhipuProvider, weatherProvider, products })
+  const assistantService = createAssistantService({ zhipuProvider, weatherProvider, products, productVerifications })
   const makeupPlanService = createMakeupPlanService({ zhipuProvider, products })
   const dailyQuota = createDailyQuota(config.aiDailyLimit)
 

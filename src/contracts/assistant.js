@@ -48,7 +48,7 @@
  * @property {string} answer API 原文，可能含 [[PRODUCT:id]] 标记；不是 UI 的 text。
  * @property {AssistantSource[]} sources 无来源时为 []。
  * @property {boolean} usedWebSearch 是否使用智谱联网检索；weather 回答可为 false。
- * @property {'model' | 'knowledge' | 'search' | 'weather' | 'clarification'} answerMode
+ * @property {'model' | 'catalog' | 'knowledge' | 'search' | 'weather' | 'clarification'} answerMode
  * @property {string | null} model 非模型回答或无模型名时为 null，不是 UI 处理后的 ''。
  */
 

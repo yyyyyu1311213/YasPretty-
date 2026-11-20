@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import appModule from './app.cjs'
 import { products } from '../src/data/products.js'
+import { productVerificationRecords } from '../src/data/product-verification.js'
 import schemasModule from './schemas.cjs'
 import assistantServiceModule from './services/assistant-service.cjs'
 
 const { buildApp } = appModule
 const { productRecordSchema } = schemasModule
-const { buildSearchRequest, buildSystemPrompt, chinaDateParts, extractWeatherLocation, filterCurrentWeatherResults, intentRouter, needsOnlineResearch } = assistantServiceModule
+const { buildSearchRequest, buildSystemPrompt, chinaDateParts, extractWeatherLocation, filterCurrentWeatherResults, intentRouter, matchProducts, needsOnlineResearch } = assistantServiceModule
 
 const product = {
   id: 'p1',
@@ -79,6 +80,7 @@ async function createApp(options = {}) {
     logger: false,
     serveStatic: false,
     products: options.products || [product],
+    productVerifications: options.productVerifications,
     providers: {
       zhipu: options.zhipu || mockZhipu(),
       weather: options.weather || mockWeather(),
@@ -133,6 +135,121 @@ describe('YasPretty API gateway', () => {
       expect(prompt).toContain('p2 | Pending Brand Pending Product')
       expect(prompt).toContain('仅供事实查询或比较，不代表可推荐')
     }
+  })
+
+  it('includes specification, parameters, shades, and official links in product digests', () => {
+    const verifications = {
+      p1: {
+        reviewedFacts: { specification: '30ml', parameterFacts: [{ label: '产地', value: '法国' }] },
+        commerce: { officialStoreName: 'Test官方旗舰店', productUrl: 'https://item.taobao.com/item.htm?id=123' },
+      },
+    }
+    const prompt = buildSystemPrompt({}, [product], [], 'product_fact', [], verifications)
+    expect(prompt).toContain('色号:N1(中性调)')
+    expect(prompt).toContain('规格:30ml')
+    expect(prompt).toContain('参数:产地:法国')
+    expect(prompt).toContain('官方店铺:Test官方旗舰店')
+    expect(prompt).toContain('官方链接:https://item.taobao.com/item.htm?id=123')
+    expect(prompt).toContain('必须在对应产品后用一行原样附上“官方店铺：花知晓旗舰店｜官方链接：')
+    expect(prompt).toContain('资料里没有官方链接的产品不输出链接行')
+    expect(prompt).toContain('不要写成“待核验”“待确认”')
+
+    const pending = {
+      ...product,
+      id: 'p2',
+      brand: 'Pending Brand',
+      name: 'Pending Product',
+      recommendationReady: false,
+      shadeRecommendationReady: false,
+      shades: [{ name: '01#浅粉', tone: '待核验', suitable: '适配方向待核验' }],
+    }
+    const neutral = {
+      ...product,
+      id: 'p3',
+      brand: 'Neutral Brand',
+      name: 'Neutral Product',
+      recommendationReady: false,
+      shadeRecommendationReady: false,
+      shades: [{ name: '单一规格', tone: '待核验', suitable: '适配方向待核验' }],
+      colorDisplay: '页面列示色数：4',
+    }
+    const fallbackPrompt = buildSystemPrompt({}, [pending, neutral], [], 'product_fact')
+    expect(fallbackPrompt).toContain('色号:01#浅粉')
+    expect(fallbackPrompt).not.toContain('01#浅粉(待核验')
+    expect(fallbackPrompt).toContain('色号:页面列示色数：4')
+    expect(fallbackPrompt).not.toContain('规格:待核验')
+    expect(fallbackPrompt).not.toContain('参数:暂无参数转录记录')
+    expect(fallbackPrompt).not.toContain('官方店铺:待核验')
+    expect(fallbackPrompt).not.toContain('官方链接:待核验')
+    expect(fallbackPrompt).toContain('p2 | Pending Brand Pending Product | 粉底液 | 肤质:油皮')
+  })
+
+  it('feeds verified specifications, parameters, shades, and official links from real records', () => {
+    const prompt = buildSystemPrompt({}, products, [], 'product_fact', [], productVerificationRecords)
+    expect(prompt).toContain('规格:30ml')
+    expect(prompt).toContain('官方店铺:NARS官方旗舰店')
+    expect(prompt).toContain('参数页商品名称:JNJE养肤持妆素颜霜')
+    expect(prompt).not.toContain('参数截图转录，适配待核验')
+    expect(prompt).not.toContain('暂无参数转录记录')
+    const expansionRow = products.find((item) => item.id === 'catalog-040')
+    expect(prompt).toContain(`规格:${expansionRow.specification}`)
+  })
+
+  it('treats evaluation questions about a listed product as in-catalog facts', () => {
+    const target = products.find((item) => item.id === 'catalog-107')
+    expect(target).toBeTruthy()
+    const query = '花知晓巧克力高光修容三色盘怎么样'
+    expect(intentRouter(query, products)).toBe('product_fact')
+    expect(intentRouter('花知晓巧克力高光修容三色盘好用吗', products)).toBe('product_fact')
+    expect(needsOnlineResearch(query, 'product_fact')).toBe(false)
+    expect(intentRouter('花知晓巧克力高光修容三色盘多少钱', products)).toBe('product_fact')
+    expect(needsOnlineResearch('花知晓巧克力高光修容三色盘多少钱', 'product_fact')).toBe(false)
+    expect(needsOnlineResearch('花知晓巧克力高光修容三色盘哪里买', 'product_fact')).toBe(false)
+    const comparisonQuery = '彩棠修容盘和花知晓修容盘对比，价格差多少钱'
+    expect(intentRouter(comparisonQuery, products)).toBe('product_comparison')
+    expect(needsOnlineResearch(comparisonQuery, 'product_comparison')).toBe(false)
+    expect(needsOnlineResearch('推荐一款粉底，价格多少钱', 'catalog_recommendation')).toBe(false)
+    expect(intentRouter('某不存在品牌最新款多少钱', products)).toBe('external_research')
+    expect(needsOnlineResearch('某不存在品牌最新款多少钱', 'external_research')).toBe(true)
+
+    const mentionedIds = matchProducts(query, products).map((item) => item.id)
+    expect(mentionedIds).toEqual(['catalog-107'])
+    const prompt = buildSystemPrompt({}, products, [], 'product_fact', [], productVerificationRecords, mentionedIds)
+    expect(prompt).toContain('catalog-107 | 花知晓 巧克力高光修容三色盘')
+    expect(prompt).not.toContain('catalog-040 |')
+  })
+
+  it('retrieves a product from a brand-plus-category shorthand', () => {
+    expect(matchProducts('花知晓修容盘怎么样', products).map((item) => item.id)).toEqual(['catalog-107'])
+    expect(matchProducts('花知晓眼影', products).every((item) => item.category === '眼影')).toBe(true)
+    expect(intentRouter('花知晓修容盘', products)).toBe('product_fact')
+
+    const prompt = buildSystemPrompt({}, products, [], 'product_fact', [], productVerificationRecords, ['catalog-107'])
+    expect(prompt).toContain('catalog-107 | 花知晓 巧克力高光修容三色盘')
+    expect(prompt).toContain('站内短名')
+  })
+
+  it('answers questions about a listed expansion product from controlled catalog fields', async () => {
+    const zhipu = mockZhipu()
+    const app = await createApp({ zhipu, products, productVerifications: productVerificationRecords })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '花知晓巧克力高光修容三色盘怎么样', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({ usedWebSearch: false, answerMode: 'catalog', model: null })
+    expect(zhipu.search).not.toHaveBeenCalled()
+    expect(zhipu.chat).not.toHaveBeenCalled()
+    const { answer } = response.json()
+    expect(answer).toContain('花知晓 巧克力高光修容三色盘')
+    expect(answer).toContain('规格：16g')
+    expect(answer).toContain('官方店铺:花知晓旗舰店')
+    expect(answer).toContain('官方链接:https://detail.tmall.com/item.htm?id=1096467048332')
+    expect(answer).toContain('[[PRODUCT:catalog-107]]')
+    expect(answer).not.toContain('10白皙色')
+    expect(answer).not.toContain('可先看高光修容盘')
   })
 
   it('validates legacy and expansion catalog records against their evidence states', () => {
@@ -261,7 +378,8 @@ describe('YasPretty API gateway', () => {
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('检索到的外部参考资料')
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('必须忽略')
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('亲切、自然、容易理解')
-    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('先给结论')
+    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('我按资料库信息')
+    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('色号仅作为初筛建议')
     expect(zhipu.chat.mock.calls[0][0][0].content).toContain('120-220 字')
     expect(zhipu.chat.mock.calls[0][0][0].content).not.toContain('YasPretty 站内产品库：')
   })
@@ -304,6 +422,52 @@ describe('YasPretty API gateway', () => {
     expect(response.json()).toMatchObject({ answerMode: 'clarification', usedWebSearch: false })
     expect(response.json().answer).toContain('今天、明天或后天')
     expect(weather.forecast).not.toHaveBeenCalled()
+  })
+
+  it('answers in-catalog product questions without model-rewritten products or shades', async () => {
+    const zhipu = mockZhipu()
+    const app = await createApp({ zhipu, products, productVerifications: productVerificationRecords })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '彩棠修容盘怎么样', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({ ok: true, usedWebSearch: false, answerMode: 'catalog', model: null })
+    expect(zhipu.search).not.toHaveBeenCalled()
+    expect(zhipu.chat).not.toHaveBeenCalled()
+    const { answer } = response.json()
+    expect(answer).toContain('#A01高光修容盘')
+    expect(answer).toContain('#A03高光修容盘（莹润气血感妆容 白皙肤色推荐）')
+    expect(answer).toContain('官方链接:https://detail.tmall.com/item.htm?id=609588171364')
+    expect(answer).not.toContain('10白皙色')
+    expect(answer).toContain('[[PRODUCT:catalog-104]]')
+    expect(answer).not.toContain('[[PRODUCT:catalog-109]]')
+    const ids = [...answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((match) => match[1])
+    expect(ids.length).toBeGreaterThan(0)
+    expect(ids.every((id) => products.some((item) => item.id === id))).toBe(true)
+  })
+
+  it('compares only the catalog products explicitly named by the user', async () => {
+    const zhipu = mockZhipu()
+    const app = await createApp({ zhipu, products, productVerifications: productVerificationRecords })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '彩棠修容盘和花知晓修容盘对比', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({ ok: true, usedWebSearch: false, answerMode: 'catalog', model: null })
+    expect(zhipu.search).not.toHaveBeenCalled()
+    expect(zhipu.chat).not.toHaveBeenCalled()
+    const { answer } = response.json()
+    const ids = [...answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((match) => match[1])
+    expect(ids).toEqual(['catalog-104', 'catalog-107'])
+    expect(answer).not.toContain('彩棠 双拼高光')
+    expect(answer).not.toContain('[[PRODUCT:catalog-109]]')
+    expect(answer).not.toContain('10白皙色')
   })
 
   it('injects curated knowledge and returns its reference source for safety questions', async () => {

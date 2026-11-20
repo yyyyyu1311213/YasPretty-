@@ -68,7 +68,7 @@ const assistantResponseSchema = z.object({
   answer: z.string().trim().min(1).max(20000),
   sources: z.array(sourceSchema).max(8),
   usedWebSearch: z.boolean(),
-  answerMode: z.enum(['model', 'knowledge', 'search', 'weather', 'clarification']),
+  answerMode: z.enum(['model', 'catalog', 'knowledge', 'search', 'weather', 'clarification']),
   model: z.string().trim().min(1).max(80).nullable(),
 }).strict()
 

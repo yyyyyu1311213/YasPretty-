@@ -153,6 +153,7 @@ describe('小Y状态与发送流程', () => {
     [{ sources: [source('web')], answerMode: 'clarification' }, 'web'],
     [{ sources: [source('knowledge')], answerMode: 'clarification' }, 'ready'],
     [{ sources: [source('knowledge')] }, 'knowledge'],
+    [{ sources: [], answerMode: 'catalog' }, 'local'],
     [{ sources: [], answerMode: 'model' }, 'ai'],
   ])('retains source and answerMode precedence for %j', async (response, mode) => {
     vi.mocked(requestAssistant).mockResolvedValue(answer(response))

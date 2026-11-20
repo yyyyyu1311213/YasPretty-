@@ -19,7 +19,7 @@ export async function requestAssistant({ text, messages, profile }) {
   ))
   if (!data?.answer) throw createApiError('智能服务没有返回内容')
   return {
-    ...parseAssistantResult(data.answer, detectIntent(text, profile)),
+    ...parseAssistantResult(data.answer, data.answerMode === 'catalog' ? 'product_fact' : detectIntent(text, profile)),
     sources: data.sources || [],
     answerMode: data.answerMode || 'model',
     model: data.model || '',

@@ -22,15 +22,26 @@ function officialSource(title, url, supports) {
   return { title, url, publisher: title.includes('巴黎欧莱雅') ? '巴黎欧莱雅中国官网' : '兰蔻中国官网', accessedAt: auditDate, supports }
 }
 
+function buildShortName(brand, name) {
+  const cleanBrand = String(brand || '').trim()
+  const cleanName = String(name || '').trim()
+  if (!cleanName) return cleanBrand
+  if (!cleanBrand || cleanName.startsWith(cleanBrand)) return cleanName
+  return `${cleanBrand} ${cleanName}`
+}
+
 function enrichProductRecord(product) {
   const collectedImageSource = productImageSources[product.id]
   const reviewedFacts = reviewedProductFacts[product.id]
   const reviewedShades = reviewedProductShades[product.id]
   const imageSourceHasPage = Boolean(collectedImageSource?.sourcePageUrl)
+  const brand = reviewedFacts?.brand || product.brand
+  const name = reviewedFacts?.productName || product.name
   return {
     ...product,
-    brand: reviewedFacts?.brand || product.brand,
-    name: reviewedFacts?.productName || product.name,
+    brand,
+    name,
+    shortName: product.shortName || buildShortName(brand, name),
     madeIn: reviewedFacts?.origin || product.madeIn,
     price: reviewedFacts?.listPrice ?? product.price,
     priceLabel: reviewedFacts ? `${reviewedFacts.listPrice} 元（参考原价）` : product.priceLabel,
