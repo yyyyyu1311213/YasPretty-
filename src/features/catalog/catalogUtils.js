@@ -10,7 +10,7 @@ export function containsText(product, keyword) {
   if (!keyword) return true
   const needle = keyword.trim().toLowerCase()
   if (!needle) return true
-  const source = [product.brand, product.name, product.category, ...product.shades.flatMap((shade) => Object.values(shade)), ...product.scenes].join(' ').toLowerCase()
+  const source = [product.brand, product.name, product.category, product.colorDisplay, ...product.shades.flatMap((shade) => Object.values(shade)), ...product.scenes].join(' ').toLowerCase()
   return source.includes(needle)
 }
 
@@ -25,18 +25,19 @@ export function productMatches(product, filters) {
   if (filters.regions.length && !filters.regions.includes(product.brandRegion)) return false
   if (filters.price) {
     const [min, max] = filters.price.split('-').map(Number)
+    if (product.price == null) return false
     if (product.price < min || product.price > max) return false
   }
-  if (filters.maxPrice && product.price > filters.maxPrice) return false
+  if (filters.maxPrice && (product.price == null || product.price > filters.maxPrice)) return false
   if (filters.scene && !product.scenes.includes(filters.scene)) return false
   return true
 }
 
 export function sortCatalogProducts(list, sort) {
   return [...list].sort((a, b) => {
-    if (sort === 'rating') return b.rating - a.rating
-    if (sort === 'price-asc') return a.price - b.price
-    if (sort === 'price-desc') return b.price - a.price
-    return b.rating * 10 + b.wear - (a.rating * 10 + a.wear)
+    if (sort === 'rating') return (b.rating ?? -1) - (a.rating ?? -1)
+    if (sort === 'price-asc') return (a.price ?? Number.POSITIVE_INFINITY) - (b.price ?? Number.POSITIVE_INFINITY)
+    if (sort === 'price-desc') return (b.price ?? -1) - (a.price ?? -1)
+    return (b.rating ?? -1) * 10 + (b.wear ?? -1) - ((a.rating ?? -1) * 10 + (a.wear ?? -1))
   })
 }

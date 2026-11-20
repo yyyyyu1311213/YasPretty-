@@ -1,18 +1,17 @@
 // 2026-11-19 产品库扩展导入记录。资料来自人工核验表与图片来源清单；不代表所有产品事实已核验。
+// 2026-11-20 在线复核记录与人工表分层保存；访问受限不能推翻旧证据，也不能升级事实、评分或图片授权。
+
+import { onlineVerificationSnapshot } from './product-online-verification.js'
+import { editorialSampleProfiles } from './product-editorial-samples.js'
+import { productShadeCatalog } from './product-shades.js'
 
 export const productExpansionSource = {
   "importedAt": "2026-11-19",
   "issueId": "YAS-2026-0056",
   "includedSequence": {
-    "from": "46",
-    "to": "111",
-    "count": 66
-  },
-  "excludedSequence": {
     "from": "36",
-    "to": "45",
-    "count": 10,
-    "reason": "底妆/妆前候选，本次按任务要求排除"
+    "to": "111",
+    "count": 76
   },
   "sourceWorkbook": {
     "path": "产品核验信息/YasPretty-111款产品淘宝人工核验表.xlsx",
@@ -23,11 +22,14 @@ export const productExpansionSource = {
   },
   "imageManifest": {
     "path": "YasPretty产品图片/来源清单.csv",
-    "sequenceRange": "46-111",
+    "sequenceRange": "36-111",
     "sha256": "AA91F9A97B874B8C1AC993FE315B0366BD5B80544A5FC8908020328284743F9F",
     "bytes": 94261
   },
   "categoryMapping": {
+    "素颜霜": "素颜霜",
+    "隔离": "隔离",
+    "有色面霜": "有色面霜",
     "眉笔": "眉妆",
     "眉粉": "眉妆",
     "染眉膏": "眉妆",
@@ -40,6 +42,9 @@ export const productExpansionSource = {
     "修容": "修容"
   },
   "categoryCounts": {
+    "素颜霜": 7,
+    "隔离": 2,
+    "有色面霜": 1,
     "眉妆": 10,
     "眼影": 10,
     "眼线": 6,
@@ -50,18 +55,52 @@ export const productExpansionSource = {
   },
   "imageAuthorization": {
     "authorizationStatus": "pending",
-    "allowedUse": "internal_only",
-    "publicCoverImported": false,
-    "count": 66
+    "allowedUse": "public_with_source_notice",
+    "publicCoverImported": true,
+    "count": 76
   },
   "dataBoundary": [
     "已记录：品牌、商品名称、品类映射、官方旗舰店字段、规格、参考原价、商品链接、核验日期和证据路径。",
-    "待核验：适用肤质、妆效、遮瑕度、持妆、氧化、评分、色号/色调、原产地、图片公开授权和独立实测结论。",
-    "新增记录 recommendationReady=false，不能进入推荐或模型候选；图片未复制到 public/products。"
+    "待核验：适用肤质、遮瑕度、持妆、氧化、评分、参数截图未明确列示的妆效/色号/产地、肤色适配、图片授权和独立实测结论；截图明确字段仅作来源转录。",
+    "新增记录 recommendationReady=false，不能进入推荐或模型候选；公开封面只表示来源已披露，图片授权仍为 pending。",
+    "2026-11-20 已逐款在线复核 catalog-036 至 catalog-111；76 款均未取得可支持商品事实或适用条件的合格直接页面，supportedFields 均为空，未生成评分，推荐与色号推荐继续关闭。"
   ]
 }
 
-export const productExpansionRecords = [
+const expansionAdditionalRecords = [
+  {
+    id: 'catalog-036', sequence: '36', brand: '蒂佳婷', productName: '蒂佳婷 V7 素颜霜', officialProductName: 'Brightamin V7 Toning Light Cream（브라이타민 브이세븐 토닝 라이트 크림）', category: '素颜霜', sourceCategory: '素颜霜/隔离', marketplaceTitle: '蒂佳婷小橘灯素颜霜持证美白去黄去暗沉韩系伪素颜', officialStoreName: 'DrJart蒂佳婷官方旗舰店', officialStoreFlag: '是', officialMarkerType: '两者都有', businessEntity: '焕碧贸易（上海）有限公司', specification: '50ml', listPrice: 119, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.com/item.htm?id=539411056701', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/36 DrJart蒂佳婷官方旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/36 焕碧贸易（上海）有限公司（蒂佳婷 V7 素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/36蒂佳婷 V7 素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/36-drjart-v7-蒂佳婷/cover.jpg', sourcePageUrl: 'https://www.drjart.co.kr/product/52295/139480/brightamin/-', originalImageUrl: 'https://aka.doubaocdn.com/l/grbr4BbJRU', sourcePriority: 'brand_official', rightsholder: 'Dr.Jart+（Kolmar Korea）', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 1000, height: 1000, format: 'JPEG', bytes: 49912, note: '品牌韩国官网商品图经转存；白底整罐正面，50mL，新版 Brightamin V7 系列。' }
+  },
+  {
+    id: 'catalog-037', sequence: '37', brand: '薇诺娜', productName: '薇诺娜水光裸肌素颜霜', officialProductName: '水光裸肌素颜霜 50g（MAKEUP Healthy Glam Series，Tone-Up Cream）', category: '素颜霜', sourceCategory: '素颜霜/隔离', marketplaceTitle: '薇诺娜防晒素颜霜 高倍防护保湿乳液妆前乳通勤', officialStoreName: '薇诺娜官方旗舰店', officialStoreFlag: '是', officialMarkerType: '两者都有', businessEntity: '昆明贝泰妮电子商务有限公司', specification: '30g', listPrice: 89, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.com/item.htm?id=1042651484723', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/37 薇诺娜官方旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/37 昆明贝泰妮电子商务有限公司（薇诺娜水光裸肌素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/37薇诺娜水光裸肌素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/37-winona-薇诺娜/cover.jpg', sourcePageUrl: 'https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?origin_type=old_h5&id=3781016515738993438', originalImageUrl: 'https://aka.doubaocdn.com/l/5KrLt3ME9C', sourcePriority: 'retailer', rightsholder: '薇诺娜 Winona（贝泰妮集团）', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 1000, height: 1000, format: 'JPEG', bytes: 33864, note: '品牌白底产品图来自正规零售商品页，未将营销描述当作功效结论。' }
+  },
+  {
+    id: 'catalog-038', sequence: '38', brand: '尔木萄', productName: '尔木萄素颜霜', officialProductName: '柔光焕颜持妆隔离霜（SKIN LIKE TINTED MOISTURIZER）30ml', category: '隔离', sourceCategory: '素颜霜/隔离', marketplaceTitle: '尔木萄隔离霜妆前乳提亮肤色脸部打底持妆保湿素颜霜女学生新手', officialStoreName: 'AMORTALS尔木萄官方旗舰店', officialStoreFlag: '是', officialMarkerType: '两者都有', businessEntity: '安徽端醇电子商务有限公司', specification: '30ml', listPrice: 59, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.com/item.htm?id=624671958461', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/38 AMORTALS尔木萄官方旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/38安徽端醇电子商务有限公司（尔木萄素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/38尔木萄素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/38-amortals-尔木萄/cover.jpg', sourcePageUrl: 'https://m.yami.com/zh/p/soft-light-brightening-makeup-isolation-cream/1023498731', originalImageUrl: 'https://aka.doubaocdn.com/l/YbrmOVuf5u', sourcePriority: 'retailer', rightsholder: '尔木萄 Amortals', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 800, height: 800, format: 'JPEG', bytes: 31350, note: '白底单管图来自跨境零售商商品页，原图放大至 800×800 未增加细节。' }
+  },
+  {
+    id: 'catalog-039', sequence: '39', brand: 'CPB', productName: 'CPB 光采隔离素颜霜', officialProductName: 'Correcting Cream Veil（VOILE CRÈME CORRECTEUR，SPF25 PA++）', category: '隔离', sourceCategory: '隔离/有色面霜', marketplaceTitle: '【星愿成真限定】肌肤之钥CPB长管隔离光凝润采妆前霜底妆遮瑕', officialStoreName: '肌肤之钥官方旗舰店', officialStoreFlag: '是', officialMarkerType: '两者都有', businessEntity: '资生堂（中国）投资有限公司', specification: '37ml', listPrice: 510, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.com/item.htm?id=533073621218', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/39 肌肤之钥官方旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/39 资生堂（中国）投资有限公司（CPB 光采隔离素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/39CPB 光采隔离素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/39-cpb-光采隔离/cover.jpg', sourcePageUrl: 'https://www.cledepeaubeaute.co.uk/products/correcting-cream-veil-10116182302', originalImageUrl: 'https://aka.doubaocdn.com/l/SaA7OUOL8i', sourcePriority: 'brand_official', rightsholder: 'Clé de Peau Beauté（资生堂集团）', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 600, height: 600, format: 'JPEG', bytes: 12627, note: '英国官网商品图，图面标注 SPF25 PA++；长边 600px。' }
+  },
+  {
+    id: 'catalog-040', sequence: '40', brand: 'JNJE', productName: 'JNJE 素颜霜', officialProductName: 'JNJE 光感焕靓素颜霜（包装英文 SKIN-NOURISHING AND LONG-LASTING FOUNDATION CREAM）', category: '素颜霜', sourceCategory: '素颜霜/隔离', marketplaceTitle: 'JNJE光感焕靓素颜霜伪素颜自然不假白清透持妆裸妆学生提亮面部', officialStoreName: 'JNJE品牌店', officialStoreFlag: '否', officialMarkerType: '两者都有', businessEntity: '济南槐荫兰娇尔电子商务中心(个体工商户)', specification: '50g', listPrice: 79, priceNote: '最终价格以结算页实际显示为准', productUrl: null, verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/40 JNJE品牌店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/40 济南槐荫兰娇尔电子商务中心(个体工商户)（JNJE 素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/40JNJE 素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/40-jnje/cover.jpg', sourcePageUrl: 'https://au.world.taobao.com/product/%E9%9D%92%E9%9D%92%E5%90%8C%E6%AC%BE.htm', originalImageUrl: 'https://p26-doubao-search-sign.byteimg.com/labis/image/2036781d4ea3caf37d88c9fd4690cc6c~tplv-be4g95zd3a-image.jpeg', sourcePriority: 'retailer', rightsholder: 'JNJE（第三方淘宝店铺，非官方旗舰店直供）', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 540, height: 1165, format: 'JPEG', bytes: 66263, note: '第三方淘宝店铺素材，非官方旗舰店直供；不得展示购买入口。' }
+  },
+  {
+    id: 'catalog-041', sequence: '41', brand: '丝芙兰', productName: '丝芙兰柠檬籽元气霜', officialProductName: '丝芙兰透亮元气霜（柠檬籽系列，元气霜3.0版 / Glowing tone-up cream）50g', category: '素颜霜', sourceCategory: '素颜霜/隔离', marketplaceTitle: 'Sephora/丝芙兰柠檬籽元气霜身体素颜霜懒人霜脸部遮瑕男女士', officialStoreName: 'SEPHORA丝芙兰官方旗舰店', officialStoreFlag: '是', officialMarkerType: '两者都有', businessEntity: '丝芙兰（上海）化妆品销售有限公司', specification: '50g', listPrice: 169, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.com/item.htm?id=566663437612', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/41 SEPHORA丝芙兰官方旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/41丝芙兰（上海）化妆品销售有限公司（丝芙兰柠檬籽元气霜）.png', detailEvidencePath: '产品核验信息/商品详情页/41丝芙兰柠檬籽元气霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/41-sephora-柠檬籽/cover.jpg', sourcePageUrl: 'https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?origin_type=old_h5&id=3720962734704164918', originalImageUrl: 'https://p3-doubao-search-sign.byteimg.com/ecom-shop-material/lnnpIMza_m_c9639f83f6c1d75fd289bf13ca450dba_sx_47912_www800-800~tplv-be4g95zd3a-image.jpeg', sourcePriority: 'retailer', rightsholder: 'SEPHORA Collection（丝芙兰自有品牌）', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 800, height: 800, format: 'JPEG', bytes: 47912, note: '白底整罐图来自正规零售商品页，图面可见 SEPHORA COLLECTION 与 50g。' }
+  },
+  {
+    id: 'catalog-042', sequence: '42', brand: 'WLAB', productName: 'WLAB 素颜霜', officialProductName: 'WHITE HOLIC QUICK WHITENING CREAM（화이트홀릭 퀵 화이트닝 크림）50ml', category: '素颜霜', sourceCategory: '素颜霜/隔离', marketplaceTitle: 'W.Lab大福留韩国白雪公主亮白素颜霜自然裸妆脸部防晒乳官方正品', officialStoreName: 'W.Lab海外旗舰店', officialStoreFlag: '海外旗舰店', officialMarkerType: '两者都有', businessEntity: 'IBT Korea', specification: '50ml', listPrice: 61, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.hk/hk/item.htm?id=737427257712', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/42 W.Lab海外旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/42 IBT Korea（WLAB 素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/42WLAB 素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/42-wlab/cover.jpg', sourcePageUrl: 'https://www.wlab.co.kr/goods/goods_view.php?goodsNo=1000000031', originalImageUrl: 'https://godomall-storage.cdn-nhncommerce.com/096e440ec232d64e8d790204b2355bf1/goods/1000000031/image/magnify/1000000031_magnify_040.jpg', sourcePriority: 'brand_official', rightsholder: 'W.Lab（주식회사 아이비티코리아 / IBT Korea）', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 1800, height: 2225, format: 'JPEG', bytes: 436526, note: '韩国品牌官网商品页主图，浅米灰背景带倒影。' }
+  },
+  {
+    id: 'catalog-043', sequence: '43', brand: '宝玑米', productName: '宝玑米素颜霜', officialProductName: 'PULJIM宝玑米沁透防晒素颜霜 柔雾紫 100g', category: '素颜霜', sourceCategory: '素颜霜/隔离', marketplaceTitle: '宝玑米身体素颜霜面部全身防晒隔离遮瑕三合一提亮防水防汗学生党', officialStoreName: 'puljim宝玑米旗舰店', officialStoreFlag: '是', officialMarkerType: '两者都有', businessEntity: '安徽宝玑米电子商务有限公司', specification: '100g', listPrice: 59, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.com/item.htm?id=708417867826', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/43 puljim宝玑米旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/43 安徽宝玑米电子商务有限公司 （宝玑米素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/43宝玑米素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/43-baojimi-宝玑米/cover.jpg', sourcePageUrl: 'https://beaut.taobao.com/topic/geli_2/18cda0801cdf98816dcc281b0ef02f52.html', originalImageUrl: 'https://img.alicdn.com/imgextra/i3/595376039/O1CN0100q1Kp1uTuzAJQyFj_!!595376039.jpg', sourcePriority: 'retailer', rightsholder: 'PULJIM宝玑米', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 1440, height: 1440, format: 'JPEG', bytes: 60821, note: '淘宝美妆频道商品图，图面可见柔雾紫版本；非品牌官网直采。' }
+  },
+  {
+    id: 'catalog-044', sequence: '44', brand: '卡姿兰', productName: '卡姿兰素颜霜', officialProductName: '卡姿兰明星素颜霜（水润版）All-star Tone Up Cream 50g', category: '素颜霜', sourceCategory: '素颜霜/隔离', marketplaceTitle: '卡姿兰明星素颜霜脸部自然提亮肤色裸妆懒人霜女养肤面霜隔离干皮', officialStoreName: '卡姿兰官方旗舰店', officialStoreFlag: '是', officialMarkerType: '两者都有', businessEntity: '芜湖华穗贸易有限公司', specification: '50g', listPrice: 87, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.com/item.htm?id=539413113746', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/44 卡姿兰官方旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/44芜湖华穗贸易有限公司（卡姿兰素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/44卡姿兰素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/44-carslan-卡姿兰/cover.png', sourcePageUrl: 'http://www.carslan.com.cn/qita/83', originalImageUrl: 'http://www.carslan.com.cn/uploads/upload/images/20241220/6f28835bdbe2f7582e1aa6952c92a921.png', sourcePriority: 'brand_official', rightsholder: 'Carslan 卡姿兰', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 734, height: 790, format: 'PNG', bytes: 88065, note: '卡姿兰官网产品页主图，水润版；图面记录为 01 水润雪肌。' }
+  },
+  {
+    id: 'catalog-045', sequence: '45', brand: 'NARS', productName: 'NARS 有色素颜霜', officialProductName: 'Pure Radiant Tinted Moisturizer SPF 30/PA+++（色号 Mykonos M0 中性调 Medium 0）', category: '有色面霜', sourceCategory: '有色面霜', marketplaceTitle: 'NARS大白隔离妆前提亮保湿水润服贴防晒素颜霜', officialStoreName: 'NARS官方旗舰店', officialStoreFlag: '是', officialMarkerType: '两者都有', businessEntity: '资生堂（中国）投资有限公司', specification: '30ml', listPrice: 365, priceNote: '最终价格以结算页实际显示为准', productUrl: 'https://detail.tmall.com/item.htm?id=861967549487', verifiedAt: '2026-11-17', reviewStatus: '已完成', storeEvidencePath: '产品核验信息/店铺首页截图/45 NARS官方旗舰店.jpg', qualificationEvidencePath: '产品核验信息/企业工商资质/45资生堂（中国）投资有限公司（NARS 有色素颜霜）.png', detailEvidencePath: '产品核验信息/商品详情页/45NARS 有色素颜霜', image: { localPath: 'YasPretty产品图片/素颜霜图片/素颜霜官方图片/45-nars/cover.jpg', sourcePageUrl: 'https://www.narscosmetics.eu/en/pure-radiant-tinted-moisturiser-spf-30-pa/0194251013336.html', originalImageUrl: 'https://www.narscosmetics.eu/dw/image/v2/BCMQ_PRD/on/demandware.static/-/Sites-itemmaster_NARS/default/dwee0d8792/hi-res/PRTM21/MYKONOS.jpg?sw=1000&sh=1000&sm=fit', sourcePriority: 'brand_official', rightsholder: 'NARS Cosmetics', authorizationStatus: 'pending', allowedUse: 'public_with_source_notice', acquiredAt: '2026-11-18', width: 1000, height: 1000, format: 'JPEG', bytes: 45993, note: 'NARS 欧洲站产品页主图，记录 Mykonos M0、SPF30/PA+++ 与 50ml。' }
+  },
+]
+
+const existingExpansionRecords = [
   {
     "id": "catalog-046",
     "sequence": "46",
@@ -2572,24 +2611,1049 @@ export const productExpansionRecords = [
   }
 ]
 
-const pendingShade = (sequence) => ({ name: '色号待核验', tone: '待核验', lightness: '待核验', suitable: '参数截图未列出', sourceLabel: '序号' + sequence + '参数截图未列出', verificationStatus: 'not_listed_in_parameter_screenshot' })
+const expansionRecordCorrections = {
+  'catalog-037': {
+    officialProductName: null,
+    reviewStatus: 'identity_conflict',
+    dataIssues: ['参数截图实际对应“薇诺娜焕亮修颜防晒乳”，并非工作表目标“薇诺娜水光裸肌素颜霜”；截图版本与目标商品存在差异，保留人工核验表规格。'],
+    image: { note: '包装文字可见“薇诺娜 水光裸肌素颜霜 Tone-Up Cream”；图片与产品名称映射来自图片来源清单。参数截图对应焕亮修颜防晒乳，截图版本差异保留说明。' },
+  },
+  'catalog-041': {
+    officialProductName: '丝芙兰元气霜',
+    reviewStatus: 'identity_conflict',
+    dataIssues: ['详情参数截图为第四代盈亮元气霜，工作表目标为柠檬籽元气霜；截图版本差异保留说明，商品规格按人工核验表展示。'],
+    image: { note: '图片来源记录及工作表商品名指向柠檬籽元气霜；详情参数截图显示第四代盈亮元气霜和多规格变体，版本与规格待复核。' },
+  },
+  'catalog-042': {
+    officialProductName: 'WHITE HOLIC QUICK WHITENING CREAM（화이트홀릭 퀵 화이트닝 크림）',
+    parameterFacts: [{ label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/42WLAB 素颜霜/参数信息.png' }],
+  },
+  'catalog-040': {
+    parameterFacts: [
+      { label: '参数页商品名称', value: 'JNJE养肤持妆素颜霜', evidencePath: '产品核验信息/商品详情页/40JNJE 素颜霜/参数信息.png' },
+      { label: '截图标示规格', value: '50g（与人工核验表一致）', evidencePath: '产品核验信息/商品详情页/40JNJE 素颜霜/576f593ea43fe1ee66773a46c30b1e12.png' },
+      { label: '商品类别', value: '素颜霜', evidencePath: '产品核验信息/商品详情页/40JNJE 素颜霜/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/40JNJE 素颜霜/参数信息.png' },
+      { label: '商详标注功效文案', value: '自然提亮、均匀肤色、水润保湿、轻盈服帖（仅转录页面文案，不作为功效验证）', evidencePath: '产品核验信息/商品详情页/40JNJE 素颜霜/参数信息.png' },
+    ],
+  },
+  'catalog-043': {
+    officialProductName: 'PULJIM 宝玑米沁透防晒素颜霜',
+    parameterFacts: [
+      { label: '参数页商品名称', value: 'PULJIM宝玑米沁透防晒素颜霜', evidencePath: '产品核验信息/商品详情页/43宝玑米素颜霜/参数信息.png' },
+      { label: '页面列示规格选项', value: '100g、20g、5g；目标商品规格以表格100g为准', evidencePath: '产品核验信息/商品详情页/43宝玑米素颜霜/参数信息.png' },
+      { label: '页面所列颜色名', value: '柔雾紫（仅转录页面选项，不作为肤色适配结论）', evidencePath: '产品核验信息/商品详情页/43宝玑米素颜霜/参数信息.png' },
+      { label: '商详标注类别', value: '素颜霜', evidencePath: '产品核验信息/商品详情页/43宝玑米素颜霜/参数信息.png' },
+      { label: '商详标注功效文案', value: '防晒、保湿（页面宣称，非独立功效验证）', evidencePath: '产品核验信息/商品详情页/43宝玑米素颜霜/参数信息.png' },
+      { label: '商详适用肤色文案', value: '黄皮、黑黄皮及肤色不均匀（仅页面原文，不作为适配结论）', evidencePath: '产品核验信息/商品详情页/43宝玑米素颜霜/参数信息.png' },
+    ],
+  },
+  'catalog-044': {
+    parameterFacts: [
+      { label: '参数页商品名称', value: '卡姿兰明星素颜霜01、02', evidencePath: '产品核验信息/商品详情页/44卡姿兰素颜霜/参数信息.png' },
+      { label: '截图标示净含量', value: '50g（与人工核验表一致）', evidencePath: '产品核验信息/商品详情页/44卡姿兰素颜霜/参数信息.png' },
+      { label: '商详标示保质期', value: '3年', evidencePath: '产品核验信息/商品详情页/44卡姿兰素颜霜/参数信息.png' },
+      { label: '商详标示储存提示', value: '干燥阴凉处存放，避免阳光直射', evidencePath: '产品核验信息/商品详情页/44卡姿兰素颜霜/参数信息.png' },
+    ],
+    dataIssues: ['参数截图同时列示明星素颜霜01、02，但未明确人工核验表目标对应的具体版本；规格按表格50g记录，版本对应关系待复核。'],
+  },
+  'catalog-045': {
+    officialProductName: 'NARS 流光美肌润色妆前乳（Pure Radiant Tinted Moisturizer SPF 30/PA+++）',
+    parameterFacts: [{ label: '防晒标识', value: 'SPF30/PA+++', evidencePath: '产品核验信息/商品详情页/45NARS 有色素颜霜/参数信息.png' }],
+    image: { note: 'NARS 欧洲站产品图；详情截图支持 NARS 流光美肌润色妆前乳、30ml，并显示 SPF30/PA+++。来源图片具体色号不作为网页参数。' },
+  },
+  'catalog-036': {
+    parameterFacts: [{ label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/36蒂佳婷 V7 素颜霜/蒂佳婷1.png' }],
+  },
+  'catalog-038': {
+    officialProductName: '柔光焕颜持妆隔离霜',
+    parameterFacts: [{ label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/38尔木萄素颜霜/参数信息.png' }],
+  },
+  'catalog-039': {
+    parameterFacts: [
+      { label: '产地', value: '日本', evidencePath: '产品核验信息/商品详情页/39CPB 光采隔离素颜霜/参数信息.png' },
+      { label: '防晒标识', value: 'SPF25 PA++', evidencePath: '产品核验信息/商品详情页/39CPB 光采隔离素颜霜/参数信息.png' },
+    ],
+  },
+  'catalog-046': {
+    parameterFacts: [
+      { label: '净含量', value: '1支', evidencePath: '产品核验信息/商品详情页/46 植村秀经典砍刀眉笔/参数信息.png' },
+      { label: '页面标注防水性能', value: '中度防水', evidencePath: '产品核验信息/商品详情页/46 植村秀经典砍刀眉笔/参数信息.png' },
+      { label: '笔头/刷头样式', value: '刀锋', evidencePath: '产品核验信息/商品详情页/46 植村秀经典砍刀眉笔/参数信息.png' },
+      { label: '彩妆分类', value: '眉笔', evidencePath: '产品核验信息/商品详情页/46 植村秀经典砍刀眉笔/参数信息.png' },
+    ],
+  },
+  'catalog-047': {
+    parameterFacts: [
+      { label: '净含量', value: '1支', evidencePath: '产品核验信息/商品详情页/47 植村秀自动砍刀眉笔/参数信息.png' },
+      { label: '页面标注防水性能', value: '轻度防水', evidencePath: '产品核验信息/商品详情页/47 植村秀自动砍刀眉笔/参数信息.png' },
+      { label: '产地', value: '日本', evidencePath: '产品核验信息/商品详情页/47 植村秀自动砍刀眉笔/参数信息.png' },
+      { label: '商品类别', value: '眉笔', evidencePath: '产品核验信息/商品详情页/47 植村秀自动砍刀眉笔/参数信息.png' },
+    ],
+  },
+  'catalog-048': {
+    parameterFacts: [
+      { label: '净含量', value: '1.8g', evidencePath: '产品核验信息/商品详情页/48 橘朵砍刀眉笔/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/48 橘朵砍刀眉笔/参数信息.png' },
+      { label: '页面标注防水性能', value: '轻度防水', evidencePath: '产品核验信息/商品详情页/48 橘朵砍刀眉笔/参数信息.png' },
+      { label: '笔头/刷头样式', value: '刀锋', evidencePath: '产品核验信息/商品详情页/48 橘朵砍刀眉笔/参数信息.png' },
+    ],
+  },
+  'catalog-049': {
+    parameterFacts: [
+      { label: '净含量', value: '120mg', evidencePath: '产品核验信息/商品详情页/49 橘朵精塑自动眉笔/参数信息.png' },
+      { label: '产地', value: '中国大陆', evidencePath: '产品核验信息/商品详情页/49 橘朵精塑自动眉笔/参数信息.png' },
+      { label: '页面标注防水性能', value: '中度防水', evidencePath: '产品核验信息/商品详情页/49 橘朵精塑自动眉笔/参数信息.png' },
+      { label: '彩妆分类', value: '眉笔', evidencePath: '产品核验信息/商品详情页/49 橘朵精塑自动眉笔/参数信息.png' },
+    ],
+  },
+  'catalog-050': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/50 橘朵染眉膏/参数信息.png' },
+      { label: '商品类别', value: '染眉膏', evidencePath: '产品核验信息/商品详情页/50 橘朵染眉膏/参数信息.png' },
+      { label: '页面标注防水性能', value: '轻度防水', evidencePath: '产品核验信息/商品详情页/50 橘朵染眉膏/参数信息.png' },
+    ],
+  },
+  'catalog-051': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/51 花西子首乌眉粉笔/参数信息.png' },
+      { label: '页面标注防水性能', value: '防水', evidencePath: '产品核验信息/商品详情页/51 花西子首乌眉粉笔/参数信息.png' },
+      { label: '线条粗细', value: '细', evidencePath: '产品核验信息/商品详情页/51 花西子首乌眉粉笔/参数信息.png' },
+      { label: '页面列示色号', value: '01 螺黛灰', evidencePath: '产品核验信息/商品详情页/51 花西子首乌眉粉笔/参数信息.png' },
+    ],
+  },
+  'catalog-052': {
+    parameterFacts: [
+      { label: '净含量', value: '280mg', evidencePath: '产品核验信息/商品详情页/52 完美日记双头六角眉笔/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/52 完美日记双头六角眉笔/参数信息.png' },
+      { label: '页面标注防水性能', value: '强力防水', evidencePath: '产品核验信息/商品详情页/52 完美日记双头六角眉笔/参数信息.png' },
+      { label: '页面列示色号', value: '01自然灰、02深棕色、03浅棕色、04棕色、05咖啡色', evidencePath: '产品核验信息/商品详情页/52 完美日记双头六角眉笔/参数信息.png' },
+    ],
+  },
+  'catalog-053': {
+    parameterFacts: [
+      { label: '净含量', value: '3.6g', evidencePath: '产品核验信息/商品详情页/53 卡姿兰眉粉/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/53 卡姿兰眉粉/参数信息.png' },
+      { label: '彩妆分类', value: '眉笔眉粉眉刷三合一', evidencePath: '产品核验信息/商品详情页/53 卡姿兰眉粉/参数信息.png' },
+      { label: '页面列示色号', value: '02眉晕如烟、01梦幻大地', evidencePath: '产品核验信息/商品详情页/53 卡姿兰眉粉/参数信息.png' },
+    ],
+  },
+  'catalog-054': {
+    parameterFacts: [
+      { label: '净含量', value: '3.6g', evidencePath: '产品核验信息/商品详情页/54 深蓝彩妆黑魅双色眉粉/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/54 深蓝彩妆黑魅双色眉粉/参数信息.png' },
+      { label: '页面列示色号', value: '02（棕灰色+浅棕色）', evidencePath: '产品核验信息/商品详情页/54 深蓝彩妆黑魅双色眉粉/参数信息.png' },
+    ],
+  },
+  'catalog-055': {
+    parameterFacts: [
+      { label: '净含量', value: '3.3g', evidencePath: '产品核验信息/商品详情页/55 玛丽黛佳三色眉粉/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/55 玛丽黛佳三色眉粉/参数信息.png' },
+      { label: '商品类别', value: '眉粉', evidencePath: '产品核验信息/商品详情页/55 玛丽黛佳三色眉粉/参数信息.png' },
+      { label: '页面列示色号', value: 'BR-2深棕色、BR-1浅棕色', evidencePath: '产品核验信息/商品详情页/55 玛丽黛佳三色眉粉/参数信息.png' },
+    ],
+  },
+  'catalog-056': {
+    parameterFacts: [
+      { label: '颜色数', value: '9色', evidencePath: '产品核验信息/商品详情页/56 3CE九色时妆盘/参数信息.png' },
+      { label: '净含量', value: '8g', evidencePath: '产品核验信息/商品详情页/56 3CE九色时妆盘/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/56 3CE九色时妆盘/参数信息.png' },
+      { label: '商详标注适用肤质', value: '多种肤质（敏感肌除外）', evidencePath: '产品核验信息/商品详情页/56 3CE九色时妆盘/参数信息.png' },
+    ],
+  },
+  'catalog-057': {
+    parameterFacts: [
+      { label: '颜色数', value: '4色', evidencePath: '产品核验信息/商品详情页/57 3CE四色眼影盘/参数信息.png' },
+      { label: '净含量', value: '3.2g', evidencePath: '产品核验信息/商品详情页/57 3CE四色眼影盘/参数信息.png' },
+      { label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/57 3CE四色眼影盘/参数信息.png' },
+      { label: '商详标注适用肤质', value: '多种肤质（敏感肌除外）', evidencePath: '产品核验信息/商品详情页/57 3CE四色眼影盘/参数信息.png' },
+    ],
+  },
+  'catalog-058': {
+    parameterFacts: [
+      { label: '颜色数', value: '12色', evidencePath: '产品核验信息/商品详情页/58 3CE十二色眼影盘/参数信息.png' },
+      { label: '净含量', value: '9.5g', evidencePath: '产品核验信息/商品详情页/58 3CE十二色眼影盘/参数信息.png' },
+      { label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/58 3CE十二色眼影盘/参数信息.png' },
+    ],
+  },
+  'catalog-059': {
+    parameterFacts: [
+      { label: '颜色数', value: '7色', evidencePath: '产品核验信息/商品详情页/59 橘朵玩趣七色眼影盘/参数信息.png' },
+      { label: '净含量', value: '8.5g', evidencePath: '产品核验信息/商品详情页/59 橘朵玩趣七色眼影盘/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/59 橘朵玩趣七色眼影盘/参数信息.png' },
+      { label: '商详标注适用肤质', value: '普通肤质', evidencePath: '产品核验信息/商品详情页/59 橘朵玩趣七色眼影盘/参数信息.png' },
+    ],
+  },
+  'catalog-060': {
+    parameterFacts: [
+      { label: '净含量', value: '14g', evidencePath: '产品核验信息/商品详情页/60 完美日记探险家十二色动物眼影盘/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/60 完美日记探险家十二色动物眼影盘/参数信息.png' },
+      { label: '页面品名', value: '探险家十二色眼影金虎墨猫盘', evidencePath: '产品核验信息/商品详情页/60 完美日记探险家十二色动物眼影盘/参数信息.png' },
+    ],
+  },
+  'catalog-061': {
+    parameterFacts: [
+      { label: '颜色数', value: '3色', evidencePath: '产品核验信息/商品详情页/61 完美日记三色速绘精华动物眼影棒/参数信息.png' },
+      { label: '净含量', value: '2.8g', evidencePath: '产品核验信息/商品详情页/61 完美日记三色速绘精华动物眼影棒/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/61 完美日记三色速绘精华动物眼影棒/参数信息.png' },
+      { label: '商详标注适用肤质', value: '普通肤质', evidencePath: '产品核验信息/商品详情页/61 完美日记三色速绘精华动物眼影棒/参数信息.png' },
+    ],
+  },
+  'catalog-062': {
+    parameterFacts: [
+      { label: '净含量', value: '6.5g', evidencePath: '产品核验信息/商品详情页/62 花知晓天鹅芭蕾六色眼影盘/参数信息.png' },
+      { label: '页面产地信息', value: '同时标示“产地：中国”和“国产/进口：进口”，信息冲突，待核验', evidencePath: '产品核验信息/商品详情页/62 花知晓天鹅芭蕾六色眼影盘/参数信息.png' },
+      { label: '页面列示颜色', value: '01白天鹅、03粉天鹅', evidencePath: '产品核验信息/商品详情页/62 花知晓天鹅芭蕾六色眼影盘/参数信息.png' },
+    ],
+    dataIssues: ['详情截图同时标示“产地：中国”和“国产/进口：进口”，产地字段冲突，待核验。'],
+  },
+  'catalog-063': {
+    parameterFacts: [
+      { label: '净含量', value: '4.4g', evidencePath: '产品核验信息/商品详情页/63 NARS四色眼影盘/参数信息.png' },
+      { label: '产地', value: '加拿大', evidencePath: '产品核验信息/商品详情页/63 NARS四色眼影盘/参数信息.png' },
+      { label: '商详标注适用肤质', value: '多种肤质（敏感肌除外）', evidencePath: '产品核验信息/商品详情页/63 NARS四色眼影盘/参数信息.png' },
+    ],
+  },
+  'catalog-064': {
+    parameterFacts: [
+      { label: '净含量', value: '6.1g', evidencePath: '产品核验信息/商品详情页/64 美宝莲六色眼影盘/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/64 美宝莲六色眼影盘/参数信息.png' },
+      { label: '页面版本', value: '六色眼影盘（截图所选版本）', evidencePath: '产品核验信息/商品详情页/64 美宝莲六色眼影盘/参数信息.png' },
+    ],
+  },
+  'catalog-065': {
+    parameterFacts: [
+      { label: '净含量', value: '1g', evidencePath: '产品核验信息/商品详情页/65 MAC魅可小眼影/参数信息.png' },
+      { label: '产地字段', value: '其他/other（截图原文；具体产地未明确）', evidencePath: '产品核验信息/商品详情页/65 MAC魅可小眼影/参数信息.png' },
+      { label: '页面品名', value: '魅可新时尚焦点闪耀星泽系列小眼影', evidencePath: '产品核验信息/商品详情页/65 MAC魅可小眼影/参数信息.png' },
+    ],
+  },
+  'catalog-066': {
+    parameterFacts: [
+      { label: '页面眼线产品分类', value: '砍刀眼线胶笔', evidencePath: '产品核验信息/商品详情页/66 橘朵砍刀眼线胶笔/参数信息.png' },
+      { label: '页面标注是否防水', value: '是', evidencePath: '产品核验信息/商品详情页/66 橘朵砍刀眼线胶笔/参数信息.png' },
+      { label: '页面列示色号', value: '01黑棕、02深棕、04奶茶棕等', evidencePath: '产品核验信息/商品详情页/66 橘朵砍刀眼线胶笔/参数信息.png' },
+    ],
+  },
+  'catalog-067': {
+    parameterFacts: [
+      { label: '净含量', value: '0.4g', evidencePath: '产品核验信息/商品详情页/67 橘朵极细眼线液笔/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/67 橘朵极细眼线液笔/参数信息.png' },
+      { label: '页面标注是否防水', value: '是', evidencePath: '产品核验信息/商品详情页/67 橘朵极细眼线液笔/参数信息.png' },
+      { label: '商品类别', value: '眼线液笔', evidencePath: '产品核验信息/商品详情页/67 橘朵极细眼线液笔/参数信息.png' },
+    ],
+  },
+  'catalog-068': {
+    parameterFacts: [
+      { label: '商品类别', value: '眼线笔', evidencePath: '产品核验信息/商品详情页/68 植村秀如胶似漆眼线笔/参数信息.png' },
+      { label: '产地', value: '日本', evidencePath: '产品核验信息/商品详情页/68 植村秀如胶似漆眼线笔/参数信息.png' },
+      { label: '页面标注是否防水', value: '是', evidencePath: '产品核验信息/商品详情页/68 植村秀如胶似漆眼线笔/参数信息.png' },
+    ],
+  },
+  'catalog-069': {
+    parameterFacts: [
+      { label: '商品类别', value: '眼线液笔', evidencePath: '产品核验信息/商品详情页/69 美宝莲小金笔眼线液笔/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/69 美宝莲小金笔眼线液笔/参数信息.png' },
+      { label: '页面标注是否防水', value: '是', evidencePath: '产品核验信息/商品详情页/69 美宝莲小金笔眼线液笔/参数信息.png' },
+    ],
+  },
+  'catalog-070': {
+    parameterFacts: [
+      { label: '商品类别', value: '眼线液笔', evidencePath: '产品核验信息/商品详情页/70 完美日记纤细持久眼线液笔/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/70 完美日记纤细持久眼线液笔/参数信息.png' },
+      { label: '页面标注是否防水', value: '是', evidencePath: '产品核验信息/商品详情页/70 完美日记纤细持久眼线液笔/参数信息.png' },
+    ],
+  },
+  'catalog-071': {
+    parameterFacts: [
+      { label: '商品类别', value: '双头眼线胶笔', evidencePath: '产品核验信息/商品详情页/71 花西子双头眼线胶笔/参数信息.png' },
+      { label: '产地', value: '中国大陆', evidencePath: '产品核验信息/商品详情页/71 花西子双头眼线胶笔/参数信息.png' },
+      { label: '页面列示色号', value: '01松烟黛墨、02松烟琥珀', evidencePath: '产品核验信息/商品详情页/71 花西子双头眼线胶笔/参数信息.png' },
+    ],
+  },
+  'catalog-072': {
+    parameterFacts: [
+      { label: '商品名称', value: '立体卷翘金属睫毛膏', evidencePath: '产品核验信息/商品详情页/72 橘朵钢管睫毛膏/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/72 橘朵钢管睫毛膏/参数信息.png' },
+      { label: '页面标注防水性能', value: '支持防水', evidencePath: '产品核验信息/商品详情页/72 橘朵钢管睫毛膏/参数信息.png' },
+      { label: '页面版本选项', value: '页面还列示纤长睫毛打底膏5ml；本条商品规格以核验表记录3g为准', evidencePath: '产品核验信息/商品详情页/72 橘朵钢管睫毛膏/参数信息.png' },
+    ],
+    dataIssues: ['详情截图列示双翼款钢管睫毛膏与纤长睫毛打底膏等版本；本条商品规格以核验表记录3g为准。'],
+  },
+  'catalog-073': {
+    parameterFacts: [
+      { label: '净含量', value: '9.2ml', evidencePath: '产品核验信息/商品详情页/73 美宝莲粉胖子摩天翘睫毛膏/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/73 美宝莲粉胖子摩天翘睫毛膏/参数信息.png' },
+      { label: '商详标注产品分类', value: '单头睫毛膏', evidencePath: '产品核验信息/商品详情页/73 美宝莲粉胖子摩天翘睫毛膏/参数信息.png' },
+    ],
+  },
+  'catalog-074': {
+    parameterFacts: [
+      { label: '产地', value: '意大利', evidencePath: '产品核验信息/商品详情页/74 NARS耀目立体定型睫毛膏/参数信息.png' },
+    ],
+  },
+  'catalog-075': {
+    parameterFacts: [
+      { label: '净含量', value: '12g', evidencePath: '产品核验信息/商品详情页/75 卡姿兰双头睫毛膏/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/75 卡姿兰双头睫毛膏/参数信息.png' },
+      { label: '商详标注产品分类', value: '双头睫毛膏', evidencePath: '产品核验信息/商品详情页/75 卡姿兰双头睫毛膏/参数信息.png' },
+    ],
+  },
+  'catalog-076': {
+    parameterFacts: [
+      { label: '净含量', value: '4.5g', evidencePath: '产品核验信息/商品详情页/76 完美日记睫毛膏/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/76 完美日记睫毛膏/参数信息.png' },
+      { label: '页面列示颜色', value: '黑色、棕色', evidencePath: '产品核验信息/商品详情页/76 完美日记睫毛膏/参数信息.png' },
+    ],
+  },
+  'catalog-077': {
+    parameterFacts: [
+      { label: '净含量', value: '3ml', evidencePath: '产品核验信息/商品详情页/77 花西子松烟纤细睫毛膏/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/77 花西子松烟纤细睫毛膏/参数信息.png' },
+      { label: '页面所选分类', value: '纤细版', evidencePath: '产品核验信息/商品详情页/77 花西子松烟纤细睫毛膏/参数信息.png' },
+    ],
+  },
+  'catalog-078': {
+    parameterFacts: [
+      { label: '产地', value: '加拿大', evidencePath: '产品核验信息/商品详情页/78 NARS腮红/参数信息.png' },
+      { label: '商详标注质地类别', value: '粉状', evidencePath: '产品核验信息/商品详情页/78 NARS腮红/参数信息.png' },
+      { label: '页面列示色号', value: 'SEX APPEAL、SLOW BURN、ORGASM、IMPASSIONED、BEHAVE、SEX FANTASY 等', evidencePath: '产品核验信息/商品详情页/78 NARS腮红/参数信息.png' },
+    ],
+  },
+  'catalog-079': {
+    parameterFacts: [
+      { label: '产地', value: '意大利', evidencePath: '产品核验信息/商品详情页/79 倩碧小雏菊腮红/参数信息.png' },
+      { label: '页面列示色号', value: 'HOT 05 NUDE POP、19 BLUSH POP、21 BALLERINA POP、HOT 15 PANSY POP、08 MELON POP、18 PINK HONEY POP、10 FIG POP、02 PEACH POP、17 BLACK HONEY POP、07 COLA POP、14 HEATHER POP 等', evidencePath: '产品核验信息/商品详情页/79 倩碧小雏菊腮红/参数信息.png' },
+    ],
+  },
+  'catalog-080': {
+    parameterFacts: [
+      { label: '产地字段', value: '其他/other（截图未明确具体产地）', evidencePath: '产品核验信息/商品详情页/80 3CE单色腮红/参数信息.png' },
+      { label: '商详标注质地类别', value: '粉状', evidencePath: '产品核验信息/商品详情页/80 3CE单色腮红/参数信息.png' },
+      { label: '页面列示色名', value: '烟木粉、梦核紫、朦胧紫、淡淡白、冷芋粉等', evidencePath: '产品核验信息/商品详情页/80 3CE单色腮红/参数信息.png' },
+    ],
+  },
+  'catalog-081': {
+    parameterFacts: [
+      { label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/81 3CE好脸色多用膏/参数信息.png' },
+      { label: '商详标注质地', value: '泥状', evidencePath: '产品核验信息/商品详情页/81 3CE好脸色多用膏/参数信息.png' },
+      { label: '商详标注使用部位', value: '面部、两颊', evidencePath: '产品核验信息/商品详情页/81 3CE好脸色多用膏/参数信息.png' },
+      { label: '页面列示SKU色号', value: '02 PINK PETAL、07 SWEET ON YOU、03 BEIGE CRUSH、06 LILAC WHISPER、01 FIG SODA、04 CHARMED、05 DESERT HEAT', evidencePath: '产品核验信息/商品详情页/81 3CE好脸色多用膏/参数信息.png' },
+    ],
+  },
+  'catalog-082': {
+    parameterFacts: [
+      { label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/82 3CE液体腮红/参数信息.png' },
+      { label: '页面列示SKU色号', value: 'SIDE PIECE、JOYFUL AFFAIR', evidencePath: '产品核验信息/商品详情页/82 3CE液体腮红/参数信息.png' },
+    ],
+  },
+  'catalog-083': {
+    parameterFacts: [
+      { label: '产地', value: '国产（截图原文）', evidencePath: '产品核验信息/商品详情页/83 橘朵单色腮红/参数信息.png' },
+      { label: '商详标注产品类别', value: '腮红、粉状', evidencePath: '产品核验信息/商品详情页/83 橘朵单色腮红/参数信息.png' },
+      { label: '页面列示色号', value: '06 杏子色、44 草莓牛奶、35 烤奶茶、43 蓝莓夜、41 蜜桃奶茶等', evidencePath: '产品核验信息/商品详情页/83 橘朵单色腮红/参数信息.png' },
+    ],
+  },
+  'catalog-084': {
+    parameterFacts: [
+      { label: '产地', value: '国产（截图原文）', evidencePath: '产品核验信息/商品详情页/84 橘朵水缎光腮红/参数信息.png' },
+      { label: '商详标注质地类别', value: '粉状', evidencePath: '产品核验信息/商品详情页/84 橘朵水缎光腮红/参数信息.png' },
+      { label: '页面列示规格', value: '5g（与人工核验表规格一致）', evidencePath: '产品核验信息/商品详情页/84 橘朵水缎光腮红/参数信息.png' },
+    ],
+  },
+  'catalog-085': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/85 花西子腮红膏/参数信息.png' },
+      { label: '商详标注产品类别', value: '腮红膏', evidencePath: '产品核验信息/商品详情页/85 花西子腮红膏/参数信息.png' },
+      { label: '页面所选SKU', value: '08 月下蔷薇', evidencePath: '产品核验信息/商品详情页/85 花西子腮红膏/参数信息.png' },
+    ],
+  },
+  'catalog-086': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/86 彩棠三色腮红盘/参数信息.png' },
+      { label: '截图所示商品页', value: '三色腮红盘及包含修容盘的组合选项并列；截图选项不能确认人工核验表目标13g对应版本，规格以表格13g为准', evidencePath: '产品核验信息/商品详情页/86 彩棠三色腮红盘/参数信息.png' },
+    ],
+    dataIssues: ['商品详情截图同页列示三色腮红盘及含修容盘组合等不同选项，无法确认截图中的套装信息对应工作表13g目标；页面规格按表格13g显示，具体版本待复核。'],
+  },
+  'catalog-087': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/87 花知晓邦尼花园冻干浮雕腮红/参数信息.png' },
+      { label: '页面列示色号', value: '01 毛绒雪兔、02 晚安邦尼、03 芭蕾舞裙、04 鸢尾花园、05 梦游仙境', evidencePath: '产品核验信息/商品详情页/87 花知晓邦尼花园冻干浮雕腮红/参数信息.png' },
+    ],
+  },
+  'catalog-088': {
+    parameterFacts: [
+      { label: '产地字段', value: '其他/other（截图未明确具体产地）', evidencePath: '产品核验信息/商品详情页/88 MAC魅可大子弹头口红/参数信息.png' },
+      { label: '页面列示商品名称', value: '魅可新经典绒光唇膏', evidencePath: '产品核验信息/商品详情页/88 MAC魅可大子弹头口红/参数信息.png' },
+    ],
+  },
+  'catalog-089': {
+    parameterFacts: [
+      { label: '产地字段', value: '其他/other（截图未明确具体产地）', evidencePath: '产品核验信息/商品详情页/89 MAC魅可轻尤雾弹唇膏/参数信息.png' },
+      { label: '页面列示商品名称', value: '魅可新丝绒柔雾唇膏', evidencePath: '产品核验信息/商品详情页/89 MAC魅可轻尤雾弹唇膏/参数信息.png' },
+    ],
+  },
+  'catalog-090': {
+    parameterFacts: [
+      { label: '产地字段', value: '其他/other（截图未明确具体产地）', evidencePath: '产品核验信息/商品详情页/90 MAC魅可轻尤雾弹唇釉/参数信息.png' },
+      { label: '净含量', value: '5ml', evidencePath: '产品核验信息/商品详情页/90 MAC魅可轻尤雾弹唇釉/参数信息.png' },
+      { label: '页面列示商品名称', value: '魅可新丝绒柔雾液体唇膏', evidencePath: '产品核验信息/商品详情页/90 MAC魅可轻尤雾弹唇釉/参数信息.png' },
+    ],
+  },
+  'catalog-091': {
+    parameterFacts: [
+      { label: '产地', value: '法国', evidencePath: '产品核验信息/商品详情页/91 Dior迪奥烈艳蓝金唇膏/参数信息.png' },
+      { label: '商详标注商品类别', value: '唇膏', evidencePath: '产品核验信息/商品详情页/91 Dior迪奥烈艳蓝金唇膏/参数信息.png' },
+    ],
+  },
+  'catalog-092': {
+    parameterFacts: [
+      { label: '产地', value: '比利时', evidencePath: '产品核验信息/商品详情页/92 倩碧Black Honey唇膏/参数信息.png' },
+      { label: '页面列示商品名称', value: '倩碧Black Honey唇膏', evidencePath: '产品核验信息/商品详情页/92 倩碧Black Honey唇膏/参数信息.png' },
+    ],
+  },
+  'catalog-093': {
+    parameterFacts: [
+      { label: '截图与表格规格差异', value: '详情截图标示4g；人工核验表规格为4.6g，商品规格以表格4.6g为准', evidencePath: '产品核验信息/商品详情页/93 3CE水雾唇露/参数信息.png' },
+    ],
+    dataIssues: ['详情截图标示净含量4g，与人工核验表规格4.6g不一致；网页规格按表格显示4.6g，截图差异保留待复核。'],
+  },
+  'catalog-094': {
+    parameterFacts: [
+      { label: '商品类别', value: '唇膏', evidencePath: '产品核验信息/商品详情页/94 3CE好气色润唇膏/参数信息.png' },
+      { label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/94 3CE好气色润唇膏/参数信息.png' },
+      { label: '页面列示SKU色号', value: '30 MELTING SMORE、38 SALTY SWEET、34 ROSE GLAZE、42 CORAL STRIKE 等', evidencePath: '产品核验信息/商品详情页/94 3CE好气色润唇膏/参数信息.png' },
+    ],
+  },
+  'catalog-095': {
+    parameterFacts: [
+      { label: '页面列示色号', value: '703', evidencePath: '产品核验信息/商品详情页/95 完美日记第三代仿生膜精华口红/参数信息.png' },
+      { label: '商详标注质地', value: '缎光', evidencePath: '产品核验信息/商品详情页/95 完美日记第三代仿生膜精华口红/参数信息.png' },
+      { label: '商详标注适用肤色', value: '黄皮（页面文案，仅作来源转录，不作为适配结论）', evidencePath: '产品核验信息/商品详情页/95 完美日记第三代仿生膜精华口红/参数信息.png' },
+    ],
+  },
+  'catalog-096': {
+    parameterFacts: [
+      { label: '页面参数品名', value: '玉养精华口红', evidencePath: '产品核验信息/商品详情页/96 花西子雕花口红/参数信息.png' },
+      { label: '页面所选SKU', value: 'L501 冰糖玉', evidencePath: '产品核验信息/商品详情页/96 花西子雕花口红/参数信息.png' },
+      { label: '商详标注妆效', value: '哑光', evidencePath: '产品核验信息/商品详情页/96 花西子雕花口红/参数信息.png' },
+    ],
+    dataIssues: ['参数截图列示品名“玉养精华口红”，与人工核验表目标“雕花口红”存在命名映射差异；目标名称和规格继续以表格为准，参数页品名不作为已确认官方名称。'],
+  },
+  'catalog-097': {
+    parameterFacts: [
+      { label: '净含量', value: '1.5g', evidencePath: '产品核验信息/商品详情页/97 NARS小粉金唇膏/参数信息.png' },
+      { label: '产地', value: '美国', evidencePath: '产品核验信息/商品详情页/97 NARS小粉金唇膏/参数信息.png' },
+      { label: '商详标注质地', value: '膏体', evidencePath: '产品核验信息/商品详情页/97 NARS小粉金唇膏/参数信息.png' },
+    ],
+  },
+  'catalog-098': {
+    parameterFacts: [
+      { label: '页面所选SKU', value: 'S01 无花果生巧', evidencePath: '产品核验信息/商品详情页/98 橘朵缎光唇粉霜/参数信息.png' },
+      { label: '商详标注质地', value: '哑光', evidencePath: '产品核验信息/商品详情页/98 橘朵缎光唇粉霜/参数信息.png' },
+      { label: '截图净含量', value: '2.6ml（与人工核验表规格一致）', evidencePath: '产品核验信息/商品详情页/98 橘朵缎光唇粉霜/参数信息.png' },
+    ],
+  },
+  'catalog-099': {
+    parameterFacts: [
+      { label: '净含量', value: '3.3g', evidencePath: '产品核验信息/商品详情页/99 橘朵小奶泥唇泥/参数信息.png' },
+      { label: '产地字段', value: '国产（截图原文）', evidencePath: '产品核验信息/商品详情页/99 橘朵小奶泥唇泥/参数信息.png' },
+      { label: '页面所选SKU', value: 'P04 苹果泥', evidencePath: '产品核验信息/商品详情页/99 橘朵小奶泥唇泥/参数信息.png' },
+    ],
+  },
+  'catalog-100': {
+    parameterFacts: [
+      { label: '净含量', value: '3g', evidencePath: '产品核验信息/商品详情页/100 卡姿兰波波唇膏笔/参数信息.png' },
+      { label: '页面所列色号', value: 'G02 雀跃杏', evidencePath: '产品核验信息/商品详情页/100 卡姿兰波波唇膏笔/参数信息.png' },
+    ],
+  },
+  'catalog-101': {
+    parameterFacts: [
+      { label: '净含量', value: '3.5g', evidencePath: '产品核验信息/商品详情页/101 花知晓天鹅芭蕾唇釉/参数信息.png' },
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/101 花知晓天鹅芭蕾唇釉/参数信息.png' },
+      { label: '页面列示商品名称', value: '天鹅芭蕾水光唇膏', evidencePath: '产品核验信息/商品详情页/101 花知晓天鹅芭蕾唇釉/参数信息.png' },
+    ],
+  },
+  'catalog-102': {
+    parameterFacts: [
+      { label: '产地字段', value: '其他/other（截图原文；具体产地未明确）', evidencePath: '产品核验信息/商品详情页/102 MAC魅可水漾波光子弹头唇膏/参数信息.png' },
+    ],
+  },
+  'catalog-103': {
+    parameterFacts: [
+      { label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/103 3CE柔雾管口红/参数信息.png' },
+      { label: '页面所选SKU', value: '#SALTY CINNAMON（海盐肉桂色）', evidencePath: '产品核验信息/商品详情页/103 3CE柔雾管口红/参数信息.png' },
+    ],
+  },
+  'catalog-104': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/104 彩棠三色高光修容盘/参数信息.png' },
+      { label: '页面列示版本', value: '差旅便携随行装5.2g、三色修容盘17g', evidencePath: '产品核验信息/商品详情页/104 彩棠三色高光修容盘/参数信息.png' },
+    ],
+    dataIssues: ['详情截图同时列示5.2g差旅便携装与17g三色修容盘；本条规格按人工核验表保留17g，截图版本差异待复核。'],
+  },
+  'catalog-105': {
+    parameterFacts: [
+      { label: '商详标注商品名称', value: '橘朵高光修容综合盘', evidencePath: '产品核验信息/商品详情页/105 橘朵高光修容盘/参数信息.png' },
+      { label: '商详标注产品类别', value: '高光阴影组合修容盘', evidencePath: '产品核验信息/商品详情页/105 橘朵高光修容盘/参数信息.png' },
+    ],
+  },
+  'catalog-106': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/106 花西子蝶翼清影高光修容一体盘/参数信息.png' },
+      { label: '页面所选SKU', value: '01 扶光蝶影', evidencePath: '产品核验信息/商品详情页/106 花西子蝶翼清影高光修容一体盘/参数信息.png' },
+    ],
+  },
+  'catalog-107': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/107 花知晓巧克力高光修容三色盘/参数信息.png' },
+      { label: '页面列示商品名称', value: '巧克力系列高光修容盘', evidencePath: '产品核验信息/商品详情页/107 花知晓巧克力高光修容三色盘/参数信息.png' },
+    ],
+  },
+  'catalog-108': {
+    parameterFacts: [
+      { label: '产地字段', value: '其他/other（截图原文；具体产地未明确）', evidencePath: '产品核验信息/商品详情页/108 MAC魅可小金盒高光修容盘/参数信息.png' },
+    ],
+  },
+  'catalog-109': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/109 彩棠双拼高光/参数信息.png' },
+      { label: '商详标注产品类别', value: '高光粉、高光膏', evidencePath: '产品核验信息/商品详情页/109 彩棠双拼高光/参数信息.png' },
+      { label: '页面列示色号选项', value: '#01经典色号、#02白皙色号、#03膨胀色、#01日灼白（单色高光膏）', evidencePath: '产品核验信息/商品详情页/109 彩棠双拼高光/参数信息.png' },
+    ],
+    dataIssues: ['详情截图同时列示双拼高光及单色高光膏等选项；工作表目标规格3g+5g保留为本条双拼商品规格，单色选项不并入本条记录。'],
+  },
+  'catalog-110': {
+    parameterFacts: [
+      { label: '产地', value: '中国', evidencePath: '产品核验信息/商品详情页/110 橘朵斜修双头修容笔/参数信息.png' },
+      { label: '商详列示SKU名称', value: '#01 冷白/橄榄皮挚爱、#02 暖黄皮/自然肤色（仅转录页面命名，不作为适配结论）', evidencePath: '产品核验信息/商品详情页/110 橘朵斜修双头修容笔/参数信息.png' },
+    ],
+  },
+  'catalog-111': {
+    parameterFacts: [
+      { label: '产地', value: '韩国', evidencePath: '产品核验信息/商品详情页/111 too cool for school涂酷三色修容盘/参数信息.png' },
+      { label: '商详标注产品类别', value: '阴影粉、立体修饰', evidencePath: '产品核验信息/商品详情页/111 too cool for school涂酷三色修容盘/参数信息.png' },
+      { label: '商详列示SKU版本名', value: '暖皮用经典1#、冷皮用经典2#、冷暖皮均可中性1.5#（仅转录页面命名，不作为适配结论）', evidencePath: '产品核验信息/商品详情页/111 too cool for school涂酷三色修容盘/参数信息.png' },
+    ],
+  },
+}
 
-export const expansionCatalogProducts = productExpansionRecords.map((record) => ({
-  id: record.id, brand: record.brand, name: record.productName, officialProductName: record.officialProductName, category: record.category, brandRegion: '待核验', madeIn: '待核验', price: record.listPrice,
-  priceLabel: record.listPrice + ' 元（人工核验参考原价；最终价格以结算页为准）', image: '/products/' + record.id + '/cover.webp', skins: [], finish: '待核验', coverage: '待核验', wear: null, oxidation: null, rating: null,
-  shades: [pendingShade(record.sequence)], note: '商品名称、规格与参考原价来自人工核验表；适用肤质、妆效、色号和持妆信息尚待逐项核验。', pros: ['已记录淘宝/天猫官方旗舰店商品链接与核验日期。'],
-  cautions: ['当前不进入推荐方案。', '购买前请在自然光下试色，并以结算页实际价格为准。'], scenes: [], metrics: {},
-  informationSources: [{ title: '淘宝人工核验表：' + record.marketplaceTitle, url: record.productUrl, publisher: record.officialStoreName, accessedAt: record.verifiedAt, supports: ['品牌', '产品名称', '官方旗舰店身份', '商品规格', '参考原价', '商品链接'] }],
-  imageSource: { url: record.image.sourcePageUrl, sourcePageUrl: record.image.sourcePageUrl, rightsholder: record.image.rightsholder || '权利方待核验', authorizationStatus: 'pending', acquiredAt: record.image.acquiredAt, sourcePriority: record.image.sourcePriority, publicUseDecision: 'internal_review_pending_source', note: '图片来源已记录，允许用途为 internal_only；尚未取得公开再利用授权，未导入 public/products。' },
-  imageAuthorizationStatus: 'pending', verificationStatus: 'pending', factVerificationStatus: 'pending', publicStatus: 'blocked_pending_product_evidence', recommendationReady: false, priceVerifiedAt: record.verifiedAt, shadeRecommendationReady: false,
+export const productExpansionRecords = [...expansionAdditionalRecords, ...existingExpansionRecords].map((record) => {
+  const correction = expansionRecordCorrections[record.id] || {}
+  return {
+    ...record,
+    tableReviewStatus: record.reviewStatus,
+    ...correction,
+    image: { ...record.image, ...correction.image, allowedUse: 'public_with_source_notice' },
+  }
+})
+
+const baseCategories = ['粉底液', '气垫', '遮瑕', '散粉', '素颜霜', '隔离', '有色面霜']
+
+function getColorFact(record) {
+  return record.parameterFacts?.find((item) => /色号|色名|颜色|所选SKU|列示SKU/.test(item.label) && !/颜色数/.test(item.label))
+}
+
+function getColorCountFact(record) {
+  return record.parameterFacts?.find((item) => item.label === '颜色数')
+}
+
+function getExtractedShadeEntry(record) {
+  return productShadeCatalog[record.id] || null
+}
+
+function getReviewedShades(record) {
+  const extracted = getExtractedShadeEntry(record)
+  if (extracted?.shades?.length) {
+    return extracted.shades.map((shade) => ({
+      name: shade.name,
+      badge: shade.badge || '',
+      tone: '待核验',
+      lightness: '待核验',
+      suitable: '适配方向待核验',
+      sourceLabel: `序号${record.sequence}参数截图：${shade.rawText}`,
+      verificationStatus: 'verified_parameter_screenshot',
+    }))
+  }
+
+  // 色号区没有可读色号时，用中性的规格描述替代内部核验占位语，避免把“待核验”暴露给用户。
+  const name = extracted?.truncated || !baseCategories.includes(record.category) ? '多色号可选' : '单一规格'
+  return [{
+    name,
+    tone: '待核验',
+    lightness: '待核验',
+    suitable: '适配方向待核验',
+    sourceLabel: `序号${record.sequence}参数截图未完整列示色号`,
+    verificationStatus: 'not_listed_in_parameter_screenshot',
+  }]
+}
+
+function getReviewedCautions(record) {
+  return [
+    '具体使用注意事项待核验；使用前请阅读产品包装说明。',
+    ...(record.parameterFacts || [])
+      .filter((fact) => /功效|适用肤色|防水|储存|防晒标识/.test(fact.label))
+      .map((fact) => `${fact.label}：${fact.value}`),
+    ...(record.dataIssues || []),
+  ]
+}
+
+function getOriginFact(record) {
+  return record.parameterFacts?.find((fact) => /^产地(?:字段)?$/.test(fact.label) || fact.label === '页面产地信息')
+}
+
+function getOrigin(record) {
+  const fact = getOriginFact(record)
+  if (!fact || /冲突|待核验/.test(fact.value)) return '待核验'
+  return fact.value
+}
+
+function getFinish(record) {
+  const finishTerms = /^(?:哑光|柔雾|雾面|缎光|水光|亮泽|珠光|丝绒|奶油肌)$/
+  const fact = record.parameterFacts?.find((item) => {
+    if (item.label.includes('妆效')) return true
+    return item.label.includes('质地') && finishTerms.test(item.value.trim())
+  })
+  return fact?.value || '待核验'
+}
+
+function getColorDisplay(record) {
+  const extracted = getExtractedShadeEntry(record)
+  if (extracted?.shades?.length) return extracted.shades.map((shade) => shade.name).join(' / ')
+  if (extracted?.truncated) return '多色号可选；色号区截图未完整展示'
+
+  const fact = getColorFact(record)
+  if (fact) return fact.value
+
+  const colorCount = getColorCountFact(record)
+  if (colorCount) return `页面列示色数：${colorCount.value}`
+  return baseCategories.includes(record.category) ? '单一规格' : '多色号可选'
+}
+
+function getColorDisplayStatus(record) {
+  if (record.parameterFacts?.some((item) => /色号|色名|颜色|所选SKU|列示SKU/.test(item.label) && !/颜色数/.test(item.label))) return 'parameter_screenshot_listed'
+  if (record.parameterFacts?.some((item) => item.label === '颜色数')) return 'color_count_only'
+  return 'not_listed_in_parameter_screenshot'
+}
+
+function getUnsupportedFields(record) {
+  const unsupported = ['适用肤质', '遮瑕度', '持妆', '氧化', '评分', '独立实测结论', '肤色适配/色调']
+  if (getFinish(record) === '待核验') unsupported.push('妆效')
+  if (!getExtractedShadeEntry(record)?.shades?.length) unsupported.push('具体色号')
+  if (getOrigin(record) === '待核验') unsupported.push('实际产地')
+  return unsupported
+}
+
+const onlineVerificationOutcomes = new Map(onlineVerificationSnapshot.outcomes.map((outcome) => [outcome.id, outcome]))
+const onlineReviewedAt = '2026-11-20'
+
+export const expansionOnlineVerificationRecords = Object.fromEntries(productExpansionRecords.map((record) => {
+  const attempt = onlineVerificationSnapshot.attempts[record.id]
+  if (!attempt) throw new Error(`缺少 ${record.id} 的在线复核记录`)
+
+  const sourceRecords = attempt.sources.map(([url, outcomeId]) => {
+    const outcome = onlineVerificationOutcomes.get(outcomeId)
+    if (!outcome) throw new Error(`缺少 ${record.id} 的在线访问结果 ${outcomeId}`)
+    return {
+      url,
+      title: outcome.title,
+      publisher: outcome.publisher,
+      accessedAt: onlineReviewedAt,
+      evidence: outcome.evidence,
+    }
+  })
+
+  return [record.id, {
+    productId: record.id,
+    status: 'unverified',
+    accessedAt: onlineReviewedAt,
+    supportedFields: [],
+    sourceRecords,
+    conflicts: attempt.conflicts,
+    limitations: attempt.limitations,
+  }]
 }))
 
-export const expansionVerificationRecords = Object.fromEntries(productExpansionRecords.map((record) => [record.id, {
-  productId: record.id, nameReviewStatus: 'partial', commerce: { platform: 'taobao', officialStoreName: record.officialStoreName, officialStoreFlag: record.officialStoreFlag, officialMarkerType: record.officialMarkerType, storeUrl: null, productUrl: record.productUrl, status: 'verified', verifiedAt: record.verifiedAt, note: '商品链接、店铺身份和对应商品在人工核验表中标记为已完成；产品适用与效果字段仍待逐项核验。' },
-  reviewedFacts: { sequence: record.sequence, productName: record.productName, officialProductName: record.officialProductName, brand: record.brand, marketplaceTitle: record.marketplaceTitle, officialStoreName: record.officialStoreName, officialStoreFlag: record.officialStoreFlag, officialMarkerType: record.officialMarkerType, specification: record.specification, listPrice: record.listPrice, priceNote: record.priceNote, origin: null, originStatus: 'not_listed_in_parameter_screenshot', productUrl: record.productUrl, reviewStatus: 'partial', verifiedAt: record.verifiedAt, source: { sheet: '淘宝人工核验', workbookPath: productExpansionSource.sourceWorkbook.path, range: productExpansionSource.sourceWorkbook.range, rowSequence: record.sequence, storeEvidencePath: record.storeEvidencePath, detailEvidencePath: record.detailEvidencePath, qualificationEvidencePath: record.qualificationEvidencePath }, unsupportedFields: ['适用肤质', '妆效', '遮瑕度', '持妆', '氧化', '评分', '色号/色调', '原产地', '独立实测结论'] },
-  reviewedShades: { sequence: record.sequence, status: 'marketplace_variant_only', applyToCatalog: true, reviewedAt: record.verifiedAt, shades: [pendingShade(record.sequence)], sourceVariants: [], issues: ['参数截图未提供可复核的色号/色调，当前占位不参与色号推荐。'], evidence: [{ kind: 'detail', path: record.detailEvidencePath }] },
-  evidence: { sequence: record.sequence, sourceWorkbook: productExpansionSource.sourceWorkbook, publicEvidence: [{ kind: 'store', path: record.storeEvidencePath }, { kind: 'detail', path: record.detailEvidencePath }, { kind: 'qualification', path: record.qualificationEvidencePath }], image: record.image },
-  issues: ['产品事实整体保持 pending/partial；图片 authorizationStatus=pending 且允许用途为 internal_only。'],
-}]))
+export const expansionRecommendationReviewRecords = Object.fromEntries(productExpansionRecords.map((record) => {
+  const onlineVerification = expansionOnlineVerificationRecords[record.id]
+  return [record.id, {
+    productId: record.id,
+    decision: 'remain_blocked',
+    reviewedAt: onlineReviewedAt,
+    rating: null,
+    ratingStatus: 'not_generated',
+    recommendationReady: false,
+    shadeRecommendationReady: false,
+    imageAuthorizationStatus: 'pending',
+    blockingReasons: [
+      '本轮在线访问未获得可支持商品事实或适用条件的合格官方旗舰店直接页面，编辑评分依据不足。',
+      ...(onlineVerification.conflicts.length ? ['存在尚未解决的商品身份、名称、规格、价格或版本冲突。'] : []),
+      '未取得明确图片再利用授权或开放许可证证据。',
+    ],
+  }]
+}))
 
-export const expansionEvidenceSync = { version: 1, importedAt: productExpansionSource.importedAt, issueId: productExpansionSource.issueId, productCount: productExpansionSource.includedSequence.count, sequenceRange: '46-111', excludedSequenceRange: '36-45', sourceWorkbook: productExpansionSource.sourceWorkbook, imageManifest: productExpansionSource.imageManifest, categoryCounts: productExpansionSource.categoryCounts }
+const cardRoleTags = {
+  '素颜霜': ['素颜提亮', '日常打底'],
+  '隔离': ['妆前打底', '后续服帖'],
+  '有色面霜': ['润色打底', '轻薄均匀'],
+  '眉妆': ['勾勒眉形', '填充眉色'],
+  '眼影': ['眼部上色', '叠色晕染'],
+  '眼线': ['眼线勾勒', '眼部细节'],
+  '睫毛膏': ['睫毛修饰', '眼部妆容'],
+  '腮红': ['面颊提色', '提升气色'],
+  '唇妆': ['唇部上色', '日常提色'],
+  '修容': ['轮廓修饰', '立体过渡'],
+}
+
+const cardNoteTemplates = {
+  '素颜霜': '偏日常轻妆方向，可薄涂提亮；实际妆感受用量、肤质和光线影响。',
+  '隔离': '用于妆前打底，帮助后续底妆更服帖；实际效果受肤质和搭配影响。',
+  '有色面霜': '带润色方向，适合想要轻薄均匀肤色时使用；实际颜色受光线影响。',
+  '眉妆': '用于眉部勾勒和填补，显色与持久度受发色和手法影响。',
+  '眼影': '用于眼部叠色和晕染，显色与飞粉表现受刷具和手法影响。',
+  '眼线': '用于眼线勾勒和细节补充，线条持久度受肤质和用法影响。',
+  '睫毛膏': '用于睫毛修饰，卷翘与晕染表现因刷法和肤质而异。',
+  '腮红': '用于面颊提色，显色程度受用量、底妆和光线影响。',
+  '唇妆': '用于唇部上色，实际颜色受唇色、涂抹层数和光线影响。',
+  '修容': '用于面部轮廓修饰，颜色深浅和晕染效果受手法与光线影响。',
+}
+
+const cardScenes = {
+  '素颜霜': ['日常', '通勤', '轻妆'],
+  '隔离': ['日常', '通勤', '轻妆'],
+  '有色面霜': ['日常', '通勤', '轻妆'],
+  '眉妆': ['日常', '通勤'],
+  '眼影': ['日常', '通勤', '约会'],
+  '眼线': ['日常', '通勤'],
+  '睫毛膏': ['日常', '通勤'],
+  '腮红': ['日常', '通勤', '约会'],
+  '唇妆': ['日常', '通勤', '约会'],
+  '修容': ['通勤', '拍照'],
+}
+
+// 卡片第二枚标签：按品类从页面参数里取一条可核实的形态/质地信息，避免同品类所有商品标签完全相同。
+function deriveSpecTag(record) {
+  const name = record.productName || ''
+  const facts = record.parameterFacts || []
+  const fact = (labelRe) => {
+    const hit = facts.find((item) => labelRe.test(item.label))
+    return hit ? String(hit.value).replace(/（.*$/, '').trim() : ''
+  }
+  const allValues = facts.map((item) => item.value).join(' ')
+
+  switch (record.category) {
+    case '素颜霜':
+    case '隔离':
+    case '有色面霜': {
+      const spf = fact(/防晒/)
+      if (/SPF/i.test(spf)) return spf.replace(/\s+/g, ' ').trim()
+      if (/防晒/.test(allValues + name)) return '带防晒'
+      if (/提亮|亮白|净白/.test(allValues + name)) return '提亮'
+      if (/保湿|水润/.test(allValues + name)) return '保湿'
+      if (/持妆|持久/.test(allValues + name)) return '持妆'
+      if (/水光/.test(name)) return '水光'
+      return ''
+    }
+    case '眉妆': {
+      const waterproof = fact(/防水/)
+      if (/强力/.test(waterproof)) return '强力防水'
+      if (/中度/.test(waterproof)) return '中度防水'
+      if (/轻度/.test(waterproof)) return '轻度防水'
+      if (/防水/.test(waterproof)) return '防水'
+      return /粉/.test(name) ? '眉粉' : /膏/.test(name) ? '染眉膏' : ''
+    }
+    case '眼线': {
+      const kind = fact(/商品类别|产品分类/)
+      if (/双头/.test(kind)) return '双头'
+      if (/液/.test(kind)) return '液笔'
+      if (/胶/.test(kind) || /胶/.test(name)) return '胶笔'
+      return /笔/.test(name) ? '笔状' : ''
+    }
+    case '睫毛膏': {
+      const kind = fact(/商品类别|产品分类/)
+      if (/双头/.test(kind)) return '双头'
+      if (/单头/.test(kind)) return '单头'
+      if (/钢管/.test(name)) return '钢管刷头'
+      if (/纤细/.test(name)) return '纤细'
+      if (/卷翘|翘/.test(name)) return '卷翘'
+      if (/定型/.test(name)) return '定型'
+      if (/浓密/.test(name)) return '浓密'
+      if (/纤长/.test(name)) return '纤长'
+      return ''
+    }
+    case '眼影': {
+      const cnNumbers = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 }
+      const toNumber = (value) => {
+        if (/^\d+$/.test(value)) return Number(value)
+        if (value === '十') return 10
+        if (value.startsWith('十')) return 10 + (cnNumbers[value[1]] || 0)
+        if (value.endsWith('十')) return (cnNumbers[value[0]] || 0) * 10
+        return cnNumbers[value] || 0
+      }
+      const fromFact = String(fact(/颜色数/) || '').replace(/[^\d一二三四五六七八九十]/g, '')
+      const fromName = (name.match(/([一二三四五六七八九十]{1,3}|\d{1,2})\s?色/) || [])[1] || ''
+      const count = toNumber(fromFact || fromName)
+      return count ? `${count} 色盘` : ''
+    }
+    case '修容': {
+      if (/三色/.test(name)) return '三色盘'
+      if (/双拼|双色/.test(name)) return '双拼'
+      if (/笔/.test(name)) return '修容笔'
+      if (/盘/.test(name)) return '盘装'
+      return ''
+    }
+    case '腮红': {
+      if (/小雏菊/.test(name)) return '粉状'
+      if (/三色/.test(name)) return '三色盘'
+      if (/单色/.test(name)) return '单色'
+      if (/液体/.test(name)) return '液体'
+      if (/膏/.test(name)) return '膏状'
+      if (/泥/.test(name)) return '泥状'
+      if (/冻干/.test(name)) return '冻干'
+      const texture = fact(/质地类别|产品类别/)
+      if (/粉状/.test(texture)) return '粉状'
+      if (/膏/.test(texture)) return '膏状'
+      if (/泥/.test(texture)) return '泥状'
+      if (/液/.test(texture)) return '液体'
+      return ''
+    }
+    case '唇妆': {
+      const texture = fact(/质地/)
+      if (/哑光/.test(texture)) return '哑光'
+      if (/缎光/.test(texture)) return '缎光'
+      if (/膏体/.test(texture)) return '膏体'
+      if (/泥/.test(name)) return '唇泥'
+      if (/笔/.test(name)) return '唇膏笔'
+      if (/釉|露/.test(name)) return '唇釉'
+      if (/霜/.test(name)) return '粉霜'
+      if (/润唇膏/.test(name)) return '润唇膏'
+      if (/口红|唇膏/.test(name)) return '膏体'
+      return ''
+    }
+    default:
+      return ''
+  }
+}
+
+function getFactText(record, labelRe) {
+  const hit = (record.parameterFacts || []).find((item) => labelRe.test(item.label))
+  return hit ? String(hit.value).replace(/（[^）]*）/g, '').trim() : ''
+}
+
+// “喜欢它的理由”：只按商品页已记录的名称、规格、色号和参数整理，不补充未核验的功效结论。
+function deriveLoveReasons(record) {
+  const name = record.productName || ''
+  const category = record.category
+  const finish = getFinish(record)
+  const specTag = deriveSpecTag(record)
+  const shades = getReviewedShades(record)
+  const listed = shades.filter((shade) => shade.verificationStatus === 'verified_parameter_screenshot')
+  const unit = category === '眼影' || category === '修容' ? '款' : '色'
+  const spf = getFactText(record, /防晒/)
+  const waterproof = getFactText(record, /防水/)
+  const texture = getFactText(record, /质地类别|标注质地|标注妆效/)
+  const kind = getFactText(record, /商品类别|产品类别|产品分类|彩妆分类|页面所选分类/)
+  const colorCount = getFactText(record, /颜色数/)
+
+  const roleReasons = {
+    素颜霜: '素颜霜定位，薄涂即可用于日常提亮和轻妆打底。',
+    隔离: '妆前隔离定位，用在底妆前帮助后续上妆。',
+    有色面霜: '带润色方向的轻薄底妆，适合想要自然均匀肤色时使用。',
+    眉妆: '用于眉形勾勒和眉色填充，适合日常快速整理眉部。',
+    眼影: '用于眼部上色、叠色和晕染，可按场合调整浓淡。',
+    眼线: '用于眼线勾勒和眼部细节补充，线条粗细由手法决定。',
+    睫毛膏: '用于睫毛修饰，可按刷法调整纤长或浓密方向。',
+    腮红: '用于面颊提色，少量多次上妆更容易控制显色。',
+    唇妆: '用于唇部上色和日常提色，可叠涂调整深浅。',
+    修容: '用于面部轮廓修饰和立体过渡，深浅由用量控制。',
+  }
+  const reasons = roleReasons[category] ? [roleReasons[category]] : []
+
+  switch (category) {
+    case '素颜霜':
+    case '隔离':
+    case '有色面霜':
+      if (spf) reasons.push(`带 ${spf} 防晒标识，日常打底时可以一并参考。`)
+      else if (finish !== '待核验') reasons.push(`妆效方向为${finish}，实际表现受用量、肤质和光线影响。`)
+      else if (specTag && !/防晒/.test(specTag)) reasons.push(`商品页记录为${specTag}方向，适合按日常妆感需要选择。`)
+      break
+    case '眉妆':
+      if (waterproof) reasons.push(`页面标注${waterproof}，具体持久度仍受肤质和用量影响。`)
+      else if (specTag) reasons.push(`${specTag}形态，方便按上妆习惯挑选。`)
+      break
+    case '眼影': {
+      const colorNumber = colorCount.match(/\d+/)?.[0]
+      if (colorNumber) reasons.push(`${colorNumber} 色眼影盘，日常打底和叠色加深都能覆盖。`)
+      else if (specTag) reasons.push(`${specTag}，可以按妆容浓淡自由搭配。`)
+      break
+    }
+    case '眼线':
+      if (waterproof) reasons.push(`页面标注防水${kind ? `，${kind}` : ''}，适合按线条粗细需要挑选。`)
+      else if (kind) reasons.push(`${kind}，线条粗细和收尾由手法控制。`)
+      break
+    case '睫毛膏':
+      if (kind) reasons.push(`${/睫毛膏/.test(kind) ? kind : `${kind}睫毛膏`}，刷法和层数可以调整妆感。`)
+      else if (specTag) reasons.push(`${/刷头/.test(specTag) ? `${specTag}的睫毛膏` : `${specTag}睫毛膏`}，刷法和层数可以调整妆感。`)
+      else if (/纤细/.test(name)) reasons.push('纤细版刷头，适合想要自然分明的睫毛。')
+      break
+    case '腮红':
+      if (texture) reasons.push(`${texture}腮红，显色会受用量、底妆和光线影响。`)
+      else if (specTag) reasons.push(`${specTag}腮红，上妆范围和浓淡可以按需要控制。`)
+      break
+    case '唇妆':
+      if (texture) reasons.push(`${texture}质地，颜色呈现会受唇色和涂抹层数影响。`)
+      else if (specTag) reasons.push(`${specTag}质地，可按日常妆感选择。`)
+      break
+    case '修容':
+      if (kind) reasons.push(`${kind}，可以按部位分别修饰。`)
+      else if (specTag) reasons.push(`${specTag}设计，方便按部位和范围选择。`)
+      break
+  }
+
+  if (listed.length > 0) reasons.push(`页面列示 ${listed.length} 个${unit}可选，规格 ${record.specification}。`)
+  else if (shades[0]?.name === '单一规格') reasons.push(`单一规格 ${record.specification}，不需要在色号之间比较。`)
+  else reasons.push(`规格 ${record.specification}，具体色号以商品页展示为准。`)
+
+  return reasons
+}
+
+// 详情抽屉展示层文案：只复述已整理的资料和截图原文，不把内部版本复核记录当作使用建议。
+function getCardCopy(record) {
+  const finish = getFinish(record)
+  const shades = getReviewedShades(record)
+  const listed = shades.filter((shade) => shade.verificationStatus === 'verified_parameter_screenshot')
+  const unit = record.category === '眼影' || record.category === '修容' ? '款' : '色'
+  const thirdTag = listed.length ? `${listed.length} ${unit}可选` : finish !== '待核验' ? finish : shades[0]?.name || '多色号可选'
+  const roleTags = cardRoleTags[record.category] || ['日常妆容', '资料整理']
+  const specTag = deriveSpecTag(record)
+  const baseNote = cardNoteTemplates[record.category] || '按商品页信息整理，实际妆效和颜色请以实物与光线为准。'
+  const pageCautions = (record.parameterFacts || [])
+    .filter((fact) => /功效|适用肤色|防水|储存|防晒标识/.test(fact.label))
+    .map((fact) => `页面标注${fact.label.replace(/^商详标注/, '').replace(/^商详/, '').replace(/文案$/, '')}：${fact.value}`)
+  return {
+    cardTags: [...new Set([roleTags[0], specTag || roleTags[1], thirdTag])],
+    cardNote: finish !== '待核验' ? `${finish}方向，${baseNote}` : baseNote,
+    cardFooter: '品牌官方旗舰店资料 · 人工核对',
+    detailCautions: [
+      '妆效、显色和持妆会因用法、肤质和光线不同，建议先少量试用。',
+      '页面未标注或缺失的信息不做推断，购买前请以商品页与包装说明为准。',
+      ...(record.dataIssues?.length ? ['页面存在多个版本或规格选项，购买前请核对具体版本。'] : []),
+      ...pageCautions,
+    ],
+    detailScenes: cardScenes[record.category] || [],
+  }
+}
+
+export const expansionCatalogProducts = productExpansionRecords.map((record) => ({
+  id: record.id, brand: record.brand, name: record.productName, officialProductName: record.officialProductName, category: record.category, specification: record.specification, brandRegion: '待核验', madeIn: getOrigin(record), price: record.listPrice,
+  priceLabel: record.listPrice + ' 元（参考原价，最终价格以结算页为准）', image: '/products/' + record.id + '/cover.webp', skins: [], finish: getFinish(record), coverage: '待核验', wear: null, oxidation: null, rating: null,
+  shades: getReviewedShades(record), colorDisplay: getColorDisplay(record), note: '商品名称、规格与参考价格按人工核验表展示；妆效、色号适配、持妆和独立体验仅展示有截图依据的内容，其余待核验。', pros: deriveLoveReasons(record),
+  cautions: getReviewedCautions(record), scenes: [], metrics: {},
+  informationSources: [
+    { title: '商品资料记录：' + record.marketplaceTitle, url: null, publisher: record.officialStoreName, accessedAt: record.verifiedAt, supports: ['品牌', '产品名称', '店铺身份', '商品规格', '参考价格'] },
+    { title: '参数信息：' + record.productName, url: null, publisher: '商品详情页', accessedAt: record.verifiedAt, supports: (record.parameterFacts || []).map((fact) => fact.label) },
+  ],
+  imageSource: { url: record.image.sourcePageUrl, sourcePageUrl: record.image.sourcePageUrl, rightsholder: record.image.rightsholder || '权利方待核验', authorizationStatus: 'pending', acquiredAt: record.image.acquiredAt, sourcePriority: record.image.sourcePriority, publicUseDecision: 'public_with_source_notice', note: '图片来源已披露，公开展示且授权待核验；公开展示不表示已获得再利用授权。' },
+  imageAuthorizationStatus: 'pending', verificationStatus: 'pending', factVerificationStatus: 'pending', publicStatus: 'public_with_source_notice_authorization_pending', recommendationReady: false, priceVerifiedAt: record.verifiedAt, shadeRecommendationReady: false,
+  onlineVerification: expansionOnlineVerificationRecords[record.id],
+  recommendationReview: expansionRecommendationReviewRecords[record.id],
+  ...getCardCopy(record),
+  editorialProfile: editorialSampleProfiles[record.id] || null,
+}))
+
+export const expansionVerificationRecords = Object.fromEntries(productExpansionRecords.map((record) => {
+  const hasIdentityIssue = record.reviewStatus === 'identity_conflict'
+  const verifiedCommerce = record.tableReviewStatus === '已完成' && Boolean(record.productUrl)
+  const commerceNote = verifiedCommerce
+    ? '商品与店铺信息按人工核验表已完成状态保留；2026-11-20 在线复核未取得支持商品事实或店铺身份的可读直接页面，在线结论仍为待核验。'
+    : '人工核验表未提供已完成的商品链接记录；2026-11-20 在线复核亦未取得合格直接商品页证据。'
+
+  return [record.id, {
+    productId: record.id,
+    nameReviewStatus: hasIdentityIssue ? 'identity_conflict' : 'partial',
+    onlineVerification: expansionOnlineVerificationRecords[record.id],
+    recommendationReview: expansionRecommendationReviewRecords[record.id],
+    commerce: {
+      platform: 'taobao',
+      officialStoreName: record.officialStoreName,
+      officialStoreFlag: record.officialStoreFlag,
+      officialMarkerType: record.officialMarkerType,
+      storeUrl: null,
+      productUrl: verifiedCommerce ? record.productUrl : null,
+      status: verifiedCommerce ? 'verified' : 'pending',
+      verifiedAt: record.verifiedAt,
+      note: commerceNote,
+    },
+    reviewedFacts: {
+      sequence: record.sequence,
+      productName: record.productName,
+      officialProductName: record.officialProductName,
+      brand: record.brand,
+      marketplaceTitle: record.marketplaceTitle,
+      officialStoreName: record.officialStoreName,
+      officialStoreFlag: record.officialStoreFlag,
+      officialMarkerType: record.officialMarkerType,
+      specification: record.specification,
+      listPrice: record.listPrice,
+      priceNote: record.priceNote,
+      origin: getOriginFact(record) && getOrigin(record) !== '待核验' ? getOrigin(record) : null,
+      originStatus: getOriginFact(record)
+        ? getOrigin(record) !== '待核验' ? 'verified_parameter_screenshot' : 'conflicting_parameter_screenshot'
+        : 'not_listed_in_parameter_screenshot',
+      parameterFacts: record.parameterFacts || [],
+      productUrl: verifiedCommerce ? record.productUrl : null,
+      reviewStatus: hasIdentityIssue ? 'identity_conflict' : 'partial',
+      dataIssues: record.dataIssues || [],
+      verifiedAt: record.verifiedAt,
+      source: {
+        sheet: '淘宝人工核验',
+        workbookPath: productExpansionSource.sourceWorkbook.path,
+        range: productExpansionSource.sourceWorkbook.range,
+        rowSequence: record.sequence,
+        parameterEvidencePaths: (record.parameterFacts || []).map((fact) => fact.evidencePath),
+        storeEvidencePath: record.storeEvidencePath,
+        detailEvidencePath: record.detailEvidencePath,
+        qualificationEvidencePath: record.qualificationEvidencePath,
+      },
+      unsupportedFields: getUnsupportedFields(record),
+    },
+    reviewedShades: {
+      sequence: record.sequence,
+      status: getExtractedShadeEntry(record)?.shades?.length ? 'verified_parameter_screenshot' : getColorDisplayStatus(record),
+      applyToCatalog: true,
+      reviewedAt: record.verifiedAt,
+      display: getColorDisplay(record),
+      shades: getReviewedShades(record),
+      sourceVariants: [],
+      issues: getColorDisplayStatus(record) === 'not_listed_in_parameter_screenshot'
+        ? ['参数截图未列示色号；适配方向仍待核验，当前不参与色号推荐。']
+        : ['仅转录参数截图的颜色、色号或 SKU 信息；未推断色调、明度及适配方向，当前不参与色号推荐。'],
+      evidence: [{ kind: 'detail', path: record.detailEvidencePath }],
+    },
+    evidence: {
+      sequence: record.sequence,
+      sourceWorkbook: productExpansionSource.sourceWorkbook,
+      publicEvidence: [
+        { kind: 'store', path: record.storeEvidencePath },
+        { kind: 'detail', path: record.detailEvidencePath },
+        { kind: 'qualification', path: record.qualificationEvidencePath },
+      ],
+      image: record.image,
+    },
+    issues: [
+      ...(record.officialStoreFlag === '否' ? ['普通店铺，外部商品链接已留空。'] : []),
+      ...(record.dataIssues || []),
+      '适用肤质、妆效、遮瑕度、持妆、氧化、评分等仍待核验；图片授权 pending，公开展示仅按来源披露策略执行。',
+    ],
+  }]
+}))
+
+const derivedCategoryCounts = productExpansionRecords.reduce((counts, record) => {
+  counts[record.category] = (counts[record.category] || 0) + 1
+  return counts
+}, {})
+
+productExpansionSource.categoryCounts = derivedCategoryCounts
+
+export const expansionEvidenceSync = { version: 1, importedAt: productExpansionSource.importedAt, issueId: productExpansionSource.issueId, productCount: productExpansionSource.includedSequence.count, sequenceRange: '36-111', sourceWorkbook: productExpansionSource.sourceWorkbook, imageManifest: productExpansionSource.imageManifest, categoryCounts: derivedCategoryCounts }

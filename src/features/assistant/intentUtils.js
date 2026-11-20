@@ -4,6 +4,7 @@ import { products } from '../../data/products'
 function detectIntent(text, profile = {}) {
   const mentioned = findMentionedProducts(text)
   if (mentioned.length && /(对比|区别|哪个好|哪个更)/.test(text)) return 'product_comparison'
+  if (mentioned.length && /(价格|多少钱|成分|规格|色号|产地|功效|哪里买|官网)/.test(text)) return 'product_fact'
   if (/(妆容方案|完整妆容|妆容教程|妆教|化妆教程|化妆步骤|怎么化|如何画|教我画|妆面规划|设计(?:一个)?妆|(?:韩女|水光|拍照|秋日|落叶|约会|通勤|日常|晚宴)妆容?)/.test(text)) return 'makeup_plan'
   if (/肤质/.test(text) && /(判断|分辨|怎么看|怎么知道|测试|自测|属于|是什么)/.test(text)) return 'external_question'
   if (mentioned.length || /(推荐|选什么|怎么选|哪个好|粉底|底妆|气垫|遮瑕|散粉|肤质|油皮|干皮|妆效|持妆|色号|卡粉|脱妆|预算)/.test(text)) return 'catalog_recommendation'

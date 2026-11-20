@@ -95,7 +95,7 @@ export function useAssistant() {
       setMessages((current) => [...current, createMessage('assistant', result.text, result.productIds, result.sources)])
       setMode(result.answerMode === 'weather' || result.sources.some((source) => source.kind === 'weather')
         ? 'weather'
-        : result.sources.some((source) => source.kind === 'web') ? 'web' : result.answerMode === 'clarification' ? 'ready' : result.sources.length ? 'knowledge' : 'ai')
+        : result.sources.some((source) => source.kind === 'web') || (onlineResearch && result.answerMode !== 'clarification') ? 'web' : result.answerMode === 'clarification' ? 'ready' : result.sources.length ? 'knowledge' : 'ai')
       setActiveModel(result.model)
     } catch (error) {
       const errorMessage = cleanErrorMessage(error.message)

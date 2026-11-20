@@ -143,9 +143,13 @@ function buildSystemPrompt(profile, products, webResults, intent = 'external_que
     )).join('\n\n')}\n检索到的外部参考资料结束。`
     : ''
   const knowledgeBlock = formatKnowledgeContext(knowledgeEntries)
-  const needsCatalog = ['catalog_recommendation', 'product_comparison', 'product_fact', 'makeup_plan', 'plan_adjustment'].includes(intent)
+  const recommendationIntent = ['catalog_recommendation', 'makeup_plan', 'plan_adjustment'].includes(intent)
+  const needsCatalog = recommendationIntent || ['product_comparison', 'product_fact'].includes(intent)
+  const catalogProducts = recommendationIntent
+    ? products.filter((product) => product.recommendationReady !== false)
+    : products
   const catalogBlock = needsCatalog
-    ? `\n\nYasPretty 站内产品库：\n${productDigest(products)}`
+    ? `\n\n${recommendationIntent ? 'YasPretty 可推荐产品候选（未列出的产品不得推荐）' : 'YasPretty 站内产品资料（仅供事实查询或比较，不代表可推荐）'}：\n${catalogProducts.length ? productDigest(catalogProducts) : '当前没有满足推荐核验门槛的产品；请说明这一边界，不得推荐或输出任何产品标记。'}`
     : '\n\n本次是产品库之外的问题，不提供产品候选，也不得推荐或虚构站内商品。'
 
   return `你是 YasPretty 网站中的专属美妆顾问“小Y”。本次请求已由 intentRouter 归类为：${intent}。你必须遵守以下规则：

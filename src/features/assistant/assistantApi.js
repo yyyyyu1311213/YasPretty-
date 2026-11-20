@@ -3,6 +3,7 @@ import { ASSISTANT_ENDPOINT } from '../../lib/api/endpoints'
 import { createApiError } from '../../lib/api/errors'
 import { requestMakeupPlan as requestPlan } from '../makeup-plan/makeupPlanApi'
 import { formatPlanReply, parseAssistantResult, planPayloadFromConversation } from './assistantUtils'
+import { detectIntent } from './intentUtils'
 
 /**
  * @param {{text: string, messages: import('../../contracts/index.js').AssistantMessage[], profile: import('../../contracts/index.js').AssistantProfile}} request
@@ -18,7 +19,7 @@ export async function requestAssistant({ text, messages, profile }) {
   ))
   if (!data?.answer) throw createApiError('智能服务没有返回内容')
   return {
-    ...parseAssistantResult(data.answer),
+    ...parseAssistantResult(data.answer, detectIntent(text, profile)),
     sources: data.sources || [],
     answerMode: data.answerMode || 'model',
     model: data.model || '',

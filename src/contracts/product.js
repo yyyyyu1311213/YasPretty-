@@ -8,7 +8,7 @@
  * 产品事实引用；不同于 AssistantSource，没有 kind，日期只有年月日。
  * @typedef {object} ProductSource
  * @property {string} title
- * @property {string} url 记录中的来源 URL；类型本身不证明官方旗舰店身份或符合公开门禁。
+ * @property {string | null} url 记录中的来源 URL；本地工作簿或截图证据没有 URL 时为 null。类型本身不证明官方旗舰店身份或符合公开门禁。
  * @property {string} publisher
  * @property {string} accessedAt YYYY-MM-DD 日期，如 2026-10-29，不是 ISO 日期时间。
  * @property {string[]} supports 无支撑字段时为 []。
@@ -48,10 +48,11 @@
  * src/data/product-shade-verification.js 当前附加在产品上的核验记录。
  * @typedef {object} ProductShadeVerification
  * @property {string} sequence 两位序号文本。
- * @property {'verified_parameter_screenshot' | 'marketplace_variant_only' | 'product_identity_conflict'} status
+ * @property {'verified_parameter_screenshot' | 'marketplace_variant_only' | 'product_identity_conflict' | 'parameter_screenshot_listed' | 'color_count_only' | 'not_listed_in_parameter_screenshot'} status
  * @property {boolean} applyToCatalog
  * @property {string} reviewedAt YYYY-MM-DD 日期。
  * @property {ProductShade[]} shades
+ * @property {string} [colorDisplay] 扩展产品参数截图的原文颜色/SKU转录；不表示色调、肤色适配或推荐结论。
  * @property {string[]} sourceVariants 无选项记录时为 []。
  * @property {string[]} issues 无问题说明时为 []。
  * @property {object} source
@@ -60,6 +61,40 @@
  * @property {string} source.workbookNameCell
  * @property {string} source.workbookMatchCell
  * @property {string} source.parameterEvidenceKind
+ */
+
+/**
+ * 一次在线访问的原始结果；候选页或受限页 URL 只作访问证据，不是购买入口。
+ * @typedef {object} ProductOnlineSource
+ * @property {string} url
+ * @property {string} title
+ * @property {string} publisher
+ * @property {string} accessedAt YYYY-MM-DD 北京时间访问日期。
+ * @property {string} evidence 实际读取结果及证据边界，不采信搜索摘要。
+ */
+
+/**
+ * @typedef {object} ProductOnlineVerification
+ * @property {string} productId
+ * @property {'unverified'} status 访问受限或证据不足；不表示旧人工证据无效。
+ * @property {string} accessedAt YYYY-MM-DD 北京时间访问日期。
+ * @property {string[]} supportedFields 本轮没有合格证据支持字段时为 []。
+ * @property {ProductOnlineSource[]} sourceRecords
+ * @property {string[]} conflicts 未解决的名称、版本、规格、价格或商品 ID 冲突。
+ * @property {string[]} limitations 访问限制和仍未核验的字段。
+ */
+
+/**
+ * @typedef {object} ProductRecommendationReview
+ * @property {string} productId
+ * @property {'remain_blocked'} decision 证据不足时继续阻断，而不是生成负向评价。
+ * @property {string} reviewedAt YYYY-MM-DD 复核日期。
+ * @property {null} rating 未生成编辑评分，更不是消费者真实用户评分。
+ * @property {'not_generated'} ratingStatus
+ * @property {false} recommendationReady
+ * @property {false} shadeRecommendationReady
+ * @property {'pending'} imageAuthorizationStatus 来源披露不等于授权。
+ * @property {string[]} blockingReasons
  */
 
 /**
@@ -97,6 +132,8 @@
  * @property {'pending' | 'verified' | 'rejected' | 'not_applicable'} factVerificationStatus
  * @property {string} publicStatus 公开门禁状态，不等同于素材已授权。
  * @property {boolean} recommendationReady
+ * @property {ProductOnlineVerification} [onlineVerification] 扩展产品的本轮在线访问记录。
+ * @property {ProductRecommendationReview} [recommendationReview] 扩展产品的逐款推荐复核结论。
  */
 
 export {}

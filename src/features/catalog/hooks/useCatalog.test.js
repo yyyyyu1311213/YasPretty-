@@ -47,7 +47,7 @@ describe('catalog state', () => {
   it('clears filters and sort without implicitly closing the panel', () => {
     render().setFilterPanelOpen((open) => !open)
     render().setSort('rating')
-    render().searchCatalog('missing')
+    render().searchCatalog('zzzz-no-match')
     expect(render().filteredProducts).toEqual([])
     render().clearFilters()
     expect(render()).toMatchObject({ filters: emptyFilters, sort: 'recommended', filterPanelOpen: true })

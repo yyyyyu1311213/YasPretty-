@@ -38,7 +38,8 @@ export function pickShade(product, profile) {
 }
 
 function scoreProduct(product, profile) {
-  let score = product.rating * 2 + Math.min(product.wear, 12) / 3
+  let score = (Number.isFinite(product.rating) ? product.rating * 2 : 0)
+    + (Number.isFinite(product.wear) ? Math.min(product.wear, 12) / 3 : 0)
   if (profile.skin) score += product.skins.includes(profile.skin) ? 30 : -24
   if (profile.finish) score += product.finish === profile.finish ? 20 : 0
   if (profile.scene) score += product.scenes.includes(profile.scene) ? 15 : 0
@@ -49,10 +50,11 @@ function scoreProduct(product, profile) {
 }
 
 export function recommendProducts(profile, text) {
-  const mentioned = findMentionedProducts(text)
+  const mentioned = findMentionedProducts(text).filter((product) => product.recommendationReady !== false)
   if (mentioned.length) return mentioned.slice(0, 3)
 
   const pool = products.filter((product) => {
+    if (product.recommendationReady === false) return false
     if (profile.category && product.category !== profile.category) return false
     if (!profile.category && /底妆|粉底/.test(text) && product.category !== '粉底液') return false
     if (profile.skin && !product.skins.includes(profile.skin)) return false
@@ -67,7 +69,7 @@ export function localReply(text, profile) {
     return { text: '你好，我是小Y。先告诉我你的肤质吧，例如油皮、混油皮、干皮或混干皮。', products: [] }
   }
 
-  const mentioned = findMentionedProducts(text)
+  const mentioned = findMentionedProducts(text).filter((product) => product.recommendationReady !== false)
   if (!profile.skin && !mentioned.length && /推荐|怎么选|底妆|粉底|适合/.test(text)) {
     return { text: '为了避免只凭热度推荐，我需要先确认你的肤质。你是油皮、混油皮、干皮、混干皮，还是敏感肌？', products: [] }
   }
@@ -165,10 +167,12 @@ export function localMakeupReply(text, profile) {
   }
 }
 
-export function parseAssistantResult(raw) {
+export function parseAssistantResult(raw, intent = 'external_question') {
+  const recommendationIntent = ['catalog_recommendation', 'makeup_plan', 'plan_adjustment'].includes(intent)
   const ids = [...raw.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)]
     .map((match) => match[1].trim())
-    .filter((id) => products.some((product) => product.id === id))
+    .filter((id) => products.some((product) => product.id === id
+      && (!recommendationIntent || product.recommendationReady !== false)))
   return {
     text: raw.replace(/\n?\[\[PRODUCT:[^\]]+\]\]/g, '').trim(),
     productIds: [...new Set(ids)].slice(0, 3),

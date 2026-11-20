@@ -17,18 +17,23 @@ const empty = { categories: [], skins: [], finishes: [], coverages: [], minWear:
 function expected(filters = empty, sort = 'recommended') {
   return products.filter((p) => {
     const needle = filters.keyword.trim().toLowerCase()
-    if (needle && ![p.brand, p.name, p.category, ...p.shades.flatMap(Object.values), ...p.scenes].join(' ').toLowerCase().includes(needle)) return false
+    if (needle && ![p.brand, p.name, p.category, p.colorDisplay, ...p.shades.flatMap(Object.values), ...p.scenes].join(' ').toLowerCase().includes(needle)) return false
     if (filters.categories.length && !filters.categories.includes(p.category)) return false
     if (filters.skins.length && !filters.skins.some((v) => p.skins.includes(v))) return false
     if (filters.finishes.length && !filters.finishes.includes(p.finish)) return false
     if (filters.coverages.length && !filters.coverages.includes(p.coverage)) return false
-    if (filters.minWear && p.wear < Number(filters.minWear)) return false
+    if (filters.minWear && (p.wear == null || p.wear < Number(filters.minWear))) return false
     if (filters.oxidations.length && !filters.oxidations.includes(p.oxidation)) return false
     if (filters.regions.length && !filters.regions.includes(p.brandRegion)) return false
-    if (filters.price) { const [min, max] = filters.price.split('-').map(Number); if (p.price < min || p.price > max) return false }
-    if (filters.maxPrice && p.price > filters.maxPrice) return false
+    if (filters.price) { const [min, max] = filters.price.split('-').map(Number); if (p.price == null || p.price < min || p.price > max) return false }
+    if (filters.maxPrice && (p.price == null || p.price > filters.maxPrice)) return false
     return !filters.scene || p.scenes.includes(filters.scene)
-  }).sort((a, b) => sort === 'rating' ? b.rating - a.rating : sort === 'price-asc' ? a.price - b.price : sort === 'price-desc' ? b.price - a.price : b.rating * 10 + b.wear - (a.rating * 10 + a.wear)).map((p) => p.id)
+  }).sort((a, b) => {
+    if (sort === 'rating') return (b.rating ?? -1) - (a.rating ?? -1)
+    if (sort === 'price-asc') return (a.price ?? Number.POSITIVE_INFINITY) - (b.price ?? Number.POSITIVE_INFINITY)
+    if (sort === 'price-desc') return (b.price ?? -1) - (a.price ?? -1)
+    return (b.rating ?? -1) * 10 + (b.wear ?? -1) - ((a.rating ?? -1) * 10 + (a.wear ?? -1))
+  }).map((p) => p.id)
 }
 
 async function until(check, message) {
@@ -51,8 +56,7 @@ async function library(page) {
 }
 
 async function ids(page) {
-  const names = await page.locator('.library-results .product-name').allTextContents()
-  return names.map((name) => { const p = products.find((item) => item.name === name); assert(p, name); return p.id })
+  return page.locator('.library-results .product-card').evaluateAll((cards) => cards.map((card) => card.dataset.productId))
 }
 
 async function checkResults(page, filters = empty, sort = 'recommended') {
@@ -75,7 +79,9 @@ async function clear(page) {
 function group(page, label) { return page.locator('.filter-group').filter({ has: page.locator('p', { hasText: new RegExp(`^${label}$`) }) }) }
 async function choose(page, label, value) {
   await openFilters(page)
-  await group(page, label).getByRole('button', { name: value, exact: true }).click()
+  const option = group(page, label).getByRole('button', { name: value, exact: true })
+  await option.evaluate((element) => element.scrollIntoView({ block: 'center', inline: 'nearest' }))
+  await option.click()
 }
 async function layout(page, selector) {
   return page.locator(selector).evaluate((root) => {
@@ -260,6 +266,85 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 360, height: 800 
     await page.getByRole('button', { name: '取消', exact: true }).click()
     assert.equal(await page.locator('.empty-favorites h2').textContent(), '收藏清单还是空的')
     return { productId: product.id, first, navigation, shadeNames, scroll, similarName, similar, resetShade, closedFocus, drawerGeometry, profile, stored }
+  })
+
+  await run(viewport, 'expanded-products', async (page, label) => {
+    await library(page)
+    assert.equal(await page.locator('.results-toolbar strong').textContent(), '111')
+    assert.equal(await page.locator('.product-card').count(), 111)
+    await screenshot(page, label)
+
+    const imageResponses = []
+    page.on('response', (response) => {
+      if (/\/products\/catalog-\d{3}\/cover\.webp$/.test(new URL(response.url()).pathname)) {
+        imageResponses.push({ url: response.url(), status: response.status() })
+      }
+    })
+    const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight)
+    for (let y = 0; y < documentHeight; y += Math.max(400, viewport.height - 120)) {
+      await page.evaluate((position) => window.scrollTo(0, position), y)
+      await page.waitForTimeout(80)
+    }
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await page.waitForTimeout(500)
+    const loadedImages = await page.locator('.product-card img').evaluateAll((images) => images.map((image) => ({
+      src: new URL(image.src).pathname,
+      loaded: image.complete && image.naturalWidth > 0,
+      naturalWidth: image.naturalWidth,
+    })))
+    const expansionImages = loadedImages.filter((image) => /\/products\/catalog-\d{3}\/cover\.webp$/.test(image.src))
+    assert.equal(expansionImages.length, 76)
+    assert(expansionImages.every((image) => image.loaded), JSON.stringify(expansionImages.filter((image) => !image.loaded)))
+    assert(imageResponses.every((response) => response.status === 200), JSON.stringify(imageResponses.filter((response) => response.status !== 200)))
+
+    const requiredSearches = []
+    for (const [keyword, expectedName] of [['经典砍刀眉笔', '经典砍刀眉笔'], ['三色修容盘', '三色修容盘'], ['L501冰藕玉', '雕花口红']]) {
+      await page.locator('.library-search input').fill(keyword)
+      await until(async () => (await ids(page)).length > 0, `${keyword} search result`)
+      const matches = await ids(page)
+      assert(matches.some((id) => products.find((product) => product.id === id)?.name === expectedName))
+      requiredSearches.push({ keyword, ids: matches })
+    }
+
+    const ownerProducts = products.filter((product) => /^catalog-0(?:3[6-9]|4[0-5])$/.test(product.id))
+    const ownerDetails = []
+    for (const product of ownerProducts) {
+      await page.locator('.library-search input').fill(product.name)
+      const card = page.locator(`.product-card[data-product-id="${product.id}"]`)
+      await card.waitFor()
+      await card.getByRole('button', { name: product.name, exact: true }).click()
+      const drawer = page.getByRole('dialog')
+      await drawer.waitFor()
+      assert.equal(await page.evaluate(() => history.state.drawerProductId), product.id)
+      assert(await drawer.getByText(product.specification || '参数待核验', { exact: false }).count() > 0 || product.specification == null)
+      await drawer.getByRole('button', { name: '关闭详情', exact: true }).click()
+      ownerDetails.push(product.id)
+    }
+    assert.equal(ownerDetails.length, 10)
+
+    const categoryDetails = []
+    for (const category of categoryOptions) {
+      await clear(page)
+      await choose(page, '产品类别', category)
+      await closeFilters(page)
+      const firstCard = page.locator('.product-card').first()
+      await firstCard.waitFor()
+      const id = await firstCard.getAttribute('data-product-id')
+      const product = products.find((item) => item.id === id)
+      await firstCard.getByRole('button', { name: product.name, exact: true }).click()
+      const drawer = page.getByRole('dialog')
+      await drawer.waitFor()
+      assert.equal(await drawer.locator('h2').textContent(), product.name)
+      assert.equal(await page.evaluate(() => history.state.drawerProductId), id)
+      await drawer.getByRole('button', { name: '关闭详情', exact: true }).click()
+      categoryDetails.push({ category, id })
+    }
+    await clear(page)
+    await closeFilters(page)
+    assert.equal(await page.locator('.results-toolbar strong').textContent(), '111')
+    const geometry = await layout(page, '.library-page')
+    assert(geometry.documentWidth <= viewport.width)
+    return { imageCount: expansionImages.length, imageResponses: imageResponses.length, requiredSearches, ownerDetails, categoryDetails, geometry }
   })
 
   await run(viewport, 'direct-link', async (page, label) => {

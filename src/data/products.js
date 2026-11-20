@@ -3,7 +3,7 @@ import { reviewedProductShades } from './product-shade-verification.js'
 import { reviewedProductFacts } from './product-verification.reviewed.js'
 import { expansionCatalogProducts } from './product-expansion.js'
 
-export const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉', '眉妆', '眼影', '眼线', '睫毛膏', '腮红', '唇妆', '修容']
+export const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉', '素颜霜', '隔离', '有色面霜', '眉妆', '眼影', '眼线', '睫毛膏', '腮红', '唇妆', '修容']
 export const skinOptions = ['油皮', '混油皮', '干皮', '混干皮', '敏感肌']
 export const finishOptions = ['哑光', '柔雾', '奶油肌', '自然光泽']
 
@@ -148,7 +148,7 @@ const internationalFoundations = [
   createInternationalFoundation({ id: 'pat-mcgrath-skin-fetish', brand: 'PAT McGRATH LABS', name: 'Skin Fetish: Sublime Perfection Foundation', brandRegion: '英国', madeIn: '意大利（以包装批次为准）', price: 620, profile: 'glow', shades: ['Light 2', 'Light Medium 10', 'Medium 15'], note: '光泽精致但不张扬，适合想要高级皮肤质感的时候。', pros: ['通透显肤质', '妆感层次细', '适合精致妆容'], cautions: ['局部瑕疵需额外遮盖', '建议少量多次叠加'] }),
 ]
 
-export const products = [
+const productRecords = [
   {
     id: 'nars-light-reflecting', brand: 'NARS', name: '超方瓶粉底液', category: '粉底液', brandRegion: '美国', madeIn: '法国', price: 430, priceLabel: '400 - 450 元',
     image: '/product/NARS/NARS超方瓶/NARS超方瓶 L2.webp', images: [{ shade: 'L0.5', url: '/product/NARS/NARS超方瓶/NARS超方瓶 L0.5.webp' }, { shade: 'L2', url: '/product/NARS/NARS超方瓶/NARS超方瓶 L2.webp' }, { shade: 'L4', url: '/product/NARS/NARS超方瓶/NARS超方瓶 L4.webp' }], skins: ['混干皮', '干皮', '混油皮'], finish: '自然光泽', coverage: '中', wear: 8, oxidation: '低', rating: 4.7,
@@ -225,6 +225,20 @@ export const products = [
   ...stage3Products,
   ...expansionCatalogProducts,
 ].map(enrichProductRecord)
+
+const knownBrandRegions = new Map(
+  productRecords.slice(0, 35)
+    .filter((product) => product.brandRegion && product.brandRegion !== '待核验')
+    .map((product) => [product.brand.trim().toLocaleLowerCase(), product.brandRegion]),
+)
+
+export const products = productRecords.map((product) => {
+  if (!product.id.startsWith('catalog-')) return product
+  return {
+    ...product,
+    brandRegion: knownBrandRegions.get(product.brand.trim().toLocaleLowerCase()) || product.brandRegion,
+  }
+})
 
 export const quickFilters = [
   { label: '油皮持妆', query: { skins: ['油皮'], minWear: 9 } },

@@ -32,7 +32,7 @@ const sourceSchema = z.object({
 
 const productSourceSchema = z.object({
   title: z.string().trim().min(1).max(300),
-  url: z.string().url().max(2000),
+  url: z.string().url().max(2000).nullable(),
   publisher: z.string().trim().max(200).default(''),
   accessedAt: z.string().date(),
   supports: z.array(z.string().trim().min(1).max(160)).max(12).default([]),

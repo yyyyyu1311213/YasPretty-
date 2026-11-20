@@ -5,14 +5,14 @@ import { products } from '../../data/products'
 const product = {
   id: 'example', brand: 'Sample BRAND', name: '柔雾粉底', category: '粉底液', skins: ['油皮', '混油皮'],
   finish: '柔雾', coverage: '高', wear: 8, oxidation: '低', brandRegion: '中国', price: 200,
-  rating: 4.5, shades: [{ name: 'N01', tone: '中性调', lightness: '白皙', suitable: '黄一白' }],
+  rating: 4.5, colorDisplay: '页面所选SKU：L501 冰糖玉；色调与适配方向待核验', shades: [{ name: 'N01', tone: '中性调', lightness: '白皙', suitable: '黄一白' }],
   scenes: ['通勤', '拍照'], note: '不在文本搜索字段中',
 }
 const matches = (patch, item = product) => productMatches(item, { ...emptyFilters, ...patch })
 
 describe('catalog text and hard filters', () => {
   it('retains trimmed case-insensitive substring matching across all original fields', () => {
-    for (const keyword of ['', null, undefined, '  ', ' sample brand ', '柔雾粉底', '粉底液', 'n01', '中性调', '白皙', '黄一白', '通勤']) {
+    for (const keyword of ['', null, undefined, '  ', ' sample brand ', '柔雾粉底', '粉底液', 'n01', '中性调', '白皙', '黄一白', 'L501 冰糖玉', '通勤']) {
       expect(containsText(product, keyword), String(keyword)).toBe(true)
     }
     for (const keyword of ['不在文本搜索字段中', '油皮', 'BRAND N01', '不存在']) expect(containsText(product, keyword)).toBe(false)
@@ -45,13 +45,13 @@ describe('catalog text and hard filters', () => {
     expect(matches({ price: '400-800' }, { ...product, price: 801 })).toBe(false)
   })
 
-  it('retains the original falsy and numeric-coercion behavior without normalizing facts', () => {
+  it('keeps unknown prices out of price-filter results without normalizing facts', () => {
     expect(matches({ maxPrice: 0 })).toBe(true)
     expect(matches({ maxPrice: null })).toBe(true)
     expect(matches({ minWear: '' }, { ...product, wear: null })).toBe(true)
     expect(matches({ minWear: '6' }, { ...product, wear: null })).toBe(false)
     expect(matches({ minWear: '6' }, { ...product, wear: undefined })).toBe(true)
-    expect(matches({ price: '0-200' }, { ...product, price: null })).toBe(true)
+    expect(matches({ price: '0-200' }, { ...product, price: null })).toBe(false)
   })
 })
 
@@ -65,9 +65,9 @@ describe('catalog ordering', () => {
 
   it.each([
     ['recommended', ['b', 'a', 'c', 'd']], ['rating', ['a', 'c', 'b', 'd']],
-    ['price-asc', ['d', 'b', 'c', 'a']], ['price-desc', ['a', 'b', 'c', 'd']],
+    ['price-asc', ['b', 'c', 'a', 'd']], ['price-desc', ['a', 'b', 'c', 'd']],
     ['unknown', ['b', 'a', 'c', 'd']],
-  ])('retains %s ordering, ties and null arithmetic', (sort, ids) => {
+  ])('retains %s ordering and places unknown values last', (sort, ids) => {
     const result = sortCatalogProducts(rows, sort)
     expect(result.map((p) => p.id)).toEqual(ids)
     expect(result).not.toBe(rows)
@@ -79,6 +79,6 @@ describe('catalog ordering', () => {
     expect(sortCatalogProducts([], 'recommended')).toEqual([])
     const result = sortCatalogProducts(products.filter((p) => productMatches(p, emptyFilters)), 'recommended')
     expect(result[0].id).toBe('estee-lauder-double-wear')
-    expect(result).toHaveLength(101)
+    expect(result).toHaveLength(111)
   })
 })

@@ -39,6 +39,21 @@ describe('小Y业务请求', () => {
     expect(profile).toEqual({ skin: '混油皮', budget: 400, scene: '通勤' })
   })
 
+  it('filters ineligible product cards from online recommendations but not product facts', async () => {
+    const pending = products.find((product) => product.id === 'catalog-111')
+    const ready = products.find((product) => product.recommendationReady !== false)
+    const answer = `合成回答。\n[[PRODUCT:${pending.id}]]\n[[PRODUCT:${ready.id}]]`
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => ({ answer, sources: [], answerMode: 'model', model: 'test-model' }),
+    }))
+
+    const recommendation = await requestAssistant({ text: '推荐一款修容', messages: [], profile: {} })
+    expect(recommendation.productIds).toEqual([ready.id])
+
+    const fact = await requestAssistant({ text: `${pending.brand} ${pending.name} 多少钱`, messages: [], profile: {} })
+    expect(fact.productIds).toEqual([pending.id, ready.id])
+  })
+
   it('keeps response defaults and the existing HTTP-success acceptance boundary', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true, status: 200, json: async () => ({ ok: false, answer: '合成回答', sources: null, answerMode: '', model: null }),

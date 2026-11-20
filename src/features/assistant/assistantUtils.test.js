@@ -73,6 +73,16 @@ describe('小Y本地规则', () => {
     expect(result.text).not.toContain('PRODUCT')
   })
 
+  it('removes ineligible recommendation markers but preserves them for fact queries and comparisons', () => {
+    const pending = products.find((product) => product.id === 'catalog-111')
+    const ready = products.find((product) => product.recommendationReady !== false)
+    const raw = `资料说明。\n[[PRODUCT:${pending.id}]]\n[[PRODUCT:${ready.id}]]`
+    expect(parseAssistantResult(raw, 'catalog_recommendation').productIds).toEqual([ready.id])
+    expect(parseAssistantResult(raw, 'makeup_plan').productIds).toEqual([ready.id])
+    expect(parseAssistantResult(raw, 'product_fact').productIds).toEqual([pending.id, ready.id])
+    expect(parseAssistantResult(raw, 'product_comparison').productIds).toEqual([pending.id, ready.id])
+  })
+
   it('updates stated conditions without losing existing preferences or mutating the old profile', () => {
     const current = { skin: '油皮', budget: 400, scene: '通勤', tone: '暖调', city: '杭州' }
     const next = extractProfile('改为大干皮，预算 200 元，雾面，冷白', current)
@@ -92,6 +102,12 @@ describe('小Y本地规则', () => {
     expect(reply.products).toEqual(mentioned)
     expect(reply.text).toContain('我按资料库信息比较你提到的产品：')
     for (const product of mentioned) expect(reply.text).toContain(`${product.brand} ${product.name}`)
+  })
+
+  it('does not turn browsable expansion records into local recommendation candidates', () => {
+    const expansion = products.find((product) => product.id === 'catalog-111')
+    expect(recommendProducts({}, expansion.name)).not.toContain(expansion)
+    expect(recommendProducts({ skin: '油皮' }, '推荐修容')).not.toContain(expansion)
   })
 
   it('asks for skin type before recommending and explains matching conditions after clarification', () => {

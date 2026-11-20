@@ -49,7 +49,8 @@ describe('catalog product card', () => {
     expect(props.onRemoveFavorite).not.toHaveBeenCalled()
     const markup = renderToStaticMarkup(tree)
     expect(markup).toContain(product.image)
-    expect(markup).toContain('编辑示例')
+    expect(markup).toContain('品牌官方旗舰店资料 · 人工核对')
+    expect(markup).not.toContain('编辑示例')
     expect(markup).toContain('loading="lazy"')
     expect(markup).not.toContain('shade-dot')
   })
@@ -71,8 +72,40 @@ describe('catalog product card', () => {
     const item = products.find((p) => p.category === '腮红')
     const markup = renderToStaticMarkup(<ProductCard product={item} collection={{}} {...callbacks()} />)
     expect(markup).toContain('shade-dot')
-    expect(markup).toContain('官网资料，非用户统计')
+    expect(markup).toContain('品牌官方旗舰店资料 · 人工核对')
     expect(markup).toContain(item.shades[0].name)
+  })
+
+  it('uses the same card information rows for expanded products without inventing suitability data', () => {
+    const original = renderToStaticMarkup(<ProductCard product={product} collection={{}} {...callbacks()} />)
+    const expandedProduct = products.find((item) => item.id === 'catalog-040')
+    const expanded = renderToStaticMarkup(<ProductCard product={expandedProduct} collection={{}} {...callbacks()} />)
+    for (const className of ['shade-line', 'tag-row', 'product-note', 'rating-row']) {
+      expect(original).toContain(`class="${className}"`)
+      expect(expanded).toContain(`class="${className}"`)
+    }
+    expect(expanded).toContain('颜色/色号 单一规格')
+    expect(expanded).toContain('素颜提亮')
+    expect(expanded).toContain('单一规格')
+    expect(expanded).not.toContain('待核验')
+    expect(expanded).not.toContain('编辑示例')
+  })
+
+  it('renders editorial samples with product-specific copy instead of verification placeholders', () => {
+    const sample = products.find((item) => item.id === 'catalog-038')
+    const card = renderToStaticMarkup(<ProductCard product={sample} collection={{}} {...callbacks()} />)
+    expect(card).toContain('柔光润色')
+    expect(card).toContain('适合通勤打底')
+    expect(card).not.toContain('人工核验参考资料')
+    expect(card).not.toContain('待核验')
+
+    const drawer = renderToStaticMarkup(<ProductDetailDrawer product={sample} statusControl={null} onClose={vi.fn()} onOpenProduct={vi.fn()} onOpenFullProfile={vi.fn()} />)
+    expect(drawer).not.toContain('质感与选购方向')
+    expect(drawer).toContain('喜欢它的理由')
+    expect(drawer).toContain('使用时注意')
+    expect(drawer).toContain('柔光乳霜')
+    expect(drawer).not.toContain('人工核验资料')
+    expect(drawer).not.toContain('暂无统一样本')
   })
 })
 
@@ -115,7 +148,7 @@ describe('catalog filters and results', () => {
     expect(props.onClear).toHaveBeenCalledOnce()
     const markup = renderToStaticMarkup(empty)
     expect(markup).toContain('没有找到对应档案')
-    expect(markup).toContain('101 条资料')
+    expect(markup).toContain('111 条资料')
   })
 })
 
@@ -161,7 +194,7 @@ describe('catalog profile and drawer', () => {
     expect(onClose).toHaveBeenCalledTimes(3)
     byClass(tree, 'full-profile-action').props.onClick()
     expect(onOpenFullProfile).toHaveBeenCalledExactlyOnceWith(product)
-    const recommended = products.filter((p) => p.id !== product.id && (p.category === product.category || p.finish === product.finish)).slice(0, 3)
+    const recommended = products.filter((p) => p.id !== product.id && p.recommendationReady !== false && (p.category === product.category || p.finish === product.finish)).slice(0, 3)
     const buttons = [...nodes(byClass(tree, 'recommendation-list'))].filter((n) => n.type === 'button')
     expect(buttons).toHaveLength(recommended.length)
     buttons.forEach((button) => button.props.onClick())
@@ -169,7 +202,101 @@ describe('catalog profile and drawer', () => {
     expect(find(tree, (n) => n.props?.['data-status-slot'])).toBe(statusControl)
     const markup = renderToStaticMarkup(tree)
     expect(markup).toContain('aria-modal="true"')
-    expect(markup).toContain('非用户统计')
+    expect(markup).toContain('品牌官方旗舰店资料 · 人工核对')
+    expect(markup).not.toContain('编辑示例')
     expect(markup).toContain('版权归原权利人所有')
+  })
+
+  it('shows the table price and preserves screenshot-version notes for mismatched identities', () => {
+    const expansion = products.find((item) => item.id === 'catalog-041')
+    const markup = renderToStaticMarkup(<ProductProfile product={expansion} statusControl={null} onBack={() => {}} />)
+    expect(markup).toContain('产品身份或版本存在冲突')
+    expect(markup).toContain('页面存在多个版本或规格选项，购买前请核对具体版本。')
+    expect(markup).toContain('169 元 · 最终价格以结算页为准')
+    expect(markup).toContain('打开官方商品链接')
+    expect(markup).toContain('参数信息')
+    expect(markup).toContain('商品资料记录')
+    expect(markup).toContain('权利人联系删除')
+  })
+
+  it('keeps the original profile and drawer sections for expanded products while showing evidence boundaries', () => {
+    const expandedProduct = products.find((item) => item.id === 'catalog-043')
+    const profile = renderToStaticMarkup(<ProductProfile product={expandedProduct} statusControl={null} onBack={() => {}} />)
+    const drawer = renderToStaticMarkup(<ProductDetailDrawer product={expandedProduct} statusControl={null} onClose={() => {}} onOpenProduct={() => {}} onOpenFullProfile={() => {}} />)
+    expect(profile).not.toContain('class="assessment-grid"')
+    expect(profile).toContain('class="assessment-columns"')
+    expect(profile).toContain('<dt>参考价格</dt>')
+    expect(profile).toContain('<dt>妆效方向</dt>')
+    expect(profile).toContain('喜欢它的理由')
+    expect(profile).not.toContain('产品信息要点')
+    expect(profile).toContain('授权待核验')
+    expect(profile).not.toContain('人工核验参考原价')
+    expect(profile).not.toContain('暂无已核验的场景标签')
+    expect(profile).not.toContain('暂无已记录理由')
+    for (const section of ['基础信息', '颜色/色号', '喜欢它的理由', '使用时注意', '适合场景', '图片与版权']) expect(drawer).toContain(section)
+    expect(drawer).not.toContain('选购方向')
+    expect(drawer).not.toContain('质感与选购方向')
+    expect(drawer).toContain('class="detail-section two-columns"')
+    expect(drawer).toContain('防晒、保湿（页面宣称，非独立功效验证）')
+  })
+
+  it('preserves the original first-35 shade and empty-metric presentation', () => {
+    const legacy = products.find((item) => item.id === 'lancome-is-me-liquid-blush')
+    const drawer = renderToStaticMarkup(<ProductDetailDrawer product={legacy} statusControl={null} onClose={() => {}} onOpenProduct={() => {}} onOpenFullProfile={() => {}} />)
+    expect(drawer).toContain('#50 「是我」粉')
+    expect(drawer).toContain('class="shade-description"')
+    expect(drawer).toContain('品牌官方旗舰店资料 · 人工核对')
+    expect(drawer).toContain('class="metric-grid"')
+    expect(drawer).not.toContain('暂无统一样本、环境和测试方法支持的评分')
+  })
+
+  it('renders the standard card, drawer and full-profile presentation for all 76 expanded products', () => {
+    const expandedProducts = products.filter((item) => item.id.startsWith('catalog-'))
+    expect(expandedProducts).toHaveLength(76)
+
+    for (const expandedProduct of expandedProducts) {
+      const editorial = Boolean(expandedProduct.editorialProfile)
+      const card = renderToStaticMarkup(<ProductCard product={expandedProduct} collection={{}} {...callbacks()} />)
+      for (const className of ['shade-line', 'tag-row', 'product-note', 'rating-row']) expect(card).toContain(`class="${className}"`)
+
+      const drawer = renderToStaticMarkup(<ProductDetailDrawer product={expandedProduct} statusControl={null} onClose={() => {}} onOpenProduct={() => {}} onOpenFullProfile={() => {}} />)
+      const drawerSections = ['基础信息', '颜色/色号', '喜欢它的理由', '使用时注意', '适合场景', '图片与版权', '相似产品', '查看完整产品资料']
+      for (const section of drawerSections) {
+        expect(drawer, `${expandedProduct.id} drawer should render ${section}`).toContain(section)
+      }
+      if (editorial || !expandedProduct.shades.some((shade) => shade.verificationStatus === 'verified_parameter_screenshot')) expect(drawer).toContain('class="detail-editorial-copy"')
+      else expect(drawer).toContain('class="shade-list"')
+      expect(drawer).not.toContain('<dt>官方商品名称</dt>')
+      expect(drawer).not.toContain('截图证据：')
+
+      const profile = renderToStaticMarkup(<ProductProfile product={expandedProduct} statusControl={null} onBack={() => {}} />)
+      const profileLabels = editorial ? ['品牌所属地区', '实际生产地', '参考价格', '商品规格', '质感方向', '色彩方向', '适合人群', '颜色/色号'] : ['品牌所属地区', '实际生产地', '参考价格', '商品规格', '妆效方向', '颜色/色号']
+      for (const label of profileLabels) {
+        expect(profile, `${expandedProduct.id} should render ${label}`).toContain(`<dt>${label}</dt>`)
+      }
+      const profileSections = ['喜欢它的理由', '使用时注意', '适合场景', '图片与版权', '权利人联系删除']
+      for (const section of profileSections) {
+        expect(profile, `${expandedProduct.id} should render ${section}`).toContain(section)
+      }
+      expect(profile).toContain('来源已披露、授权待核验')
+      expect(profile).not.toContain('<dd>待核验</dd>')
+      expect(profile).not.toContain('人工核验参考原价')
+      expect(profile).not.toContain('暂无已核验的场景标签')
+      expect(profile).not.toContain('暂无已记录理由')
+      expect(profile).not.toContain('<dt>官方商品名称</dt>')
+      expect(profile).not.toContain('<dt>商品标题</dt>')
+      expect(profile).not.toContain('截图证据：')
+    }
+  })
+
+  it('uses standard shade controls for screenshot shades without inventing colors or suitability', () => {
+    const expandedProduct = products.find((item) => item.id === 'catalog-051')
+    const card = renderToStaticMarkup(<ProductCard product={expandedProduct} collection={{}} {...callbacks()} />)
+    const drawer = renderToStaticMarkup(<ProductDetailDrawer product={expandedProduct} statusControl={null} onClose={() => {}} onOpenProduct={() => {}} onOpenFullProfile={() => {}} />)
+    const profile = renderToStaticMarkup(<ProductProfile product={expandedProduct} statusControl={null} onBack={() => {}} />)
+    for (const markup of [card, drawer, profile]) expect(markup).toContain('01 螺黛灰')
+    expect(drawer).toContain('class="shade-list"')
+    expect(drawer).toContain('background-color:transparent')
+    expect(drawer).not.toContain('适配方向待核验')
   })
 })

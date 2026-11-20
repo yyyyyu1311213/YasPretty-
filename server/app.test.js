@@ -6,7 +6,7 @@ import assistantServiceModule from './services/assistant-service.cjs'
 
 const { buildApp } = appModule
 const { productRecordSchema } = schemasModule
-const { buildSearchRequest, chinaDateParts, extractWeatherLocation, filterCurrentWeatherResults, intentRouter, needsOnlineResearch } = assistantServiceModule
+const { buildSearchRequest, buildSystemPrompt, chinaDateParts, extractWeatherLocation, filterCurrentWeatherResults, intentRouter, needsOnlineResearch } = assistantServiceModule
 
 const product = {
   id: 'p1',
@@ -121,11 +121,25 @@ describe('YasPretty API gateway', () => {
     ])
   })
 
+  it('limits recommendation prompts to eligible products while retaining facts and comparisons', () => {
+    const pending = { ...product, id: 'p2', brand: 'Pending Brand', name: 'Pending Product', recommendationReady: false }
+    const recommendationPrompt = buildSystemPrompt({}, [product, pending], [], 'catalog_recommendation')
+    expect(recommendationPrompt).toContain('p1 | Test Brand Test Foundation')
+    expect(recommendationPrompt).not.toContain('p2 | Pending Brand Pending Product')
+    expect(recommendationPrompt).toContain('未列出的产品不得推荐')
+
+    for (const intent of ['product_fact', 'product_comparison']) {
+      const prompt = buildSystemPrompt({}, [product, pending], [], intent)
+      expect(prompt).toContain('p2 | Pending Brand Pending Product')
+      expect(prompt).toContain('仅供事实查询或比较，不代表可推荐')
+    }
+  })
+
   it('validates legacy and expansion catalog records against their evidence states', () => {
-    expect(products).toHaveLength(101)
+    expect(products).toHaveLength(111)
     products.forEach((item) => expect(productRecordSchema.parse(item)).toMatchObject({ id: item.id }))
     expect(products.filter((item) => item.factVerificationStatus === 'verified')).toHaveLength(35)
-    expect(products.filter((item) => item.factVerificationStatus === 'pending')).toHaveLength(66)
+    expect(products.filter((item) => item.factVerificationStatus === 'pending')).toHaveLength(76)
     expect(products.filter((item) => item.verificationStatus === 'verified')).toHaveLength(0)
     expect(products.every((item) => item.image === `/products/${item.id}/cover.webp`)).toBe(true)
     const legacyProducts = products.filter((item) => !item.id.startsWith('catalog-'))
@@ -137,7 +151,7 @@ describe('YasPretty API gateway', () => {
     expect(legacyProducts.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.imageSource.publicUseDecision === 'public_with_source_notice')).toBe(true)
     expect(legacyProducts.filter((item) => item.imageSource.sourcePageUrl).every((item) => item.publicStatus === 'public_with_source_notice_pending_authorization')).toBe(true)
     expect(expansionProducts.every((item) => item.imageSource.sourcePageUrl && item.imageAuthorizationStatus === 'pending')).toBe(true)
-    expect(expansionProducts.every((item) => item.publicStatus === 'blocked_pending_product_evidence' && item.recommendationReady === false)).toBe(true)
+    expect(expansionProducts.every((item) => item.publicStatus === 'public_with_source_notice_authorization_pending' && item.recommendationReady === false)).toBe(true)
   })
 
   it('returns a minimal health response and security headers', async () => {
