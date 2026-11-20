@@ -16,6 +16,8 @@ export async function createCultureSeal(host, signal) {
   let observer
   let resizeObserver
   let disposed = false
+  let pointerId = null
+  let lastPointerX = 0
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
   const panel = host.parentElement
   const gradient = new THREE.DataTexture(new Uint8Array([115, 182, 226, 255]), 4, 1, THREE.RedFormat)
@@ -31,6 +33,12 @@ export async function createCultureSeal(host, signal) {
     motion.removeEventListener('change', updateMotion)
     document.removeEventListener('visibilitychange', updateMotion)
     renderer.domElement.removeEventListener('webglcontextlost', contextLost)
+    renderer.domElement.removeEventListener('pointerdown', startDrag)
+    renderer.domElement.removeEventListener('pointermove', drag)
+    renderer.domElement.removeEventListener('pointerup', endDrag)
+    renderer.domElement.removeEventListener('pointercancel', endDrag)
+    renderer.domElement.removeEventListener('lostpointercapture', endDrag)
+    host.classList.remove('is-dragging')
     geometries.forEach((geometry) => geometry.dispose())
     materials.forEach((material) => material.dispose())
     textures.forEach((texture) => texture.dispose())
@@ -47,8 +55,14 @@ export async function createCultureSeal(host, signal) {
   const seal = new THREE.Group()
   scene.add(seal)
   let visible = true
-  let elapsed = 0
+  let angle = -.45
   let previous = 0
+
+  function draw() {
+    seal.rotation.set(-.14, angle, -.065)
+    seal.position.y = 12
+    renderer.render(scene, camera)
+  }
 
   function render(time = 0) {
     frame = 0
@@ -58,12 +72,34 @@ export async function createCultureSeal(host, signal) {
       frame = requestAnimationFrame(render)
       return
     }
-    if (animated && previous) elapsed += Math.min(time - previous, 64) / 1000
+    if (animated && previous && pointerId === null) angle += Math.min(time - previous, 64) * .0003
     previous = time
-    seal.rotation.set(-.14 + Math.sin(elapsed * .48) * .07, -.45 + Math.sin(elapsed * .48) * .38, -.065 + Math.sin(elapsed * .33) * .025)
-    seal.position.y = 12 + Math.sin(elapsed * .7) * 5
-    renderer.render(scene, camera)
+    draw()
     if (animated) frame = requestAnimationFrame(render)
+  }
+
+  function startDrag(event) {
+    if (pointerId !== null || !event.isPrimary || event.button !== 0) return
+    pointerId = event.pointerId
+    lastPointerX = event.clientX
+    previous = 0
+    renderer.domElement.setPointerCapture(pointerId)
+    host.classList.add('is-dragging')
+  }
+
+  function drag(event) {
+    if (event.pointerId !== pointerId) return
+    angle += (event.clientX - lastPointerX) * .012
+    lastPointerX = event.clientX
+    draw()
+  }
+
+  function endDrag(event) {
+    if (event.pointerId !== pointerId) return
+    pointerId = null
+    previous = 0
+    host.classList.remove('is-dragging')
+    if (renderer.domElement.hasPointerCapture(event.pointerId)) renderer.domElement.releasePointerCapture(event.pointerId)
   }
 
   function updateMotion() {
@@ -104,6 +140,8 @@ export async function createCultureSeal(host, signal) {
     wax.position.set(-256, 236, -14)
 
     // Raised ink and highlights follow the SVG paths in 3D, rather than a flat texture.
+    const frontInk = new THREE.Group()
+    seal.add(frontInk)
     paths.forEach((path, index) => {
       const style = path.userData.style
       if (!style.stroke || style.stroke === 'none') return
@@ -118,12 +156,15 @@ export async function createCultureSeal(host, signal) {
         if (path.userData.node.hasAttribute('stroke-dasharray')) {
           const count = Math.max(2, Math.round(curve.getLength() / 12))
           for (let bead = 0; bead <= count; bead++) {
-            const dot = mesh(new THREE.SphereGeometry(radius * .68, 6, 5), ink)
+            const dot = mesh(new THREE.SphereGeometry(radius * .68, 6, 5), ink, frontInk)
             dot.position.copy(curve.getPointAt(bead / count))
           }
-        } else mesh(new THREE.TubeGeometry(curve, 160, radius, 6, false), ink)
+        } else mesh(new THREE.TubeGeometry(curve, 160, radius, 6, false), ink, frontInk)
       })
     })
+    const backInk = frontInk.clone()
+    backInk.rotation.y = Math.PI
+    seal.add(backInk)
 
     scene.add(new THREE.AmbientLight('#fff4ed', 1.5))
     const light = new THREE.DirectionalLight('#fff7e8', 2.3)
@@ -166,6 +207,11 @@ export async function createCultureSeal(host, signal) {
     motion.addEventListener('change', updateMotion)
     document.addEventListener('visibilitychange', updateMotion)
     renderer.domElement.addEventListener('webglcontextlost', contextLost)
+    renderer.domElement.addEventListener('pointerdown', startDrag)
+    renderer.domElement.addEventListener('pointermove', drag)
+    renderer.domElement.addEventListener('pointerup', endDrag)
+    renderer.domElement.addEventListener('pointercancel', endDrag)
+    renderer.domElement.addEventListener('lostpointercapture', endDrag)
     resize()
     panel.dataset.sealReady = 'true'
     return dispose
