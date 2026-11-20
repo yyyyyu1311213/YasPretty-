@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Search } from 'lucide-react'
-import { categoryOptions } from '../../../data/products'
-import LegacyMakeupTable from './MakeupTable'
+import LegacyMakeupTable, { MAKEUP_TABLE_CATEGORIES } from './MakeupTable'
 import './MakeupTableExperience.css'
 
 export const SCENE_READY_TIMEOUT_MS = 15000
@@ -50,7 +49,7 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
       if (event.data.type === 'ready' || event.data.type === 'stage') {
         if (['shop', 'vanity', 'transition'].includes(event.data.stage)) setStage(event.data.stage)
       }
-      if (event.data.type === 'category' && stage === 'vanity' && categoryOptions.includes(event.data.category)) {
+      if (event.data.type === 'category' && stage === 'vanity' && MAKEUP_TABLE_CATEGORIES.includes(event.data.category)) {
         onViewCategory(event.data.category)
       }
       if (event.data.type === 'scroll-handoff') {
@@ -109,7 +108,7 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
           {stage === 'vanity' && <>
             <button className="beauty-shop-back" type="button" onClick={() => send('return')}><ArrowLeft size={17} />返回店铺</button>
             <nav className="beauty-shop-categories" aria-label="选择彩妆品类">
-              {categoryOptions.map((category) => <button
+              {MAKEUP_TABLE_CATEGORIES.map((category) => <button
                 key={category}
                 type="button"
                 onPointerEnter={(event) => { if (event.pointerType !== 'touch') highlightCategory('pointer', category) }}

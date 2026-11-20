@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Suspense } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { categoryOptions, products, quickFilters } from '../../../data/products'
+import { products, quickFilters } from '../../../data/products'
 import HomeView from './HomeView'
 import GuideView from '../../guide-culture/components/GuideView'
 
@@ -37,6 +37,7 @@ const props = () => ({
   onOpenProduct: vi.fn(), onViewCategory: vi.fn(), onApplyGuideFilter: vi.fn(),
   onFavorite: vi.fn(), onRemoveFavorite: vi.fn(),
 })
+const categoryOptions = ['粉底液', '气垫', '遮瑕', '散粉', '眼影', '睫毛膏', '腮红', '唇妆']
 const featured = categoryOptions.map((category) => products.filter((product) => product.category === category).sort((a, b) => (b.rating || 0) - (a.rating || 0))[0]).filter(Boolean)
 beforeEach(() => { draft.value = ''; draft.set.mockClear() })
 

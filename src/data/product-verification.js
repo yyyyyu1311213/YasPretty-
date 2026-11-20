@@ -1,4 +1,5 @@
 import { evidenceSync, generatedProductEvidence } from './product-verification.generated.js'
+import { expansionEvidenceSync, expansionVerificationRecords } from './product-expansion.js'
 import { reviewedProductShades } from './product-shade-verification.js'
 import { reviewedProductFacts } from './product-verification.reviewed.js'
 
@@ -7,7 +8,7 @@ const knownIssues = {
   'fenty-pro-filtr': ['人工核验表记录品牌为 FENTY BEAUTY、店铺为 FANBEAUTY官方旗舰店；网页按表内已完成状态展示，拼写原样保留。新封面由项目负责人提供，但附件只显示 Fan\'s Red Carpet，原始网页来源和品牌归属仍待补证。'],
 }
 
-export const productVerificationRecords = Object.fromEntries(
+const legacyProductVerificationRecords = Object.fromEntries(
   Object.entries(generatedProductEvidence).map(([productId, evidence]) => [productId, {
     productId,
     nameReviewStatus: reviewedProductFacts[productId]?.reviewStatus || 'pending_owner_confirmation',
@@ -31,6 +32,11 @@ export const productVerificationRecords = Object.fromEntries(
     issues: [...(knownIssues[productId] || []), ...(reviewedProductShades[productId]?.issues || [])],
   }]),
 )
+
+export const productVerificationRecords = {
+  ...legacyProductVerificationRecords,
+  ...expansionVerificationRecords,
+}
 
 export function getProductVerification(productId) {
   return productVerificationRecords[productId] || null
@@ -77,4 +83,4 @@ export function buildProductAssessment(product) {
   }
 }
 
-export { evidenceSync }
+export { evidenceSync, expansionEvidenceSync }

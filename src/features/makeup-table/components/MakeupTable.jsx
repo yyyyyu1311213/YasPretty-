@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUpRight, ChevronRight, Info, Palette, X } from 'lucide-react'
-import { categoryOptions, products } from '../../../data/products'
+import { products } from '../../../data/products'
 import './MakeupTable.css'
 
 export const MAX_BLOOM_ITEMS = 5
+export const MAKEUP_TABLE_CATEGORIES = ['粉底液', '气垫', '遮瑕', '散粉', '眼影', '睫毛膏', '腮红', '唇妆']
 
 const CATEGORY_META = {
   粉底液: {
@@ -82,7 +83,8 @@ function getCategoryMeta(category) {
   }
 }
 export function getCategoryGroups(productList = products) {
-  return categoryOptions
+  // 妆台仅显示已设计位置的入口；完整品类由产品库提供。
+  return MAKEUP_TABLE_CATEGORIES
     .map((category) => ({
       id: category,
       label: category,

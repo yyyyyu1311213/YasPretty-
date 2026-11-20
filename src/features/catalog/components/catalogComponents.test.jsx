@@ -115,7 +115,7 @@ describe('catalog filters and results', () => {
     expect(props.onClear).toHaveBeenCalledOnce()
     const markup = renderToStaticMarkup(empty)
     expect(markup).toContain('没有找到对应档案')
-    expect(markup).toContain('35 条资料')
+    expect(markup).toContain('111 条资料')
   })
 
   it('shows the makeup table return action only for makeup table entries', () => {
@@ -130,6 +130,40 @@ describe('catalog filters and results', () => {
 })
 
 describe('catalog profile and drawer', () => {
+  it('renders all imported products without inventing scores, swatches or shade suitability', () => {
+    const expanded = products.filter((item) => item.id.startsWith('catalog-'))
+    expect(expanded).toHaveLength(76)
+    for (const item of expanded) {
+      const card = renderToStaticMarkup(<ProductCard product={item} collection={{}} {...callbacks()} />)
+      const drawer = renderToStaticMarkup(<ProductDetailDrawer product={item} statusControl={null} onClose={() => {}} onOpenProduct={() => {}} onOpenFullProfile={() => {}} />)
+      const profile = renderToStaticMarkup(<ProductProfile product={item} statusControl={null} onBack={() => {}} />)
+      expect(card).toContain(item.name.replaceAll('&', '&amp;'))
+      for (const markup of [drawer, profile]) {
+        expect(markup).toContain('权利人联系删除')
+        expect(markup).toContain('来源已披露、授权待核验')
+        expect(markup).not.toContain('编辑示例')
+        expect(markup).not.toContain('适合 适配方向待核验')
+        expect(markup).not.toContain('href="null"')
+      }
+      expect(drawer).not.toContain('class="metric-grid"')
+      expect(profile).not.toContain('class="assessment-grid"')
+      const commerce = verification.getProductVerification(item.id).commerce
+      expect(profile.includes('打开官方商品链接')).toBe(commerce.status === 'verified' && Boolean(commerce.productUrl))
+    }
+  })
+
+  it('keeps imported screenshot shade choices operable without assigning a color', () => {
+    const item = products.find((entry) => entry.id === 'catalog-051')
+    const tree = ProductDetailDrawer({ product: item, statusControl: null, onClose: vi.fn(), onOpenProduct: vi.fn(), onOpenFullProfile: vi.fn() })
+    const choices = [...nodes(tree)].filter((node) => node.props?.className?.startsWith('shade-choice'))
+    expect(choices).toHaveLength(item.shades.length)
+    choices[1].props.onClick()
+    expect(state.set).toHaveBeenLastCalledWith(item.shades[1])
+    const markup = renderToStaticMarkup(tree)
+    expect(markup).toContain('background-color:transparent')
+    expect(markup).not.toContain('class="shade-description"')
+  })
+
   it('keeps the reviewed fields, commerce gate, source notice, contact link and App-owned status slot', () => {
     const onBack = vi.fn()
     const statusControl = <button data-status-slot="same">原收藏控件</button>

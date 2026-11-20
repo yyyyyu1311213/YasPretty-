@@ -3,6 +3,11 @@ import { getCategoryGroups, getCategorySummary, MAX_BLOOM_ITEMS } from './Makeup
 import { products } from '../../../data/products'
 
 describe('化妆桌品类数据', () => {
+  it('保留 dev 的八类布局，新品类由产品库展示', () => {
+    expect(getCategoryGroups(products).map((group) => group.id)).toEqual(['粉底液', '气垫', '遮瑕', '散粉', '眼影', '睫毛膏', '腮红', '唇妆'])
+    expect(products.some((product) => product.category === '眉妆')).toBe(true)
+    expect(getCategoryGroups([{ id: 'brow', category: '眉妆' }])).toEqual([])
+  })
   it('只显示受控产品数据中真实存在的品类', () => {
     const groups = getCategoryGroups(products)
     expect(groups.length).toBeGreaterThan(0)

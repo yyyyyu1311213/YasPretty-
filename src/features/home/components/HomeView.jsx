@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
 import { ChevronRight, Search } from 'lucide-react'
-import { categoryOptions, quickFilters } from '../../../data/products'
+import { quickFilters } from '../../../data/products'
 import { getCatalogProducts } from '../../catalog/catalogService'
 import StrokeText from '../../../components/visual/StrokeText'
 import GuideView from '../../guide-culture/components/GuideView'
@@ -9,11 +9,12 @@ import './HomeView.css'
 const MakeupTableExperience = lazy(() => import('../../makeup-table/components/MakeupTableExperience'))
 const FeaturedShowcase = lazy(() => import('./FeaturedShowcase'))
 const products = getCatalogProducts()
+const featuredCategories = ['粉底液', '气垫', '遮瑕', '散粉', '眼影', '睫毛膏', '腮红', '唇妆']
 
 // App supplies its existing error boundary until the ARCH-10 app migration.
 export default function HomeView({ EnhancementBoundary, openingReady, hidden = false, onSearch, onQuickFilter, onViewCategory, onApplyGuideFilter, onNavigate, onOpenProduct, collection, onFavorite, onRemoveFavorite }) {
   const [keyword, setKeyword] = useState('')
-  const featured = categoryOptions.map((category) => [...products]
+  const featured = featuredCategories.map((category) => [...products]
     .filter((product) => product.category === category)
     .sort((a, b) => (b.rating || 0) - (a.rating || 0))[0])
     .filter(Boolean)

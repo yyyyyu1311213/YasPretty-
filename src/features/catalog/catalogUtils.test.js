@@ -79,6 +79,6 @@ describe('catalog ordering', () => {
     expect(sortCatalogProducts([], 'recommended')).toEqual([])
     const result = sortCatalogProducts(products.filter((p) => productMatches(p, emptyFilters)), 'recommended')
     expect(result[0].id).toBe('estee-lauder-double-wear')
-    expect(result).toHaveLength(35)
+    expect(result).toHaveLength(111)
   })
 })

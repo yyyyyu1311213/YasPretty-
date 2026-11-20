@@ -94,6 +94,8 @@ h1, h2 { font-family: var(--yp-display); font-weight: 600; }
 .tag-row span { border: 1px solid var(--yp-line); border-radius: 4px; padding: 4px 7px; color: var(--yp-muted); background: var(--yp-surface); font-size: 10px; line-height: 1; }
 .tag-row span:nth-child(2) { color: var(--yp-rose-deep); background: var(--yp-peach); }
 .product-note { min-height: 43px; margin: 13px 0 10px; color: #645f5a; font-size: 12px; line-height: 1.75; }
+.product-card[data-editorial="true"] .product-note { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.detail-editorial-copy { margin: 12px 0 0; color: #645f5a; font-size: 12px; line-height: 1.8; }
 .rating-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid #e0dcd7; padding-top: 10px; }
 .rating-row > span { display: inline-flex; align-items: center; gap: 3px; color: #985d58; font: 500 12px/1 'DM Mono', monospace; }
 .rating-row > span svg { color: #b77c67; }
