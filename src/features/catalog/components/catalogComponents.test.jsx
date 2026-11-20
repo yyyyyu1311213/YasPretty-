@@ -117,6 +117,16 @@ describe('catalog filters and results', () => {
     expect(markup).toContain('没有找到对应档案')
     expect(markup).toContain('35 条资料')
   })
+
+  it('shows the makeup table return action only for makeup table entries', () => {
+    const onBackToMakeupTable = vi.fn()
+    const props = { filters: emptyFilters, results: [products[0]], sort: 'recommended', isFilterOpen: false, collection: {}, onChangeFilter: vi.fn(), onClear: vi.fn(), onChangeSort: vi.fn(), onToggleFilterPanel: vi.fn(), onOpenProduct: vi.fn(), onFavorite: vi.fn(), onRemoveFavorite: vi.fn(), showMakeupTableBack: true, onBackToMakeupTable }
+    const tree = LibraryView(props)
+    const back = find(tree, (n) => n.type === 'button' && n.props.children?.some?.((child) => child === '返回妆台'))
+    back.props.onClick()
+    expect(onBackToMakeupTable).toHaveBeenCalledOnce()
+    expect(renderToStaticMarkup(LibraryView({ ...props, showMakeupTableBack: false }))).not.toContain('返回妆台')
+  })
 })
 
 describe('catalog profile and drawer', () => {

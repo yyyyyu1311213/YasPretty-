@@ -1,15 +1,18 @@
-import { ArrowDownUp, ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
+import { ArrowDownUp, ArrowLeft, ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
 import { getCatalogProducts } from '../catalogService'
 import FilterPanel from './FilterPanel'
 import ProductCard from './ProductCard'
 
 const products = getCatalogProducts()
 
-export default function LibraryView({ filters, results, sort, isFilterOpen, collection, onChangeFilter, onClear, onChangeSort, onToggleFilterPanel, onOpenProduct, onFavorite, onRemoveFavorite }) {
+export default function LibraryView({ filters, results, sort, isFilterOpen, collection, onChangeFilter, onClear, onChangeSort, onToggleFilterPanel, onOpenProduct, onFavorite, onRemoveFavorite, showMakeupTableBack = false, onBackToMakeupTable }) {
   return (
     <section className="library-page content-section">
       <div className="library-heading">
-        <div><p className="eyebrow">产品库 / 目前收录彩妆 / {products.length} 条资料</p><h1>找到匹配的彩妆</h1></div>
+        <div>
+          {showMakeupTableBack && <button className="library-back-button" type="button" onClick={onBackToMakeupTable}><ArrowLeft size={15} />返回妆台</button>}
+          <p className="eyebrow">产品库 / 目前收录彩妆 / {products.length} 条资料</p><h1>找到匹配的彩妆</h1>
+        </div>
         <label className="library-search"><Search size={17} /><input value={filters.keyword} onChange={(event) => onChangeFilter('keyword', event.target.value, false)} placeholder="搜索品牌、产品名、色号" /></label>
       </div>
       <div className="library-controls-mobile">

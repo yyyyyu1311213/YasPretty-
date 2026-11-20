@@ -11,14 +11,14 @@ const FeaturedShowcase = lazy(() => import('./FeaturedShowcase'))
 const products = getCatalogProducts()
 
 // App supplies its existing error boundary until the ARCH-10 app migration.
-export default function HomeView({ EnhancementBoundary, openingReady, onSearch, onQuickFilter, onViewCategory, onApplyGuideFilter, onNavigate, onOpenProduct, collection, onFavorite, onRemoveFavorite }) {
+export default function HomeView({ EnhancementBoundary, openingReady, hidden = false, onSearch, onQuickFilter, onViewCategory, onApplyGuideFilter, onNavigate, onOpenProduct, collection, onFavorite, onRemoveFavorite }) {
   const [keyword, setKeyword] = useState('')
   const featured = categoryOptions.map((category) => [...products]
     .filter((product) => product.category === category)
     .sort((a, b) => (b.rating || 0) - (a.rating || 0))[0])
     .filter(Boolean)
   return (
-    <div className={`home-motion-stage${openingReady ? ' is-ready' : ''}`}>
+    <div className={`home-motion-stage${openingReady ? ' is-ready' : ''}`} hidden={hidden} inert={hidden}>
       <div className="home-shop">
         <section className="makeup-table-intro-section content-section" aria-labelledby="makeup-table-intro-title">
           <h2 id="makeup-table-intro-title" className="makeup-table-intro-title">YasPretty 美妆店</h2>

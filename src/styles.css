@@ -68,6 +68,8 @@ h1, h2 { font-family: var(--yp-display); font-weight: 600; }
 .nav-count { display: grid; min-width: 18px; height: 18px; padding: 0 4px; place-items: center; border-radius: 6px; color: #fffaf5; background: var(--yp-rose-deep); font: 10px/1 'DM Mono', monospace; }
 .mobile-menu-button, .mobile-nav { display: none; }
 .library-search input::placeholder { color: #a39d97; }
+.library-back-button { display: inline-flex; min-height: 38px; align-items: center; gap: 8px; margin-bottom: 16px; border: 1px solid #9a6b67; border-radius: 4px; padding: 0 13px; color: #fff9f5; background: #795451; font-size: 12px; font-weight: 600; cursor: pointer; }
+.library-back-button:hover, .library-back-button:focus-visible { border-color: #694643; background: #694643; }
 .open-link { display: inline-flex; align-items: center; gap: 2px; border: 0; padding: 0; color: #604643; background: transparent; font-size: 13px; white-space: nowrap; }
 .open-link:hover { color: #a46866; }
 .product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; }

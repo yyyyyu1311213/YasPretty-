@@ -1,4 +1,5 @@
 .home-motion-stage { overflow: clip; }
+.home-motion-stage[hidden] { display: none; }
 .home-shop { position: relative; }
 .home-shop .makeup-table-intro-section { position: absolute; z-index: 3; top: 0; left: 0; width: 100%; padding: 28px clamp(20px, 4vw, 72px); pointer-events: none; transition: opacity 280ms ease; }
 .home-shop:has(.beauty-shop-scroll-underlay.is-active) .makeup-table-intro-section { opacity: 0; }

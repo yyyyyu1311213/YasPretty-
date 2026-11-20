@@ -110,14 +110,14 @@ export function useAppNavigation({ initialEntry, openingActive, setOpeningActive
     applyNavigationEntry(entry, restoreScroll)
   }
 
-  function navigate(nextView) {
+  function navigate(nextView, options = {}) {
     const current = currentNavigationEntry()
     if (current.view === nextView && !current.drawerProductId) {
       setMobileMenuOpen(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
-    pushNavigationEntry({ view: nextView })
+    pushNavigationEntry({ view: nextView, ...options })
   }
 
   function openProductDrawer(product) {
@@ -125,6 +125,7 @@ export function useAppNavigation({ initialEntry, openingActive, setOpeningActive
     const entry = createNavigationEntry({
       view: current.view === 'product' ? 'library' : current.view,
       drawerProductId: product.id,
+      returnTo: current.returnTo,
       scrollY: current.scrollY,
       depth: current.drawerProductId ? current.depth : current.depth + 1,
     })
@@ -149,5 +150,12 @@ export function useAppNavigation({ initialEntry, openingActive, setOpeningActive
     else replaceNavigationEntry({ ...current, drawerProductId: null }, true)
   }
 
-  return { selectedProduct, profileProduct, mobileMenuOpen, setMobileMenuOpen, completeOpening, navigate, openProductDrawer, openProductProfile, closeProductProfile, closeProductDrawer }
+  function backToMakeupTable() {
+    const current = currentNavigationEntry()
+    if (current.returnTo === 'makeup-table' && current.depth > 0) window.history.back()
+    else replaceNavigationEntry({ view: 'home' })
+  }
+
+  const returnTo = currentNavigationEntry().returnTo
+  return { selectedProduct, profileProduct, returnTo, mobileMenuOpen, setMobileMenuOpen, completeOpening, navigate, openProductDrawer, openProductProfile, closeProductProfile, closeProductDrawer, backToMakeupTable }
 }

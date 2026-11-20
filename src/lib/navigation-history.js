@@ -16,11 +16,12 @@ export function createNavigationEntry({
   view = 'home',
   productId = null,
   drawerProductId = null,
+  returnTo = null,
   scrollY = 0,
   depth = 0,
 } = {}) {
   const normalizedView = view === 'product' || MAIN_VIEWS.includes(view) ? view : 'home'
-  return {
+  const entry = {
     marker: APP_HISTORY_MARKER,
     view: normalizedView,
     productId: normalizedView === 'product' && typeof productId === 'string' ? productId : null,
@@ -28,6 +29,8 @@ export function createNavigationEntry({
     scrollY: Number.isFinite(scrollY) ? Math.max(0, scrollY) : 0,
     depth: Number.isInteger(depth) ? Math.max(0, depth) : 0,
   }
+  if (normalizedView === 'library' && returnTo === 'makeup-table') entry.returnTo = returnTo
+  return entry
 }
 
 export function resolveNavigationEntry(historyState, pathname = '/') {

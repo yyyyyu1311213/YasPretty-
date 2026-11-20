@@ -38,7 +38,7 @@ function App() {
   const [view, setView] = useState(initialEntry.view)
   const { filters, sort, filterPanelOpen, filteredProducts, setSort, setFilterPanelOpen, updateFilter, clearFilters, searchCatalog, applyQuickFilter } = useCatalog()
   const { collection, favoriteCount, setStatus, removeFavorite } = useCollection()
-  const { selectedProduct, profileProduct, mobileMenuOpen, setMobileMenuOpen, completeOpening, navigate, openProductDrawer, openProductProfile, closeProductProfile, closeProductDrawer } = useAppNavigation({ initialEntry, openingActive, setOpeningActive, view, setView, setFilterPanelOpen })
+  const { selectedProduct, profileProduct, returnTo, mobileMenuOpen, setMobileMenuOpen, completeOpening, navigate, openProductDrawer, openProductProfile, closeProductProfile, closeProductDrawer, backToMakeupTable } = useAppNavigation({ initialEntry, openingActive, setOpeningActive, view, setView, setFilterPanelOpen })
 
   function runSearch(keyword) {
     searchCatalog(keyword)
@@ -51,7 +51,8 @@ function App() {
   }
 
   function openCategory(category) {
-    chooseQuickFilter({ categories: [category] })
+    applyQuickFilter({ categories: [category] })
+    navigate('library', { returnTo: 'makeup-table' })
   }
 
   return (
@@ -72,8 +73,9 @@ function App() {
         />
       )}
     >
-      {view === 'home' && (
+      {(view === 'home' || (view === 'library' && returnTo === 'makeup-table')) && (
         <HomeView
+          hidden={view !== 'home'}
           EnhancementBoundary={EnhancementBoundary}
           openingReady={!openingActive}
           onSearch={runSearch}
@@ -98,6 +100,8 @@ function App() {
           onClear={clearFilters}
           onChangeSort={setSort}
           onToggleFilterPanel={() => setFilterPanelOpen((open) => !open)}
+          showMakeupTableBack={returnTo === 'makeup-table'}
+          onBackToMakeupTable={backToMakeupTable}
           onOpenProduct={openProductDrawer}
           onFavorite={setStatus}
           onRemoveFavorite={removeFavorite}

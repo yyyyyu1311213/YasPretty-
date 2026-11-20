@@ -68,7 +68,7 @@ describe('App domain composition', () => {
     home.props.onViewCategory('气垫')
     home.props.onApplyGuideFilter({ skins: ['干皮'] })
     expect(h.catalog.applyQuickFilter.mock.calls).toEqual([[{ categories: ['气垫'] }], [{ skins: ['干皮'] }]])
-    expect(h.navigation.navigate.mock.calls).toEqual([['library'], ['library'], ['library']])
+    expect(h.navigation.navigate.mock.calls).toEqual([['library'], ['library', { returnTo: 'makeup-table' }], ['library']])
     const library = page(render('library'))
     expect(library.props.filters).toBe(h.catalog.filters)
     expect(library.props.results).toBe(h.catalog.filteredProducts)
@@ -78,5 +78,13 @@ describe('App domain composition', () => {
     const assistant = page(render('assistant'))
     expect(assistant.props.onOpenProduct).toBe(h.navigation.openProductDrawer)
     expect(Object.keys(assistant.props)).toEqual(['onOpenProduct'])
+  })
+
+  it('keeps the makeup table mounted but hidden while its catalog is open', () => {
+    h.navigation.returnTo = 'makeup-table'
+    const views = render('library').props.children.filter(Boolean)
+    expect(views.map((item) => item.type)).toEqual([HomeView, LibraryView])
+    expect(views[0].props.hidden).toBe(true)
+    expect(views[1].props.showMakeupTableBack).toBe(true)
   })
 })
