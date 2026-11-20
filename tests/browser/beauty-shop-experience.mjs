@@ -26,17 +26,32 @@ try {
   const introAtReveal = await opening.frameLocator('.beauty-shop-frame').locator('#beautyShop3d canvas').evaluate(() => ({
     active: window.BeautyShop.intro.active,
     elapsed: window.BeautyShop.intro.elapsed,
+    position: window.BeautyShop.camera.position.toArray(),
+    fov: window.BeautyShop.camera.fov,
   }))
   assert.equal(introAtReveal.active, true)
   assert(introAtReveal.elapsed < 1.5, `intro skipped ahead to ${introAtReveal.elapsed}s`)
   await opening.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.intro.elapsed >= 2.9, { timeout: 12000 })
   const fixtureRise = await opening.frameLocator('.beauty-shop-frame').locator('#beautyShop3d canvas').evaluate(() => {
     const shop = window.BeautyShop
-    return { elapsed: shop.intro.elapsed, y: shop.scene.getObjectByName('shop-fixtures').position.y }
+    return { elapsed: shop.intro.elapsed, y: shop.scene.getObjectByName('shop-fixtures').position.y, position: shop.camera.position.toArray() }
   })
   assert(fixtureRise.y < -0.01, `fixtures did not rise during intro: ${JSON.stringify(fixtureRise)}`)
+  assert(Math.hypot(...fixtureRise.position.map((value, index) => value - introAtReveal.position[index])) > 0.1, 'camera should breathe during scene growth')
   await opening.screenshot({ path: path.join(output, '1440-fixture-rise.png') })
   await opening.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.intro.active === false, { timeout: 12000 })
+  await opening.waitForFunction(() => {
+    const shop = document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop
+    return shop?.camera.fov < 44.2
+  }, { timeout: 3000 })
+  const peakFov = await opening.frameLocator('.beauty-shop-frame').locator('canvas').evaluate(() => window.BeautyShop.camera.fov)
+  await opening.waitForFunction(() => {
+    const shop = document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop
+    return shop?.camera.fov > 46.4
+  }, { timeout: 3000 })
+  const finalFov = await opening.frameLocator('.beauty-shop-frame').locator('canvas').evaluate(() => window.BeautyShop.camera.fov)
+  assert(peakFov < introAtReveal.fov - 4.5 && finalFov > peakFov + 2 && finalFov < introAtReveal.fov - 2,
+    `camera should zoom in and settle halfway back: ${introAtReveal.fov} -> ${peakFov} -> ${finalFov}`)
   const sceneCost = await opening.frameLocator('.beauty-shop-frame').locator('#beautyShop3d canvas').evaluate(() => ({
     rain: Boolean(window.BeautyShop.scene.getObjectByName('rain')),
     wetGround: Boolean(window.BeautyShop.scene.getObjectByName('wet-ground-mirror')),
@@ -283,6 +298,36 @@ try {
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     await page.close()
     console.log(`${viewport.width}px shop, vanity, return, category: passed`)
+  }
+
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 360, height: 800 }]) {
+    const page = await browser.newPage({ viewport, reducedMotion: 'reduce' })
+    await page.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, (route) => route.abort())
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded' })
+    await page.locator('.brand-opening').waitFor({ state: 'hidden' })
+    await page.locator('.beauty-shop-stage[data-stage="shop"]').waitFor()
+    await page.waitForFunction(() => document.querySelector('.beauty-shop-frame')?.contentWindow?.BeautyShop?.intro.active === false, { timeout: 30000 })
+    const search = page.locator('.beauty-shop-scroll-search')
+    await search.waitFor({ timeout: 5000 })
+    assert.equal(await search.isVisible(), true, 'search should be available before the scene shrinks')
+    await page.screenshot({ path: path.join(output, `${viewport.width}-shop-search.png`), animations: 'disabled' })
+    await page.frameLocator('.beauty-shop-frame').locator('canvas').hover()
+    await page.mouse.wheel(0, 450)
+    await page.waitForFunction(() => Number(document.querySelector('.beauty-shop-scroll-shell')?.style.getPropertyValue('--scroll-progress')) >= .49)
+    assert.equal(await search.isVisible(), true, 'search should remain visible while the scene shrinks')
+    await page.mouse.wheel(0, 900)
+    const expectedScale = viewport.width > 680 ? .31 : .46
+    await page.waitForFunction((scale) => Math.abs(new DOMMatrix(getComputedStyle(document.querySelector('.beauty-shop-stage')).transform).a - scale) < .01, expectedScale)
+    await page.evaluate(() => window.scrollTo(0, 0))
+    const stageScale = await page.locator('.beauty-shop-stage').evaluate((element) => new DOMMatrix(getComputedStyle(element).transform).a)
+    assert(Math.abs(stageScale - expectedScale) < .01, `final scene scale should be near ${expectedScale}: ${stageScale}`)
+    await page.screenshot({ path: path.join(output, `${viewport.width}-scroll-search.png`), animations: 'disabled' })
+    await search.getByRole('textbox', { name: '搜索品牌、产品名或色号' }).fill('NARS')
+    await search.getByRole('button', { name: '搜索' }).click()
+    await page.locator('.library-page').waitFor({ timeout: 10000 })
+    assert.equal(await page.locator('.library-search input').inputValue(), 'NARS')
+    await page.close()
+    console.log(`${viewport.width}px dark scroll search: passed`)
   }
 
   const fallback = await browser.newPage({ viewport: { width: 360, height: 800 }, reducedMotion: 'reduce' })

@@ -7,6 +7,13 @@
 .beauty-shop-stage { position: absolute; inset: 0; z-index: 1; overflow: hidden; background: #f7e9e1; isolation: isolate; transform: scale(var(--scroll-stage-scale, 1)); clip-path: inset(var(--scroll-inset-y, 0%) var(--scroll-inset-x, 0%) round var(--scroll-radius, 0px)); transform-origin: center; will-change: transform, clip-path; }
 .beauty-shop-scroll-cover { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: rgba(31, 24, 29, .88); opacity: var(--scroll-cover-opacity, 0); pointer-events: none; }
 .beauty-shop-scroll-cover img { width: min(300px, 58vw); height: auto; opacity: .95; }
+.beauty-shop-scroll-search { position: absolute; z-index: 4; top: 16px; right: clamp(20px, 4vw, 72px); display: flex; align-items: center; gap: 10px; width: min(420px, calc(100% - 40px)); height: 50px; border: 1px solid rgba(255, 234, 225, .38); border-radius: 6px; padding: 4px 4px 4px 16px; color: #f7eae5; background: rgba(62, 47, 53, .9); box-shadow: 0 8px 26px rgba(0, 0, 0, .18); }
+.beauty-shop-scroll-search > svg { flex: 0 0 auto; color: #e5c8be; }
+.beauty-shop-scroll-search input { min-width: 0; flex: 1; border: 0; outline: 0; color: #fff9f6; background: transparent; font-size: 13px; }
+.beauty-shop-scroll-search input::placeholder { color: #d2bdb7; }
+.beauty-shop-scroll-search button { align-self: stretch; border: 0; border-radius: 4px; padding: 0 18px; color: #3b292b; background: #e8c7bb; font-size: 13px; cursor: pointer; }
+.beauty-shop-scroll-search button:hover { background: #f2d9d0; }
+.beauty-shop-scroll-search:focus-within { border-color: #f0d2c7; outline: 2px solid rgba(240, 210, 199, .35); outline-offset: 2px; }
 .beauty-shop-frame { display: block; width: 100%; height: 100%; border: 0; }
 .beauty-shop-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--yp-ink); background: #f8eee9; font-size: 13px; }
 .beauty-shop-keyboard-entry { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); border: 0; padding: 0; }
@@ -18,4 +25,4 @@
 .beauty-shop-categories button:last-child { border-right: 0; }
 .beauty-shop-categories button:hover, .beauty-shop-categories button:focus-visible { color: #fff; background: var(--yp-rose-deep); }
 @media (max-width: 900px) { .beauty-shop-categories { grid-template-columns: repeat(4, minmax(0, 1fr)); }.beauty-shop-categories button:nth-child(-n+4) { border-bottom: 1px solid rgba(112, 69, 70, .14); }.beauty-shop-categories button:nth-child(4n) { border-right: 0; } }
-@media (max-width: 680px) { .beauty-shop-section { height: calc(100svh - 60px); }.beauty-shop-scroll-underlay { gap: 9px; }.beauty-shop-scroll-underlay p { font-size: 12px; }.beauty-shop-scroll-underlay img { width: min(210px, 58vw); }.beauty-shop-back { top: 72px; left: 16px; }.beauty-shop-categories { right: 10px; bottom: 10px; left: 10px; }.beauty-shop-categories button { height: 42px; } }
+@media (max-width: 680px) { .beauty-shop-section { height: calc(100svh - 60px); }.beauty-shop-stage { transform: scale(var(--scroll-stage-scale-mobile, 1)); }.beauty-shop-scroll-underlay { opacity: 0; }.beauty-shop-scroll-cover img { width: min(140px, 38vw); }.beauty-shop-scroll-search { top: 82px; right: 12px; width: calc(100% - 24px); height: 46px; padding-left: 12px; }.beauty-shop-scroll-search button { padding: 0 14px; }.beauty-shop-back { top: 72px; left: 16px; }.beauty-shop-categories { right: 10px; bottom: 10px; left: 10px; }.beauty-shop-categories button { height: 42px; } }

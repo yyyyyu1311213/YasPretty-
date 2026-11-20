@@ -24,7 +24,7 @@ export default function HomeView({ EnhancementBoundary, openingReady, onSearch, 
           <h2 id="makeup-table-intro-title" className="makeup-table-intro-title">YasPretty 美妆店</h2>
         </section>
         <Suspense fallback={<div className="makeup-table-lazy-placeholder" aria-label="正在准备交互式化妆桌" />}>
-          <MakeupTableExperience openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} />
+          <MakeupTableExperience openingReady={openingReady} onOpenProduct={onOpenProduct} onViewCategory={onViewCategory} onSearch={onSearch} />
         </Suspense>
       </div>
       <EnhancementBoundary fallback={<div className="featured-showcase-placeholder" aria-label="编辑精选暂不可用" />}>

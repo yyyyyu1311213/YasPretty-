@@ -3284,6 +3284,11 @@
       position: CONFIG.camera.position.clone(),
       target: CONFIG.camera.target.clone(),
     };
+    let homeCameraFov = camera.fov;
+    let introCameraZoomed = false;
+    const INTRO_CAMERA_ZOOM_PEAK = 5;
+    const INTRO_CAMERA_ZOOM_SETTLE = INTRO_CAMERA_ZOOM_PEAK * 0.5;
+    const introCameraCue = { active: false, elapsed: 0, duration: 1.05 };
     let scrollBaselineDistance = homeView.position.distanceTo(homeView.target);
     const SCROLL_BASELINE_EPSILON = 0.08;
 
@@ -3353,6 +3358,8 @@
 
       homeView.position.copy(camera.position);
       homeView.target.copy(CONFIG.camera.target);
+      homeCameraFov = camera.fov;
+      if (introCameraZoomed) camera.fov = homeCameraFov - INTRO_CAMERA_ZOOM_SETTLE;
       scrollBaselineDistance = homeView.position.distanceTo(homeView.target);
 
       camera.updateProjectionMatrix();
@@ -3498,6 +3505,34 @@
     const SIGN_GLOW = 0.18;
     const EXPOSURE_FROM = 0.86;
     const EXPOSURE_TO = 1.08;
+
+    function applyIntroCamera(t) {
+      const fadeIn = smooth(clamp01(t / 0.5));
+      const fadeOut = smooth(clamp01((INTRO_DURATION - t) / 0.75));
+      const strength = fadeIn * fadeOut;
+      camera.position.copy(homeView.position).add(new THREE.Vector3(
+        Math.sin(t * 1.9) * 0.48 * strength,
+        Math.sin(t * 2.3 + 0.5) * 0.32 * strength,
+        Math.cos(t * 1.6) * 0.35 * strength
+      ));
+      controls.target.copy(homeView.target).add(new THREE.Vector3(
+        Math.sin(t * 1.55 + 0.4) * 0.12 * strength,
+        Math.cos(t * 1.8) * 0.09 * strength,
+        0
+      ));
+    }
+
+    function updateIntroCameraCue(delta) {
+      if (!introCameraCue.active) return;
+      introCameraCue.elapsed = Math.min(introCameraCue.duration, introCameraCue.elapsed + delta);
+      const progress = introCameraCue.elapsed / introCameraCue.duration;
+      const zoom = progress < 0.6
+        ? INTRO_CAMERA_ZOOM_PEAK * smooth(progress / 0.6)
+        : THREE.MathUtils.lerp(INTRO_CAMERA_ZOOM_PEAK, INTRO_CAMERA_ZOOM_SETTLE, smooth((progress - 0.6) / 0.4));
+      camera.fov = homeCameraFov - zoom;
+      camera.updateProjectionMatrix();
+      if (introCameraCue.elapsed >= introCameraCue.duration) introCameraCue.active = false;
+    }
 
     // 记录店体网格原本的投影状态（动画期间按进度开关，避免埋在地下时乱投影）
     const shopShadowMeshes = [];
@@ -3666,6 +3701,7 @@
       // ---------- 8) 收尾提亮 ----------
       renderer.toneMappingExposure =
         EXPOSURE_FROM + (EXPOSURE_TO - EXPOSURE_FROM) * smooth(span(t, 3.0, INTRO_DURATION));
+      applyIntroCamera(t);
     }
 
     const intro = {
@@ -3678,6 +3714,10 @@
         this.active = true;
         this.paused = false;
         this.elapsed = 0;
+        introCameraCue.active = false;
+        introCameraZoomed = false;
+        camera.fov = homeCameraFov;
+        camera.updateProjectionMatrix();
         controls.enabled = false;
 
         productStates.forEach((item) => {
@@ -3690,6 +3730,7 @@
       },
 
       finish() {
+        const animateCameraCue = !this.paused && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         this.active = false;
         this.paused = false;
         this.elapsed = this.duration;
@@ -3761,6 +3802,10 @@
           for (let m = 0; m < item.meshes.length; m++) item.meshes[m].castShadow = true;
         });
         renderer.toneMappingExposure = EXPOSURE_TO;
+
+        introCameraZoomed = animateCameraCue;
+        introCameraCue.active = animateCameraCue;
+        introCameraCue.elapsed = 0;
 
         controls.enabled = true;
         renderer.shadowMap.needsUpdate = true;
@@ -4137,7 +4182,7 @@
 
     let reportedReady = false;
     function renderFrame(time) {
-      const active = (intro.active && !intro.paused) || transition.active || viewTween.active || hoveredRoot || navigationHoveredRoot || shopHover > 0.001 || time - lastActivityAt < 600;
+      const active = (intro.active && !intro.paused) || introCameraCue.active || transition.active || viewTween.active || hoveredRoot || navigationHoveredRoot || shopHover > 0.001 || time - lastActivityAt < 600;
       if (!active && time - lastDrawAt < 66) return;
       lastDrawAt = time;
       const delta = Math.min(clock.getDelta(), 0.05);
@@ -4149,6 +4194,7 @@
         renderer.shadowMap.needsUpdate = true;
       }
 
+      updateIntroCameraCue(delta);
       updateProductHover(delta);
       updateViewTween(delta);
       updateTransition(delta);

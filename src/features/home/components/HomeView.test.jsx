@@ -108,7 +108,7 @@ describe('home composition', () => {
     expect(suspense.props.fallback.props['aria-label']).toBe('正在准备交互式化妆桌')
     const table = suspense.props.children
     expect(table.type.$$typeof).toBe(Symbol.for('react.lazy'))
-    expect(table.props).toEqual({ openingReady: false, onOpenProduct: p.onOpenProduct, onViewCategory: p.onViewCategory })
+    expect(table.props).toEqual({ openingReady: false, onOpenProduct: p.onOpenProduct, onViewCategory: p.onViewCategory, onSearch: p.onSearch })
     const ready = HomeView({ ...p, openingReady: true })
     expect(ready.props.className).toBe('home-motion-stage is-ready')
     expect(find(ready, (n) => n.props?.['aria-labelledby'] === 'makeup-table-intro-title')).toBeDefined()

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Search } from 'lucide-react'
 import { categoryOptions } from '../../../data/products'
 import LegacyMakeupTable from './MakeupTable'
 import './MakeupTableExperience.css'
@@ -15,12 +15,13 @@ function canUseWebGL() {
   }
 }
 
-export default function MakeupTableExperience({ openingReady = false, onOpenProduct, onViewCategory }) {
+export default function MakeupTableExperience({ openingReady = false, onOpenProduct, onViewCategory, onSearch }) {
   const frameRef = useRef(null)
   const [webGLAvailable] = useState(canUseWebGL)
   const [stage, setStage] = useState('loading')
   const [failed, setFailed] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
+  const [searchKeyword, setSearchKeyword] = useState('')
   const scrollProgressRef = useRef(0)
   const pointerCategoryRef = useRef(null)
   const focusedCategoryRef = useRef(null)
@@ -81,7 +82,8 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
   const transitionStyle = {
     '--scroll-progress': scrollProgress,
     '--scroll-underlay-opacity': 0.04 + scrollProgress * 0.96,
-    '--scroll-stage-scale': 1 - scrollProgress * 0.56,
+    '--scroll-stage-scale': 1 - scrollProgress * 0.69,
+    '--scroll-stage-scale-mobile': 1 - scrollProgress * 0.54,
     '--scroll-inset-y': `${scrollProgress * 3}%`,
     '--scroll-inset-x': `${scrollProgress * 3}%`,
     '--scroll-radius': `${scrollProgress * 22}px`,
@@ -122,6 +124,11 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
         <div className="beauty-shop-scroll-cover" aria-hidden="true">
           <img src="/assets/logo/yaspretty-wordmark-light.svg" alt="" />
         </div>
+        {stage === 'shop' && <form className="beauty-shop-scroll-search" role="search" onSubmit={(event) => { event.preventDefault(); onSearch(searchKeyword) }}>
+          <Search size={19} aria-hidden="true" />
+          <input value={searchKeyword} onChange={(event) => setSearchKeyword(event.target.value)} placeholder="搜索品牌、产品名或色号" aria-label="搜索品牌、产品名或色号" />
+          <button type="submit">搜索</button>
+        </form>}
       </div>
     </section>
   )
