@@ -13,6 +13,7 @@ export default function ProductProfile({ product, statusControl, onBack }) {
   const editorial = product.editorialProfile
   const assessment = buildProductAssessment(product)
   const hasReviewedCommerceFacts = product.id.startsWith('catalog-')
+  const showAssessment = !hasReviewedCommerceFacts && Object.keys(product.metrics || {}).length > 0
   const verifiedShades = product.shades.filter((shade) => shade.verificationStatus === 'verified_parameter_screenshot')
   const profileScenes = editorial?.scenes || (hasReviewedCommerceFacts ? product.detailScenes || [] : product.scenes)
   const profilePros = editorial?.pros || product.pros
@@ -70,9 +71,9 @@ export default function ProductProfile({ product, statusControl, onBack }) {
         </section>
 
         <section className="profile-section">
-          <div className="profile-section-heading"><div><p className="eyebrow">EDITORIAL DIMENSIONS</p><h2>{!hasReviewedCommerceFacts ? '分项评价' : '喜欢它的理由'}</h2></div></div>
+          <div className="profile-section-heading"><div><p className="eyebrow">EDITORIAL DIMENSIONS</p><h2>{showAssessment ? '分项评价' : '喜欢它的理由'}</h2></div></div>
           <p className="profile-section-note">{editorial ? '从质地、色彩和使用场景出发，帮你快速判断是否适合自己。' : hasReviewedCommerceFacts ? '以下理由按商品页参数整理，不构成功效保证或独立实测。' : '以下内容用于选购初筛，不构成功效保证或独立实测。'}</p>
-          {!hasReviewedCommerceFacts ? <div className="assessment-grid">
+          {showAssessment ? <div className="assessment-grid">
             {assessment.dimensions.map((dimension) => <div key={dimension.label}><span>{dimension.label}</span><strong>{dimension.value}</strong></div>)}
           </div> : null}
           <div className="assessment-columns">

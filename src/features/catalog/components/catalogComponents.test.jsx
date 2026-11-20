@@ -240,13 +240,18 @@ describe('catalog profile and drawer', () => {
     expect(drawer).toContain('防晒、保湿（页面宣称，非独立功效验证）')
   })
 
-  it('preserves the original first-35 shade and empty-metric presentation', () => {
+  it('hides the assessment section for the four first-35 products without metric data', () => {
     const legacy = products.find((item) => item.id === 'lancome-is-me-liquid-blush')
     const drawer = renderToStaticMarkup(<ProductDetailDrawer product={legacy} statusControl={null} onClose={() => {}} onOpenProduct={() => {}} onOpenFullProfile={() => {}} />)
+    const profile = renderToStaticMarkup(<ProductProfile product={legacy} statusControl={null} onBack={() => {}} />)
     expect(drawer).toContain('#50 「是我」粉')
     expect(drawer).toContain('class="shade-description"')
     expect(drawer).toContain('品牌官方旗舰店资料 · 人工核对')
-    expect(drawer).toContain('class="metric-grid"')
+    expect(drawer).not.toContain('分项评价')
+    expect(drawer).not.toContain('class="metric-grid"')
+    expect(profile).not.toContain('分项评价')
+    expect(profile).not.toContain('class="assessment-grid"')
+    expect(profile).toContain('喜欢它的理由')
     expect(drawer).not.toContain('暂无统一样本、环境和测试方法支持的评分')
   })
 
