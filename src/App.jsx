@@ -1,4 +1,4 @@
-import { Component, useState } from 'react'
+import { Component, lazy, Suspense, useState } from 'react'
 import AppShell from './features/app-shell/components/AppShell'
 import { currentNavigationEntry, useAppNavigation } from './features/app-shell/hooks/useAppNavigation'
 import BrandOpening from './features/app-shell/components/BrandOpening'
@@ -16,6 +16,7 @@ import CollectionView from './features/collection/components/CollectionView'
 import CollectionStatusControl from './features/collection/components/CollectionStatusControl'
 
 const products = getCatalogProducts()
+const FaceStudy = lazy(() => import('./features/visual-analysis/FaceStudy'))
 
 class EnhancementBoundary extends Component {
   constructor(props) {
@@ -108,6 +109,7 @@ function App() {
         />
       )}
       {view === 'assistant' && <XiaoYAssistant onOpenProduct={openProductDrawer} />}
+      {view === 'face-study' && <EnhancementBoundary fallback={<p role="alert">面部分析页面暂时无法加载，请刷新重试。</p>}><Suspense fallback={<p role="status">正在准备面部分析…</p>}><FaceStudy onBack={() => navigate('home')} onOpenProduct={openProductDrawer} /></Suspense></EnhancementBoundary>}
       {view === 'culture' && <CultureView onNavigate={navigate} />}
       {view === 'favorites' && (
         <CollectionView

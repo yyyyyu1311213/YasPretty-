@@ -28,6 +28,7 @@ promo-yaspretty/.chrome-profile/
 npm-debug.log*
 
 # Python caches
+.runtime/
 __pycache__/
 *.py[cod]
 

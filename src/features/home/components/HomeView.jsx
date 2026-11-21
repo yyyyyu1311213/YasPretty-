@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
-import { ChevronRight, Search } from 'lucide-react'
+import { ChevronRight, ScanFace, Search } from 'lucide-react'
 import { quickFilters } from '../../../data/products'
 import { getCatalogProducts } from '../../catalog/catalogService'
 import StrokeText from '../../../components/visual/StrokeText'
@@ -75,6 +75,7 @@ export default function HomeView({ EnhancementBoundary, openingReady, hidden = f
           </div>
         </div>
       </section>
+      <section className="home-face-entry" aria-labelledby="home-face-title"><div><p className="eyebrow">FACE STUDY</p><h2 id="home-face-title">探索自己的面部轮廓</h2><p>从照片到立体表面，寻找自然的妆容灵感。</p></div><button type="button" onClick={() => onNavigate('face-study')}><ScanFace size={18} />面部分析<ChevronRight size={16} /></button></section>
     </div>
   )
 }

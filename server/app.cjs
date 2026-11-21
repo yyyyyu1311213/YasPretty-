@@ -17,6 +17,8 @@ const { createZhipuProvider } = require('./providers/zhipu-provider.cjs')
 const { createWeatherProvider } = require('./providers/weather-provider.cjs')
 const { createAssistantService } = require('./services/assistant-service.cjs')
 const { createMakeupPlanService } = require('./services/makeup-plan-service.cjs')
+const { createFaceReconstructionProvider } = require('./providers/face-reconstruction-provider.cjs')
+const { registerFaceRoutes } = require('./face-reconstruction/routes.cjs')
 
 const ROOT = path.resolve(__dirname, '..')
 const DIST = path.join(ROOT, 'dist')
@@ -83,7 +85,8 @@ async function buildApp(options = {}) {
         connectSrc: ["'self'"],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         frameAncestors: ["'self'"],
-        imgSrc: ["'self'", 'data:', 'https://images.unsplash.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://images.unsplash.com'],
+        mediaSrc: ["'self'", 'blob:'],
         objectSrc: ["'none'"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
@@ -191,6 +194,16 @@ async function buildApp(options = {}) {
     const plan = await makeupPlanService.create(input)
     return makeupPlanResponseSchema.parse({ ok: true, plan })
   })
+
+  const faceResearchOnly = config.nodeEnv === 'development' && ['127.0.0.1', '::1', 'localhost'].includes(config.host)
+  const faceProvider = options.providers?.face || createFaceReconstructionProvider({ enabled: faceResearchOnly })
+  await registerFaceRoutes(app, { provider: faceProvider, researchOnly: faceResearchOnly })
+  app.addHook('onClose', async () => faceProvider.close?.())
+  if (faceResearchOnly && process.env.YAS_FACE_COMPARISON !== '0') {
+    const decaProvider = options.providers?.deca || createFaceReconstructionProvider({ enabled: faceResearchOnly, engine: 'DECA' })
+    await registerFaceRoutes(app, { provider: decaProvider, researchOnly: faceResearchOnly, prefix: '/api/face-reconstruction/deca' })
+    app.addHook('onClose', async () => decaProvider.close?.())
+  }
 
   const retiredEndpoint = (request, reply) => reply.status(410).send(publicError(
     410,

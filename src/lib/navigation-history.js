@@ -1,6 +1,6 @@
 export const APP_HISTORY_MARKER = 'yaspretty-navigation-v1'
 
-const MAIN_VIEWS = ['home', 'library', 'assistant', 'culture', 'favorites']
+const MAIN_VIEWS = ['home', 'library', 'assistant', 'culture', 'favorites', 'face-study']
 
 function productIdFromPathname(pathname = '') {
   const match = pathname.match(/^\/products\/([^/]+)\/?$/)
@@ -40,11 +40,13 @@ export function resolveNavigationEntry(historyState, pathname = '/') {
   }
 
   const productId = productIdFromPathname(pathname)
+  if (pathname === '/face-study' || pathname === '/face-study/') return createNavigationEntry({ view: 'face-study' })
   if (productId) return createNavigationEntry({ view: 'product', productId })
   return createNavigationEntry()
 }
 
 export function navigationPath(entry) {
+  if (entry.view === 'face-study') return '/face-study'
   if (entry.view === 'product' && entry.productId) {
     return `/products/${encodeURIComponent(entry.productId)}`
   }

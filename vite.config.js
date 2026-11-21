@@ -4,8 +4,10 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
+const apiTarget = process.env.YAS_API_TARGET || 'http://127.0.0.1:8787'
 
 export default defineConfig({
+  cacheDir: process.env.YAS_FACE_COMPARISON === '1' ? '.runtime/vite-comparison' : 'node_modules/.vite',
   plugins: [react()],
   build: {
     rollupOptions: {
@@ -20,9 +22,9 @@ export default defineConfig({
       ignored: ['**/.qa/**', '**/.qa-*/**', '**/chrome-qa*/**'],
     },
     proxy: {
-      '/api': 'http://127.0.0.1:8787',
-      '/proxy': 'http://127.0.0.1:8787',
-      '/memory': 'http://127.0.0.1:8787',
+      '/api': apiTarget,
+      '/proxy': apiTarget,
+      '/memory': apiTarget,
     },
   },
 })
