@@ -81,7 +81,7 @@ describe('AI-R03 actual API evaluation', () => {
     } finally { await server.close() }
   })
 
-  it('keeps failed live evidence separate from answered knowledge and renumbers product citations', async () => {
+  it('keeps failed live evidence separate from answered knowledge without exposing product citations', async () => {
     const zhipu = { ...provider(), configured: true }
     const server = await app(zhipu)
     try {
@@ -92,7 +92,8 @@ describe('AI-R03 actual API evaluation', () => {
       expect(result.answer).toContain('15g')
       expect(zhipu.search).toHaveBeenCalledOnce()
       const factSource = result.sources.findIndex((source) => source.productId === 'laneige-neo-matte') + 1
-      expect(result.answer).toContain(`15g[${factSource}]`)
+      expect(factSource).toBeGreaterThan(0)
+      expect(result.answer).not.toMatch(/15g\[\d+\]/)
     } finally { await server.close() }
   })
 
