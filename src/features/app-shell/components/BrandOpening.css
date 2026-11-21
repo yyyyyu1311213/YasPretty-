@@ -1,15 +1,36 @@
 .brand-opening { position: fixed; z-index: 100; inset: 0; display: grid; place-content: center; justify-items: center; gap: 16px; overflow: hidden; background-color: #f7cbd6; background-image: linear-gradient(124deg, rgba(255, 253, 249, .82) 0%, rgba(255, 224, 231, .64) 27%, rgba(238, 181, 198, .46) 51%, rgba(255, 239, 224, .72) 72%, rgba(244, 192, 210, .58) 100%); animation: opening-fade-in var(--yp-motion-base) var(--yp-ease-standard) both; }
-.brand-opening.closing { visibility: visible; opacity: 1; pointer-events: none; animation: opening-fade-out 1200ms var(--yp-ease-dream) both; }
+.brand-opening.closing { visibility: visible; opacity: 1; pointer-events: none; animation: opening-fade-out 1500ms var(--yp-ease-dream) both; }
 .brand-opening.skip-closing { animation-duration: 120ms; }
-.brand-opening.fade-out .opening-atmosphere, .brand-opening.fade-out .opening-brand, .brand-opening.fade-out .brand-opening-caption, .brand-opening.fade-out .brand-opening-skip { animation: none !important; }
+.brand-opening.fade-out::before, .brand-opening.fade-out::after, .brand-opening.fade-out .opening-atmosphere, .brand-opening.fade-out .opening-brand, .brand-opening.fade-out .brand-opening-caption, .brand-opening.fade-out .brand-opening-skip { animation: none !important; transform: none !important; filter: none !important; }
+.brand-opening::before, .brand-opening::after { position: absolute; inset: 0; content: ''; pointer-events: none; }
+.brand-opening::before { opacity: .25; background: url('/assets/doodles/reference-cutouts/ornaments-blush-blobs.png') center / min(78vw, 720px) auto no-repeat; mix-blend-mode: multiply; }
+.brand-opening::after { opacity: .18; background-image: linear-gradient(112deg, transparent 15%, rgba(255, 255, 255, .44) 36%, transparent 53%, rgba(255, 238, 218, .28) 69%, transparent 84%), url('/assets/doodles/sparkle.svg'); background-position: center, 16% 20%; background-repeat: no-repeat; background-size: 100% 100%, 92px auto; mix-blend-mode: screen; }
+.brand-opening.closing::before, .brand-opening.closing::after { animation: opening-mist-sheet 760ms var(--yp-ease-dream) both; }
+.brand-opening.skip-closing::before, .brand-opening.skip-closing::after { animation-duration: 120ms; animation-delay: 0ms; }
 .opening-atmosphere { position: absolute; inset: 0; pointer-events: none; }
-.opening-powder-cloud { position: absolute; z-index: 1; left: 50%; bottom: 10%; width: min(560px, 74vw); opacity: 0; transform: translate(-50%, 58%) scale(.62); animation: opening-powder-rise 1.82s var(--yp-ease-standard) 120ms forwards; }
+.brand-opening.closing .opening-atmosphere, .brand-opening.closing .opening-brand, .brand-opening.closing .brand-opening-caption, .brand-opening.closing .brand-opening-skip { animation: opening-mist-dissolve 760ms var(--yp-ease-dream) both; }
+.brand-opening.skip-closing .opening-atmosphere { animation-duration: 120ms; }
+.opening-powder-cloud { position: absolute; z-index: 1; left: 50%; bottom: 10%; width: min(560px, 74vw); opacity: 0; transform: translate(-50%, 58%) scale(.62); animation: opening-powder-rise 1.82s var(--yp-ease-standard) 120ms forwards; filter: saturate(.82) brightness(1.02); mix-blend-mode: multiply; }
+.opening-powder-dots { position: absolute; z-index: 1; left: 50%; bottom: 13%; width: min(490px, 66vw); opacity: 0; transform: translate(-50%, 42%) scale(.7); animation: opening-dots-rise 1.9s var(--yp-ease-standard) 230ms forwards; mix-blend-mode: multiply; }
+.opening-petal { position: absolute; z-index: 1; width: clamp(74px, 11vw, 140px); opacity: 0; animation: opening-petal-drift 1.5s var(--yp-ease-standard) 880ms forwards; }
+.opening-petal-left { left: 29%; bottom: 30%; transform: rotate(-28deg) translateY(14px); }
+.opening-petal-right { right: 15%; bottom: 22%; transform: rotate(33deg) translateY(12px) scale(.78); animation-delay: 1080ms; }
+.opening-particles { position: absolute; inset: 0; }
+.opening-particle { position: absolute; left: calc(50% + var(--particle-x)); top: calc(50% + var(--particle-y)); width: var(--particle-size); aspect-ratio: 1; border-radius: 50%; background: #fff7e9; box-shadow: 0 0 0 2px rgba(255, 247, 239, .32), 0 0 16px rgba(255, 205, 220, .65); opacity: 0; animation: opening-particle-rise var(--particle-duration) var(--yp-ease-standard) var(--particle-delay) forwards; }
+.opening-sparkles { position: absolute; inset: 0; }
+.opening-sparkle { position: absolute; left: var(--sparkle-x); top: var(--sparkle-y); width: var(--sparkle-size); aspect-ratio: 1; background: url('/assets/doodles/sparkle.svg') center / contain no-repeat; opacity: 0; animation: opening-sparkle-twinkle var(--sparkle-duration) ease-in-out var(--sparkle-delay) infinite; filter: brightness(1.18) saturate(1.22) sepia(.12); }
+.opening-glints { position: absolute; inset: 0; }
+.opening-glint { position: absolute; left: var(--glint-x); top: var(--glint-y); width: var(--glint-size); aspect-ratio: 1; border-radius: 50%; background: #fffaf7; box-shadow: 0 0 10px 3px rgba(255, 250, 247, .88), 0 0 22px rgba(255, 194, 213, .6); opacity: 0; animation: opening-glint-twinkle var(--glint-duration) ease-in-out var(--glint-delay) infinite; }
 .opening-brand { position: relative; z-index: 3; display: grid; place-items: center; width: min(760px, 88vw); min-height: 220px; }
 .brand-opening.skip-closing .opening-brand { animation-duration: 120ms; }
 .opening-wordmark { position: relative; z-index: 2; display: block; color: #a94f69; font: 700 clamp(82px, 13.8vw, 176px)/.86 'Bodoni 72', 'Didot', 'Bodoni MT', 'Times New Roman', serif; letter-spacing: -.045em; text-shadow: 0 1px 0 rgba(255, 252, 249, .94), 0 0 26px rgba(255, 231, 235, .62), 0 0 54px rgba(225, 119, 151, .2); opacity: 0; transform: translateY(22px) scale(.94); animation: opening-wordmark-in 980ms var(--yp-ease-standard) 760ms forwards; }
 .opening-wordmark::after { position: absolute; right: -2%; bottom: -22px; left: -2%; height: 9px; border-radius: 50%; background: rgba(216, 132, 151, .72); content: ''; transform: rotate(-1deg); opacity: .82; }
 .opening-wordmark-pretty { position: relative; display: inline-block; color: #c66f86; }
-.opening-tagline { display: block; width: min(620px, 90vw); margin: -4px 0 0; color: #fffaf9; font: italic 700 clamp(34px, 5vw, 68px)/1.15 'Segoe Script', 'Snell Roundhand', 'Brush Script MT', cursive; text-align: center; text-shadow: 0 1px 10px rgba(153, 93, 111, .24); opacity: 0; animation: opening-tagline-in 800ms var(--yp-ease-standard) 1.05s forwards; }
+.opening-wordmark-pretty::after { position: absolute; top: -16%; right: 2%; width: .48em; aspect-ratio: 1; background: url('/assets/doodles/sparkle.svg') center / contain no-repeat; content: ''; opacity: 0; filter: brightness(1.08) saturate(.86); animation: opening-pretty-glint 560ms var(--yp-ease-standard) 2.42s both; }
+.opening-wordmark-sparkle { position: absolute; z-index: 3; width: clamp(18px, 2.3vw, 30px); aspect-ratio: 1; background: url('/assets/doodles/sparkle.svg') center / contain no-repeat; opacity: 0; filter: brightness(1.18) saturate(1.14); animation: opening-wordmark-sparkle 1.8s ease-in-out infinite; }
+.opening-wordmark-sparkle-left { top: 17%; left: 13%; animation-delay: 1.48s; }
+.opening-wordmark-sparkle-right { right: 13%; bottom: 25%; width: clamp(14px, 1.8vw, 24px); animation-delay: 1.84s; }
+.opening-tagline { width: min(620px, 90vw); margin: -4px 0 0; color: #fffaf9; font-family: 'Segoe Script', 'Snell Roundhand', 'Brush Script MT', cursive; text-shadow: 0 1px 10px rgba(153, 93, 111, .24); transform: translateY(0) rotate(-2deg); opacity: 1; --stroke-start-delay: 1.05s; }
 .opening-monogram { position: absolute; right: 3%; bottom: -2px; width: clamp(48px, 8vw, 82px); opacity: 0; transform: translate(12px, 10px) rotate(-8deg) scale(.78); animation: opening-monogram-in 680ms var(--yp-ease-standard) 1480ms forwards; }
 .brand-opening-caption { margin: 0; color: #885261; font: 500 10px/1 'DM Mono', monospace; letter-spacing: .2em; }
 .brand-opening.skip-closing .brand-opening-caption, .brand-opening.skip-closing .brand-opening-skip { animation-duration: 120ms; }
@@ -17,7 +38,17 @@
 .brand-opening-skip:hover { border-color: #704d51; color: #4f3539; background: rgba(255, 248, 247, .58); }
 @keyframes opening-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes opening-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes opening-mist-sheet { 0% { opacity: 1; transform: scale(1); } 52% { opacity: .76; transform: scale(1.045); } 100% { opacity: 0; transform: scale(1.12) translateY(-10px); } }
+@keyframes opening-mist-dissolve { 0% { opacity: 1; transform: translateY(0) scale(1); } 52% { opacity: .76; transform: translateY(-5px) scale(1.025); } 100% { opacity: 0; transform: translateY(-18px) scale(1.075); } }
 @keyframes opening-powder-rise { 0% { opacity: 0; transform: translate(-50%, 52%) scale(.62); } 30% { opacity: .84; } 70% { opacity: .74; transform: translate(-50%, -4%) scale(1.08); } 100% { opacity: .24; transform: translate(-50%, -20%) scale(1.2); } }
+@keyframes opening-dots-rise { 0% { opacity: 0; transform: translate(-50%, 40%) scale(.7); } 28% { opacity: .64; } 68% { opacity: .46; transform: translate(-50%, -14%) scale(1.08); } 100% { opacity: .1; transform: translate(-50%, -32%) scale(1.22); } }
+@keyframes opening-particle-rise { 0% { opacity: 0; transform: translate(0, 18px) rotate(var(--particle-rotate)) scale(.35); } 18% { opacity: .8; } 72% { opacity: .46; transform: translate(0, -38px) rotate(0deg) scale(1); } 100% { opacity: 0; transform: translate(0, -82px) rotate(12deg) scale(.65); } }
+@keyframes opening-puff-arrive { from { opacity: 0; transform: translate(-50%, 20px) rotate(-8deg) scale(.88); } to { opacity: .72; transform: translate(-50%, 0) rotate(0deg) scale(1); } }
+@keyframes opening-petal-drift { 0% { opacity: 0; } 45% { opacity: .44; } 100% { opacity: .18; transform: translateY(-34px) rotate(0deg) scale(1); } }
+@keyframes opening-sparkle-twinkle { 0%, 100% { opacity: .06; transform: scale(.64) rotate(-8deg); } 42% { opacity: .72; transform: scale(1) rotate(0deg); } 68% { opacity: .2; transform: scale(.82) rotate(8deg); } }
+@keyframes opening-glint-twinkle { 0%, 100% { opacity: 0; transform: scale(.3); } 38% { opacity: .9; transform: scale(1); } 58% { opacity: .24; transform: scale(.62); } }
+@keyframes opening-wordmark-sparkle { 0%, 100% { opacity: .06; transform: scale(.6) rotate(-8deg); } 42% { opacity: .78; transform: scale(1) rotate(0deg); } 64% { opacity: .18; transform: scale(.78) rotate(8deg); } }
+@keyframes opening-pretty-glint { 0% { opacity: 0; transform: scale(.34) rotate(-12deg); } 38% { opacity: .98; transform: scale(1.16) rotate(0deg); } 72% { opacity: .54; transform: scale(.84) rotate(8deg); } 100% { opacity: 0; transform: scale(.64) rotate(14deg); } }
 @keyframes opening-wordmark-in { from { opacity: 0; transform: translateY(22px) scale(.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes opening-tagline-in { from { opacity: 0; transform: translateY(12px) rotate(-2deg); } to { opacity: .9; transform: translateY(0) rotate(-2deg); } }
 @keyframes opening-monogram-in { from { opacity: 0; transform: translate(12px, 10px) rotate(-8deg) scale(.78); } to { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); } }
@@ -25,7 +56,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .brand-opening { animation-duration: 120ms !important; }
-  .opening-powder-cloud, .opening-wordmark, .opening-tagline, .opening-monogram { animation: opening-fade 120ms ease both !important; transform: none !important; }
+  .opening-powder-cloud, .opening-powder-dots, .opening-petal, .opening-particle, .opening-sparkle, .opening-glint, .opening-wordmark, .opening-wordmark-sparkle, .opening-tagline, .opening-monogram { animation: opening-fade 120ms ease both !important; transform: none !important; }
 }
 
 @media (max-width: 680px) {
