@@ -9,6 +9,7 @@ require('dotenv').config = () => ({ parsed: {} })
 const { buildApp } = require('../../server/app.cjs')
 const { loadConfig } = require('../../server/config.cjs')
 const { AppError } = require('../../server/errors.cjs')
+const { retrieveKnowledge } = require('../../server/knowledge/beauty-knowledge.cjs')
 const { chromium } = await import(process.env.YAS_QA_PLAYWRIGHT_MODULE || 'playwright')
 const output = path.resolve(process.env.YAS_QA_OUTPUT_DIR || '.qa/ai-r01/browser')
 await fs.mkdir(output, { recursive: true })
@@ -30,6 +31,7 @@ const provider = {
     if (prompt.includes('结构化妆容方案编排器')) return '{}'
     if (scenario === 'model-timeout') throw new AppError('UPSTREAM_TIMEOUT', '合成回答超时', 504)
     if (scenario === 'model-invalid') return '[[PRODUCT:unknown-product]]'
+    if (prompt.startsWith('按问题组织受控手法')) return JSON.stringify({ sections: retrieveKnowledge(messages.at(-1).content, 'beauty_knowledge').map((entry) => ({ id: entry.id, techniques: entry.techniques })) })
     if (prompt.includes('已校验的事实与选择依据：')) return `合成模型表达：\n${prompt.split('已校验的事实与选择依据：\n')[1].split('\n\n本次请求条件')[0]}`
     if (prompt.includes('归类为：beauty_knowledge') && /区别|差别|不同/.test(messages.at(-1).content)) return '合成品类知识回答：这里解释两种底妆概念，不推荐具体商品。'
     if (prompt.includes('归类为：beauty_knowledge')) return messages.at(-1).content.includes('出油')
@@ -169,9 +171,9 @@ try {
       assert.deepEqual(await ids(), [])
     }, true)
     await check('category-technique-routing', async () => {
-      assert((await send('气垫怎么用')).includes('合成教程'))
+      assert((await send('气垫怎么用')).includes('轻拍'))
       assert.deepEqual(await ids(), [])
-      assert((await send('我用粉底总起皮')).includes('合成教程'))
+      assert((await send('我用粉底总起皮')).includes('底妆起皮、卡粉时的一般调整'))
       assert.deepEqual(await ids(), [])
     })
     await check('external-shopping', async () => {
@@ -184,7 +186,7 @@ try {
       calls.length = 0
       const reply = await send('粉底和气垫有什么区别')
       await page.screenshot({ path: path.join(output, `${width}-category-knowledge-observed.png`) })
-      assert(reply.includes('知识问题') && reply.includes('暂时无法'))
+      assert(reply.includes('取用和补妆方式') && reply.includes('受控知识库'))
       assert(!reply.includes('先确认你的肤质'))
       assert.deepEqual(await ids(), [])
       assert.deepEqual(await profile(), {})
@@ -200,26 +202,27 @@ try {
     await check('category-knowledge', async () => {
       const before = await profile()
       const reply = await send('粉底和气垫有什么区别')
-      assert(reply.includes('合成品类知识回答'))
+      assert(reply.includes('取用和补妆方式'))
       assert.deepEqual(await ids(), [])
       assert.deepEqual(await profile(), before)
     })
     await check('tutorial', async () => {
-      assert((await send('粉底怎么涂')).includes('合成教程'))
+      assert((await send('粉底怎么涂')).includes('底妆入门教程'))
       assert.deepEqual(await ids(), [])
     }, true)
     await check('oily-base-knowledge', async () => {
-      assert((await send('底妆出油怎么办')).includes('合成知识回答'))
+      assert((await send('底妆出油怎么办')).includes('局部定妆'))
       assert.deepEqual(await ids(), [])
     })
     await check('laneige-fact', async () => {
       calls.length = 0
       const before = await profile()
-      assert((await send(laneige)).includes('规格记录：15g'))
+      assert((await send(laneige)).includes('规格：15g'))
       assert.deepEqual(await profile(), before)
       assert.equal((await profile()).budget, 400)
       assert.deepEqual(calls, [])
       assert.deepEqual(await ids(), ['laneige-neo-matte'])
+      await last.getByText('查看产品依据', { exact: true }).click()
       assert((await last.locator('.xiaoy-sources').innerText()).includes('2026-10-30'))
     }, true)
     await check('profile-self-report', async () => {
@@ -277,11 +280,11 @@ try {
       assert((await send('粉底怎么涂')).includes('已降级为受控知识库'))
       assert.deepEqual(await ids(), [])
       const reply = await send('粉底和气垫有什么区别')
-      assert(reply.includes('知识问题') && reply.includes('暂时无法'))
+      assert(reply.includes('取用和补妆方式') && reply.includes('受控知识库'))
       assert(!reply.includes('先确认你的肤质'))
       assert.deepEqual(await ids(), [])
     })
-    await check('search-source-rejected', async () => assert((await send('NEO小方块哑光气垫最新价格是多少？')).includes('未取得可核对')))
+    await check('search-source-rejected', async () => assert((await send('NEO小方块哑光气垫最新价格是多少？')).includes('没有找到能确认同一版本信息的官方商品页')))
     await check('catalog-expression-failure', async () => {
       assert((await send('ysl粉底液怎么样')).includes('已降级为站内资料回答'))
       assert.deepEqual(await ids(), ['ysl-all-hours'])
@@ -289,7 +292,7 @@ try {
     scenario = 'success'
     provider.configured = false
     await check('no-key-recommendation', async () => assert((await send('我是油皮，预算400元，推荐气垫')).includes('智能服务未配置')))
-    await check('no-key-fact', async () => assert((await send(laneige)).includes('规格记录：15g')))
+    await check('no-key-fact', async () => assert((await send(laneige)).includes('规格：15g')))
     await check('no-key-knowledge', async () => assert((await send('粉底怎么涂')).includes('受控知识库')))
     await check('no-key-plan', async () => assert((await send('给我完整妆容')).includes('7. 唇妆')))
     await check('no-key-external', async () => {

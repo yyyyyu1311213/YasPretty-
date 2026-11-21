@@ -60,6 +60,8 @@
  * @property {'model' | 'knowledge' | 'search' | 'weather' | 'clarification' | 'local'} answerMode
  * @property {string} [intent] 服务端判定的本次意图，不写入本地存储。
  * @property {string | null} model 非模型回答或无模型名时为 null，不是 UI 处理后的 ''。
+ * @property {Array<{question: string, intent: string, status: 'answered'|'partial'|'unavailable'|'clarification', knowledgeIds: string[], productIds: string[], missing: string[]}>} [coverage] 当前响应的逐项覆盖及缺口，不发送到历史请求。
+ * @property {import('./makeupPlan.js').KnowledgeEvidence[]} [knowledgeEvidence] 通用知识的版本、复核日期、适用条件与来源，不证明具体产品事实。
  */
 
 /**

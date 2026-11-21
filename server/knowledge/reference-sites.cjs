@@ -38,8 +38,16 @@ const referenceSites = Object.freeze([
     title: 'How To Apply Foundation & Foundation Tips',
     url: 'https://www.maybelline.com/makeup-tips/face/face-makeup-tutorials-for-beginners/how-to-apply-foundation',
     publisher: 'Maybelline',
-    reviewedAt: REVIEWED_AT,
+    reviewedAt: '2026-11-21T07:53:47.424Z',
     scope: '底妆上妆顺序、少量铺开和工具选择的入门教程',
+  },
+  {
+    id: 'maybelline-cushion-format',
+    title: 'Cushion Foundation — format and application guide',
+    url: 'https://www.maybelline.co.in/all-products/face/cushion-foundation',
+    publisher: 'Maybelline India',
+    reviewedAt: '2026-11-21T07:53:48.605Z',
+    scope: '仅支持形式/取用差异、少量轻拍和局部叠加；以网状气垫为例，不推广为所有气垫结构，不采纳具体商品、功效、持妆或适配宣称，不作为商品或购买链接。',
   },
   {
     id: 'maybelline-foundation-shade',

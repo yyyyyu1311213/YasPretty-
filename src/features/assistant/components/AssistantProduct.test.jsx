@@ -17,6 +17,15 @@ describe('小Y推荐产品', () => {
     expect(markup).toContain(product.image)
     expect(markup).toContain(product.priceLabel)
     expect(markup).toContain(product.finish)
+    expect(markup).toContain('查看产品资料')
+  })
+
+  it('keeps a factual lookup card focused on its product and details action', () => {
+    const product = products[0]
+    const markup = renderToStaticMarkup(<AssistantProduct product={product} profile={{}} onOpenProduct={vi.fn()} factOnly />)
+    expect(markup).toContain(product.name)
+    expect(markup).toContain('查看产品资料')
+    expect(markup).not.toContain(product.priceLabel)
   })
 
   it('hides internal shade and finish placeholders when product facts are incomplete', () => {

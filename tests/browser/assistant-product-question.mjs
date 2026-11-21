@@ -84,12 +84,13 @@ try {
       assert.equal(payload.query, sentQuestion)
       assert.equal(payload.profile.budget, 400)
       if (scenario === 'unconfigured') {
-        assert(reply.includes('规格记录：15g') && !reply.includes('智能服务未配置'))
+        assert(reply.includes('规格：15g') && !reply.includes('智能服务未配置'))
         assert.equal(await last.locator('.xiaoy-product').count(), 1)
         assert.deepEqual(calls, [])
       } else if (scenario === 'success') {
         assert.deepEqual(calls, [])
-        assert(reply.includes('规格记录：15g') && reply.includes('替换芯：未知'))
+        assert(reply.includes('规格：15g') && /是否附替换芯.*未知/.test(reply))
+        await last.getByText('查看产品依据', { exact: true }).click()
         assert((await last.locator('.xiaoy-sources').innerText()).includes('2026-10-30'))
         assert.equal(await last.locator('.xiaoy-product').count(), 1)
       } else {

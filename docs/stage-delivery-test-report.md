@@ -3273,4 +3273,190 @@ git diff --check
 
 入口仍为主站“小Y智能选妆”，原AI-R02无Key预览 http://127.0.0.1:8788/ 可查看本地规格/来源/缺口；人工确认只覆盖本轮软件范围，不能升级真实供应商质量、产品核验或公开授权。真实GLM/搜索、实体手机、公网部署、全部自然语言和当前SKU售价仍未验证；原大包与未缓存离线封面限制保留。本阶段无新增核验，继承上一条结论。没有新增保存字段、长期记忆或跨设备能力，比赛材料和视频未改。
 
+
 2026-11-21（北京时间），产品阶段 4 本机面部分析，负责人授权在最新 dev 整合提交。基底 a45fbaa；保留 AI-R01/R02 等最新小Y变更。首页入口、回环研究 API、双模型、三庭与按部位妆法/产品就位；未启用公开推理。验证：npm run check 全量 50 文件 577 项通过，生产构建通过（已有大包提示）；face-model-comparison.mjs 两模型冷/热真实重建通过，face-feature-report.mjs 桌面和 360px 手机真实流程通过。无新阶段标签。
+
+
+## AI-R03 2026-11-21：通用知识、复合问题与方案知识复用（待人工验收）
+
+**轮次 AI-R03；状态为待人工验收，未暂存、未提交、未推送、未打标签。** 本次没有新分配 YAS 编号；承接 AI-R01/AI-R02 已暴露的知识和复合问答缺口，保留原 YAS-2026-0058～0063 历史。不改变已归档 ARCH 状态，不创建新的 ARCH current，不宣称整个智能体生产就绪。
+
+### 启动门禁、基线与范围
+
+2026-11-21 15:24–15:25（北京时间）先完成 `git fetch origin dev`、分支/HEAD/索引/工作树/实际远端/相关标签核对。分支 dev，HEAD、origin/dev、实际远端 dev 均为 **a45fbaa290b9c15419acaa7a11823c6250d2a52a**，ahead/behind 0/0；启动工作树、暂存区和未跟踪列表均为空。AI-R02 的明确人工确认“是，验收当前 AI-R02 并归档”与实际提交相符，提交父节点为 `c4dbbb763c266dca009eabed8b4a9cd1ec125717`。本条回填 AI-R02 的实际归档回执，原15:02“已验收待归档”快照保留，不回写历史。
+
+本地/远端 arch-stage-12 对象 `c53e9c67e39614379843f21bd6955e683d11d17d`，指向 `4862e2759ba3b7785b4138a2ae88b5e8053f292a`；arch-stage-13 对象 `9f2ff35740364a447f2bc3a91d1a387951fedd32`，指向 `bcb9da04d65f45bfce8a7b13f8fc791c24865234`。16:00一次fetch遇Schannel/TLS握手失败，实际ls-remote仍匹配；16:00:43原命令重试成功，16:11:49续做时再次fetch成功，基线仍相同，没有改TLS、Git配置或凭据。
+
+先说明候选文件及原因后实施，实际交付 **28个路径**，全部在本次用户允许范围；没有范围外修改：
+
+| 文件 | 实际职责与修改 |
+|---|---|
+| `server/knowledge/beauty-entries.cjs`（新） | 14条可独立使用的受控知识，含条件、手法、限制、安全边界、来源、版本、复核日期 |
+| `server/knowledge/knowledge-topics.cjs`（新） | 路由意图到知识主题的共用映射、整理后的同义表达和主题匹配条件 |
+| `server/knowledge/beauty-knowledge.cjs` | 轻量二字词片IDF排序、相关性门槛、整条目预算、上下文和来源/证据生成 |
+| `server/knowledge/reference-sites.cjs` | 新增气垫形式说明来源，重新核对粉底教程访问时间和支持范围 |
+| `server/knowledge/plan-knowledge.cjs`（新） | 按既有方案条件选择手法知识，附加可信依据和限制 |
+| `server/knowledge/beauty-knowledge.test.js` | 主题加分、无命中、预算、完整安全句与方案注意事项保留测试 |
+| `server/services/assistant-service.cjs` | 实际统一入口先拆问题、逐项执行、合并覆盖状态；安全上下文和调用预算接线 |
+| `server/services/assistant/questions.cjs`（新） | 确定性问题拆解、条件合并和同一商品字段问题分组 |
+| `server/services/assistant/knowledge-answer.cjs`（新） | 模型仅可组织受控原句；漏项/改写/非法结构降级为完整受控答案 |
+| `server/services/assistant/compound-answer.cjs`（新） | 有限调用、来源去重/编号重映射、逐项缺口与未处理项 |
+| `server/services/assistant/intent-router.cjs` | 自然手法问法与事实优先级，复用同一知识主题体系 |
+| `server/services/assistant/fact-query.cjs` | “多久能用完”等使用时长问法归入既有未知用量证据字段 |
+| `server/services/assistant/fact-answer.cjs` | 向合并层返回已答/部分完成及具体证据缺口 |
+| `server/services/assistant/assistant.test.js` | 原无知识例子改为仍无可靠资料的磁吸眼影问题；新支持的粉底/气垫区别不再被要求无命中 |
+| `server/services/assistant/evaluation-ai-r03.cjs`（新） | 固定合成题集与样本分组/转回归记录 |
+| `server/services/assistant/ai-r03.test.js`（新） | Fastify实际API评测、组合失败/安全/预算/引用、方案schema/修复/降级 |
+| `server/services/makeup-plan-service.cjs` | 仅知识注入、可信手法/依据及原降级接线；候选筛选和评分原文保持 |
+| `server/schemas.cjs` | 助手compound/coverage与knowledgeEvidence，方案可选知识证据；来源上限支持有限复合回答 |
+| `src/contracts/assistant.js`、`src/contracts/makeupPlan.js` | 对应可选证据与逐项覆盖JSDoc契约；旧方案仍兼容 |
+| `src/features/assistant/assistantApi.js`、同目录 `assistantApi.test.js` | 保留新增响应元数据，不新增请求字段或存储键 |
+| `tests/browser/assistant-ai-r03.mjs`（新） | 真实页面→HTTP→实际路由/工具→答案/来源的28场景；记录计时和合成调用次数 |
+| `tests/browser/assistant-ai-r01.mjs` | 仅更新知识组织合成夹具和新支持内容的预期，保留82场景 |
+| `README.md`、`docs/frontend-architecture-migration-plan.md`、本报告、`docs/product-data-accuracy-audit.md` | 当前实际结构、轮次状态、测试及数据/来源边界同步 |
+
+工作台UI、首页、产品库/详情、公共样式、产品数据、图片、providers、网关app、安全限流、依赖和锁文件未改。没有向量库、额外模型、自动爬虫、自动入库或长期记忆。AGENTS.md与FINAL-PROMPT.md无需且未修改；目标与阶段规则没有变化。
+
+### 实现行为与预算
+
+- 原路由返回beauty_knowledge，而条目主题是makeup_tutorial等，原主题加分无法命中。现在统一映射，主题亲和只参与已有词义命中的排序，不能单靠意图强塞知识。整理同义词并使用轻量词片匹配；无足够相关内容时明确无命中。
+- 原12条内容整理为14条：新增“底妆起皮/卡粉的一般用量调整”和“粉底液与气垫的形式/取用差异”，对应实际暴露缺口。其他条目仅拆出已有条件、方法、限制及安全边界。knowledge.v2、内容复核日期2026-11-21与来源实际访问日期分开；详细证据及不支持的结论见同日审计。
+- 单知识问题最多3200个JavaScript字符串字符、6条完整知识；复合请求总预算7200字符/8条，存在安全分支时为其预留1000字符/1条；方案自身最多4200字符/4条并服从复合请求剩余预算。预算含来源、条件和限制，不等同模型token数。条目装不下就不选，不截断安全句。
+- 最多处理6个子问题，其余原文列为“尚未处理”，coverage最多7项。商品事实走原事实链，知识走受控条目，时效问题先检索；任何一项失败不吞掉其他项。复合请求最多4次provider.chat和3次provider.search方法调用（不是底层HTTP重试次数或全部外部provider总数）。原天气分支仍沿用既有provider；本轮未改其实现。
+- 复合答案逐项返回question/intent/status/knowledgeIds/productIds/missing。来源去重后重映射数值引用，通用联网来源编号不混入知识编号；正文末汇总未完成项。每项正文容量分配为floor(14000/子问题数)，超限整项改为未完成并保留完整安全提示，不截半句；最终schema仍限制20000字符。
+- 同一复合请求明确提到破损、刺痛等不适时，手法/方案/推荐项暂缓并解释原因，保留停止使用与咨询专业人员；不输出继续试用或遮盖操作。有效商品指代仅由紧邻子问题回答建立，不能跨无关问题找更早商品。
+- 知识模型输出是受限JSON组织：全部提供的知识ID与一般手法原句必须各出现一次，只能调整顺序。服务端重新附上条件、限制和安全边界，非法/遗漏/创造内容立即用本地完整条目回答，不将自由文本当成功知识证据。该方式仍需真实provider验证组织成功率和语言体验。
+- 方案先运行既有确定性筛选，再注入知识；只改相关手法、理由/注意事项及独立knowledgeEvidence，商品ID/候选排名/硬条件不由知识覆盖。对比HEAD确认BASE_CATEGORIES至buildLocalPlan前的筛选、评分和原步骤模板原文不变。原schema校验、最多一次结构修复和本地7步降级保留。原商品注意事项优先保留；放不进步骤的知识限制完整提升到方案limitations，schema仍不允许的模型结果走原本地降级。
+- 工作台通过现有步骤/理由显示知识复用，未新增工作台证据UI；knowledgeEvidence可从API查看。聊天正文展示逐项结果，来源复用现有组件；新增coverage/evidence不写入历史持久存储，也不回传为新增请求字段。
+
+### 固定评测、首次失败与评分边界
+
+题集在实现前建立：12条旧回归R01–R12、16条新增合成保留H01–H16；覆盖教程、同义表达、事实、比较、方案、复合、库外和安全。初始文件SHA256为 `9A4DA78F29E18E1CE89E58106173F30355E8ED6635F1849C6027F21DB022960A`；问题原文保留。它是同一开发者预先编写的合成样本，非盲测、非真实用户样本，不代表独立统计泛化评估。
+
+实际入口是`buildApp`的`POST /api/assistant` Fastify inject；使用真实受控产品读取、实际路由/拆解/证据链，没有给检索函数人工指定正确意图。方案另通过`POST /api/makeup-plans`验证；浏览器走生产页面与真实本地HTTP。
+
+首次评测 `.qa/ai-r03/evaluation-first.json` 发生于15:44:49：旧回归11/12满足当时所有检查，R10未拆全并错分工具问法；保留样本12/16满足当时所有检查。H08“多大规格/顺便眼下遮瑕”漏拆；H11工具问法路由不符且需要跨子问题保留不适条件；H15“多久能用完”未映射使用天数缺口，冷暖问法还误召回肤质；H16“教我画通勤底妆”未召回。读取首次结果后，这4条明确转为promoted-regression，不再计作未调规则保留样本；H11预期同时改为安全暂缓手法。其他12条未用于逐条调规则。最终为全部8条产品问题补齐确切目标ID检查，仅加强评分，没有改问题文本或按这5个补标结果调业务规则。
+
+最终16:13:35开始的全量运行生成 `evaluation-final.json`。下表只统计有明确检查目标的样本；其余维度写null，不计为通过。首次原始评测曾将无目标的维度空集合和库外503路由记作通过，该评分缺陷保留原文件并在最终纠正；H13返回PROVIDER_NOT_CONFIGURED/503，路由/覆盖不可评分，不伪称分类正确。
+
+| 最终分组 | 路由 | 目标产品ID | 知识证据/明确无命中 | 子问题计数 | 有限未知事实断言 | 指定回答/降级内容 |
+|---|---:|---:|---:|---:|---:|---:|
+| 旧回归12条 | 12/12 | 4/4 | 9/9 | 12/12 | 12/12 | 6/6 |
+| 从保留集转回归4条 | 4/4 | 2/2 | 4/4 | 4/4 | 4/4 | 3/3 |
+| 未逐条调规则12条 | 11/11，1项不可评分 | 2/2 | 12/12 | 11/11，1项不可评分 | 12/12 | 4/4 |
+
+这些分母不同，不能宣传为28条全部语义正确。未知事实断言仅检测伪造天数、999元和invented产品ID；证据检查为目标知识ID包含/无命中，子问题检查为覆盖项数，并不证明每句话都充分回答或语义真实。另有受限模型原句/产品数字引用拒绝、混合成功失败、安全、上下文和预算测试。每条原始结果、覆盖状态、来源、毫秒和调用次数均保存在JSON，可复查。
+
+| 本地API测量，合成未配置provider | p50(ms) | p95(ms) | 最大(ms) | chat/search调用 |
+|---|---:|---:|---:|---:|
+| 旧回归12条 | 5.16 | 56.19 | 56.19 | 0/0 |
+| 转回归4条 | 7.04 | 9.40 | 9.40 | 0/0 |
+| 剩余保留12条 | 3.16 | 25.20 | 25.20 | 0/0 |
+
+以上为一次本机Fastify inject墙钟测量，含首次初始化且与Vitest并发调度相关，没有稳定性能提升结论。合成已配置provider的实际页面测量单列如下（桌面/360px，从填入问题前至HTTP JSON完成，包含浏览器输入调度）：
+
+| 页面场景 | 桌面/手机(ms) | 每次chat/search方法调用 | 结果 |
+|---|---|---|---|
+| 知识组织成功 | 20.48 / 13.60 | 1/0 | 完整受控原句与来源 |
+| 知识非法JSON | 21.65 / 13.70 | 1/0 | 受控知识降级 |
+| 知识模拟超时 | 18.91 / 13.57 | 1/0 | 完整安全边界降级 |
+| 商品事实+知识+检索失败 | 80.53 / 22.59 | 1/1 | 两项已答、时效项明确缺口 |
+| 知识+合成价格检索成功 | 25.37 / 15.48 | 2/1 | 仅合成1.23元证据，未写入产品库 |
+| 时效空检索+普通手法 | 25.22 / 16.12 | 1/1 | 时效项未完成、普通手法已答 |
+| 方案非法JSON及修复失败 | 19.15 / 13.62 | 2/0 | 本地方案并附知识 |
+| 9项问题和预算耗尽 | 27.00 / 21.40 | 0/3 | 最多6项，剩余明确未处理 |
+
+合成超时是provider立即抛错，不是实际等待8秒/网络超时；不得据此推断真实模型速度。**真实GLM与web-search provider未获本轮外部调用授权，未调用；真实准确率、组织成功率、搜索质量、延迟、底层HTTP次数/重试与成本全部保留为待验收项。** 两次公开知识来源HTTP访问只用于人工整理来源，不属于真实AI provider评测。
+
+### 完整验证与失败保留
+
+| 实跑命令 | 结果 | 忽略目录 `.qa/ai-r03/` 中的证据 |
+|---|---|---|
+| `npm test` | 最终47文件570/570，16:13:35开始，5.24s，退出0 | `test-delivery-final.txt`、`evaluation-final.json` |
+| `npm run build -- --config .qa/ai-r03/vite.config.mjs` | 1873模块成功；原>500kB大包提示保留 | `build.txt` |
+| `node tests/browser/assistant-ai-r03.mjs` | 1440×900/360×900，28/28 | `browser-delivery.txt`、`browser-delivery/results.json`及PNG |
+| `node tests/browser/assistant-ai-r01.mjs` | 82/82，最终服务改动后复跑 | `browser-r01-delivery.txt`及同名目录 |
+| `node tests/browser/assistant-ai-r02.mjs` | 42/42 | `browser-r02.txt`及同名目录 |
+| `node tests/browser/assistant-product-question.mjs` | 8/8 | `browser-product.txt`及同名目录 |
+| `git diff --check`、`git diff --cached --check` | 实现后通过；最终文档/新文件/范围核对另追加 | 最终核对回执 |
+
+测试使用`NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs`禁止dotenv读取真实文件；临时Vite配置导入现有配置并设置envDir:false，不改真实配置。浏览器使用已有Playwright与Chrome、新建临时上下文、合成输入/provider，不安装依赖、不读取个人浏览器档案。可复跑环境：
+
+```powershell
+$env:NODE_OPTIONS='--require=./.qa/ai-r01/no-secrets.cjs'
+$env:YAS_AI_R03_EVAL_OUTPUT='.qa/ai-r03/replay-evaluation.json'
+npm test
+npm run build -- --config .qa/ai-r03/vite.config.mjs
+$env:YAS_QA_PLAYWRIGHT_MODULE='file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE='C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_OUTPUT_DIR='.qa/ai-r03/replay-browser'
+node tests/browser/assistant-ai-r03.mjs
+```
+
+跨机使用正常安装环境和已有Playwright，或先建立等效的无密钥临时配置；`.qa`证据/临时运行器不纳入提交，仓库中的题集、测试和浏览器脚本为可复跑源。
+
+原失败不删除：第一次定向112项111通过（旧固定2条预期失效）；首轮评测15项14通过（R10）；首轮全量564项562通过（30ml使用时长被知识抢占、包装/便携同一任务被拆开触发多余模型分类）。修正后564/564，再补安全/引用/预算等验证至570/570。新浏览器首轮5个成功后在来源标题断言停止（组件展示英文标题，不展示publisher）；第二轮13个成功后在离线文字断言停止（实际为“智能服务当前不可用”）；仅修测试预期，完整重跑28/28。空白检查曾发现beauty-knowledge.cjs末行CRLF造成报告，规范回LF后通过。未把失败文件改写为成功。
+
+已查看桌面复合缺口/方案、手机三知识回答/安全暂缓等截图；所检聊天区域无横向溢出，输入与发送按钮不重叠，pageerror为空。新套件记录consoleErrors为空；离线为现有浏览器显式不可用提示，不能冒称浏览器离线检索了服务端知识。来源点击沿用既有组件与AI-R02测试；知识来源标题及href在新套件核对。未增加字体成功排版、真机、其他浏览器、默认动效全覆盖或完整无障碍认证。
+
+### 人工入口、隐私与交付边界
+
+本轮隔离无Key预览为 **http://127.0.0.1:61455/**，进入“小Y智能选妆”。该进程明确禁读.env，模型和外部天气均不启用，适合本地知识、事实与失败降级验收；不能用作真实GLM语言或联网质量验收，也未替换旧8788服务。重启可运行忽略目录的preview.cjs，使用新分配端口。
+
+人工建议依次检查：
+
+1. “底妆浮粉怎么办”“粉底和气垫有什么区别”：应取得相关条目、限制与来源，不转成选购。
+2. “先遮瑕还是先粉底？色号怎么选？化妆刷怎么选？”：三项分别回答，不固定只取两条。
+3. “NEO 小方块气垫（哑光）净含量是多少；粉底怎么涂；小金盒高光修容盘最新价格是多少”：区分15g既有事实、一般手法和未确认的实时价。
+4. “银河尘埃眼影的粒子共振原理是什么”：允许无命中，不能凑一条无关知识。
+5. “脸上有破损怎么办；遮瑕怎么用；给我完整妆容方案”：停止使用与咨询提示完整，后两项明确暂缓。
+6. 聊天“给我完整通勤妆容方案”及既有工作台修改预算再生成：手法复用知识，商品仍受原硬条件约束，无Key为本地方案；API含独立knowledgeEvidence。
+
+没有新增照片、上传、用户数据日志、存储键、服务端记忆或跨设备能力；已有最近消息处理范围保持。产品审计：**本阶段无新增核验，继承上一条结论。** 此句指商品事实/价格/图片/评分/授权；本轮通用知识来源复核另有明确记录。原图片pending/blocked、官方旗舰店证据差异、独立实测/评分缺口与公开风险保持；视频和比赛材料未改，任何公开表述须按本报告实际边界。
+
+保留限制：规则拆解不覆盖所有口语省略和交叉指代；有限词片检索不是语义理解模型；复合任务可能因上下文或调用上限需要分开发送；非美妆库外回答沿用原生成/搜索方式，并非本轮已证明全部事实可靠。真实provider、公开部署、真机、全自然语言和使用体验待验收。未提交现场不是Git回退点；上一可定位基线为a45fbaa。后续如获明确归档授权再按依赖评估提交/回退，不自动暂存、stash、清理、提交、推送、打标签或删分支。
+
+
+### 2026-11-21 16:32 AI-R03 最终交付核对（北京时间）
+
+16:28:56运行`node .qa/ai-r03/verify-final.cjs`退出0：实际28路径与允许清单完全一致，24个JS/CJS/MJS语法通过，暂存区为空，dev/HEAD/origin/dev仍为a45fbaa290b9c15419acaa7a11823c6250d2a52a；方案原硬筛选/评分/步骤模板原文不变，三份累计文档相对HEAD只追加，README新交付链接锚点、UTF-8/末尾换行/新旧文件行尾空白、两项git diff检查通过。证据为`.qa/ai-r03/final-scope-verification.json`。16:32:11再次fetch及实际ls-remote成功，远端dev与基线一致，arch-stage-12/13对象及指向仍为启动记录原值。
+
+16:32:08独立预览实际HTTP核对：61455首页200且完整HTML1067字节；health的services.assistant=false；规格+手法+最新价格复合问题200，逐项answered/answered/partial；预算1元的油皮方案200、local、7步、0商品候选，附4条手法知识。没有真实provider调用，证据为`preview-delivery-http.json`。已复查最终browser-delivery桌面知识来源和360px安全暂缓截图；仅补记文档及范围核对，沿用已运行570/570、1873模块与160/160页面结果，不冒称再次业务重跑。补记后复核同一检查。
+
+**当前为待人工验收，未暂存、提交、推送、打标签或删除分支，无本轮SHA/tag。** AI-R02归档基线可定位，当前本地现场不是新的Git回退点。真实provider质量/延迟/成本与其余未覆盖项继续待验收；本阶段无新增产品核验，继承上一条结论。
+
+### 2026-11-21 18:03 AI-R03 人工反馈修正：回答呈现与正装收录规则（北京时间，待人工验收）
+
+负责人反馈截图中的逐条“已有核验记录”、重复规格和内部档案文案不适合消费者阅读，要求使用产品资料入口；随后明确“我们产品库里面的产品都是正装规格”。本次是同一AI-R03范围的反馈修正，未获人工验收或Git归档授权。AI-R02归档与基线仍为a45fbaa290b9c15419acaa7a11823c6250d2a52a；再次fetch成功，18:01:38核对HEAD/origin/dev一致。原28文件现场完整保留，没有把用户反馈当成验收通过。
+
+回答直接显示所问值，同值规格/净含量只说一次；未知、冲突和历史价格边界仍在正文。产品查询卡不再夹带无关价格/推荐标签，标明“查看产品资料”，沿用打开真实详情抽屉的原回调，抽屉仍有“查看完整产品资料”。产品依据使用原生details默认收起，保留序号、版本、来源日期、实际货号和安全的官方商品链接；不向消费者展示归档表行号、空SKU或重复“已有核验记录”。知识/联网引用继续可见。源证据结构、原日期与内部审计记录保留；商品详情、目录、首页、妆容工作台及公共样式未修改。
+
+在现有事实schema新增独立fullSize字段，由2026-11-21负责人确认的站内收录规则支持“正装”；它不等价于saleUnit、refill、setContents或店铺在售SKU核验。规则来源为YasPretty，公开链接为空，支持范围只含收录规格，原逐商品核验状态不升级。未知版本/SKU仍不能借用默认版本，包括“SKU OTHER-30是正装吗”。全站收录规则问句及紧接所选商品的“是小样吗”也走实际助手入口。资料不足、冲突与无有效联网来源用简明中文说明，校验行为保留。
+
+除原28路径，本次增加14个路径，共42个待验收文件，均落在原候选范围或本次助手呈现反馈的必要适配中：
+
+| 路径 | 目的 |
+| --- | --- |
+| server/knowledge/product-facts-adapter.cjs、product-facts-schema.cjs、product-facts.test.js | 正装规则与单品/店铺包装事实分离；保留冲突和SKU隔离 |
+| server/services/assistant/product-resolver.cjs、product-facts.test.js | 所选商品正装追问、未知包装与来源检查 |
+| server/app.test.js | 实际POST助手入口验证规格不重复、正装已答但替换芯/天数缺口仍为partial |
+| src/features/assistant/components/AssistantMessages.jsx、AssistantProduct.jsx、AssistantProduct.test.jsx | 查询卡使用真实产品入口并明确动作，推荐卡原资料保留 |
+| src/features/assistant/components/SourceList.jsx、SourceList.test.jsx | 按需展开依据、保留安全链接，不展示内部操作信息 |
+| src/features/assistant/assistant.css | 仅助手资料动作/折叠依据的字号和换行，不改公共样式 |
+| tests/browser/assistant-ai-r02.mjs、assistant-product-question.mjs | 桌面/手机实际卡片打开、依据展开、缺口和降级回归 |
+
+原范围内的fact-answer.cjs、fact-query.cjs、intent-router.cjs、questions.cjs、assistant-service.cjs及相关助手测试一并适配。商品原始数据、筛选硬条件、方案生成/修复限制、知识内容与长期记忆行为未因本反馈修改；无新增依赖。AGENTS.md和FINAL-PROMPT.md无需同步，未修改。
+
+**最终实际验证**：17:58:02的npm test为47文件573/573；npm run build（继续使用不读取.env的.qa/ai-r03/vite.config.mjs）为1873模块，保留原大包提示。随后针对最终构建运行桌面1440×900及手机360×900：AI-R03 28/28、AI-R01 82/82、AI-R02 42/42、原规格追问8/8，共160/160。新增页面断言检查默认收起、展开仍无内部归档文案、点击正确商品详情并看到15g及完整资料按钮；复查360px包装问题与桌面展开依据截图。18:01更新61455无Key预览，实际HTTP健康/首页及4个正装/净含量/包装缺口/未知SKU问题通过，未清除旧聊天或用户存储；刷新后发送新问题查看新正文。
+
+失败记录保留：初轮571项中4项未通过，均为旧文字断言（净含量冒号格式、未知字段、内部字段标签）；修正断言并新增边界测试后，573项中另1项仍要求旧“未取得可核对”，对应浏览器AI-R01也暴露同一旧断言。更新为检查无法确认同版本官方来源后最终通过，没有为了通过测试放宽产品ID、数值、来源校验或缺口检查。失败命令输出及.qa/ai-r03/feedback/test-wording-failure.txt保留。
+
+28条固定题集原问题与分组未变，新增正装测试属于回归，不计作新保留集。最终实际API合成无Key测量（毫秒）：12条旧回归均值7.58/p95 40.63；4条已转回归均值4.61/p95 5.07；12条原保留均值3.76/p95 17.89，各组chat/search均0。可评分维度结果：旧回归路由12/12、产品4/4、证据9/9、遗漏12/12、有限未知事实断言12/12、降级6/6；已转回归对应4/4、2/2、4/4、4/4、4/4、3/3；保留对应11/11、2/2、12/12、11/11、12/12、4/4。未设目标与503未暴露维度均不计通过。浏览器AI-R03中26条有调用/计时记录，HTTP p50 26.78ms/p95 43.96ms，合计合成chat18/search12；其余2条为页面检查。此为本机合成/无Key结果，不能解释为真实模型准确率或性能。
+
+复跑采用NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs；YAS_AI_R03_EVAL_OUTPUT=.qa/ai-r03/feedback/evaluation-final.json；四个已有tests/browser脚本使用原Playwright/Chrome环境，YAS_QA_OUTPUT_DIR分别为.qa/ai-r03/feedback/r01-final、r02-final、r03-final、product-final。最终test-final.txt、build-final.txt、各results.json/截图及preview-http.json均在忽略的反馈目录；前次16:32结果未覆盖。真实GLM/外部搜索仍未授权、未运行，保留真实provider验收项；未读取真实Key或用户对话。
+
+四份允许文档同步，当前仍为AI-R03待人工验收，无本轮SHA/tag、未暂存/提交/推送/打标签。图片授权、公开资料、独立实测与原风险保持。**本阶段无新增逐商品外部核验，继承上一条结论；本次新增的是负责人确认的正装收录规则，支持范围单独记录于审计。**
+
+18:04:43运行反馈范围核对脚本通过：42路径与原28+本次14一致、32个JS/CJS/MJS语法通过（JSX由实际构建验证）、索引为空、三份累计记录只追加、原方案硬条件块不变、git diff --check通过。证据为.qa/ai-r03/feedback/final-scope.json，前次核对结果保留。
+
+2026-11-21（北京时间）本地提交说明：负责人指示“AI-R03先去提交”。提交前重新 fetch，dev 和 origin/dev 均为 a45fbaa290b9c15419acaa7a11823c6250d2a52a。此前页面测试没有覆盖人工反馈中的带逗号问法：“我用粉底总起皮，怎么办？”会将“怎么办”误列为另一个未完成项，即使主问题已有手法回答。此现象不能作为缺少知识或上游故障的证据。短句承接与回答去重仍待修复；本次只保存当前版本，不把讨论方案列入实现或将人工验收记为通过。实际提交 SHA 由回执提供，不推送、不打标签。

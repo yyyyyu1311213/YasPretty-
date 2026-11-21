@@ -15,7 +15,8 @@ export default function AssistantMessages({ messages, profile, busy, activity, m
               <div className="xiaoy-products">
                 {message.productIds.map((id) => {
                   const product = products.find((item) => item.id === id)
-                  return product ? <AssistantProduct key={id} product={product} profile={profile} onOpenProduct={onOpenProduct} /> : null
+                  return product ? <AssistantProduct key={id} product={product} profile={profile} onOpenProduct={onOpenProduct}
+                    factOnly={message.sources?.some((source) => source.kind === 'product' && source.productId === id)} /> : null
                 })}
               </div>
             )}

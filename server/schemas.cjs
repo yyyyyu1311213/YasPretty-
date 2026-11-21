@@ -65,13 +65,36 @@ const productRecordSchema = z.object({
   recommendationReady: z.boolean(),
 }).passthrough()
 
+const knowledgeEvidenceSchema = z.object({
+  id: z.string().min(1).max(100),
+  title: z.string().min(1).max(160),
+  version: z.string().min(1).max(40),
+  reviewedAt: z.string().date(),
+  conditions: z.array(z.string().min(1).max(300)).max(4),
+  limitations: z.array(z.string().min(1).max(500)).max(8),
+  safetyBoundaries: z.array(z.string().min(1).max(500)).max(4).optional(),
+  sources: z.array(sourceSchema.omit({ kind: true }).extend({ supports: z.array(z.string().min(1).max(300)).max(8) })).max(4),
+  stepIds: z.array(z.string().min(1).max(50)).max(8).optional(),
+}).strict()
+
+const assistantCoverageSchema = z.object({
+  question: z.string().min(1).max(2000),
+  intent: z.string().min(1).max(40),
+  status: z.enum(['answered', 'partial', 'unavailable', 'clarification']),
+  knowledgeIds: z.array(z.string().min(1).max(100)).max(8),
+  productIds: z.array(z.string().min(1).max(120)).max(6),
+  missing: z.array(z.string().min(1).max(300)).max(24),
+}).strict()
+
 const assistantResponseSchema = z.object({
   answer: z.string().trim().min(1).max(20000),
-  sources: z.array(z.union([sourceSchema, require('./knowledge/product-facts-schema.cjs').assistantProductSourceSchema])).max(8),
+  sources: z.array(z.union([sourceSchema, require('./knowledge/product-facts-schema.cjs').assistantProductSourceSchema])).max(48),
   usedWebSearch: z.boolean(),
   answerMode: z.enum(['model', 'knowledge', 'search', 'weather', 'clarification', 'local']),
   model: z.string().trim().min(1).max(80).nullable(),
-  intent: z.enum(['catalog_recommendation', 'product_comparison', 'product_fact', 'beauty_knowledge', 'makeup_plan', 'plan_adjustment', 'external_question', 'external_research', 'greeting_help', 'unsupported_sensitive', 'clarification']).optional(),
+  intent: z.enum(['catalog_recommendation', 'product_comparison', 'product_fact', 'beauty_knowledge', 'makeup_plan', 'plan_adjustment', 'external_question', 'external_research', 'greeting_help', 'unsupported_sensitive', 'clarification', 'compound']).optional(),
+  coverage: z.array(assistantCoverageSchema).max(7).optional(),
+  knowledgeEvidence: z.array(knowledgeEvidenceSchema).max(8).optional(),
 }).strict()
 
 const userProfileSchema = z.object({
@@ -128,6 +151,7 @@ const makeupPlanSchema = z.object({
   steps: z.array(planStepSchema).min(5).max(8),
   recommendedProductIds: z.array(z.string().trim().min(1).max(120)).max(6),
   candidateEvidence: z.array(candidateEvidenceSchema).max(12),
+  knowledgeEvidence: z.array(knowledgeEvidenceSchema).max(8).optional(),
   confidence: z.number().finite().min(0).max(1),
   limitations: z.array(z.string().trim().min(1).max(300)).max(10),
   sourceMode: z.enum(['local', 'model']),

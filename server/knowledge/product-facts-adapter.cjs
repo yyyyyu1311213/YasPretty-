@@ -3,6 +3,11 @@ const { factRecordSchema, officialItemUrl } = require('./product-facts-schema.cj
 const text = (value) => value === null || value === undefined ? null : Array.isArray(value) ? value.filter(Boolean).join('、') || null : String(value).trim() || null
 const date = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? value : null
 const known = (value) => value && !/^(?:待核验|未知|unknown|以包装批次为准)$/.test(value)
+// Catalog inclusion policy confirmed by the owner; this is not a merchant SKU or packaging claim.
+const catalogSize = '正装'
+const fullSizePolicy = { id: 'full-size-policy', title: 'YasPretty 产品收录说明', publisher: 'YasPretty', accessedAt: '2026-11-21',
+  status: 'recorded', url: null, location: 'docs/product-data-accuracy-audit.md#ai-r03-full-size', label: '产品库收录规则',
+  limitations: ['仅描述站内收录的正装规格，不代表店铺所售套装、赠品或替换芯。'] }
 
 // Values are derived on startup from the existing catalog and verification exports.
 // This adapter adds field/source mappings, not a second manually maintained catalog.
@@ -35,6 +40,7 @@ function productFactRecords(product, verification = {}) {
     evidence: evidence ? [evidence] : [], limitations: identityConflict ? ['商品身份或版本记录存在冲突，不能合并事实。'] : limitations,
   })
   const records = []
+  records.push(make('fullSize', catalogSize, 'recorded', { ...fullSizePolicy, id: product.id + ':' + fullSizePolicy.id }, fullSizePolicy.limitations))
   const catalogSpec = text(product.specification)
   const reviewedSpec = recorded ? text(reviewed.specification) : null
   const specConflict = catalogSpec && reviewedSpec && catalogSpec !== reviewedSpec
@@ -63,4 +69,4 @@ async function loadVerificationRecords() {
   return (await import('../../src/data/product-verification.js')).productVerificationRecords
 }
 
-module.exports = { productFactRecords, loadVerificationRecords }
+module.exports = { productFactRecords, loadVerificationRecords, catalogSize }

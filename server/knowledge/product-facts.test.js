@@ -31,6 +31,15 @@ describe('AI-R02 read-only product fact mappings', () => {
     const index = indexModule.createProductFactsIndex([{ ...product, specification: '30g' }], { sample: reviewed })
     expect(index.read('sample', ['netContent']).fields[0]).toMatchObject({ status: 'conflict', value: null })
   })
+  it('records the catalog size policy separately from merchant packaging and retains version isolation', () => {
+    const index = indexModule.createProductFactsIndex([product], { sample: reviewed })
+    const result = index.read('sample', ['fullSize', 'saleUnit', 'refill'])
+    expect(result.fields[0]).toMatchObject({ value: '正装', status: 'recorded', verifiedAt: '2026-11-21' })
+    expect(result.sources).toHaveLength(1)
+    expect(result.sources[0]).toMatchObject({ publisher: 'YasPretty', url: null, supports: ['收录规格'] })
+    expect(result.fields.slice(1).every((f) => f.value === null)).toBe(true)
+    expect(index.read('sample', ['fullSize'], { sku: 'UNLISTED' }).fields[0].value).toBeNull()
+  })
   it('does not apply a supplement from another SKU or version', () => {
     const initial = indexModule.createProductFactsIndex([product], { sample: reviewed })
     const record = { ...initial.records().find((r) => r.field === 'netContent'), field: 'refill' }

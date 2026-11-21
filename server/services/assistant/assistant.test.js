@@ -71,7 +71,7 @@ describe('AI-R01 server orchestration', () => {
     expect(result.answer).toContain('没有同时满足')
     expect(result.answer).not.toContain('[[PRODUCT:')
   })
-  it.each([['月光粉底液持妆多久', /持妆.*8.*小时/], ['月光粉底液有哪些色号', /色号.*(?:缺少|无法|尚不能)/]])('audit: answers the requested field or declares it missing: %s', async (query, expected) => {
+  it.each([['月光粉底液持妆多久', /持妆.*8.*小时/], ['月光粉底液有哪些色号', /色号.*(?:缺少|无法|未知)/]])('audit: answers the requested field or declares it missing: %s', async (query, expected) => {
     const result = await service.createAssistantService({ products, zhipuProvider: provider() }).answer({ query })
     expect(result.answer).toMatch(expected)
   })
@@ -88,8 +88,8 @@ describe('AI-R01 server orchestration', () => {
   })
   it('audit: does not mistake words in a product name for a request about those fields', async () => {
     const result = await service.createAssistantService({ products, zhipuProvider: { ...provider(), configured: false } }).answer({ query: '星光气垫（哑光）怎么样' })
-    expect(result.answer).toContain('品类：气垫')
-    expect(result.answer).toContain('适用肤质记录')
+    expect(result.answer).toMatch(/品类.*：气垫/)
+    expect(result.answer).toMatch(/适合肤质.*：油皮/)
   })
   it('narrows a brand by the explicitly requested category without applying profile filters', async () => {
     const api = service.createAssistantService({ products, zhipuProvider: { ...provider(), configured: false } })
@@ -187,7 +187,7 @@ describe('AI-R01 server orchestration', () => {
       if (failure === 'timeout') throw new Error('synthetic timeout')
       return ''
     }) }
-    const result = await service.createAssistantService({ products, zhipuProvider }).answer({ query: '粉底和气垫有什么区别' })
+    const result = await service.createAssistantService({ products, zhipuProvider }).answer({ query: '磁性眼影的吸附原理是什么' })
     expect(result).toMatchObject({ intent: 'beauty_knowledge', answerMode: 'clarification', model: null, usedWebSearch: false, sources: [] })
     expect(result.answer).toContain('知识问题')
     expect(result.answer).toContain('暂时无法')
@@ -310,14 +310,14 @@ describe('AI-R01 server orchestration', () => {
   it('AI-R02 keeps stable packaging gaps local and rejects unqualified sources for current prices', async () => {
     const zhipuProvider = provider()
     const api = service.createAssistantService({ products, zhipuProvider })
-    expect((await api.answer({ query: '星光哑光气垫15g含替换芯吗' })).answer).toContain('替换芯：未知')
+    expect((await api.answer({ query: '星光哑光气垫15g含替换芯吗' })).answer).toContain('是否附替换芯目前未知')
     expect(zhipuProvider.search).not.toHaveBeenCalled()
     expect(zhipuProvider.chat).not.toHaveBeenCalled()
     zhipuProvider.search.mockResolvedValue([{ title: '合成来源', url: 'https://example.test/source', publisher: '测试', accessedAt: '2026-11-21T00:00:00.000Z', content: '仅测试，不代表产品事实' }])
     zhipuProvider.chat.mockRejectedValue(new Error('synthetic timeout'))
     const result = await api.answer({ query: '星光哑光气垫最新价格' })
     expect(result).toMatchObject({ answerMode: 'local', model: null, usedWebSearch: false })
-    expect(result.answer).toContain('未取得可核对')
+    expect(result.answer).toContain('没有找到能确认同一版本信息的官方商品页')
     expect(result.sources.some((source) => source.url === 'https://example.test/source')).toBe(false)
     expect(zhipuProvider.chat).not.toHaveBeenCalled()
   })

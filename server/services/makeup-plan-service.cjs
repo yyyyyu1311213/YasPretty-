@@ -3,6 +3,8 @@ const {
   makeupRequestSchema,
   userProfileSchema,
 } = require('../schemas.cjs')
+const { selectPlanKnowledge, applyPlanKnowledge } = require('../knowledge/plan-knowledge.cjs')
+const { formatKnowledgeContext } = require('../knowledge/beauty-knowledge.cjs')
 
 const BASE_CATEGORIES = new Set(['粉底液', '气垫'])
 const EYE_CATEGORIES = new Set(['眼影', '睫毛膏', '眼线', '眉笔'])
@@ -220,7 +222,7 @@ function buildLocalPlan(selection, fallbackReason = '当前使用本地规则模
     '部分站内产品的价格、评分、外部事实或图片授权仍待核验；带有官网来源的新增彩妆也不等于已获得素材再利用授权。',
     '不上传照片也可以完成本方案；本阶段没有进行人脸分析或医疗判断。',
   ]
-  return makeupPlanSchema.parse({
+  return makeupPlanSchema.parse(applyPlanKnowledge({
     id: `plan-${Date.now().toString(36)}`,
     title: `${makeupRequest.scene}${makeupRequest.style}妆容方案`,
     summary: `根据${userProfile.skinType === 'unknown' ? '当前自述条件' : userProfile.skinType}、${makeupRequest.scene}和${makeupRequest.style}偏好，先用少量底妆建立均匀度，再按需要局部遮瑕、定妆和补足眉眼腮红唇色。`,
@@ -234,7 +236,7 @@ function buildLocalPlan(selection, fallbackReason = '当前使用本地规则模
     sourceMode: 'local',
     createdAt: now.toISOString(),
     schemaVersion: 'makeup-plan.v1',
-  })
+  }, selection.knowledge || selectPlanKnowledge(userProfile, makeupRequest)))
 }
 
 const modelDraftSchema = makeupPlanSchema.pick({
@@ -285,6 +287,8 @@ function buildPlanPrompt(selection) {
 用户画像：${JSON.stringify(selection.userProfile)}
 妆容需求：${JSON.stringify(selection.makeupRequest)}
 候选产品和确定性 evidence：${JSON.stringify(productDigest(selection.candidates))}
+${formatKnowledgeContext((selection.knowledge || selectPlanKnowledge(selection.userProfile, selection.makeupRequest)).map(({ entry }) => entry))}
+知识仅支持一般手法，不能改变候选、价格或其他商品事实；必要安全边界必须保留。
 
 JSON 必须包含：title、summary、externalContextSummary、steps、recommendedProductIds、confidence、limitations。每个 step 必须包含 id、category、goal、technique、texture、colorDirection、primaryProductId、alternativeProductIds、reasons、cautions。`
 }
@@ -302,7 +306,7 @@ function validateModelDraft(draft, selection, products) {
 }
 
 function createAssistantPlan(draft, selection, now) {
-  const plan = makeupPlanSchema.parse({
+  const plan = makeupPlanSchema.parse(applyPlanKnowledge({
     ...draft,
     id: `plan-${Date.now().toString(36)}`,
     inputsSnapshot: { userProfile: selection.userProfile, makeupRequest: selection.makeupRequest },
@@ -310,21 +314,23 @@ function createAssistantPlan(draft, selection, now) {
     sourceMode: 'model',
     createdAt: now.toISOString(),
     schemaVersion: 'makeup-plan.v1',
-  })
+  }, selection.knowledge || []))
   return plan
 }
 
 function createMakeupPlanService({ zhipuProvider, products, clock = () => new Date() }) {
   return {
-    async create(input) {
+    async create(input, context = {}) {
       const selection = selectCandidates(input.userProfile, input.makeupRequest, products)
-      if (!zhipuProvider?.configured) return buildLocalPlan(selection)
+      selection.knowledge = selectPlanKnowledge(selection.userProfile, selection.makeupRequest, context.knowledgeBudget)
+      const provider = context.provider || zhipuProvider
+      if (!provider?.configured) return buildLocalPlan(selection, undefined, clock())
 
       try {
         const prompt = buildPlanPrompt(selection)
-        let draft = validateModelDraft(extractJson(await zhipuProvider.chat([{ role: 'system', content: prompt }])), selection, products)
+        let draft = validateModelDraft(extractJson(await provider.chat([{ role: 'system', content: prompt }])), selection, products)
         if (!draft) {
-          const repair = await zhipuProvider.chat([
+          const repair = await provider.chat([
             { role: 'system', content: `${prompt}\n上一次输出无法通过 schema。请只修复 JSON 结构和候选 product id，仍然只返回 JSON。` },
           ])
           draft = validateModelDraft(extractJson(repair), selection, products)

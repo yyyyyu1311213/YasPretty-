@@ -42,6 +42,7 @@
  * @property {PlanStep[]} steps Schema 接受 5–8 步；当前本地模板生成 7 步。
  * @property {string[]} recommendedProductIds 无候选时为 []，最多 6 项。
  * @property {CandidateEvidence[]} candidateEvidence 无候选时为 []，最多 12 项。
+ * @property {KnowledgeEvidence[]} [knowledgeEvidence] 通用手法依据，最多 8 项；兼容旧方案缺省。
  * @property {number} confidence 0–1 的方案置信度，不是实测准确率。
  * @property {string[]} limitations 无内容时为 []。
  * @property {'local' | 'model'} sourceMode
@@ -62,6 +63,20 @@
  * @typedef {object} MakeupPlanResponse
  * @property {true} ok
  * @property {MakeupPlan} plan
+ */
+
+/**
+ * 通用手法证据，由服务端从受控知识生成，模型不可自行填写。
+ * @typedef {object} KnowledgeEvidence
+ * @property {string} id
+ * @property {string} title
+ * @property {string} version
+ * @property {string} reviewedAt 内容复核日期 YYYY-MM-DD；不是来源访问日期。
+ * @property {string[]} conditions
+ * @property {string[]} limitations
+ * @property {string[]} [safetyBoundaries] 必须完整保留的停止使用/咨询提示，兼容旧证据缺省。
+ * @property {Array<{title: string, url: string, publisher: string, accessedAt: string, supports: string[]}>} sources
+ * @property {string[]} [stepIds] 关联的方案步骤；与商品 candidateEvidence 独立。
  */
 
 export {}

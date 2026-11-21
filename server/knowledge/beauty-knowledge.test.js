@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import knowledgeModule from './beauty-knowledge.cjs'
+import planKnowledge from './plan-knowledge.cjs'
 
 const {
   knowledgeEntries,
@@ -25,7 +26,7 @@ describe('受控美妆知识库', () => {
     expect(retrieveKnowledge('有哪些美妆小技巧', 'makeup_tip').length).toBeGreaterThan(0)
     expect(retrieveKnowledge('美妆风格有哪些', 'makeup_style').map((entry) => entry.id)).toEqual(expect.arrayContaining(['glowy-makeup-style-language']))
     expect(retrieveKnowledge('今天想聊旅行路线', '')).toHaveLength(0)
-    expect(retrieveKnowledge('粉底怎么涂，怎么选色号，遮瑕应该先还是后，油皮怎么定妆', 'makeup_tutorial')).toHaveLength(2)
+    expect(retrieveKnowledge('粉底怎么涂，怎么选色号，遮瑕应该先还是后，油皮怎么定妆', 'beauty_knowledge')).toHaveLength(4)
   })
 
   it('returns deduplicated reviewed source citations', () => {
@@ -41,6 +42,39 @@ describe('受控美妆知识库', () => {
     const answer = knowledgeModule.localKnowledgeAnswer(safety)
     expect(answer).toContain('小提示｜')
     expect(answer).toContain('停止使用')
+    expect(answer).toContain('专业人员')
     expect(answer.length).toBeLessThan(320)
+  })
+
+  it('uses the route vocabulary for topic affinity without forcing irrelevant evidence', () => {
+    const entry = knowledgeEntries.find((item) => item.id === 'foundation-application-basics')
+    expect(knowledgeModule.scoreEntry(entry, '粉底怎么涂', 'beauty_knowledge')).toBe(knowledgeModule.scoreEntry(entry, '粉底怎么涂', '') + 2)
+    expect(retrieveKnowledge('银河尘埃眼影的粒子共振原理是什么', 'beauty_knowledge')).toEqual([])
+    expect(retrieveKnowledge('无关旅行问题', 'makeup_plan')).toEqual([])
+  })
+
+  it('budgets whole evidence units rather than truncating safety or forcing two results', () => {
+    const query = '粉底怎么涂，怎么选色号，遮瑕应该先还是后，油皮怎么定妆'
+    const selected = retrieveKnowledge(query, 'beauty_knowledge', { maxChars: 1500 })
+    expect(selected.reduce((size, entry) => size + knowledgeModule.entryContext(entry).length + 2, 0)).toBeLessThanOrEqual(1500)
+    expect(retrieveKnowledge(query, 'beauty_knowledge', { maxChars: 10 })).toEqual([])
+    for (const entry of knowledgeEntries) {
+      expect(entry.conditions.length).toBeGreaterThan(0)
+      expect(entry.techniques.length).toBeGreaterThan(0)
+      expect(entry.limitations.length).toBeGreaterThan(0)
+      expect(entry.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(entry.version).toBe('knowledge.v2')
+      const answer = knowledgeModule.localKnowledgeAnswer([entry])
+      for (const boundary of entry.safetyBoundaries) expect(answer).toContain(boundary)
+    }
+  })
+
+  it('preserves existing plan cautions and moves full knowledge boundaries into limitations on overflow', () => {
+    const entry = knowledgeEntries.find((item) => item.id === 'patchy-base-adjustment')
+    const cautions = Array.from({ length: 6 }, (_, i) => `原有商品注意事项${i + 1}`)
+    const plan = planKnowledge.applyPlanKnowledge({ steps: [{ id: 'base', reasons: [], cautions }], limitations: [] }, [{ entry, stepIds: ['base'] }])
+    expect(plan.steps[0].cautions).toEqual(cautions)
+    expect(plan.limitations).toEqual(expect.arrayContaining([...entry.safetyBoundaries, ...entry.limitations]))
+    expect(plan.knowledgeEvidence[0].safetyBoundaries).toEqual(entry.safetyBoundaries)
   })
 })

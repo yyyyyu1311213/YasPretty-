@@ -11,6 +11,16 @@ afterEach(() => {
 })
 
 describe('小Y业务请求', () => {
+  it('adapts coverage and knowledge evidence without adding them to conversation requests', async () => {
+    const coverage = [{ question: '合成复合问题', intent: 'beauty_knowledge', status: 'partial', knowledgeIds: ['kb'], productIds: [], missing: ['缺少资料'] }]
+    const knowledgeEvidence = [{ id: 'kb', version: 'knowledge.v2' }]
+    const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ answer: '逐项回答', coverage, knowledgeEvidence }) })
+    vi.stubGlobal('fetch', fetch)
+    const result = await requestAssistant({ ...input, messages: [{ role: 'assistant', content: '合成历史', productIds: [], coverage, knowledgeEvidence }] })
+    expect(result.coverage).toEqual(coverage)
+    expect(result.knowledgeEvidence).toEqual(knowledgeEvidence)
+    expect(JSON.parse(fetch.mock.calls[0][1].body).messages).toEqual([{ role: 'assistant', content: '合成历史', productIds: [] }])
+  })
   it('posts the last eight messages with bounded existing product references and adapts valid IDs and sources', async () => {
     const messages = Object.freeze(Array.from({ length: 12 }, (_, index) => Object.freeze({
       id: String(index), role: index % 2 ? 'assistant' : 'user', content: `合成历史 ${index}`,

@@ -1,13 +1,17 @@
 const { assistantResponseSchema } = require('../schemas.cjs')
 const { AppError } = require('../errors.cjs')
-const { knowledgeSources, localKnowledgeAnswer, retrieveKnowledge } = require('../knowledge/beauty-knowledge.cjs')
-const { intentRouter, classifyIntent, needsOnlineResearch } = require('./assistant/intent-router.cjs')
-const { resolveProducts, namedProducts, questionForSelection } = require('./assistant/product-resolver.cjs')
+const { knowledgeSources, knowledgeEvidence, retrieveKnowledge } = require('../knowledge/beauty-knowledge.cjs')
+const { intentRouter, classifyIntent, needsOnlineResearch, hasSkinDiscomfort, isCatalogSizeQuestion } = require('./assistant/intent-router.cjs')
+const { resolveProducts, questionForSelection } = require('./assistant/product-resolver.cjs')
 const { extractParameters, planInput } = require('./assistant/parameters.cjs')
 const { selectRecommendations, searchSources } = require('./assistant/tools.cjs')
-const { buildSystemPrompt, searchFallbackAnswer, productMarkers, recommendationAnswer, clarificationAnswer, planAnswer, validateAnswer, unavailableKnowledgeAnswer, organizeCatalogAnswer } = require('./assistant/response.cjs')
+const { buildSystemPrompt, searchFallbackAnswer, recommendationAnswer, clarificationAnswer, planAnswer, validateAnswer, organizeCatalogAnswer } = require('./assistant/response.cjs')
 const { createProductFactsIndex } = require('../knowledge/product-facts-index.cjs')
+const { catalogSize } = require('../knowledge/product-facts-adapter.cjs')
 const { answerProductFacts } = require('./assistant/fact-answer.cjs')
+const { answerKnowledge } = require('./assistant/knowledge-answer.cjs')
+const { decomposeQuestions } = require('./assistant/questions.cjs')
+const { requestBudget, boundedProvider, combineAnswers } = require('./assistant/compound-answer.cjs')
 const SHANGHAI_TIME_ZONE = 'Asia/Shanghai'
 
 function isWeatherQuestion(text) {
@@ -98,26 +102,41 @@ function filterCurrentWeatherResults(results, weather) {
   })
 }
 
-function createAssistantService({ zhipuProvider, weatherProvider, makeupPlanService, products, verificationRecords = {}, clock = () => new Date() }) {
-  const plans = makeupPlanService || require('./makeup-plan-service.cjs').createMakeupPlanService({ zhipuProvider, products, clock })
+function createAssistantService({ zhipuProvider: provider, weatherProvider, makeupPlanService, products, verificationRecords = {}, clock = () => new Date() }) {
+  const plans = makeupPlanService || require('./makeup-plan-service.cjs').createMakeupPlanService({ zhipuProvider: provider, products, clock })
   const facts = createProductFactsIndex(products, verificationRecords)
-  return {
-    async answer({ query, messages = [], profile = {} }) {
+  async function answerOne({ query, messages = [], profile = {} }, context = {}) {
+      const zhipuProvider = context.provider || provider
       const intent = await classifyIntent(query, products, zhipuProvider, messages)
       const parameters = await extractParameters(query, profile, products)
-      const reply = (answer, answerMode = 'local', sources = [], usedWebSearch = false, model = null) => assistantResponseSchema.parse({ answer, answerMode, sources, usedWebSearch, model, intent })
+      const reply = (answer, answerMode = 'local', sources = [], usedWebSearch = false, model = null, evidence = {}) => assistantResponseSchema.parse({
+        answer, answerMode, sources, usedWebSearch, model, intent,
+        knowledgeEvidence: evidence.knowledgeEvidence || [],
+        coverage: [{ question: query, intent, status: evidence.status || (answerMode === 'clarification' ? 'clarification' : 'answered'),
+          knowledgeIds: evidence.knowledgeIds || [], productIds: [...new Set([...answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((m) => m[1]))].slice(0, 6),
+          missing: evidence.missing || (answerMode === 'clarification' ? ['需要补充明确的对象或条件，当前尚未完成回答。'] : []) }],
+      })
       if (intent === 'clarification') return reply('我还不确定你的意思。你想查询某款产品、比较产品、学习手法，还是生成完整妆容？请补充具体需求。', 'clarification')
       if (intent === 'greeting_help') return reply('你好，我是小Y。可以帮你选产品、比较产品、查询资料、学习化妆手法或生成完整妆容。')
       if (intent === 'unsupported_sensitive') {
         const entries = retrieveKnowledge('新产品红肿刺痛不适', 'skin_safety').slice(0, 1)
-        return reply(/红肿|刺痛|过敏|破损|治疗|诊断/.test(query)
-          ? `${localKnowledgeAnswer(entries)}\n\n以上内容直接来自 YasPretty 受控知识库，不构成医疗诊断。`
-          : '我不能协助身份识别、敏感属性推断或披露凭据。可以继续讨论美妆手法和产品资料。', 'knowledge', knowledgeSources(entries))
+        return reply(/红肿|刺痛|过敏|破损|皮肤破|瘙痒|治疗|诊断/.test(query)
+          ? `${entries.flatMap((entry) => [...entry.safetyBoundaries, ...entry.limitations]).join('')}\n\n以上内容直接来自 YasPretty 受控知识库，不构成医疗诊断。`
+          : '我不能协助身份识别、敏感属性推断或披露凭据。可以继续讨论美妆手法和产品资料。', 'knowledge', knowledgeSources(entries), false, null, { knowledgeEvidence: knowledgeEvidence(entries), knowledgeIds: entries.map((entry) => entry.id) })
+      }
+      if (context.skinDiscomfort && ['beauty_knowledge', 'makeup_plan', 'catalog_recommendation'].includes(intent)) {
+        const entries = retrieveKnowledge('新产品红肿刺痛不适', 'unsupported_sensitive', { maxEntries: 1 })
+        return reply('本次问题提到皮肤破损或明显不适，应停止使用并咨询合格专业人员；暂不提供继续上妆的操作或方案。当前手法问题尚未完成，请在没有不适的条件下再讨论。', 'clarification', knowledgeSources(entries), false, null,
+          { status: 'unavailable', missing: ['当前有皮肤不适，已暂缓上妆手法或方案。'], knowledgeEvidence: knowledgeEvidence(entries), knowledgeIds: entries.map((entry) => entry.id) })
       }
       if (intent === 'plan_adjustment') return reply('请在妆容工作台打开已有方案并修改对应条件后重新生成；聊天中没有可校验的原方案，不能确认局部调整。', 'clarification')
       if (intent === 'makeup_plan') {
-        const plan = await plans.create(planInput(query, parameters.profile))
-        return reply(planAnswer(plan), plan.sourceMode === 'local' ? 'local' : 'model', [], false, plan.sourceMode === 'model' ? zhipuProvider.modelName || null : null)
+        const plan = context.provider
+          ? await plans.create(planInput(query, parameters.profile), { provider: zhipuProvider, knowledgeBudget: context.budget })
+          : await plans.create(planInput(query, parameters.profile))
+        const evidence = plan.knowledgeEvidence || []
+        const sources = [...new Map(evidence.flatMap((item) => item.sources).map(({ supports, ...source }) => [source.url, { ...source, kind: 'knowledge' }])).values()]
+        return reply(planAnswer(plan), plan.sourceMode === 'local' ? 'local' : 'model', sources, false, plan.sourceMode === 'model' ? zhipuProvider.modelName || null : null, { knowledgeEvidence: evidence, knowledgeIds: evidence.map((item) => item.id) })
       }
       if (intent === 'catalog_recommendation') {
         if (!parameters.recommendation.skin) return reply('为了更有依据地推荐，请先告诉我你的肤质，例如“我是干皮”，也可以补充预算和品类。', 'clarification')
@@ -126,15 +145,14 @@ function createAssistantService({ zhipuProvider, weatherProvider, makeupPlanServ
           conditions: parameters.recommendation, fallback: `${!zhipuProvider?.configured ? '智能服务未配置，已使用站内基础规则推荐。\n\n' : ''}${recommendationAnswer(selection)}` })
         return reply(result.answer, result.answerMode, [], false, result.model)
       }
-      let selectedProducts = []
       const question = questionForSelection(query, products, messages)
       if (intent === 'product_fact' || intent === 'product_comparison') {
+        if (isCatalogSizeQuestion(query)) return reply(`YasPretty 产品库收录的都是${catalogSize}规格。具体包装是否附替换芯或赠品，要看所选套装的清单。`)
         const resolution = resolveProducts(query, products, messages)
         if (resolution.ambiguous || !resolution.products.length || intent === 'product_comparison' && (resolution.products.length < 2 || resolution.products.length > 3)
           || intent === 'product_fact' && resolution.products.length !== 1) return reply(clarificationAnswer(resolution), 'clarification')
-        selectedProducts = resolution.products
-        const result = await answerProductFacts({ products: selectedProducts, index: facts, query: question, messages, profile: parameters.profile, provider: zhipuProvider, intent })
-        return reply(result.answer, result.answerMode, result.sources, result.usedWebSearch, result.model)
+        const result = await answerProductFacts({ products: resolution.products, index: facts, query: question, messages, profile: parameters.profile, provider: zhipuProvider, intent })
+        return reply(result.answer, result.answerMode, result.sources, result.usedWebSearch, result.model, result)
       }
       if (isWeatherQuestion(query)) {
         const city = extractWeatherLocation(query, parameters.profile.city)
@@ -148,40 +166,58 @@ function createAssistantService({ zhipuProvider, weatherProvider, makeupPlanServ
           publisher: weather.source.publisher, accessedAt: weather.source.retrievedAt,
         }])
       }
+      if (!needsOnlineResearch(question, intent) && (intent === 'beauty_knowledge' || intent === 'external_question' && retrieveKnowledge(query, intent).length)) {
+        const result = await answerKnowledge({ query, intent, provider: zhipuProvider, budget: context.budget })
+        return reply(result.answer, result.answerMode, result.sources, false, result.model || null, result)
+      }
       const useWebSearch = needsOnlineResearch(question, intent)
-      const selectedKnowledge = retrieveKnowledge(query, intent)
-      if (!zhipuProvider?.configured && !selectedKnowledge.length) {
-        if (intent === 'beauty_knowledge') return reply(unavailableKnowledgeAnswer(false), 'clarification')
+      // Timely questions use current search evidence. Independent technique questions
+      // take the budgeted knowledge branch above, keeping source numbering unambiguous.
+      if (!zhipuProvider?.configured) {
         throw new AppError('PROVIDER_NOT_CONFIGURED', '智能服务暂未配置，当前无法回答该问题。', 503)
       }
-      const searchQuery = selectedProducts.length && (question !== query || !namedProducts(query, products).length)
-        ? `${selectedProducts.map((p) => `${p.brand} ${p.name}`).join('；')}：${question}` : query
-      const webResults = useWebSearch ? await searchSources(zhipuProvider, searchQuery) : []
-      const prompt = buildSystemPrompt(parameters.profile, selectedProducts, webResults, intent, selectedKnowledge)
+      const webResults = useWebSearch ? await searchSources(zhipuProvider, query) : []
+      const prompt = buildSystemPrompt(parameters.profile, [], webResults, intent)
       let answer
       let answerMode = 'model'
       try {
-        if (!zhipuProvider?.configured) throw new Error('No provider')
         answer = validateAnswer(await zhipuProvider.chat([
           { role: 'system', content: prompt },
           ...messages.slice(-8).map(({ role, content }) => ({ role, content })),
           { role: 'user', content: question === query ? query : `我选择：${query}。请继续回答此前的问题：${question}` },
-        ], { timeoutMs: useWebSearch ? 12000 : selectedKnowledge.length ? 8000 : 20000, maxAttempts: 1 }), selectedProducts)
-        if (selectedProducts.length) answer = `${answer.replace(/\[\[PRODUCT:[^\]]+\]\]/g, '').trim()}\n${productMarkers(selectedProducts)}`
+        ], { timeoutMs: useWebSearch ? 12000 : 20000, maxAttempts: 1 }), [])
       } catch (error) {
         if (webResults.length) {
           answer = searchFallbackAnswer(webResults)
           answerMode = 'search'
-        } else if (selectedKnowledge.length) {
-          answer = `${localKnowledgeAnswer(selectedKnowledge)}\n\n已降级为受控知识库回答，模型当前不可用；不构成医疗诊断。`
-          answerMode = 'knowledge'
-        } else if (intent === 'beauty_knowledge') {
-          return reply(unavailableKnowledgeAnswer(true), 'clarification')
         } else {
           throw new AppError('ASSISTANT_UNAVAILABLE', '智能回答未能完成，请稍后重试或补充问题。', 503)
         }
       }
-      return reply(answer, answerMode, [...knowledgeSources(selectedKnowledge), ...webResults.map(({ title, url, publisher, accessedAt }) => ({ kind: 'web', title, url, publisher, accessedAt }))].slice(0, 8), useWebSearch, answerMode === 'model' ? zhipuProvider.modelName || null : null)
+      return reply(answer, answerMode, webResults.map(({ title, url, publisher, accessedAt }) => ({ kind: 'web', title, url, publisher, accessedAt })), useWebSearch, answerMode === 'model' ? zhipuProvider.modelName || null : null)
+  }
+  return {
+    async answer(input) {
+      const { questions, deferred } = decomposeQuestions(input.query, products, input.messages || [])
+      if (questions.length <= 1 && !deferred.length) return answerOne(input)
+      const budget = requestBudget(questions.some((query) => intentRouter(query, products, input.messages || []) === 'unsupported_sensitive'))
+      const limitedProvider = boundedProvider(provider)
+      const results = []
+      let messages = input.messages || []
+      for (const query of questions) {
+        try {
+          const result = await answerOne({ ...input, query, messages }, { provider: limitedProvider, budget, skinDiscomfort: hasSkinDiscomfort(input.query) })
+          results.push(result)
+          const ids = result.coverage[0].productIds
+          // Only the preceding subquestion's validated product selection may resolve a pronoun.
+          messages = [...(input.messages || []), { role: 'assistant', content: result.answer.slice(0, 4000), productIds: ids.slice(0, 3) }].slice(-8)
+        } catch {
+          const intent = intentRouter(query, products, messages)
+          results.push({ answer: '这一项的服务或检索暂不可用，无法确认；可以稍后单独重试。', answerMode: 'clarification', sources: [], usedWebSearch: false, model: null,
+            coverage: [{ question: query, intent, status: 'unavailable', knowledgeIds: [], productIds: [], missing: ['服务、检索或本轮调用预算不足，尚未取得可用证据。'] }], knowledgeEvidence: [] })
+        }
+      }
+      return combineAnswers(results, deferred)
     },
   }
 }

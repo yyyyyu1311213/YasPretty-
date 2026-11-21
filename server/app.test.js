@@ -103,7 +103,8 @@ describe('YasPretty API gateway', () => {
     expect(response.statusCode).toBe(200)
     expect(response.json()).toMatchObject({ intent: 'product_fact', answerMode: 'local', usedWebSearch: false,
       sources: [expect.objectContaining({ kind: 'product', url: null, productId: 'p1', accessedAt: '2026-11-01', status: 'recorded' })] })
-    expect(response.json().answer).toContain('净含量：30ml')
+    expect(response.json().answer).toMatch(/净含量.*30ml/)
+    expect(response.json().answer.match(/30ml/g)).toHaveLength(1)
     expect(response.payload).not.toContain('private.xlsx')
     expect(response.payload).not.toContain('e.tb.cn')
     expect(zhipu.search).not.toHaveBeenCalled()
@@ -169,8 +170,12 @@ describe('YasPretty API gateway', () => {
     expect(zhipu.search).not.toHaveBeenCalled()
     expect(zhipu.chat).not.toHaveBeenCalled()
     expect(response.json()).toMatchObject({ intent: 'product_fact', usedWebSearch: false, answerMode: 'local' })
-    expect(response.json().answer).toContain('替换芯：未知')
-    expect(response.json().answer).toContain('用量与使用频率')
+    expect(response.json().answer).toContain('站内收录的是正装')
+    expect(response.json().answer).toMatch(/是否附替换芯.*未知/)
+    expect(response.json().answer).toMatch(/用量.*使用频率/)
+    expect(response.json().coverage[0].status).toBe('partial')
+    expect(response.json().coverage[0].missing.some((gap) => gap.includes('替换芯'))).toBe(true)
+    expect(response.json().coverage[0].missing.some((gap) => /正装|收录规格/.test(gap))).toBe(false)
   })
 
   it('returns a minimal health response and security headers', async () => {

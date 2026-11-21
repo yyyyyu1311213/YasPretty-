@@ -3,13 +3,14 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import SourceList from './SourceList'
 
 describe('小Y来源列表', () => {
-  it('shows archive provenance and gaps without making internal paths clickable', () => {
+  it('provides dated product evidence on demand without exposing internal workflow', () => {
     const html = renderToStaticMarkup(<SourceList sources={[{ kind: 'product', id: 'sample:manual', title: '合成规格证据', url: null,
       accessedAt: '2026-11-01', status: 'recorded', version: '哑光版', sku: null, evidenceLabel: '内部归档：核验表第2行', supports: ['净含量'], limitations: ['不证明包含替换芯。'] }]} />)
     expect(html).toContain('2026-11-01')
-    expect(html).toContain('已有核验记录')
-    expect(html).toContain('SKU：未明确记录')
-    expect(html).toContain('不证明包含替换芯')
+    expect(html).toContain('<details><summary>查看产品依据</summary>')
+    expect(html).toContain('哑光版')
+    expect(html).toContain('净含量')
+    expect(html).not.toMatch(/已有核验记录|未明确记录|核验表|第2行/)
     expect(html).not.toContain('href=')
   })
   it.each(['javascript:alert(1)', 'file:///private/evidence.png', '/private/evidence.png', 'https://e.tb.cn/h.fake?tk=test', 'https://detail.tmall.com.evil.test/item.htm?id=100'])('does not link an invalid product source: %s', (url) => {

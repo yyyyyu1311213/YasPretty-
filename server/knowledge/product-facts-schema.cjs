@@ -2,7 +2,7 @@ const { z } = require('zod')
 
 const fieldLabels = {
   specification: '规格记录', netContent: '净含量', packagingContents: '包装内容', saleUnit: '正装/销售单元',
-  refill: '替换芯', setContents: '组合套装', usageDuration: '可用天数', price: '历史参考价',
+  fullSize: '收录规格', refill: '替换芯', setContents: '组合套装', usageDuration: '可用天数', price: '历史参考价',
   ingredients: '成分', promotion: '促销', launch: '上市信息', reviews: '口碑', purchaseLink: '官方旗舰店商品链接', shelfLife: '保质期', efficacy: '功效证据',
   category: '品类', skins: '适用肤质记录', finish: '妆效记录', coverage: '遮瑕记录',
   wear: '参考持妆记录', shades: '色号记录', origin: '产地记录', cautions: '注意事项',

@@ -52,6 +52,9 @@
 .xiaoy-product-copy b { display: -webkit-box; overflow: hidden; color: #3d3733; font: 600 12px/1.4 'Noto Serif SC', serif; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .xiaoy-product-copy i { overflow: hidden; color: #867b74; font-size: 9px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
 .xiaoy-product > svg { color: #9d7b70; }
+.xiaoy-product-action, .xiaoy-sources summary { color: #52645c; font-size: 12px; }
+.xiaoy-sources summary { cursor: pointer; }
+.xiaoy-source-note { margin-top: 6px; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
 .xiaoy-sources { display: grid; gap: 5px; margin-top: 9px; border: 1px solid #d8d4cd; padding: 10px; background: #f3f5f1; }
 .xiaoy-sources > span { margin-bottom: 2px; color: #65776e; font-size: 10px; font-weight: 600; }
 .xiaoy-sources a { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px; overflow: hidden; color: #52645c; font-size: 10px; line-height: 1.45; text-decoration: none; }

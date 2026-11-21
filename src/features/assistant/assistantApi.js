@@ -23,6 +23,8 @@ export async function requestAssistant({ text, messages, profile }) {
     answerMode: data.answerMode || 'model',
     model: data.model || '',
     ...(data.intent ? { intent: data.intent } : {}),
+    ...(data.coverage ? { coverage: data.coverage } : {}),
+    ...(data.knowledgeEvidence ? { knowledgeEvidence: data.knowledgeEvidence } : {}),
   }
 }
 

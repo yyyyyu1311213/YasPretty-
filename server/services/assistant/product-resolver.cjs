@@ -45,7 +45,8 @@ function resolveRecentChoice(query, products, messages) {
   const categories = requestedCategories(query, products)
   const categoryOnly = categories.some((category) => (categoryNames[category] || [category]).includes(query))
   const collective = collectiveChoice.test(query)
-  if (!collective && !referencePattern.test(query) && !categoryOnly && !implicitQuestion.test(query)) return { products: [], ambiguous: false, referenced: false }
+  const sizeFollowup = /^(?:那|请问)?(?:是(?:不是)?)?(?:正装|小样|中样|试用装)(?:规格)?(?:吗|么|呢)?[？?。\s]*$/.test(query)
+  if (!collective && !referencePattern.test(query) && !categoryOnly && !implicitQuestion.test(query) && !sizeFollowup) return { products: [], ambiguous: false, referenced: false }
   const recent = recentProducts(messages, products)
   const version = query.match(/哑光|水光|亮泽/)?.[0]
   const candidates = recent.filter((p) => (!categories.length || categories.includes(p.category))
