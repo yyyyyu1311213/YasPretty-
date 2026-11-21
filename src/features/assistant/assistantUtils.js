@@ -3,6 +3,46 @@ import { legacyToForm, toPlanPayload } from '../makeup-plan/makeupPlanUtils'
 import { findMentionedProducts } from './intentUtils'
 
 const SCENE_OPTIONS = ['通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
+const INTERNAL_PRODUCT_STATUS = /待核验|已核验|未核验|待确认|未标注|暂无信息|unknown|null/i
+
+function hasPublicProductValue(value) {
+  if (value === null || value === undefined || value === '') return false
+  if (typeof value === 'number' && !Number.isFinite(value)) return false
+  return !INTERNAL_PRODUCT_STATUS.test(String(value))
+}
+
+export function formatProductComparison(product) {
+  const details = [
+    hasPublicProductValue(product.finish) ? `${product.finish}妆效` : null,
+    hasPublicProductValue(product.coverage) ? `${product.coverage}遮瑕` : null,
+    typeof product.wear === 'number' && Number.isFinite(product.wear) ? `参考持妆 ${product.wear} 小时` : null,
+    Array.isArray(product.skins) && product.skins.length && product.skins.every(hasPublicProductValue)
+      ? `适合${product.skins.join('、')}`
+      : null,
+    hasPublicProductValue(product.priceLabel) ? `参考价 ${product.priceLabel}` : null,
+  ].filter(Boolean)
+
+  return `${product.brand} ${product.name}：${details.join('，') || '可打开产品详情查看信息'}。`
+}
+
+export function formatAssistantProductMeta(product, profile) {
+  const shade = pickShade(product, profile)
+  return [
+    hasPublicProductValue(shade?.name) ? shade.name : null,
+    hasPublicProductValue(product.finish) ? product.finish : null,
+    hasPublicProductValue(product.priceLabel) ? product.priceLabel : null,
+  ].filter(Boolean).join(' · ')
+}
+
+function fallbackProductReason(product) {
+  return hasPublicProductValue(product.note)
+    ? product.note
+    : '可打开产品详情，结合自身需求和自然光试用。'
+}
+
+function shadeSuggestion(shade) {
+  return hasPublicProductValue(shade?.name) ? `建议先试 ${shade.name}` : '建议先在自然光下试色'
+}
 
 export function extractProfile(text, current = {}) {
   const next = { ...current }
@@ -10,7 +50,9 @@ export function extractProfile(text, current = {}) {
   const finish = finishOptions.find((item) => text.includes(item))
   const scene = SCENE_OPTIONS.find((item) => text.includes(item))
   const category = categoryOptions.find((item) => text.includes(item))
-  const budgetMatch = text.match(/(?:预算|不超过|以内|最多)?\s*(\d{2,4})\s*元?/)
+  // Require spending context; product weights, shade numbers and dates are not budgets.
+  const budgetMatch = text.match(/(?:预算\s*(?:是|为|在|约|大约|大概|不超过|最多|控制在)?|不超过|最多|上限)\s*[¥￥]?\s*(\d{1,5}(?:\.\d{1,2})?)(?![\d.]|\s*(?:g|ml|h|克|毫升|小时|天|年|号|岁|分钟))/i)
+    || text.match(/(?<![\d.])(\d{1,5}(?:\.\d{1,2})?)\s*(?:元|块钱|块)\s*(?:以内|以下|内|左右|上下)/)
 
   if (skin) next.skin = skin
   if (/大油皮/.test(text)) next.skin = '油皮'
@@ -86,12 +128,12 @@ export function localReply(text, profile) {
     if (profile.finish && product.finish === profile.finish) reasons.push(`符合${profile.finish}偏好`)
     if (profile.scene && product.scenes.includes(profile.scene)) reasons.push(`适合${profile.scene}`)
     if (profile.budget && product.price <= profile.budget) reasons.push('在预算内')
-    if (!reasons.length) reasons.push(product.note)
-    return `${index + 1}. ${product.brand} ${product.name}：建议先试 ${shade.name}，${reasons.join('、')}。`
+    if (!reasons.length) reasons.push(fallbackProductReason(product))
+    return `${index + 1}. ${product.brand} ${product.name}：${shadeSuggestion(shade)}，${reasons.join('、')}。`
   })
 
   const lead = mentioned.length > 1
-    ? `我按资料库信息比较你提到的产品：\n\n${mentioned.map((product) => `${product.brand} ${product.name}：${product.finish}妆效，${product.coverage}遮瑕，参考持妆 ${product.wear} 小时，适合${product.skins.join('、')}，参考价 ${product.priceLabel}。`).join('\n\n')}\n\n结合你的已知偏好，再看具体选择：`
+    ? `我按资料库信息比较你提到的产品：\n\n${mentioned.map(formatProductComparison).join('\n\n')}\n\n结合你的已知偏好，再看具体选择：`
     : `根据目前记录的需求${profile.skin ? `（${profile.skin}${profile.finish ? `、${profile.finish}` : ''}${profile.scene ? `、${profile.scene}` : ''}）` : ''}，优先看这几款：`
   return {
     text: `${lead}\n\n${lines.join('\n\n')}\n\n色号仅作为初筛建议，实际结果还会受光线、肤色明度和氧化情况影响。`,

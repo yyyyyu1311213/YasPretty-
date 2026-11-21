@@ -19,10 +19,11 @@ describe('小Y推荐产品', () => {
     expect(markup).toContain(product.finish)
   })
 
-  it('keeps the original pending shade label when shade recommendations are not ready', () => {
+  it('hides internal shade and finish placeholders when product facts are incomplete', () => {
     const product = products.find((item) => !item.shadeRecommendationReady)
     expect(product).toBeDefined()
     const markup = renderToStaticMarkup(<AssistantProduct product={product} profile={{ tone: '冷调' }} onOpenProduct={vi.fn()} />)
-    expect(markup).toContain(`参数色号待确认 · ${product.finish} · ${product.priceLabel}`)
+    expect(markup).toContain(product.priceLabel)
+    expect(markup).not.toMatch(/待核验|已核验|未核验|待确认/)
   })
 })

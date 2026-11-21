@@ -74,7 +74,7 @@ export function useAssistant() {
         return
       }
 
-      if (intent === 'catalog_recommendation' || intent === 'product_comparison' || intent === 'greeting_help') {
+      if (intent === 'catalog_recommendation' || intent === 'product_comparison' || intent === 'product_fact' || intent === 'greeting_help') {
         if (onlineResearch) {
           setActivity('正在联网检索相关资料...')
           const result = await requestAssistant({ text, messages, profile: nextProfile })

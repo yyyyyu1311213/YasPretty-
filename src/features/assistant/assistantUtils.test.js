@@ -3,6 +3,7 @@ import { products } from '../../data/products'
 import {
   cleanErrorMessage,
   extractProfile,
+  formatProductComparison,
   formatPlanReply,
   localReply,
   localMakeupReply,
@@ -31,6 +32,26 @@ describe('小Y本地规则', () => {
     expect(results.length).toBeGreaterThan(0)
     expect(results.every((product) => product.skins.includes('油皮'))).toBe(true)
     expect(results.every((product) => product.price <= 400)).toBe(true)
+  })
+
+  it.each([
+    '这个兰芝NEO小方块哑光气垫，15g是正装还是带替换芯？一个大概能用多久？平时放包里补妆方便吗？',
+    '30ml 粉底，SPF50，21号色，能带妆12小时吗？',
+    '2026年新品，最多用30天吗？',
+    '这个气垫价格325元，含替换芯吗？',
+    '15',
+  ])('does not turn product quantities or quoted prices into a budget: %s', (text) => {
+    expect(extractProfile(text)).not.toHaveProperty('budget')
+    expect(extractProfile(text, { budget: 400 }).budget).toBe(400)
+  })
+
+  it.each([
+    ['预算300', 300], ['预算不超过 400 元', 400], ['不超过500元', 500],
+    ['300 元以内推荐气垫', 300], ['200块左右', 200], ['预算为299.50元', 299.5],
+    ['带妆12小时，预算350元，想要15g气垫', 350],
+    ['我是混油皮，想找 500 元内的通勤底妆', 500],
+  ])('extracts an explicitly stated spending limit: %s', (text, budget) => {
+    expect(extractProfile(text).budget).toBe(budget)
   })
 
   it('explains when no catalog product satisfies all hard filters', () => {
@@ -92,6 +113,17 @@ describe('小Y本地规则', () => {
     expect(reply.products).toEqual(mentioned)
     expect(reply.text).toContain('我按资料库信息比较你提到的产品：')
     for (const product of mentioned) expect(reply.text).toContain(`${product.brand} ${product.name}`)
+  })
+
+  it('omits internal product status text and empty facts from comparison answers', () => {
+    const first = products.find((product) => product.id === 'catalog-045')
+    const second = products.find((product) => product.id === 'catalog-046')
+    const result = formatProductComparison(first)
+    const reply = localReply(`${first.name} 和 ${second.name} 对比哪个好`, {})
+
+    expect(result).toContain('参考价 365 元（参考原价，最终价格以结算页为准）')
+    expect(result).not.toMatch(/待核验|已核验|未核验|待确认|未标注|暂无信息|null 小时/)
+    expect(reply.text).not.toMatch(/待核验|已核验|未核验|待确认|未标注|暂无信息|null 小时/)
   })
 
   it('asks for skin type before recommending and explains matching conditions after clarification', () => {

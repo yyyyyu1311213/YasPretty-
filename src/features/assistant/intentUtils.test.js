@@ -1,7 +1,41 @@
 import { describe, expect, it } from 'vitest'
-import { detectIntent, needsOnlineResearch } from './intentUtils'
+import { detectIntent, findMentionedProducts, needsOnlineResearch } from './intentUtils'
+import { products } from '../../data/products'
+import assistantService from '../../../server/services/assistant-service.cjs'
 
 describe('小Y前端流程意图', () => {
+  it.each([
+    '这个兰芝NEO小方块哑光气垫，15g是正装还是带替换芯？一个大概能用多久？平时放包里补妆方便吗？',
+    'NEO小方块气垫(哑光)是正装吗？',
+    '这款气垫含替换芯吗？',
+    '这瓶30ml粉底能用多久？',
+    '这个气垫放包里补妆方便吗？',
+    '这款气垫的规格是多少？',
+  ])('routes product details consistently to research instead of local recommendations: %s', (text) => {
+    expect(detectIntent(text)).toBe('product_fact')
+    expect(assistantService.intentRouter(text, products)).toBe('product_fact')
+    expect(needsOnlineResearch(text, 'product_fact')).toBe(true)
+    expect(assistantService.needsOnlineResearch(text, 'product_fact')).toBe(true)
+  })
+
+  it('matches the catalog name despite whitespace, parentheses and category position', () => {
+    const matched = findMentionedProducts('兰芝NEO小方块哑光气垫')
+    expect(matched.map(({ id }) => id)).toEqual(['laneige-neo-matte'])
+    expect(findMentionedProducts('NEO 小方块气垫（哑光）')).toEqual(matched)
+  })
+
+  it('does not treat an unrelated object as a catalog product just because it says this one', () => {
+    for (const text of ['这个手机容量是多少？', '这款打印机用多长时间需要换墨盒？']) {
+      expect(detectIntent(text)).toBe('external_question')
+      expect(assistantService.intentRouter(text, products)).toBe('external_question')
+    }
+  })
+
+  it.each(['推荐15g的气垫', '预算300元推荐气垫', '推荐正装气垫', '这个气垫适合油皮吗'])('retains the recommendation flow: %s', (text) => {
+    expect(detectIntent(text)).toBe('catalog_recommendation')
+    expect(assistantService.intentRouter(text, products)).toBe('catalog_recommendation')
+  })
+
   it('routes external questions, catalog, and greeting intents', () => {
     expect(detectIntent('今天上海天气怎么样')).toBe('external_question')
     expect(detectIntent('推荐一款通勤粉底')).toBe('catalog_recommendation')

@@ -143,6 +143,22 @@ describe('YasPretty API gateway', () => {
     expect(products.filter((item) => item.id.startsWith('catalog-')).every((item) => item.publicStatus === 'public_with_source_notice_authorization_pending' && item.recommendationReady === true)).toBe(true)
   })
 
+  it('researches the reported specification question before generating an answer', async () => {
+    const query = '这个兰芝NEO小方块哑光气垫，15g是正装还是带替换芯？一个大概能用多久？平时放包里补妆方便吗？'
+    const source = { title: '合成规格来源', url: 'https://example.test/product', publisher: '测试', accessedAt: '2026-11-20T17:00:00.000Z', content: '仅用于验证检索和回答流程，不代表商品事实。' }
+    const zhipu = mockZhipu({ search: vi.fn(async () => [source]) })
+    const app = await createApp({ zhipu, products })
+    const response = await app.inject({ method: 'POST', url: '/api/assistant', payload: { query, profile: { budget: 400 }, messages: [] } })
+    expect(response.statusCode).toBe(200)
+    expect(zhipu.search).toHaveBeenCalledExactlyOnceWith(query, {})
+    expect(zhipu.search.mock.invocationCallOrder[0]).toBeLessThan(zhipu.chat.mock.invocationCallOrder[0])
+    const prompt = zhipu.chat.mock.calls[0][0][0].content
+    expect(prompt).toContain('归类为：product_fact')
+    expect(prompt).toContain('laneige-neo-matte')
+    expect(prompt).toContain('净含量不能证明是否含替换芯')
+    expect(response.json()).toMatchObject({ usedWebSearch: true, sources: [expect.objectContaining({ kind: 'web', url: source.url })] })
+  })
+
   it('returns a minimal health response and security headers', async () => {
     const app = await createApp()
     const response = await app.inject({ method: 'GET', url: '/api/health' })

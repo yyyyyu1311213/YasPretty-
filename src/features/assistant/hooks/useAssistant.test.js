@@ -147,6 +147,28 @@ describe('小Y状态与发送流程', () => {
     expect(saved('messages')).toEqual(render().messages)
   })
 
+  it('sends the reported product question to the API and preserves the existing budget', async () => {
+    const text = '这个兰芝NEO小方块哑光气垫，15g是正装还是带替换芯？一个大概能用多久？平时放包里补妆方便吗？'
+    values.set('yaspretty-xiaoy-profile-v1', JSON.stringify({ version: 1, value: { skin: '油皮', budget: 400 } }))
+    vi.mocked(requestAssistant).mockResolvedValue(answer({ text: '合成产品事实回答', sources: [source('web')] }))
+    await render().sendMessage(text)
+    expect(requestAssistant).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ text, profile: expect.objectContaining({ budget: 400 }) }))
+    expect(latest()).toMatchObject({ content: '合成产品事实回答', sources: [source('web')] })
+    expect(saved('profile').budget).toBe(400)
+    expect(render()).toMatchObject({ mode: 'web', busy: false })
+    expect(requestMakeupPlan).not.toHaveBeenCalled()
+  })
+
+  it.each(['AI_NOT_CONFIGURED', 'SEARCH_EMPTY', 'UPSTREAM_TIMEOUT'])('does not fall back to unrelated recommendations when product research fails: %s', async (code) => {
+    vi.mocked(requestAssistant).mockRejectedValue(Object.assign(new Error('合成产品查询失败'), { code }))
+    await render().sendMessage('这个兰芝NEO小方块哑光气垫，15g是正装还是带替换芯？')
+    expect(latest().content).toContain('联网检索当前不可用')
+    expect(latest().content).not.toContain('没有同时满足')
+    expect(latest().productIds).toEqual([])
+    expect(saved('profile')).not.toHaveProperty('budget')
+    expect(render()).toMatchObject({ mode: 'error', busy: false })
+  })
+
   it.each([
     [{ answerMode: 'weather' }, 'weather'],
     [{ sources: [source('web'), source('weather')] }, 'weather'],

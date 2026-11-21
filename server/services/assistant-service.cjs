@@ -22,21 +22,32 @@ function productDigest(products) {
 function intentRouter(text, products = []) {
   const value = String(text || '').trim()
   const lower = value.toLowerCase()
-  const compact = lower.replace(/\s+/g, '')
+  const normalize = (text) => text.toLowerCase().replace(/[\s（）()]/g, '')
+  const withoutCategory = (text) => text.replace(/粉底液|遮瑕液|遮瑕蜜|散粉|气垫/g, '')
+  const compact = normalize(lower)
   const mentionedProduct = products.some((product) => {
-    const brand = String(product.brand || '').toLowerCase().replace(/\s+/g, '')
-    const name = String(product.name || '').toLowerCase().replace(/\s+/g, '')
+    const brand = normalize(String(product.brand || ''))
+    const name = normalize(String(product.name || ''))
+    const compactName = withoutCategory(name)
     return (brand.length > 0 && compact.includes(brand)) || (name.length > 0 && compact.includes(name))
+      || (compactName.length > 2 && withoutCategory(compact).includes(compactName))
   })
   if (/(调整方案|改成|换成|减少步骤|增加步骤|不要这个|替换产品)/.test(value)) return 'plan_adjustment'
   if (/(妆容方案|完整妆容|妆容教程|妆教|化妆教程|化妆步骤|怎么化|如何画|教我画|妆面规划|设计(?:一个)?妆|(?:韩女|水光|拍照|秋日|落叶|约会|通勤|日常|晚宴)妆容?)/.test(value)) return 'makeup_plan'
   if (/肤质/.test(value) && /(判断|分辨|怎么看|怎么知道|测试|自测|属于|是什么)/.test(value)) return 'external_question'
   if (mentionedProduct && /(对比|比较|区别|哪个好|哪个更)/.test(value)) return 'product_comparison'
-  if (mentionedProduct && /(价格|多少钱|成分|规格|色号|产地|功效|哪里买|官网)/.test(value)) return 'product_fact'
+  if (isProductFactQuestion(value, mentionedProduct)) return 'product_fact'
   if (/(推荐|选什么|怎么选|哪个好|粉底|底妆|气垫|遮瑕|散粉|肤质|油皮|干皮|妆效|持妆|色号|卡粉|脱妆|预算)/.test(value)) return 'catalog_recommendation'
   if (/^(你好|嗨|hello|hi|在吗)[！!。？?\s]*$/i.test(value)) return 'greeting_help'
   if (/(最新|最近|现在|目前|今年|2026|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买)/.test(value)) return 'external_research'
   return 'external_question'
+}
+
+function isProductFactQuestion(text, mentioned) {
+  const productContext = mentioned || /粉底|气垫|遮瑕|散粉|口红|唇釉|眼影|腮红|眉笔|睫毛膏/.test(text)
+  const factQuestion = /价格|多少钱|成分|规格|色号|产地|功效|哪里买|官网|净含量|容量|保质期|能用多久|可以用多久|大概用多久|用多长时间|便携|方便携带|补妆方便/.test(text)
+    || (/(正装|替换芯|替换装|补充装|套装)/.test(text) && /吗|还是|是否|是不是|含不含|有没有|[？?]/.test(text))
+  return productContext && factQuestion
 }
 
 function isWeatherQuestion(text) {
@@ -159,6 +170,7 @@ function buildSystemPrompt(profile, products, webResults, intent = 'external_que
 8. 受控知识库只能支撑一般安全边界和表达方式；不能把它当成产品事实、实时信息或医疗诊断依据。
 9. 使用亲切、自然、容易理解的中文，像在耐心帮助朋友。先给结论，再给 2-4 条最重要的建议；短句、少术语，不重复用户已经知道的内容。
 10. 一般问题控制在 120-220 字；需要步骤时用不超过 7 个短步骤。不要写长篇前言、空泛总结或重复免责声明。
+11. product_fact 是对指定产品的提问，不因用户画像的预算、肤质或品类条件改成推荐筛选。逐项回答用户关心的规格、包装和使用问题；资料缺失就明确说无法确认。净含量不能证明是否含替换芯；没有用量和频率依据时不能编造可用天数；便携性和补妆建议须区分一般建议与已核实的产品事实。
 
 已知用户自述画像：${JSON.stringify(profile)}${catalogBlock}${knowledgeBlock}${sourceBlock}`
 }
