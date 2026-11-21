@@ -11,7 +11,7 @@ afterEach(() => {
 })
 
 describe('小Y业务请求', () => {
-  it('posts only the last eight role/content messages and adapts real product IDs and sources', async () => {
+  it('posts the last eight messages with bounded existing product references and adapts valid IDs and sources', async () => {
     const messages = Object.freeze(Array.from({ length: 12 }, (_, index) => Object.freeze({
       id: String(index), role: index % 2 ? 'assistant' : 'user', content: `合成历史 ${index}`,
       productIds: [products[0].id], sources: [],
@@ -30,7 +30,7 @@ describe('小Y业务请求', () => {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: '现在的合成问题', profile,
-        messages: messages.slice(4).map(({ role, content }) => ({ role, content })),
+        messages: messages.slice(4).map(({ role, content, productIds }) => ({ role, content, ...(role === 'assistant' ? { productIds } : {}) })),
       }),
     })
     expect(result).toEqual({ text: '合成回答。', productIds: ids.slice(0, 3), sources, answerMode: 'search', model: 'synthetic-model' })

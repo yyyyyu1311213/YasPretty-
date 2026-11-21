@@ -1,12 +1,19 @@
 import { products } from '../../data/products'
 
-// These tools select frontend flows; they do not replace the server intentRouter.
+// Browser fallback only. Online sends always reach the server intentRouter first.
 function detectIntent(text, profile = {}) {
   const mentioned = findMentionedProducts(text)
+  if (/红肿|刺痛|过敏|诊断|治疗|API\s*Key|系统提示词/i.test(text)) return 'unsupported_sensitive'
+  if (/手机|打印机|电脑|汽车|自行车|笔记本|耳机/.test(text) && !mentioned.length) return 'external_question'
+  if (!mentioned.length && /区别|差别|不同/.test(text) && /粉底|气垫|底妆|遮瑕|散粉/.test(text)) return 'beauty_knowledge'
+  if (/(怎么涂|怎么上|怎么用|怎么办|技巧|原理|底妆教程|什么是|是什么|色号怎么选|(?:总|容易|之后|后).*(?:起皮|卡粉|脱妆)|卡粉$|起皮$)/.test(text) && /妆|粉底|气垫|皮|口红|睫毛/.test(text)) return 'beauty_knowledge'
+  if (/(这款|这个|上一款|后一款|前一款|第一款|第二款|它)/.test(text) && !/手机|打印机/.test(text)) return 'product_fact'
+  if (mentioned.length && /适合.*吗/.test(text)) return 'product_fact'
   if (mentioned.length && /(对比|区别|哪个好|哪个更)/.test(text)) return 'product_comparison'
   if (/(妆容方案|完整妆容|妆容教程|妆教|化妆教程|化妆步骤|怎么化|如何画|教我画|妆面规划|设计(?:一个)?妆|(?:韩女|水光|拍照|秋日|落叶|约会|通勤|日常|晚宴)妆容?)/.test(text)) return 'makeup_plan'
   if (/肤质/.test(text) && /(判断|分辨|怎么看|怎么知道|测试|自测|属于|是什么)/.test(text)) return 'external_question'
   if (isProductFactQuestion(text, mentioned.length > 0)) return 'product_fact'
+  if (mentioned.length && !/推荐|选什么|怎么选|想买|想找/.test(text)) return 'product_fact'
   if (mentioned.length || /(推荐|选什么|怎么选|哪个好|粉底|底妆|气垫|遮瑕|散粉|肤质|油皮|干皮|妆效|持妆|色号|卡粉|脱妆|预算)/.test(text)) return 'catalog_recommendation'
   if (/^(你好|嗨|hello|hi|在吗)[！!。？?\s]*$/i.test(text)) return 'greeting_help'
   return 'external_question'
@@ -26,6 +33,12 @@ function needsOnlineResearch(text, intent) {
   return false
 }
 
+// A failed request may use local recommendations only when the user actually asks for selection.
+// Merely mentioning a catalog category must never activate this fallback.
+function canRecommendOffline(text) {
+  return /推荐|选什么|怎么选|哪个好|想要|想找|想买/.test(text)
+}
+
 // Shared by intent selection and local replies so product matching has one implementation.
 function findMentionedProducts(text) {
   const normalize = (value) => value.toLowerCase().replace(/[\s（）()]/g, '')
@@ -39,4 +52,4 @@ function findMentionedProducts(text) {
   })
 }
 
-export { detectIntent, findMentionedProducts, needsOnlineResearch }
+export { canRecommendOffline, detectIntent, findMentionedProducts, needsOnlineResearch }

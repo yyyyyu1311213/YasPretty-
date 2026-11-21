@@ -18,10 +18,11 @@
  */
 
 /**
- * API 历史消息，只含角色和正文；不能直接发送带 UI 元数据的 AssistantMessage。
+ * API 历史消息，只发送角色、正文及已有的近期商品 ID；不发送其他 UI 元数据。
  * @typedef {object} ConversationMessage
  * @property {'user' | 'assistant'} role
  * @property {string} content 去除首尾空白后 1–4000 字符。
+ * @property {string[]} [productIds] 最多 3 个既有商品 ID，按回答顺序；仅助手消息参与指代定位。
  */
 
 /**
@@ -48,7 +49,8 @@
  * @property {string} answer API 原文，可能含 [[PRODUCT:id]] 标记；不是 UI 的 text。
  * @property {AssistantSource[]} sources 无来源时为 []。
  * @property {boolean} usedWebSearch 是否使用智谱联网检索；weather 回答可为 false。
- * @property {'model' | 'knowledge' | 'search' | 'weather' | 'clarification'} answerMode
+ * @property {'model' | 'knowledge' | 'search' | 'weather' | 'clarification' | 'local'} answerMode
+ * @property {string} [intent] 服务端判定的本次意图，不写入本地存储。
  * @property {string | null} model 非模型回答或无模型名时为 null，不是 UI 处理后的 ''。
  */
 

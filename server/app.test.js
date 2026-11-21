@@ -43,7 +43,7 @@ function mockZhipu(overrides = {}) {
   return {
     configured: true,
     modelName: 'test-model',
-    chat: vi.fn(async () => '资料库参考建议。[[PRODUCT:p1]]'),
+    chat: vi.fn(async () => '资料库参考建议。'),
     search: vi.fn(async () => []),
     ...overrides,
   }
@@ -215,7 +215,7 @@ describe('YasPretty API gateway', () => {
     expect(response.json().error.code).toBe('VALIDATION_ERROR')
   })
 
-  it('returns a safe no-key error without calling an upstream service', async () => {
+  it('returns a labeled basic recommendation without a key and keeps external failure explicit', async () => {
     const app = await buildApp({
       config: config({ zhipuApiKey: '' }),
       logger: false,
@@ -231,8 +231,12 @@ describe('YasPretty API gateway', () => {
       payload: { query: '推荐粉底', messages: [], profile: { skin: '油皮' } },
     })
 
-    expect(response.statusCode).toBe(503)
-    expect(response.json().error.code).toBe('PROVIDER_NOT_CONFIGURED')
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({ answerMode: 'local', intent: 'catalog_recommendation', model: null })
+    expect(response.json().answer).toContain('智能服务未配置')
+    const external = await app.inject({ method: 'POST', url: '/api/assistant', payload: { query: '解释一下光的折射' } })
+    expect(external.statusCode).toBe(503)
+    expect(external.json().error.code).toBe('PROVIDER_NOT_CONFIGURED')
     expect(response.payload).not.toContain('server/key.txt')
     expect(response.payload).not.toContain('Authorization')
   })
@@ -256,7 +260,7 @@ describe('YasPretty API gateway', () => {
     expect(response.statusCode).toBe(200)
     expect(response.json()).toMatchObject({
       ok: true,
-      answer: '资料库参考建议。[[PRODUCT:p1]]',
+      answer: '资料库参考建议。',
       usedWebSearch: true,
       answerMode: 'model',
       model: 'test-model',
@@ -324,8 +328,9 @@ describe('YasPretty API gateway', () => {
     expect(response.json().sources).toEqual(expect.arrayContaining([
       expect.objectContaining({ kind: 'knowledge', publisher: 'American Academy of Dermatology' }),
     ]))
-    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('受控知识库资料')
-    expect(zhipu.chat.mock.calls[0][0][0].content).toContain('不能诊断过敏')
+    expect(zhipu.chat).not.toHaveBeenCalled()
+    expect(response.json().intent).toBe('unsupported_sensitive')
+    expect(response.json().answer).toContain('停止使用')
   })
 
   it('returns reviewed knowledge when the model is unavailable', async () => {

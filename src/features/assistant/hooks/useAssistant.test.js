@@ -75,6 +75,43 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('小Y状态与发送流程', () => {
+  it('audit: does not persist a friend’s conditions after sending from the chat', async () => {
+    vi.mocked(requestAssistant).mockResolvedValue(answer())
+    await render().sendMessage('我朋友说，预算200元，想要哑光气垫')
+    expect(render().profile).toEqual({})
+    expect(requestAssistant).toHaveBeenCalledWith(expect.objectContaining({ profile: {} }))
+  })
+  it('audit: does not recommend makeup when an external shopping request fails', async () => {
+    vi.mocked(requestAssistant).mockRejectedValue(new TypeError('Failed to fetch'))
+    await render().sendMessage('给我推荐电脑')
+    expect(latest().productIds).toEqual([])
+    expect(latest().content).not.toContain('先确认你的肤质')
+    expect(render().mode).toBe('error')
+  })
+  it.each(['PROVIDER_NOT_CONFIGURED', 'UPSTREAM_TIMEOUT', 'network', 'offline'])('does not ask for skin or recommend after category knowledge fails: %s', async (failure) => {
+    if (failure === 'offline') vi.stubGlobal('navigator', { onLine: false })
+    vi.mocked(requestAssistant).mockRejectedValue(failure === 'network' ? new TypeError('Failed to fetch') : Object.assign(new Error('合成服务不可用'), { code: failure }))
+    await render().sendMessage('粉底和气垫有什么区别')
+    expect(latest().content).not.toMatch(/需要先确认你的肤质|你是油皮|根据目前记录的需求/)
+    expect(latest().productIds).toEqual([])
+    expect(render().profile).toEqual({})
+    expect(render().mode).toBe('error')
+  })
+
+  it('does not infer recommendation fallback from a category word alone', async () => {
+    vi.mocked(requestAssistant).mockRejectedValue(new TypeError('Failed to fetch'))
+    await render().sendMessage('粉底有哪些质地')
+    expect(latest().content).not.toContain('先确认你的肤质')
+    expect(latest().productIds).toEqual([])
+    expect(render().mode).toBe('error')
+  })
+  it.each(['粉底怎么涂', '底妆出油怎么办', '我是干皮，推荐粉底', '给我完整妆容'])('AI-R01 sends every online chat through assistant API: %s', async (text) => {
+    vi.mocked(requestAssistant).mockResolvedValue(answer())
+    await render().sendMessage(text)
+    expect(requestAssistant).toHaveBeenCalledOnce()
+    expect(requestMakeupPlan).not.toHaveBeenCalled()
+    expect(latest().content).toBe('合成回答')
+  })
   it('keeps welcome, composer, activity and mode defaults and persists through shared storage', () => {
     const value = render()
     expect(value).toMatchObject({ profile: {}, profileTags: 0, input: '', busy: false, mode: 'ready', activeModel: '', activity: '小Y正在识别需求并查询...' })
@@ -100,15 +137,16 @@ describe('小Y状态与发送流程', () => {
     ['你好', '你好，我是小Y。先告诉我你的肤质吧', false],
     ['推荐通勤底妆', '为了避免只凭热度推荐', false],
     ['我是油皮，预算 400 元，想要柔雾通勤底妆', '根据目前记录的需求', true],
-    ['帮我比较 NARS 超方瓶和雅诗兰黛持妆粉底液', '我按资料库信息比较你提到的产品', true],
-  ])('keeps the local flow for %s', async (text, expected, hasProducts) => {
+  ])('keeps a labeled local fallback after request failure for %s', async (text, expected, hasProducts) => {
+    vi.mocked(requestAssistant).mockRejectedValue(new TypeError('Failed to fetch'))
     await render().sendMessage(text)
     expect(latest().content).toContain(expected)
     expect(latest().productIds.length > 0).toBe(hasProducts)
     expect(latest().productIds.every((id) => products.some((product) => product.id === id))).toBe(true)
     expect(render()).toMatchObject({ busy: false, mode: 'local', activeModel: '', input: '' })
     expect(render().messages[1]).toMatchObject({ role: 'user', content: text, productIds: [], sources: [] })
-    expect(requestAssistant).not.toHaveBeenCalled()
+    expect(requestAssistant).toHaveBeenCalledOnce()
+    expect(latest().content).toContain('已降级')
     expect(requestMakeupPlan).not.toHaveBeenCalled()
     expect(saved('messages')).toEqual(render().messages)
     if (text.startsWith('我是油皮')) {
@@ -183,37 +221,38 @@ describe('小Y状态与发送流程', () => {
     expect(latest().sources).toEqual(response.sources || [])
   })
 
-  it('routes catalog research to assistant API with the updated profile and keeps the original web mode', async () => {
+  it('sends updated explicit profile without pre-classifying research on the client', async () => {
     const waiting = deferred()
     vi.mocked(requestAssistant).mockReturnValue(waiting.promise)
     const pending = render().sendMessage('我是干皮，预算 300 元，NARS 最新价格')
-    expect(render()).toMatchObject({ busy: true, activity: '正在联网检索相关资料...', profile: { skin: '干皮', budget: 300 } })
+    expect(render()).toMatchObject({ busy: true, activity: '小Y正在组织回答...', profile: { skin: '干皮', budget: 300 } })
     expect(requestAssistant).toHaveBeenCalledWith(expect.objectContaining({ profile: { skin: '干皮', budget: 300 } }))
     expect(requestMakeupPlan).not.toHaveBeenCalled()
-    waiting.resolve(answer())
+    waiting.resolve(answer({ sources: [source('web')] }))
     await pending
     expect(render()).toMatchObject({ mode: 'web', activeModel: 'synthetic-model', busy: false })
   })
 
-  it.each(['local', 'model'])('uses the plan API with current conditions and retains %s mode and message metadata', async (sourceMode) => {
-    await render().sendMessage('我是混油皮，预算 500 元，柔雾通勤底妆')
-    await render().sendMessage('我是干皮，预算 300 元，奶油肌拍照底妆')
+  it.each(['local', 'model'])('uses the assistant API for conversational plans and retains %s mode', async (sourceMode) => {
+    vi.mocked(requestAssistant).mockResolvedValue(answer())
+    await render().sendMessage('我是混油皮，预算 500 元，想要柔雾通勤底妆')
+    await render().sendMessage('我是干皮，预算 300 元，想要奶油肌拍照底妆')
     const profile = render().profile
     const waiting = deferred()
-    vi.mocked(requestMakeupPlan).mockReturnValue(waiting.promise)
+    vi.mocked(requestAssistant).mockClear().mockReturnValue(waiting.promise)
     const pending = render().sendMessage('给我完整妆容')
-    expect(requestMakeupPlan).toHaveBeenCalledExactlyOnceWith({ text: '给我完整妆容', profile })
-    expect(render()).toMatchObject({ busy: true, activity: '正在生成可调整的妆容方案...' })
-    waiting.resolve({ text: '合成方案', productIds: [products[0].id], sourceMode, sources: [source('web')] })
+    expect(requestAssistant).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ text: '给我完整妆容', profile }))
+    expect(render()).toMatchObject({ busy: true, activity: '小Y正在组织回答...' })
+    waiting.resolve(answer({ text: '合成方案', productIds: [products[0].id], answerMode: sourceMode, model: sourceMode === 'model' ? 'synthetic-model' : '' }))
     await pending
     expect(latest()).toMatchObject({ content: '合成方案', productIds: [products[0].id], sources: [] })
-    expect(render()).toMatchObject({ busy: false, mode: sourceMode === 'model' ? 'ai' : 'local', activeModel: sourceMode === 'model' ? 'glm-5.3-flash' : '' })
+    expect(render()).toMatchObject({ busy: false, mode: sourceMode === 'model' ? 'ai' : 'local', activeModel: sourceMode === 'model' ? 'synthetic-model' : '' })
     expect(profile).toMatchObject({ skin: '干皮', budget: 300, finish: '奶油肌', scene: '拍照' })
-    expect(requestAssistant).not.toHaveBeenCalled()
+    expect(requestMakeupPlan).not.toHaveBeenCalled()
   })
 
-  it('keeps the full original text fallback and valid products when the plan API fails', async () => {
-    vi.mocked(requestMakeupPlan).mockRejectedValue(new Error('合成方案失败'))
+  it('keeps a labeled complete basic plan when the assistant API fails', async () => {
+    vi.mocked(requestAssistant).mockRejectedValue(new TypeError('合成网络失败'))
     await render().sendMessage('我是油皮，预算 400 元，给我完整妆容')
     expect(latest().content).toContain('1. 妆前')
     expect(latest().content).toContain('7. 唇妆')
@@ -221,14 +260,15 @@ describe('小Y状态与发送流程', () => {
     expect(latest().productIds.length).toBeGreaterThan(0)
     expect(latest().productIds.every((id) => products.some((product) => product.id === id))).toBe(true)
     expect(render()).toMatchObject({ busy: false, mode: 'local', activeModel: '' })
-    expect(requestAssistant).not.toHaveBeenCalled()
+    expect(requestAssistant).toHaveBeenCalledOnce()
+    expect(requestMakeupPlan).not.toHaveBeenCalled()
+    expect(latest().content).toContain('已降级')
   })
 
   it.each([
     ['解释一下光的折射', 'AI_NOT_CONFIGURED', '智能服务当前不可用：合成服务错误。站内产品浏览和本地推荐仍可正常使用。'],
     ['今天上海天气怎么样', 'WEATHER_PROVIDER_UNAVAILABLE', '天气数据暂时不可用：合成服务错误。我不会用猜测或旧资料代替实时天气；站内产品浏览和本地推荐仍可正常使用。'],
     ['NARS 最新价格', 'UPSTREAM_TIMEOUT', '联网检索当前不可用：合成服务错误。我不会用未经检索的信息冒充实时结果；你仍可询问不依赖实时信息的站内产品推荐。'],
-    ['今天给我完整妆容', 'UPSTREAM_TIMEOUT', '联网检索当前不可用：合成服务错误。我不会用未经检索的信息冒充实时结果；你仍可询问不依赖实时信息的站内产品推荐。'],
   ])('preserves error precedence and recovery for %s', async (text, code, expected) => {
     vi.mocked(requestAssistant).mockResolvedValueOnce(answer())
     await render().sendMessage('解释一下光的折射')
@@ -238,6 +278,7 @@ describe('小Y状态与发送流程', () => {
     expect(latest()).toMatchObject({ content: expected, productIds: [], sources: [] })
     expect(render()).toMatchObject({ mode: 'error', activeModel: '', busy: false })
     expect(requestMakeupPlan).not.toHaveBeenCalled()
+    vi.mocked(requestAssistant).mockRejectedValueOnce(new TypeError('Failed to fetch'))
     await render().sendMessage('我是油皮，预算 400 元，推荐粉底')
     expect(latest().content).toContain('在预算内')
     expect(render()).toMatchObject({ mode: 'local', activeModel: '', busy: false })

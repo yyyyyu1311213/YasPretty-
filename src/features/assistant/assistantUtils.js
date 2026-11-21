@@ -1,6 +1,7 @@
-import { categoryOptions, finishOptions, products, skinOptions } from '../../data/products'
+import { products } from '../../data/products'
 import { legacyToForm, toPlanPayload } from '../makeup-plan/makeupPlanUtils'
 import { findMentionedProducts } from './intentUtils'
+import { extractRequestConditions } from './profileUtils'
 
 const SCENE_OPTIONS = ['通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
 const INTERNAL_PRODUCT_STATUS = /待核验|已核验|未核验|待确认|未标注|暂无信息|unknown|null/i
@@ -44,33 +45,7 @@ function shadeSuggestion(shade) {
   return hasPublicProductValue(shade?.name) ? `建议先试 ${shade.name}` : '建议先在自然光下试色'
 }
 
-export function extractProfile(text, current = {}) {
-  const next = { ...current }
-  const skin = [...skinOptions].sort((a, b) => b.length - a.length).find((item) => text.includes(item))
-  const finish = finishOptions.find((item) => text.includes(item))
-  const scene = SCENE_OPTIONS.find((item) => text.includes(item))
-  const category = categoryOptions.find((item) => text.includes(item))
-  // Require spending context; product weights, shade numbers and dates are not budgets.
-  const budgetMatch = text.match(/(?:预算\s*(?:是|为|在|约|大约|大概|不超过|最多|控制在)?|不超过|最多|上限)\s*[¥￥]?\s*(\d{1,5}(?:\.\d{1,2})?)(?![\d.]|\s*(?:g|ml|h|克|毫升|小时|天|年|号|岁|分钟))/i)
-    || text.match(/(?<![\d.])(\d{1,5}(?:\.\d{1,2})?)\s*(?:元|块钱|块)\s*(?:以内|以下|内|左右|上下)/)
-
-  if (skin) next.skin = skin
-  if (/大油皮/.test(text)) next.skin = '油皮'
-  if (/大干皮/.test(text)) next.skin = '干皮'
-  if (finish) next.finish = finish
-  if (/水光|亮泽/.test(text)) next.finish = '自然光泽'
-  if (/雾面/.test(text)) next.finish = '柔雾'
-  if (scene) next.scene = scene
-  if (category) next.category = category
-  if (!category && /粉底/.test(text)) next.category = '粉底液'
-  if (budgetMatch) next.budget = Number(budgetMatch[1])
-  if (/高遮瑕|遮瑕强|瑕疵多/.test(text)) next.coverage = '高'
-  if (/轻薄|低遮瑕/.test(text)) next.coverage = '低'
-  if (/冷白|冷调/.test(text)) next.tone = '冷调'
-  if (/黄皮|暖调/.test(text)) next.tone = '暖调'
-  if (/中性调/.test(text)) next.tone = '中性调'
-  return next
-}
+export { extractProfile } from './profileUtils'
 
 export function pickShade(product, profile) {
   if (!product.shadeRecommendationReady) return { name: '参数色号待确认' }
@@ -91,20 +66,21 @@ function scoreProduct(product, profile) {
 }
 
 export function recommendProducts(profile, text) {
+  profile = extractRequestConditions(text, profile)
   const mentioned = findMentionedProducts(text)
-  if (mentioned.length) return mentioned.slice(0, 3)
-
-  const pool = products.filter((product) => {
+  const pool = (mentioned.length ? mentioned : products).filter((product) => {
     if (profile.category && product.category !== profile.category) return false
     if (!profile.category && /底妆|粉底/.test(text) && product.category !== '粉底液') return false
     if (profile.skin && !product.skins.includes(profile.skin)) return false
-    if (profile.budget && product.price > profile.budget) return false
+    if (/不(?:要|喜欢|想要)?哑光/.test(text) && product.finish === '哑光') return false
+    if (profile.budget && (!Number.isFinite(product.price) || product.price > profile.budget)) return false
     return true
   })
   return [...pool].sort((a, b) => scoreProduct(b, profile) - scoreProduct(a, profile)).slice(0, 3)
 }
 
 export function localReply(text, profile) {
+  profile = extractRequestConditions(text, profile)
   if (/^(你好|嗨|hello|hi)[！!。\s]*$/i.test(text)) {
     return { text: '你好，我是小Y。先告诉我你的肤质吧，例如油皮、混油皮、干皮或混干皮。', products: [] }
   }
@@ -114,7 +90,7 @@ export function localReply(text, profile) {
     return { text: '为了避免只凭热度推荐，我需要先确认你的肤质。你是油皮、混油皮、干皮、混干皮，还是敏感肌？', products: [] }
   }
 
-  const matches = recommendProducts(profile, text)
+  const matches = mentioned.length > 1 && !/推荐/.test(text) ? mentioned.slice(0, 3) : recommendProducts(profile, text)
   if (!matches.length) {
     return {
       text: '资料库中暂时没有同时满足这些硬条件的产品。你可以提高预算、放宽品类，或保留最重要的一项条件后再试。',

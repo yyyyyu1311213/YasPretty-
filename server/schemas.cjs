@@ -14,6 +14,7 @@ const profileSchema = z.object({
 const conversationMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
   content: z.string().trim().min(1).max(4000),
+  productIds: z.array(z.string().trim().min(1).max(120)).max(3).optional(),
 }).strict()
 
 const assistantRequestSchema = z.object({
@@ -68,8 +69,9 @@ const assistantResponseSchema = z.object({
   answer: z.string().trim().min(1).max(20000),
   sources: z.array(sourceSchema).max(8),
   usedWebSearch: z.boolean(),
-  answerMode: z.enum(['model', 'knowledge', 'search', 'weather', 'clarification']),
+  answerMode: z.enum(['model', 'knowledge', 'search', 'weather', 'clarification', 'local']),
   model: z.string().trim().min(1).max(80).nullable(),
+  intent: z.enum(['catalog_recommendation', 'product_comparison', 'product_fact', 'beauty_knowledge', 'makeup_plan', 'plan_adjustment', 'external_question', 'external_research', 'greeting_help', 'unsupported_sensitive', 'clarification']).optional(),
 }).strict()
 
 const userProfileSchema = z.object({

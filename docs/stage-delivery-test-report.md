@@ -2958,3 +2958,193 @@ node -e "require('dotenv').config=()=>({parsed:{}});const {loadConfig}=require('
 提交前 `git fetch origin dev` 与实际 `git ls-remote` 成功，dev/HEAD/origin/dev/实际远端均为 `144e942f75ffa0213987b75a07adb0cf75c62455`、ahead/behind 0/0、索引为空，原 arch-stage-00～13 对象及指向保留。11 个代码/测试文件保存并复核 SHA-256，四份允许文档仅追加本次确认；沿用上述 383/383、构建1872模块和桌面/手机8/8实跑结果，不冒称本次重跑。`git diff --check` 通过；暂存时显式枚举已验收15路径并核对索引。
 
 只在 dev 创建规定格式的线性提交并正常推送，实际新 SHA 和远端核验由归档回执提供、后续同步回填，不为自引用改写历史。AI-R01 尚未实施，不混入此提交；下一轮以本次核验后的干净归档提交为基线。真实在线模型、自然语言覆盖、商品套装/用量与全部既有风险继续保留。**本阶段无新增核验，继承上一条结论。**
+
+## AI-R01 2026-11-21 待人工验收
+
+### 基线与状态
+
+上一轮实际归档提交为 `ad9ffe60b4c54dff00689f977a4ebe74e1d79895`，父提交 `144e942f75ffa0213987b75a07adb0cf75c62455`。提交信息为 `【问题】小Y将产品规格追问误判为预算筛选 【修改】修正产品事实分流、预算提取及缺失信息展示并记录人工验收`。负责人已明确人工验收并授权正常推送；2026-11-21 10:31:48（北京时间）实际远端匹配，前轮状态为已归档，无新标签。此处追加回执，不改写上面的历史状态。
+
+本轮10:33:57执行fetch并核对dev、HEAD、origin/dev、索引、工作树与未跟踪文件：均以该归档SHA为基线，ahead/behind 0/0，索引与工作树干净。10:50:47再次fetch、ls-remote核对，远端仍为同一SHA，arch-stage-12/13原对象和指向匹配。完整阅读当前规则、产品定义、README和迁移计划后实施；没有切换分支、合并master、stash、清理或重写历史。AI-R01从待实施进入实施中，现为**待人工验收**；AI-R02/03待实施。本轮没有提交SHA或tag，不复用ARCH编号。
+
+### 问题与回归证据
+
+以下三个问题均使用基线 `ad9ffe60b4c54dff00689f977a4ebe74e1d79895`，编号已查重，均为本轮实际缺陷。
+
+| 问题 | 现象与复现输入 | 预期与根因 | 文件与回归 | 验证结果与剩余限制 |
+|---|---|---|---|---|
+| YAS-2026-0058 | “粉底怎么涂”“底妆出油怎么办”被前端当作推荐；聊天完整方案绕过助手API | 所有在线聊天交服务端路由，教程/知识不推荐。根因为前端localReply/方案API提前返回，服务端宽泛品类正则优先于知识 | useAssistant、assistantApi、intentUtils、assistant-service、intent-router、parameters、tools、response、app及对应测试；页面tutorial/oily-base-knowledge/plan-via-assistant/workbench-original-api | 修复前在线API断言和分类断言失败；修复后页面通过。普通推荐、无Key、断网、分类异常、检索失败、模型异常均覆盖。真实GLM分类/表达质量未验证；离线教程明确不可用 |
+| YAS-2026-0059 | “合成品牌适合干皮吗”品牌下多款未澄清；两款比较后“后一款适合干皮吗”不能定位；兰芝15g原追问须继续产品事实查询 | 名称、派生简称、版本和近期ID独立定位，预算/肤质只筛推荐。根因为品牌OR名称命中扩展全品牌、历史请求丢弃已有商品ID、缺少顺序指代 | product-resolver、assistant-service、tools、response、assistantApi、schemas、contracts及测试；页面comparison-and-latter/ambiguous-brand/ambiguous-reference/laneige-fact | 修复前澄清与后一款断言失败；修复后通过，事实不会因预算1元或不同肤质丢失。只用最近8条中最后一条助手消息的有效ID，不跨过无关回答找旧指代；超过两款的“后一款”、同名多版本等仍追问 |
+| YAS-2026-0060 | “这款适合干皮吗”“这款哑光气垫”“朋友是干皮”“我是干皮吗？”以及商品价位疑问误写偏好 | 仅明确用户自述修改画像；问题、他人、引用和规格不写入。根因为extractProfile直接按包含词命中 | profileUtils（前后端纯函数共用）、assistantUtils、parameters、useAssistant及测试；页面profile-self-report/laneige-fact | 修复前5个画像断言失败；修复后明确“我是干皮”与产品适用性询问结果不同，15g/30ml/21号/2026年/12小时不改预算。保守提取会忽略部分省略主语或复杂措辞，用户可明确重述 |
+
+兰芝原复现输入：`这个兰芝NEO小方块哑光气垫，15g是正装还是带替换芯？一个大概能用多久？平时放包里补妆方便吗？`。本轮只把它作为指定缺陷输入，不新增规格/套装/使用天数/便携性核验结论。
+
+失败记录保留在 `.qa/ai-r01/`：
+
+- `pre-fix.txt`：先新增回归后修复，3文件71项中13失败、58通过。失败覆盖4个在线发送入口、2个知识分类、品牌歧义、后一款和5个画像用例。
+- `iteration-1.txt`：18失败、113通过，包含旧“前端直接返回/方案独立API”断言与本轮目标冲突，以及“底妆教程”误命中“妆教”的真实边界；分别更新旧契约断言并收紧规则。
+- `iteration-2.txt`：1失败、128通过，原合成外部回答带站内商品标记的断言已改为不带商品；维持来源与安全检查。
+- `targeted.txt`：1失败、162通过，合成两字简称“星光”未命中；修正为受控名称派生简称且同名版本保留歧义。`targeted-final.txt`：11文件166/166通过。
+- `browser-first.txt`：浏览器启动前因合成配置AI_RATE_LIMIT_MAX超过既有上限而失败；改为允许值1000，未放宽产品配置或限流。`browser-second.txt`及最终运行均54/54通过。
+- `profile-uncertainty-before.txt`：收尾补查“我是干皮还是油皮”“我想要不哑光的气垫”，2失败、32通过；修正不确定自述和否定偏好不得写成确定画像，否定哑光仅作为当前请求筛选条件。最终全量420/420及页面自述场景覆盖此修正。此前166/166为该补查之前的相关测试结果，不冒称已包含这两项。
+
+### 逐文件范围与实现
+
+编辑前逐文件公布以下26文件白名单，未申请或使用范围扩张。新文件8个，其余18个为既有文件。
+
+| 文件 | 对应目的 |
+|---|---|
+| `src/features/assistant/hooks/useAssistant.js` | 在线统一请求，失败后才用浏览器基础降级 |
+| `src/features/assistant/hooks/useAssistant.test.js` | 发送、状态、画像、方案和降级回归 |
+| `src/features/assistant/assistantApi.js` | 最近8条历史携带既有、最多3个有序商品ID；正文限制4000字符 |
+| `src/features/assistant/assistantApi.test.js` | 请求与响应适配边界 |
+| `src/features/assistant/assistantUtils.js` | 复用自述解析；离线推荐仍遵守硬条件，比较定位独立 |
+| `src/features/assistant/assistantUtils.test.js` | 自述、数字单位和推荐/定位边界 |
+| `src/features/assistant/profileUtils.js`（新） | 无存储/provider依赖的明确自述提取 |
+| `src/features/assistant/intentUtils.js` | 仅供请求失败后的降级判断，知识/事实不降级成推荐 |
+| `src/features/assistant/intentUtils.test.js` | 降级分类边界 |
+| `src/contracts/assistant.js` | 既有ID传输、新回答模式和意图契约 |
+| `server/services/assistant-service.cjs` | 统一编排，保留原天气助手路径 |
+| `server/services/assistant/intent-router.cjs`（新） | 明确规则，模糊输入才用GLM；严格enum/置信度/schema校验 |
+| `server/services/assistant/product-resolver.cjs`（新） | 受控名称/简称/版本、品牌歧义与近期指代 |
+| `server/services/assistant/parameters.cjs`（新） | 共享自述规则、当前请求筛选条件及原方案服务输入适配 |
+| `server/services/assistant/tools.cjs`（新） | 硬条件筛选、匹配说明和检索执行 |
+| `server/services/assistant/response.cjs`（新） | 回答/提示词/来源摘要组织及商品ID输出校验 |
+| `server/services/assistant/assistant.test.js`（新） | 合成产品与provider的分类、定位、工具和异常回归 |
+| `server/app.cjs` | 助手注入既有方案服务；去掉助手入口对所有无Key请求的一刀切拦截 |
+| `server/schemas.cjs` | 仅助手历史productIds、local回答模式和intent |
+| `server/app.test.js` | 助手无Key/安全/知识/检索契约回归 |
+| `tests/browser/assistant-product-question.mjs` | 原追问脚本跟随在线统一入口与无Key事实降级 |
+| `tests/browser/assistant-ai-r01.mjs`（新） | 真实生产页面发送与显式工作台API验证 |
+| `README.md` | 当前实际能力、验证和限制 |
+| `docs/frontend-architecture-migration-plan.md` | AI系列状态、基线和门禁追加 |
+| `docs/stage-delivery-test-report.md` | 本记录 |
+| `docs/product-data-accuracy-audit.md` | 无新增核验与继承风险 |
+
+共享文件逐块核对：`server/app.cjs`只有服务实例接线（原112行附近）与`POST /api/assistant`无Key拦截（原177行附近）两块；限流与日额度仍执行。`server/schemas.cjs`只有conversationMessageSchema与assistantResponseSchema两块；产品/方案schema未改。实际diff及未跟踪文件与白名单逐项相同；暂存区为空。未改AGENTS/FINAL-PROMPT、首页、产品库、详情、收藏、妆台、3D、CSS、静态素材、产品数据、部署或依赖，未修改makeup-plan生成算法。临时配置/日志/截图在已有忽略目录，不作为新提交文件。
+
+范围检查记录为 `.qa/ai-r01/scope.json`：18个已跟踪修改、8个未跟踪新增，范围外/缺失路径均0、索引为空、新文件无行尾空白。共享文件每个2个实际变更区域；首次辅助脚本使用零行上下文把相邻增删计为3个碎片，改用正常3行上下文后核对通过，没有因此修改或放宽运行代码范围。
+
+### 最终自动验证与复跑
+
+2026-11-21（北京时间）最终验证：相关166/166；10:58收尾全量Vitest44文件420/420（此前10:50的418/418也通过）；Vite生产构建1873模块成功，既有超过500kB块提示保留。最终生产构建后的Playwright页面验证54/54，加既有规格追问8/8，合计62项；桌面1440×900与手机视口360×900，无pageerror、聊天横向溢出或输入控件重叠。截图抽查教程、产品事实与澄清；测试来自页面输入/Enter，经真实HTTP、Fastify、路由及provider注入，未用页面mock接口冒充服务端链路。`git diff --check`通过。
+
+54项包含每种视口27场景：推荐、教程、出油知识、15g事实、自述差异、比较后后一款、品牌歧义、指代不明、聊天完整方案、外部问题、有效/无效分类、敏感内容、检索空/超时、模型超时/非法ID、搜索成功但回答失败、无Key的推荐/事实/知识/方案/外部问题、工作台原API、断网推荐/教程/方案。重新加载只核对隔离浏览器中的合成画像；没有读取真实用户数据。
+
+本轮为避免构建/测试隐式读取真实.env，使用仅在忽略目录中的隔离配置；dotenv预加载钩子阻止文件读取，Vite设置envDir:false。复跑示例（PowerShell，仓库根目录；不需要读取或填写Key）：
+
+```powershell
+New-Item -ItemType Directory -Force .qa/ai-r01 | Out-Null
+Set-Content .qa/ai-r01/no-secrets.cjs "require('dotenv').config = () => ({ parsed: {} })"
+Set-Content .qa/ai-r01/qa.config.mjs "import original from '../../vite.config.js'; export default { ...original, envDir: false }"
+$env:NODE_OPTIONS='--require=./.qa/ai-r01/no-secrets.cjs'
+npm test -- --config .qa/ai-r01/qa.config.mjs
+npm run build -- --config .qa/ai-r01/qa.config.mjs
+# YAS_QA_PLAYWRIGHT_MODULE 指向已有 Playwright 的 index.mjs file URL；不安装新依赖。
+$env:YAS_QA_BROWSER_EXECUTABLE='C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_OUTPUT_DIR='.qa/ai-r01/browser-recheck'
+node tests/browser/assistant-ai-r01.mjs
+$env:YAS_QA_OUTPUT_DIR='.qa/ai-r01/previous-recheck'
+node tests/browser/assistant-product-question.mjs
+git diff --check
+```
+
+本机使用既有Codex运行时Playwright，浏览器为本机Chrome；实际版本、尺寸、场景和几何结果保存在 `.qa/ai-r01/browser-delivery/results.json`、`.qa/ai-r01/previous-delivery/results.json`；日志为 `full-tests-delivery.txt`、`build-delivery.txt`、`browser-delivery.txt`、`previous-delivery.txt`。初次失败、中间修正和最终证据分文件保留，不提交临时产物。
+
+### 人工验收入口、限制与交付状态
+
+1. 从主站导航进入“小Y智能选妆”，在聊天框发送“粉底怎么涂”“底妆出油怎么办”：应给手法/知识，不生成商品推荐。无Key也应有明确知识库降级。
+2. 输入“我是油皮，预算400元，推荐气垫”，再发送上面的兰芝15g原问题：应处理指定商品，偏好预算仍400，不把“哑光”写为用户喜好；无Key会明确无法联网确认套装/用量。
+3. 输入“我是干皮”后查询某款并追问“这款适合油皮吗”：偏好仍干皮。比较“超方瓶粉底液和NEO小方块哑光气垫”，再问“后一款适合干皮吗”：只定位兰芝。重开对话后问“这个适合干皮吗”，或只问“NARS适合干皮吗”：应澄清。
+4. 聊天发送“给我完整妆容”应由助手API生成完整方案；工作台“创建我的妆容方案”仍走原API。浏览器断网后普通推荐/完整方案应标注本地降级，教程/事实应明确不可用，不返回不相关推荐。
+5. 在桌面与360px检查上述入口、来源、偏好区和发送框；恢复网络后可继续发送。自动化合成异常覆盖不能代替真实线上模型验收。
+
+剩余限制：未读取真实Key或调用真实GLM/搜索，未在真实手机/公网部署验证；语义规则和名称派生不是全语言理解，版本/品牌/多款指代不明会追问；无法校验聊天中的原方案时，局部调整引导回工作台，本轮不改方案算法。引用仍为已有知识资料或可见搜索结果，模型自由文本的事实质量需人工复核，不因schema/ID通过就宣称事实已核验。没有增加照片处理、服务端记忆或用户数据保存范围；存储仍为原版本化键和最近20条本地消息，请求仍只取最近8条。作品视频和比赛材料未改，不能宣称真实模型、全部自然语言或新产品事实已验收。图片pending/blocked、素材授权与既有公开门禁继承审计。
+
+**本轮仅含AI-R01变更，待人工验收，不是干净工作树。未暂存、未提交、未推送、未打标签；未启动AI-R02。** 自动验证结果不替代负责人明确验收；人工验收失败则继续本轮修复并复验，验收归档前不开始下一轮。
+
+### 2026-11-21 11:20 人工验收失败与修正：知识降级误转推荐
+
+- 轮次/问题：AI-R01，沿用YAS-2026-0058。负责人截图显示新会话发送“粉底和气垫有什么区别”，回答却为“已降级为浏览器本地基础建议”并要求确认肤质。此项人工验收失败，未通过验收、未授权归档；状态从待人工验收返回实施中，修正后重新待人工验收。此前420/420与54/54结果保留，但没有覆盖此组合，不能继续据此声称该路径通过。
+- 基线：2026-11-21 11:12:36北京时间重新执行fetch，dev/HEAD/origin/dev均为 `ad9ffe60b4c54dff00689f977a4ebe74e1d79895`。现有26个未提交路径全部属于本轮已授权现场，索引为空，未清理、stash或混入其他任务。
+- 实际复现：当前8787预览为本轮启动的无Key进程；GET /api/health显示assistant:false。用无历史、空画像的合成请求发送原句，POST /api/assistant返回503/PROVIDER_NOT_CONFIGURED。服务端intentRouter实际为beauty_knowledge，retrieveKnowledge未命中现有条目；前端catch再命中宽泛“粉底/气垫”，调用localReply并追问肤质。根因是错误兜底丢失原问题性质，而不是需要补充肤质才能解释品类区别。
+- 预期：模型可用时回答品类知识，不推荐商品；没有对应受控知识且模型不可用时明确能力限制，保持画像不变、不返回商品、不追问用于推荐的肤质。断网同样不得把知识问题转换成推荐。
+- 编辑前公布修复子白名单12文件，后追加原AI-R01白名单内的intent-router.cjs修正“差别/不同”同义分类，共13文件：`src/features/assistant/intentUtils.js`、`intentUtils.test.js`、`hooks/useAssistant.js`、`hooks/useAssistant.test.js`；`server/services/assistant-service.cjs`、`assistant/response.cjs`、`assistant/intent-router.cjs`、`assistant/assistant.test.js`；`tests/browser/assistant-ai-r01.mjs`；README及三份允许docs文档。没有扩大原26文件白名单，未改知识库、产品数据、UI/CSS、网关共享文件或方案算法。
+- 实现：浏览器降级先判定知识/商品问题，再要求具有明确推荐或选购表达才能执行本地推荐；只出现品类词不能触发。服务端对已判定的beauty_knowledge，在无对应知识且无Key、模型超时或无效输出时返回明确的clarification消息，保留intent，不输出商品/伪造知识引用。不是把“无法回答”包装成知识成功；文本明确“暂时无法可靠解答”。已有知识库命中与正常模型回答不受影响。
+- 先失败后修正：`.qa/ai-r01/acceptance-fix/before.txt`为89项中10失败、79通过；包括前端分类2项、发送/失败兜底5项、服务端无资料的无Key/超时/异常输出3项。`browser-before.txt`及`browser-before/1440-category-knowledge-observed.png`从真实生产页面复现原截图。补查同义问法的`synonyms-before.txt`为2失败、31通过。修正后targeted.txt为89/89；加入同义用例后的全量结果见下一条，失败日志没有覆盖。
+- 完整复验：11:18执行`npm test -- --config .qa/ai-r01/qa.config.mjs`，44文件432/432；`npm run build -- --config .qa/ai-r01/qa.config.mjs`，1873模块通过，既有大包提示保留。使用原禁读.env预加载钩子，未读取真实Key。`node tests/browser/assistant-ai-r01.mjs`在桌面1440×900与360×900为60/60；`assistant-product-question.mjs`为8/8。新增新会话无Key品类知识、正常模型品类知识、离线品类知识，并在模型超时/非法输出场景补发原句；无画像变化、商品卡、横向溢出或pageerror。日志分别为`full-tests.txt`、`build.txt`、`browser-after.txt`、`previous-after.txt`，场景结果与截图在对应after目录。
+- 范围验证：`git diff --check`通过，scope检查仍为18个已跟踪修改+8个未跟踪新增；范围外文件0、索引为空，app.cjs/schema既有助手变更区域未扩大。临时证据仅在已有忽略目录，不提交。四份文档追加本次验收失败与修正，保留历史结果。
+- 人工复验：当前预览已使用新构建并重启；刷新 http://127.0.0.1:8787/ 后重新发送原句。无Key模式预期为“这是美妆知识问题。当前智能服务未配置，暂时无法可靠解答。请在服务恢复后重试。”，不能再出现需要先确认肤质或商品推荐。已有错误历史消息保留，刷新不会改写旧回答；需重新发送观察新结果。
+- 剩余限制：未新增品类区别知识条目，无Key不能保证回答全部知识问题；正常知识回答只通过合成模型验证，真实GLM/联网与实体手机仍未验证。当前状态为待人工验收、仅含本轮变更；没有暂存、提交、推送、tag或AI-R02工作。本阶段无新增核验，继承上一条结论。
+
+### 2026-11-21 11:48 第二次人工验收失败与修正：品牌品类定位与澄清承接
+
+- 轮次/问题：AI-R01，沿用YAS-2026-0059（商品定位/指代）及0058（意图承接）。负责人截图反馈“ysl粉底液怎么样”仍同时列出气垫和粉底液；随后“都可以”变为通用需求澄清。本次为实际人工验收失败，状态返回实施中、修正后重新待人工验收。此前432/432、60/60是未覆盖此链路的历史快照，不作为该问题通过的证据。
+- 基线：11:36:44及11:47:24北京时间执行`git fetch origin dev`并复核，dev/HEAD/origin/dev/实际远端均为 `ad9ffe60b4c54dff00689f977a4ebe74e1d79895`，ahead/behind为0/0，索引为空；arch-stage-12/13对象及指向与原记录一致。26个未提交文件来源明确，保留AI-R01现场，没有stash或自动清理，无本轮提交SHA/tag。
+
+| 问题 | 现象与复现输入 | 预期及根因 | 相关文件与回归 | 验证与剩余限制 |
+|---|---|---|---|---|
+| YAS-2026-0059 | 页面发送“ysl粉底液怎么样”；单测使用“合成品牌粉底液怎么样”、油皮/预算1元 | 品牌加品类只定位粉底液，不用预算/肤质排除指定商品。原定位品牌命中后直接返回全品牌，忽略已给出的品类；概览还无条件附上替换芯说明 | product-resolver.cjs、response.cjs、assistant-service.cjs、assistant.test.js；页面brand-category-followup | 已定位ysl-all-hours，画像不变，概览只列现有事实与注意事项。同品类多版本仍澄清，品类无匹配不返回其他品类；事实标签不等于实际适配保证 |
+| YAS-2026-0059/0058 | 页面“ysl怎么样→都可以”，或澄清后“粉底液那款/第二款”；旧固定澄清文字无ID | 继续最近候选；2–3款可一起比较或按品类/序号选择。原澄清不附商品ID，分类不接收历史，短回应被判为新需求 | product-resolver.cjs、intent-router.cjs、assistant-service.cjs、response.cjs、assistant.test.js；页面clarification-choice-followup | 已通过含/不含旧ID的受控澄清兼容、两/三款选择、候选超限、错误序号、品类矛盾和无关新回复边界。不跨无关回答、不解析任意模型正文、不自动选择超过3款 |
+
+- 编辑前修复白名单共10个文件，均已在原26文件白名单内：`server/services/assistant/product-resolver.cjs`（品类和近期候选选择）、`server/services/assistant/intent-router.cjs`（使用选择上下文分类）、`server/services/assistant-service.cjs`（传递历史与受限比较）、`server/services/assistant/response.cjs`（候选标记及问题相关事实）、`server/services/assistant/assistant.test.js`（合成回归）、`tests/browser/assistant-ai-r01.mjs`（页面发送链路），以及`README.md`、`docs/frontend-architecture-migration-plan.md`、本报告和`docs/product-data-accuracy-audit.md`（追加失败/验证记录）。本次未扩大共享app/schema已存在的助手变更区域，未改CSS、工作台、算法、产品数据、素材、依赖或部署。
+- 实现边界：在定位模块内拆分明确品类提取、最近候选读取和选择解析；规则路由只消费定位结果。名称/版本优先于品牌回退；品类限定不属于用户画像更新。继续使用已有消息productIds，兼容旧固定澄清格式中不超过3款的受控名称，不新增持久化字段。概览增加已有品类/遮瑕/注意事项；仅在问到规格/用量时保留对应缺失说明，不虚构包装、实测天数或新产品评价。
+- 先失败后修正：`.qa/ai-r01/context-fix/before.txt`记录11:40:38服务测试7失败、34通过（41项）；`browser-before.txt`及`browser-before/1440-ysl-observed.png`记录真实生产页面发送原句后仍错误澄清。修复后同组41/41通过（`targeted-after.txt`），随后加入7个边界用例；没有覆盖旧失败日志。
+- 最终自动验证：11:45:22执行`npm test -- --config .qa/ai-r01/qa.config.mjs`，44文件447/447；`npm run build -- --config .qa/ai-r01/qa.config.mjs`，1873模块通过，已有大包提示保留。`node tests/browser/assistant-ai-r01.mjs`在1440×900与360×900共64/64，`node tests/browser/assistant-product-question.mjs`为8/8；浏览器Chrome157.0.8103.79，真实Fastify/生产页面/发送事件/请求历史/存储结果，provider为合成注入。新问法每次只请求一次`/api/assistant`，无Key不调用分类或生成，画像不变；普通推荐、知识、方案、原工作台API、断网、无Key、分类/模型异常、检索失败和超时既有场景仍通过。截图检查与几何断言无横向溢出或发送框重叠，pageerror为空。
+- 证据：该目录的`full-tests.txt`、`build.txt`、`browser-after.txt`、`previous-after.txt`及两个after子目录保存结果；截图仅用隔离合成会话。`git diff --check`及`.qa/ai-r01/scope.cjs`通过，18已跟踪修改+8新增，范围外文件0、索引为空；共享文件仅原助手接线/schema区域。真实Key、用户存储/画像/对话、照片与旧memory未读取。
+- 人工复验入口：本轮自己的8787预览进程已在核对PID/可执行文件/命令行后重启，仍禁读.env、无Key。11:48:38的`preview-http.json`确认网页200，原句→都可以均为product_fact/ysl-all-hours；“ysl怎么样”澄清后“都可以”为两款比较，“粉底液那款”只定位粉底液。请刷新页面并重新发送，旧错误回答不会被改写。用“ysl怎么样→第二款”另行确认序号选择；测试结果不代替负责人明确人工验收。
+- 限制与状态：仍是有限规则和受控名称定位，未验证真实GLM表达/分类或真实检索质量；无Key且缺少对应知识时仍明确无法解答。未新增产品核验，现有数据、图片授权与公开风险结论不升级；比赛材料和视频未改。本阶段无新增核验，继承上一条结论。当前仅含本轮变更，待验收，不是干净工作树；未暂存、提交、推送、打标签，未实施AI-R02。
+
+### 2026-11-21 12:46 AI-R01 继续排查：分类、上下文、条件与回答截断
+
+本次由负责人“为什么会出现这种情况，再排查问题”授权，继续本轮修正，沿用YAS-2026-0058/0059/0060，不开启AI-R02。12:29:23及12:44:45北京时间`git fetch origin dev`核验：dev/HEAD/origin/dev/实际远端均为 `ad9ffe60b4c54dff00689f977a4ebe74e1d79895`，ahead/behind 0/0、索引为空；arch-stage-12对象`c53e9c67e39614379843f21bd6955e683d11d17d`指向`4862e2759ba3b7785b4138a2ae88b5e8053f292a`，arch-stage-13对象`9f2ff35740364a447f2bc3a91d1a387951fedd32`指向`bcb9da04d65f45bfce8a7b13f8fc791c24865234`，本地与远端未变。上一轮已归档基线可定位；本轮26路径未提交现场来源明确，沿用保留授权，不清理、stash或重复要求验收前归档。
+
+| 问题 | 实际现象/复现输入 | 预期、根因与修正 | 文件/回归用例 | 结果与限制 |
+|---|---|---|---|---|
+| YAS-2026-0058 | “气垫怎么用/口红怎么涂/我用粉底总起皮”查具体商品；“给我推荐电脑”返回美妆商品 | 应识别所做任务与领域。原知识词表只覆盖部分品类，推荐词又先于库外对象。改为教程/问题处理优先，明确库外对象分流；只有品类词且无法确认任务时交结构校验的按需分类，提供已有最近8条上下文 | intent-router、intentUtils及测试；页面category-technique-routing、external-shopping、offline-external-shopping；classifier上下文回归 | 在线/无Key/离线不再强行返回美妆商品；没有匹配知识且无Key时明确不可用。规则不覆盖全部自然语言 |
+| YAS-2026-0059 | “ysl粉底液怎么样→多少钱/有几个色号/持妆多久”；“ysl多少钱→第二款” | 省略对象仍应承接最近产品；选款后继续原价格问题。原定位只接受显式指代词，选款后丢弃上一条问题。增加有界省略追问与固定澄清后的原问题恢复；色号、持妆等按实际字段回答或明确缺失，商品名里的“哑光”不强制把概览改成单一字段 | product-resolver、assistant-service、response、assistant.test；页面implicit-product-followup、clarification-retains-question | 不跨无关助手回复找旧对象；仍只用已有ID、最多8条消息。多候选不自动猜选；无Key价格回答明确无法联网确认 |
+| YAS-2026-0058/0060 | 保存油皮/预算1000后问“推荐适合干皮、不超过600元的粉底液”仍按油皮筛；“推荐一款不超过300元的YSL粉底液”忽略预算或品牌 | 当前请求条件和保存画像需分开。新增纯文本临时条件解析并用于服务端及离线筛选/说明，显式品牌和具体名称限制候选；不把目标干皮改写为用户肤质 | profileUtils、parameters、tools、assistantUtils及测试；页面request-conditions、offline-request-conditions | 返回当前条件内商品，条件无交集时明确为空；画像仍油皮/原预算。仅推荐使用硬筛选，事实查询不受影响 |
+| YAS-2026-0060 | “我朋友说，预算200元，想要哑光气垫”“YSL售价300元左右”“YSL适合喜欢哑光的人”写入画像；“预算300-500元”取300 | 自述需明确主体。原逐逗号切分后丢失第三人称/假设语境，金额/喜欢词匹配过宽。保留语境到明确自述切换；偏好要求自述开头，预算排除售价和规格区间；明确范围采用上限。支持“我不是油皮，是干皮”“我肤质是干皮” | profileUtils、assistantUtils.test、useAssistant.test；页面third-person-profile，合成否定/纠正/范围用例 | 只保存明确自述；不新增保存字段。语义复杂的转述/否定仍保守，不宣称通用语言解析已完成 |
+| YAS-2026-0058 | 已配置模型的普通推荐、比较、概览仍直接返回固定表格文字；请求色号/持妆时给无关概览 | AI-R01把“规则分流”误实现为“规则直接回答”。恢复筛选/定位后基于受控资料组织表达，仅传选定商品、事实草稿、本次条件与已有消息；未知ID、空输出、超时退到明确资料降级。明确分类不调用分类模型，但允许一次回答生成 | assistant-service、response、assistant.test；页面recommendation验证一次answer调用、catalog-expression-failure | 有Key链路由合成provider证明可达；真实GLM表达/事实质量尚未验收。限制模型候选与schema/ID校验不能证明全部自由文本事实正确 |
+
+编辑前公布18个逐文件子白名单及目的，全部属于原26文件：`server/services/assistant-service.cjs`；`server/services/assistant/intent-router.cjs`、`product-resolver.cjs`、`parameters.cjs`、`tools.cjs`、`response.cjs`、`assistant.test.js`；`src/features/assistant/profileUtils.js`、`assistantUtils.js`、`assistantUtils.test.js`、`intentUtils.js`、`intentUtils.test.js`、`hooks/useAssistant.test.js`；`tests/browser/assistant-ai-r01.mjs`；`README.md`、`docs/frontend-architecture-migration-plan.md`、本报告及`docs/product-data-accuracy-audit.md`。没有新增运行文件、依赖或API，未改工作台/方案算法、展示组件/CSS、产品数据/图片、部署；app/schema仍仅原AI-R01助手变更区域。报价、色号、持妆字段只是原资料，未新核验或新增保存。
+
+真实失败与中间修正证据位于已有忽略目录 `.qa/ai-r01/deep-audit/`，均未提交：
+
+- `probe-before.json`：17条合成服务查询与12条画像输入的原始结果；直接证明库外推荐、条件错用、省略追问和画像误写。
+- `tests-before.txt`：12:32:54定向4文件174项，30失败/144通过。`browser-before.txt`与`browser-before/1440-implicit-price-observed.png`从真实页面复现“ysl粉底液怎么样→多少钱”丢失商品。
+- `expression-before.txt`：已配置模型却不调用表达，以及无法测试模型失败降级，共5失败；先运行再修正。旧“比较不得调用任何模型”断言已改为“不得调用分类模型，但允许基于候选组织表达”，并分别保留正常表达和失败回退用例。
+- `boundary-before.txt`：商品描述中的喜欢、15–30g/30–50ml规格区间以及名称中的哑光，共4失败；`classifier-context-before.txt`为分类未传历史1失败；`offline-explanation-before.txt`为离线商品筛选正确但说明仍用旧肤质1失败。均保留，未覆盖失败输出。
+- 中间`targeted-first.txt`记录原有“我是混油皮，想找500元内…”预算解析回归；已恢复省略主语的明确自述。`full-first.txt`记录模型恢复后调用预期差异和直接命名搜索不必要前缀；已修正，最终结果见下一段。486/490/491等中间通过不是最终交付数字。
+
+最终验证：12:44:47执行`npm test -- --config .qa/ai-r01/qa.config.mjs`，44文件492/492，日志`full-tests-final-2.txt`；`npm run build -- --config .qa/ai-r01/qa.config.mjs`，1873模块通过，日志`build-final-2.txt`，原大包提示保留。仍使用既有no-secrets预加载钩子与envDir:false，不读取.env/真实Key。`node tests/browser/assistant-ai-r01.mjs`最终82/82，`node tests/browser/assistant-product-question.mjs`为8/8；输出环境分别设为`deep-audit/browser-final`与`deep-audit/previous-final`，日志为同名txt。Chrome157.0.8103.79、1440×900和360×900，真实生产页面→发送→HTTP/Fastify→路由/工具→回复/已有存储链路；合成provider验证成功、无Key、分类异常、模型异常/超时、检索失败/超时、断网及原工作台API。没有新增画像污染、横向溢出、发送框重叠或pageerror。
+
+桌面条件冲突、360px省略追问与断网条件截图已查看。完全断网时新出现的未缓存商品封面存在加载失败，页面保留原alt/卡片机制；本轮不修改素材或公共图片组件，82/82只证明列明的交互/几何断言，不表示所有离线图片可用。`git diff --check`和scope脚本核对18个已跟踪修改+8新增路径，范围外文件0、暂存区为空；临时测试、日志、截图均在原忽略目录。
+
+预览与人工复验：核对本任务预览PID/可执行文件/命令行后重启，12:46:03的`preview-http.json`确认页面200、health.assistant=false。刷新 http://127.0.0.1:8787/ 并重新发送上述输入；特别复验“概览→多少钱→有几个色号→持妆多久”“品牌价格澄清→第二款”、旧油皮/1000画像与新干皮/600请求、朋友转述。当前是无Key测试预览，只可验收确定性逻辑与降级；此前将其作为交付入口不能证明真实GLM体验。旧错误消息不改写，真实用户存储/画像/对话、照片及旧memory未读取或清除。
+
+四份允许文档同步当前事实并保留此前447/64等历史。现状为**仅含本轮变更，待人工验收**；没有本轮提交SHA/tag，未暂存、提交、推送或打标签，AI-R02/03未启动。没有新增长期记忆、存储键或跨设备保存，仍保留原本地20条/请求最近8条边界。未实测真实GLM/搜索、实体手机、公网部署；无匹配知识且无Key时明确不可用，语言覆盖与自由文本事实校验仍有局限。比赛材料/视频未改。本阶段无新增核验，继承上一条结论。
+
+### 2026-11-21 13:08 AI-R01 人工验收与提交前复验（北京时间）
+
+负责人在本次会话对现有 AI-R01 明确回复“人工验收完成”。沿用 YAS-2026-0058/0059/0060，验收范围为上文逐文件清单的全部 26 个路径；本次只收尾该轮，不启动 AI-R02/AI-R03，不重新编号 ARCH 或创建标签。按 `AGENTS.md` 13.2 的“确认同时授权已验收阶段在 dev 提交、正常推送”执行归档，状态为“已验收待归档”。历史人工失败、修正及自动测试快照均保留；本次人工确认不升级真实第三方服务、产品事实或素材授权的验证结论。
+
+归档前基线检查：13:04:55 执行 `git fetch origin dev` 和 `git ls-remote`，分支 dev，HEAD/origin/dev/实际远端均为 `ad9ffe60b4c54dff00689f977a4ebe74e1d79895`，ahead/behind 0/0、暂存区为空。工作树包含本轮 18 个已跟踪修改和 8 个新增文件，并非干净工作树；实际集合与原 26 文件白名单一致。arch-stage-12 对象 `c53e9c67e39614379843f21bd6955e683d11d17d` 指向 `4862e2759ba3b7785b4138a2ae88b5e8053f292a`，arch-stage-13 对象 `9f2ff35740364a447f2bc3a91d1a387951fedd32` 指向 `bcb9da04d65f45bfce8a7b13f8fc791c24865234`，本地与远端相同。本轮不移动这些标签。
+
+收尾编辑白名单及目的：`README.md` 更新当前验收与验证摘要并追加回执说明；`docs/frontend-architecture-migration-plan.md` 追加本轮状态、范围与归档边界；本报告追加人工确认及本次真实复验；`docs/product-data-accuracy-audit.md` 追加无新增核验和保留风险。验收时 26 文件 SHA256 与四份文档原文已在忽略目录保存；22 个代码/契约/测试文件保持验收快照。原始产品资料和静态证据只读，未改首页、产品展示/详情、收藏、妆台、3D、样式、素材、部署或依赖。
+
+本次实际重新执行的验证如下，均退出 0：
+
+| 命令 | 实际结果 | 本次证据 |
+|---|---|---|
+| `npm test -- --config .qa/ai-r01/qa.config.mjs server/services/assistant/assistant.test.js src/features/assistant server/app.test.js` | 13:02:37 起，11 文件 240/240 | `targeted-tests.txt` |
+| `npm test -- --config .qa/ai-r01/qa.config.mjs` | 13:02:50 起，44 文件 492/492 | `full-tests.txt` |
+| `npm run build -- --config .qa/ai-r01/qa.config.mjs` | 1873 模块成功；既有大包提示仍在 | `build.txt` |
+| `node tests/browser/assistant-ai-r01.mjs` | 13:04:20 完成，82/82 | `browser.txt`、`browser/results.json` 与截图 |
+| `node tests/browser/assistant-product-question.mjs` | 13:04:17 完成，8/8 | `previous.txt`、`previous/results.json` 与截图 |
+
+证据根目录为 `.qa/ai-r01/archive-20261121/`，由既有忽略规则排除。测试和构建沿用 `NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs`、`envDir:false`，阻止 dotenv/Vite 读取真实环境文件；不读取真实 Key。浏览器沿用 `YAS_QA_PLAYWRIGHT_MODULE`、`YAS_QA_BROWSER_EXECUTABLE`，各脚本的 `YAS_QA_OUTPUT_DIR` 分别指向该目录下的 `browser` 与 `previous`。Chrome 157.0.8103.79、1440×900 和 360×900，使用新上下文、真实本地 HTTP/Fastify/构建页面与合成输入/provider。已覆盖成功、信息不足、歧义、无 Key、断网、分类/模型异常与超时、检索失败与超时；抽查手机临时条件及桌面澄清选款截图，几何断言和 pageerror 检查通过。未用真实用户浏览器数据、照片、对话、画像或旧 memory。
+
+`server/app.cjs` 仍只包含原助手服务接线及助手路由的全局无 Key 拦截调整；`server/schemas.cjs` 仍只含助手历史商品 ID、回答模式与意图契约。22 文件哈希、26 路径集合及共享文件变更区域须在暂存前复核，`git diff --check` 和暂存内容空白检查均通过后仅暂存这 26 个已验收路径。归档操作不使用 stash、清理、rebase、强推、分支切换或删除；正常推送后核对远端实际 SHA，才报告“已归档”。本条写入时尚未生成新 SHA；按仓库规则由实际归档回执先行提供，下一次文档同步回填，不为回填 amend 历史。
+
+入口仍为主站“小Y智能选妆”，复现与验收步骤沿用 12:46 记录，包括“ysl粉底液怎么样→多少钱/有几个色号/持妆多久”“ysl多少钱→第二款”、保存油皮/1000 后请求干皮/600 推荐、朋友转述及“粉底和气垫有什么区别”。人工验收已确认本轮软件范围；真实 GLM/搜索质量、实体手机、公网部署仍未验证，有限语言覆盖、自由文本事实校验、无 Key 知识缺失及未缓存离线封面限制保留。没有新增长期记忆、存储字段或跨设备能力，比赛材料/视频未改。本阶段无新增核验，继承上一条结论。

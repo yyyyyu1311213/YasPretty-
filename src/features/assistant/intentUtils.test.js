@@ -4,6 +4,15 @@ import { products } from '../../data/products'
 import assistantService from '../../../server/services/assistant-service.cjs'
 
 describe('小Y前端流程意图', () => {
+  it.each(['给我推荐电脑', '我想买手机', '推荐一款打印机'])('audit: cannot turn external requests into offline beauty recommendations: %s', (text) => {
+    expect(detectIntent(text)).toBe('external_question')
+  })
+  it.each(['气垫怎么用', '口红怎么涂', '我用粉底总起皮'])('audit: preserves technique intent offline: %s', (text) => {
+    expect(detectIntent(text)).toBe('beauty_knowledge')
+  })
+  it.each(['粉底和气垫有什么区别', '气垫和粉底液有什么差别'])('keeps category knowledge out of recommendation fallback: %s', (text) => {
+    expect(detectIntent(text)).toBe('beauty_knowledge')
+  })
   it.each([
     '这个兰芝NEO小方块哑光气垫，15g是正装还是带替换芯？一个大概能用多久？平时放包里补妆方便吗？',
     'NEO小方块气垫(哑光)是正装吗？',
@@ -31,9 +40,14 @@ describe('小Y前端流程意图', () => {
     }
   })
 
-  it.each(['推荐15g的气垫', '预算300元推荐气垫', '推荐正装气垫', '这个气垫适合油皮吗'])('retains the recommendation flow: %s', (text) => {
+  it.each(['推荐15g的气垫', '预算300元推荐气垫', '推荐正装气垫'])('retains the recommendation flow: %s', (text) => {
     expect(detectIntent(text)).toBe('catalog_recommendation')
     expect(assistantService.intentRouter(text, products)).toBe('catalog_recommendation')
+  })
+
+  it('keeps suitability of this product out of recommendation fallback', () => {
+    expect(detectIntent('这个气垫适合油皮吗')).toBe('product_fact')
+    expect(assistantService.intentRouter('这个气垫适合油皮吗', products)).toBe('product_fact')
   })
 
   it('routes external questions, catalog, and greeting intents', () => {
@@ -66,7 +80,7 @@ describe('小Y前端流程意图', () => {
   it('keeps case-insensitive brand and compact-name matching for comparisons', () => {
     expect(detectIntent('nars 和其他产品哪个更适合我')).toBe('product_comparison')
     expect(detectIntent('超方瓶和其他产品有什么区别')).toBe('product_comparison')
-    expect(detectIntent('NARS')).toBe('catalog_recommendation')
+    expect(detectIntent('NARS')).toBe('product_fact')
   })
 
   it('retains explicit research flags without making ordinary questions online', () => {

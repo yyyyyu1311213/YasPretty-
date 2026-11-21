@@ -13,6 +13,32 @@ import {
 } from './assistantUtils'
 
 describe('小Y本地规则', () => {
+  it.each(['我朋友说，预算200元，想要哑光气垫', 'YSL售价300元左右', '假如我是干皮，预算200元', '她喜欢哑光，想买气垫'])('audit: does not persist third-person, hypothetical or product-price statements: %s', (text) => {
+    const current = { skin: '油皮', budget: 1000 }
+    expect(extractProfile(text, current)).toEqual(current)
+  })
+  it.each([['我不是油皮，是干皮', { skin: '干皮' }], ['我肤质是干皮', { skin: '干皮' }], ['预算300-500元', { budget: 500 }], ['我朋友是油皮，我是干皮', { skin: '干皮' }]])('audit: accepts explicit corrections: %s', (text, expected) => {
+    expect(extractProfile(text)).toMatchObject(expected)
+  })
+  it('audit: applies offline request skin, category and spending constraints without mutating profile', () => {
+    const profile = { skin: '油皮', category: '气垫', budget: 1000 }
+    const result = recommendProducts(profile, '推荐适合干皮、不超过600元的粉底液')
+    expect(result.length).toBeGreaterThan(0)
+    expect(result.every((p) => p.category === '粉底液' && p.skins.includes('干皮') && p.price <= 600)).toBe(true)
+    expect(profile).toEqual({ skin: '油皮', category: '气垫', budget: 1000 })
+  })
+  it('audit: offline explanation uses the same request conditions as the selected products', () => {
+    const result = localReply('推荐适合干皮、不超过600元的粉底液', { skin: '油皮', budget: 1000 })
+    expect(result.text).toContain('适合干皮')
+    expect(result.text).not.toContain('需求（油皮）')
+  })
+  it.each(['YSL适合喜欢哑光的人', '预算15-30g', '预算30-50ml'])('audit: keeps product descriptions and quantity ranges out of self reports: %s', (text) => {
+    expect(extractProfile(text, { budget: 400 })).toEqual({ budget: 400 })
+  })
+  it.each(['这款适合干皮吗', '这款哑光气垫', '朋友是干皮', '我是干皮吗？', '这款300元以内吗？', '我是干皮还是油皮', '我想要不哑光的气垫'])('AI-R01 keeps product questions and other people out of the profile: %s', (text) => {
+    const current = { skin: '油皮', finish: '柔雾', budget: 400 }
+    expect(extractProfile(text, current)).toEqual(current)
+  })
   it('normalizes upstream punctuation before composing an error message', () => {
     expect(cleanErrorMessage('联网检索没有返回可用来源。。')).toBe('联网检索没有返回可用来源')
   })
@@ -96,7 +122,7 @@ describe('小Y本地规则', () => {
 
   it('updates stated conditions without losing existing preferences or mutating the old profile', () => {
     const current = { skin: '油皮', budget: 400, scene: '通勤', tone: '暖调', city: '杭州' }
-    const next = extractProfile('改为大干皮，预算 200 元，雾面，冷白', current)
+    const next = extractProfile('改为大干皮，预算 200 元，我喜欢雾面，我是冷白', current)
     expect(next).toEqual({ ...current, skin: '干皮', budget: 200, finish: '柔雾', tone: '冷调' })
     expect(current).toEqual({ skin: '油皮', budget: 400, scene: '通勤', tone: '暖调', city: '杭州' })
     const payload = planPayloadFromConversation('精致约会妆容，带妆 30 小时', next)
@@ -108,7 +134,7 @@ describe('小Y本地规则', () => {
     const mentioned = products.slice(0, 2)
     const text = mentioned.map((product) => product.name).join('和')
     const profile = { skin: '不存在的肤质', budget: 1, category: '不存在的品类' }
-    expect(recommendProducts(profile, text).map(({ id }) => id)).toEqual(mentioned.map(({ id }) => id))
+    expect(recommendProducts(profile, text)).toEqual([])
     const reply = localReply(text, profile)
     expect(reply.products).toEqual(mentioned)
     expect(reply.text).toContain('我按资料库信息比较你提到的产品：')

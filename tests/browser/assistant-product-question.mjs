@@ -73,7 +73,7 @@ try {
       return last.innerText()
     }
     await send('我是油皮，预算400元，推荐气垫')
-    assert.equal(requests.length, 0, 'Ordinary recommendation stays local')
+    assert.equal(requests.length, 1, 'Ordinary recommendation reaches the assistant API')
     for (scenario of ['success', 'empty', 'timeout', 'unconfigured']) {
       provider.configured = scenario !== 'unconfigured'
       calls.length = 0
@@ -82,7 +82,11 @@ try {
       const payload = requests.at(-1)
       assert.equal(payload.query, question)
       assert.equal(payload.profile.budget, 400)
-      if (scenario === 'success') {
+      if (scenario === 'unconfigured') {
+        assert(reply.includes('智能服务未配置'))
+        assert.equal(await last.locator('.xiaoy-product').count(), 1)
+        assert.deepEqual(calls, [])
+      } else if (scenario === 'success') {
         assert.deepEqual(calls, ['search', 'chat'])
         assert(reply.includes('合成产品回答'))
         assert.equal(await last.getByRole('link', { name: /合成产品来源/ }).count(), 1)
@@ -109,7 +113,7 @@ try {
       await page.screenshot({ path: path.join(output, `${width}-${scenario}.png`) })
       results.push({ width, scenario, passed: true, geometry })
     }
-    assert.equal(requests.length, 4)
+    assert.equal(requests.length, 5)
     await page.reload()
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('yaspretty-xiaoy-profile-v1')).value.budget), 400)
     assert.deepEqual(pageErrors, [])

@@ -112,8 +112,8 @@ async function buildApp(options = {}) {
   const weatherProvider = options.providers?.weather || createWeatherProvider({
     timeoutMs: Math.min(config.upstreamTimeoutMs, 8000),
   })
-  const assistantService = createAssistantService({ zhipuProvider, weatherProvider, products })
   const makeupPlanService = createMakeupPlanService({ zhipuProvider, products })
+  const assistantService = createAssistantService({ zhipuProvider, weatherProvider, makeupPlanService, products })
   const dailyQuota = createDailyQuota(config.aiDailyLimit)
 
   app.addHook('onSend', async (request, reply, payload) => {
@@ -177,9 +177,6 @@ async function buildApp(options = {}) {
     config: { rateLimit: { max: config.aiRateLimitMax, timeWindow: '1 minute' } },
   }, async (request) => {
     const input = parseInput(assistantRequestSchema, request.body)
-    if (!zhipuProvider.configured) {
-      throw new AppError('PROVIDER_NOT_CONFIGURED', '智能服务暂未配置，请使用站内推荐或稍后再试。', 503)
-    }
     dailyQuota.consume(request.ip)
     const result = await assistantService.answer(input)
     return { ok: true, ...result }
