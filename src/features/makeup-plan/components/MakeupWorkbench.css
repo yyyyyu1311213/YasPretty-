@@ -1,29 +1,44 @@
-.makeup-workbench { border-color: var(--yp-line); }
-.makeup-workbench { background: var(--yp-surface); }
-.makeup-plan-submit { color: #fffaf5; background: var(--yp-rose-deep); border-color: var(--yp-rose-deep); }
-.makeup-plan-submit:hover { background: #744b49; }
-.makeup-workbench { margin-top: 25px; border: 1px solid var(--yp-line); padding: 24px; background: #f8f3ee; }
-.makeup-workbench-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 19px; }
-.makeup-workbench-heading h2 { margin: 7px 0 7px; color: #403936; font-size: 22px; }
-.makeup-workbench-heading p:last-child { margin: 0; color: #81766e; font-size: 11px; line-height: 1.7; }
+/* 右栏条件面板 */
+.makeup-workbench { align-self: start; border: 1px solid var(--yp-line); background: var(--yp-surface); }
+.makeup-panel-toggle { display: none; }
+.makeup-workbench-body { padding: 16px; }
+.makeup-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.makeup-panel-heading h2 { margin: 0; color: #403936; font-size: 15px; }
+.makeup-panel-hint { display: flex; align-items: flex-start; gap: 5px; margin: 0 0 12px; color: #8b7f76; font-size: 10px; line-height: 1.6; }
+.makeup-panel-hint svg { flex: 0 0 auto; margin-top: 1px; color: #a4807a; }
 .makeup-workbench-state, .makeup-plan-source { flex: 0 0 auto; border: 1px solid #d2c5ba; padding: 6px 9px; color: #756860; background: #fffaf5; font: 10px/1.2 'DM Mono', monospace; }
 .makeup-plan-source.model { border-color: #9eb4aa; color: #46655a; background: #edf4f0; }
-.makeup-plan-source.local { border-color: #d6b690; color: #805e38; background: #f8efe4; }
-.makeup-workbench-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; align-items: end; }
-.makeup-workbench-form > label, .makeup-workbench-form fieldset { display: grid; min-width: 0; gap: 6px; margin: 0; color: #665d56; font-size: 11px; font-weight: 600; }
-.makeup-workbench-form select, .makeup-workbench-form input[type='number'] { width: 100%; height: 37px; border: 1px solid #d4cbc3; border-radius: 2px; padding: 0 9px; color: #443d38; outline: 0; background: #fffdfa; font-size: 12px; }
-.makeup-workbench-form select:focus, .makeup-workbench-form input:focus { border-color: #9b6d68; box-shadow: 0 0 0 2px rgba(155, 109, 104, .12); }
-.makeup-workbench-form fieldset { grid-column: span 2; border: 0; padding: 0; }
-.makeup-workbench-form legend { padding: 0; }
-.makeup-priority-list { display: flex; flex-wrap: wrap; gap: 7px 13px; }
-.makeup-priority-list label { display: inline-flex; align-items: center; gap: 6px; color: #786e67; font-size: 10px; font-weight: 500; }
-.makeup-workbench-form input[type='checkbox'] { accent-color: #744b49; }
-.makeup-plan-submit { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 39px; border: 1px solid #744b49; border-radius: 2px; padding: 8px 12px; color: #fffaf5; background: #744b49; font-size: 11px; font-weight: 600; }
-.makeup-plan-submit:hover { background: #5f3d3b; }
+.makeup-plan-source.local { border-color: rgba(117, 141, 130, .42); color: #46655a; background: rgba(237, 244, 240, .8); }
+
+/* 条件卡片 */
+.makeup-panel-form { display: grid; gap: 12px; }
+.makeup-condition-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.condition-card { display: grid; min-width: 0; gap: 3px; border: 1px solid var(--yp-line); border-radius: 2px; padding: 7px 9px; background: var(--yp-surface); cursor: pointer; }
+.condition-card:focus-within { border-color: #9b6d68; box-shadow: 0 0 0 2px rgba(155, 109, 104, .12); }
+.condition-card-label { color: #8b8078; font-size: 10px; font-weight: 600; }
+.condition-card select, .condition-card input { width: 100%; min-width: 0; border: 0; outline: 0; padding: 0; color: var(--yp-ink); background: transparent; font-size: 12px; font-weight: 600; }
+.condition-card input::placeholder { color: #b3a89f; font-weight: 400; }
+.condition-card--flash { animation: condition-flash 1.4s ease-out; }
+@keyframes condition-flash {
+  0% { border-color: #bb8b82; background: #f5e2da; }
+  100% { background: var(--yp-surface); }
+}
+
+/* 优先目标 chips */
+.makeup-priority-group { display: grid; gap: 7px; }
+.makeup-priority-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.makeup-chip { border: 1px solid var(--yp-line); border-radius: 2px; padding: 4px 9px; color: #786e67; background: var(--yp-surface); font-size: 10px; cursor: pointer; }
+.makeup-chip:hover { border-color: #bb8b82; color: #754d49; }
+.makeup-chip.is-active { border-color: var(--yp-rose-deep); color: #fffaf5; background: var(--yp-rose-deep); }
+
+/* 提交与错误 */
+.makeup-plan-submit { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 39px; border: 1px solid var(--yp-rose-deep); border-radius: 2px; padding: 8px 12px; color: #fffaf5; background: var(--yp-rose-deep); font-size: 11px; font-weight: 600; }
+.makeup-plan-submit:hover { background: #744b49; }
 .makeup-plan-submit:disabled { cursor: wait; opacity: .6; }
 .makeup-plan-submit svg { animation: xiaoy-spin .85s linear infinite; }
-.makeup-plan-error { display: flex; align-items: center; gap: 7px; margin-top: 15px; border: 1px solid #ddb4ae; padding: 9px 10px; color: #8a4843; background: #faeeec; font-size: 11px; }
-.makeup-plan-result { margin-top: 24px; border-top: 1px solid #d6cbc2; padding-top: 24px; }
+.makeup-plan-error { display: flex; align-items: center; gap: 7px; margin-top: 12px; border: 1px solid #ddb4ae; padding: 9px 10px; color: #8a4843; background: #faeeec; font-size: 11px; }
+
+/* 方案结果（渲染在主列 .xiaoy-plan-section 内） */
 .makeup-plan-result-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .makeup-plan-result-heading h2 { margin: 7px 0 7px; color: #3f3834; font-size: 25px; }
 .makeup-plan-result-heading p:last-child { max-width: 760px; margin: 0; color: #70655e; font-size: 12px; line-height: 1.75; }
@@ -62,33 +77,28 @@
 .makeup-plan-limitations strong { display: block; margin-bottom: 3px; color: #6d564e; }
 .makeup-plan-limitations p { margin: 2px 0; }
 
+@media (min-width: 761px) {
+  .makeup-workbench { position: sticky; top: 24px; }
+}
+
 @media (max-width: 980px) {
-  .makeup-workbench-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .makeup-workbench-form fieldset { grid-column: span 2; }
   .makeup-plan-evidence > div { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 760px) {
-  .makeup-workbench { padding: 18px 14px; }
-  .makeup-workbench-heading, .makeup-plan-result-heading { flex-direction: column; gap: 10px; }
-  .makeup-workbench-form { grid-template-columns: 1fr 1fr; gap: 11px; }
-  .makeup-workbench-form fieldset { grid-column: span 2; }
+  .makeup-panel-toggle { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; border-bottom: 1px solid transparent; padding: 13px 14px; color: #4c4540; background: transparent; font-size: 12px; font-weight: 600; text-align: left; }
+  .makeup-panel-toggle small { flex: 1; min-width: 0; overflow: hidden; color: #96897f; font-size: 10px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+  .makeup-panel-toggle svg { flex: 0 0 auto; color: #8b7f76; transition: transform .2s ease; }
+  .makeup-workbench.is-open .makeup-panel-toggle { border-bottom-color: #e0d7cf; }
+  .makeup-workbench.is-open .makeup-panel-toggle svg { transform: rotate(180deg); }
+  .makeup-workbench-body { display: none; padding: 14px; }
+  .makeup-workbench.is-open .makeup-workbench-body { display: block; }
+  .makeup-plan-result-heading { flex-direction: column; gap: 10px; }
   .makeup-plan-step { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; }
   .makeup-plan-step-title { flex-direction: column; gap: 5px; }
   .makeup-plan-evidence > div { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 460px) {
-  .makeup-workbench-form { grid-template-columns: 1fr; }
-  .makeup-workbench-form fieldset { grid-column: auto; }
-  .makeup-plan-submit { width: 100%; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .makeup-plan-submit svg { animation: none; }
+  .makeup-plan-submit svg, .condition-card--flash, .makeup-panel-toggle svg { animation: none; transition: none; }
 }
-.makeup-workbench { border-color: var(--yp-line); background: var(--yp-surface); }
-.makeup-plan-submit { border-color: var(--yp-rose-deep); background: var(--yp-rose-deep); }
-.makeup-plan-submit:hover { background: #744b49; }
-.makeup-workbench-form select, .makeup-workbench-form input[type='number'] { border-color: var(--yp-line); color: var(--yp-ink); background: var(--yp-surface); }
-.makeup-plan-source.local { border-color: rgba(117, 141, 130, .42); color: #46655a; background: rgba(237, 244, 240, .8); }
