@@ -29,11 +29,10 @@ function renderLocalFacts(snapshots, sources, query) {
         else gaps.push(label)
         continue
       }
-      const refs = fact.evidence.map((e) => sources.findIndex((s) => s.id === e.id)).filter((i) => i >= 0).map((i) => '[' + (i + 1) + ']').join('')
-      const value = fact.value + refs
+      const value = fact.value
       if (fact.field === 'fullSize') lines.push('站内收录的是' + value + '。')
-      else if (fact.field === 'netContent') lines.push('净含量' + (fact.status === 'pending' ? '（站内参考）' : '') + '为 ' + value + '。')
-      else lines.push(label + (fact.status === 'pending' ? '（站内参考）' : '') + '：' + value)
+      else if (fact.field === 'netContent') lines.push('净含量为 ' + value + '。')
+      else lines.push(label + '：' + value)
     }
     if (gaps.length) lines.push(gaps.join('、') + '目前未知。' + (gaps.includes(labelFor('refill')) ? '购买时请看所选套装的包装清单。' : ''))
     if (conflicts.length) lines.push(conflicts.join('、') + '的资料不一致，暂时无法确认。')
@@ -41,7 +40,7 @@ function renderLocalFacts(snapshots, sources, query) {
   })
   if (query.advice) sections.push('随身补妆时，建议先确认盒盖扣紧，并保持粉扑清洁。')
   if (query.fields.includes('price')) sections.push('历史参考价不能作为实时售价，请以所选规格的结算价为准。')
-  if (query.fields.includes('wear')) sections.push('持妆记录属于站内参考，不保证个人实际时长。')
+  if (query.fields.includes('wear')) sections.push('持妆记录仅供参考，不保证个人实际时长。')
   if (query.fields.includes('shades')) sections.push('色号记录不代表所有在售版本，适配需自然光试色。')
   return sections.join('\n\n')
 }

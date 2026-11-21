@@ -16,7 +16,8 @@ const aliases = Object.freeze([
 ])
 
 const questionTerms = Object.freeze({
-  'self-reported-skin-type': [['肤质', '油皮还是干皮'], ['判断', '分辨', '测试', '观察', '知道', '怎么']],
+  'self-reported-skin-type': [['肤质', '油皮还是干皮', '全脸起皮', '全脸出油', '两颊干'], ['判断', '分辨', '测试', '观察', '知道', '怎么']],
+  'acne-prone-makeup-and-referral': [['痘', '痘印'], ['怎么办', '怎么遮', '遮', '化妆', '上妆', '遮瑕', '修饰', '处理', '遮住', '能好吗']],
   'skin-reaction-safety': [['新产品', '敏感', '刺痛', '红肿', '不适', '过敏'], ['试', '用', '处理', '怎么办', '不适']],
   'cosmetic-claim-boundary': [['功效', '宣称', '治疗', '治愈', '疗效'], ['边界', '保证', '能', '是', '区别']],
   'foundation-application-basics': [['粉底', '底妆', '气垫'], ['涂', '上', '用', '画', '步骤', '教程', '轻薄', '太厚', '面具']],

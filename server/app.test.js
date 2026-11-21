@@ -384,6 +384,49 @@ describe('YasPretty API gateway', () => {
     ]))
   })
 
+  it('answers acne questions with care, curated concealer cards and a doctor referral boundary', async () => {
+    const zhipu = mockZhipu({ chat: vi.fn(async () => { throw new Error('upstream unavailable') }) })
+    const app = await createApp({ zhipu, products })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '我的脸上有痘痘怎么办', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    const body = response.json()
+    expect(body.intent).toBe('beauty_knowledge')
+    expect(body.answer).toContain('先别急')
+    expect(body.answer).toContain('[[PRODUCT:nars-radiant-creamy]]')
+    expect(body.answer).toContain('[[PRODUCT:tarte-shape-tape]]')
+    expect(body.answer).toContain('不能治疗痘痘')
+    expect(body.answer).toContain('皮肤科医生')
+    expect(body.answer).toContain('本次回答不构成医疗诊断')
+    expect(body.answer).not.toContain('已降级为受控知识库回答')
+    expect(body.sources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'knowledge', publisher: 'NHS' }),
+    ]))
+  })
+
+  it('guides skin-type choice from daily observations instead of guessing', async () => {
+    const app = await createApp({ zhipu: mockZhipu({ configured: false }) })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/assistant',
+      payload: { query: '我不清楚自己是油皮还是干皮', messages: [], profile: {} },
+    })
+
+    expect(response.statusCode).toBe(200)
+    const body = response.json()
+    expect(body.intent).toBe('beauty_knowledge')
+    expect(body.answer).toContain('全脸起皮')
+    expect(body.answer).toContain('全脸出油')
+    expect(body.answer).toContain('我是干皮')
+    expect(body.sources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'knowledge', publisher: 'Cleveland Clinic' }),
+    ]))
+  })
+
   it('enforces the daily AI quota', async () => {
     const app = await createApp({ config: { aiDailyLimit: 1 } })
     const request = {

@@ -73,7 +73,12 @@ function formatKnowledgeContext(selected) {
 
 function localKnowledgeAnswer(selected) {
   // Complete curated units fit the retrieval budget. Never truncate a safety sentence.
-  return selected.map((entry) => `小提示｜${entry.title}\n适用条件：${entry.conditions.join('；')}\n${[...new Set([...entry.safetyBoundaries, ...entry.techniques, ...entry.limitations])].join('')}`).join('\n\n')
+  return selected.map((entry) => {
+    const ordered = entry.safetyLast
+      ? [...new Set([...entry.techniques, ...entry.limitations, ...entry.safetyBoundaries])]
+      : [...new Set([...entry.safetyBoundaries, ...entry.techniques, ...entry.limitations])]
+    return `小提示｜${entry.title}\n${entry.opening ? `${entry.opening}\n` : ''}适用条件：${entry.conditions.join('；')}\n${ordered.join('')}`
+  }).join('\n\n')
 }
 
 module.exports = { formatKnowledgeContext, knowledgeEntries, knowledgeSources, knowledgeEvidence, localKnowledgeAnswer, retrieveKnowledge, referenceSites, scoreEntry, entryContext }

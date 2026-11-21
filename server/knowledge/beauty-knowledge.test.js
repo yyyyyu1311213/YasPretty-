@@ -29,6 +29,23 @@ describe('受控美妆知识库', () => {
     expect(retrieveKnowledge('粉底怎么涂，怎么选色号，遮瑕应该先还是后，油皮怎么定妆', 'beauty_knowledge')).toHaveLength(4)
   })
 
+  it('retrieves skin-type self-check and acne care without medical treatment claims', () => {
+    const skin = retrieveKnowledge('我不清楚自己是油皮还是干皮', 'beauty_knowledge')
+    expect(skin.map((entry) => entry.id)).toContain('self-reported-skin-type')
+    expect(retrieveKnowledge('全脸都起皮', 'beauty_knowledge').map((entry) => entry.id)).toContain('self-reported-skin-type')
+    const skinAnswer = knowledgeModule.localKnowledgeAnswer(skin)
+    expect(skinAnswer).toContain('全脸起皮')
+    expect(skinAnswer).toContain('全脸出油')
+    expect(skinAnswer).toContain('我是干皮')
+
+    const acne = retrieveKnowledge('我的脸上有痘痘怎么办', 'beauty_knowledge')
+    expect(acne.map((entry) => entry.id)).toContain('acne-prone-makeup-and-referral')
+    const entry = acne.find((item) => item.id === 'acne-prone-makeup-and-referral')
+    expect(entry.limitations.join('')).toContain('不能治疗痘痘')
+    expect(entry.safetyBoundaries.join('')).toContain('皮肤科医生')
+    expect(knowledgeModule.localKnowledgeAnswer([entry])).toContain('先别急')
+  })
+
   it('returns deduplicated reviewed source citations', () => {
     const entries = retrieveKnowledge('如何判断肤质和新产品刺痛怎么办', 'skin_safety')
     const sources = knowledgeSources(entries)

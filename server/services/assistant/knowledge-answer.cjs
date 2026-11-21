@@ -5,7 +5,7 @@ const organizationSchema = z.object({ sections: z.array(z.object({
   id: z.string(), techniques: z.array(z.string()).min(1).max(8),
 }).strict()).min(1).max(8) }).strict()
 
-async function answerKnowledge({ query, intent, provider, budget }) {
+async function answerKnowledge({ query, intent, provider, budget, products = [] }) {
   const entries = retrieveKnowledge(query, intent, { maxChars: Math.min(3200, budget?.knowledgeChars ?? 3200), maxEntries: budget?.knowledgeEntries ?? 6 })
   if (budget) {
     budget.knowledgeChars -= entries.reduce((sum, entry) => sum + entryContext(entry).length + 2, 0)
@@ -36,8 +36,14 @@ async function answerKnowledge({ query, intent, provider, budget }) {
       answerMode = 'model'
     } catch { ordered = entries }
   }
+  const relatedProducts = [...new Set(entries.flatMap((entry) => entry.suggestedProductIds || []))]
+    .map((id) => products.find((product) => product.id === id))
+    .filter(Boolean)
+  const productNote = relatedProducts.length
+    ? `\n\n站内可查看的局部遮瑕（真实产品资料，可点开详情；彩妆只能修饰，不治疗痘痘）：\n${relatedProducts.map((product) => `${product.brand} ${product.name} [[PRODUCT:${product.id}]]`).join('\n')}`
+    : ''
   return {
-    answer: `${localKnowledgeAnswer(ordered)}${answerMode === 'knowledge' ? '\n\n已降级为受控知识库回答，模型未提供有效组织；不构成医疗诊断。' : ''}`,
+    answer: `${localKnowledgeAnswer(ordered)}${productNote}${answerMode === 'knowledge' ? '\n\n本次回答不构成医疗诊断。' : ''}`,
     answerMode, model: answerMode === 'model' ? provider.modelName || null : null,
     sources: knowledgeSources(entries), knowledgeEvidence: knowledgeEvidence(entries), knowledgeIds: entries.map((entry) => entry.id), status: 'answered', missing: [],
   }

@@ -167,7 +167,7 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
         }])
       }
       if (!needsOnlineResearch(question, intent) && (intent === 'beauty_knowledge' || intent === 'external_question' && retrieveKnowledge(query, intent).length)) {
-        const result = await answerKnowledge({ query, intent, provider: zhipuProvider, budget: context.budget })
+        const result = await answerKnowledge({ query, intent, provider: zhipuProvider, budget: context.budget, products })
         return reply(result.answer, result.answerMode, result.sources, false, result.model || null, result)
       }
       const useWebSearch = needsOnlineResearch(question, intent)

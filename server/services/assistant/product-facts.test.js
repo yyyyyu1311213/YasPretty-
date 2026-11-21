@@ -144,6 +144,8 @@ describe('AI-R02 product facts through the assistant', () => {
     expect(result.intent).toBe('product_fact')
     expect(result.answer).toContain('15g')
     expect(result.answer).not.toContain('12g')
+    expect(result.answer).not.toContain('站内参考')
+    expect(result.answer).not.toContain('[1]')
     expect(result.answer).not.toContain('服务未配置')
     expect(result.sources).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'product', productId: 'sample-matte', accessedAt: '2026-11-01' })]))
     expect(provider.search).not.toHaveBeenCalled()
