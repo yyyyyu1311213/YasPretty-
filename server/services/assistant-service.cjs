@@ -5,7 +5,9 @@ const { intentRouter, classifyIntent, needsOnlineResearch } = require('./assista
 const { resolveProducts, namedProducts, questionForSelection } = require('./assistant/product-resolver.cjs')
 const { extractParameters, planInput } = require('./assistant/parameters.cjs')
 const { selectRecommendations, searchSources } = require('./assistant/tools.cjs')
-const { buildSystemPrompt, searchFallbackAnswer, productFacts, productMarkers, recommendationAnswer, clarificationAnswer, planAnswer, validateAnswer, unavailableKnowledgeAnswer, organizeCatalogAnswer } = require('./assistant/response.cjs')
+const { buildSystemPrompt, searchFallbackAnswer, productMarkers, recommendationAnswer, clarificationAnswer, planAnswer, validateAnswer, unavailableKnowledgeAnswer, organizeCatalogAnswer } = require('./assistant/response.cjs')
+const { createProductFactsIndex } = require('../knowledge/product-facts-index.cjs')
+const { answerProductFacts } = require('./assistant/fact-answer.cjs')
 const SHANGHAI_TIME_ZONE = 'Asia/Shanghai'
 
 function isWeatherQuestion(text) {
@@ -96,8 +98,9 @@ function filterCurrentWeatherResults(results, weather) {
   })
 }
 
-function createAssistantService({ zhipuProvider, weatherProvider, makeupPlanService, products, clock = () => new Date() }) {
+function createAssistantService({ zhipuProvider, weatherProvider, makeupPlanService, products, verificationRecords = {}, clock = () => new Date() }) {
   const plans = makeupPlanService || require('./makeup-plan-service.cjs').createMakeupPlanService({ zhipuProvider, products, clock })
+  const facts = createProductFactsIndex(products, verificationRecords)
   return {
     async answer({ query, messages = [], profile = {} }) {
       const intent = await classifyIntent(query, products, zhipuProvider, messages)
@@ -130,12 +133,8 @@ function createAssistantService({ zhipuProvider, weatherProvider, makeupPlanServ
         if (resolution.ambiguous || !resolution.products.length || intent === 'product_comparison' && (resolution.products.length < 2 || resolution.products.length > 3)
           || intent === 'product_fact' && resolution.products.length !== 1) return reply(clarificationAnswer(resolution), 'clarification')
         selectedProducts = resolution.products
-        if (!needsOnlineResearch(question, intent)) {
-          const result = await organizeCatalogAnswer({ provider: zhipuProvider, profile: parameters.profile, products: selectedProducts, intent,
-            query: question, messages, fallback: productFacts(selectedProducts, question) })
-          return reply(result.answer, result.answerMode, [], false, result.model)
-        }
-        if (!zhipuProvider?.configured) return reply(`智能服务未配置，无法联网确认这次提问；以下仅是站内已有记录。\n\n${productFacts(selectedProducts, question)}`)
+        const result = await answerProductFacts({ products: selectedProducts, index: facts, query: question, messages, profile: parameters.profile, provider: zhipuProvider, intent })
+        return reply(result.answer, result.answerMode, result.sources, result.usedWebSearch, result.model)
       }
       if (isWeatherQuestion(query)) {
         const city = extractWeatherLocation(query, parameters.profile.city)

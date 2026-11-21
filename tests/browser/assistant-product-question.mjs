@@ -22,7 +22,7 @@ const provider = {
   modelName: 'synthetic-model',
   async search(query) {
     calls.push('search')
-    assert.equal(query, question)
+    assert(query.includes('最新价格'))
     if (scenario === 'empty') return []
     if (scenario === 'timeout') throw new AppError('UPSTREAM_TIMEOUT', '合成超时', 504)
     return [source]
@@ -77,23 +77,25 @@ try {
     for (scenario of ['success', 'empty', 'timeout', 'unconfigured']) {
       provider.configured = scenario !== 'unconfigured'
       calls.length = 0
-      const reply = await send(question)
+      const sentQuestion = ['empty', 'timeout'].includes(scenario) ? 'NEO小方块哑光气垫最新价格是多少？' : question
+      const reply = await send(sentQuestion)
       assert(!reply.includes('没有同时满足'))
       const payload = requests.at(-1)
-      assert.equal(payload.query, question)
+      assert.equal(payload.query, sentQuestion)
       assert.equal(payload.profile.budget, 400)
       if (scenario === 'unconfigured') {
-        assert(reply.includes('智能服务未配置'))
+        assert(reply.includes('规格记录：15g') && !reply.includes('智能服务未配置'))
         assert.equal(await last.locator('.xiaoy-product').count(), 1)
         assert.deepEqual(calls, [])
       } else if (scenario === 'success') {
-        assert.deepEqual(calls, ['search', 'chat'])
-        assert(reply.includes('合成产品回答'))
-        assert.equal(await last.getByRole('link', { name: /合成产品来源/ }).count(), 1)
+        assert.deepEqual(calls, [])
+        assert(reply.includes('规格记录：15g') && reply.includes('替换芯：未知'))
+        assert((await last.locator('.xiaoy-sources').innerText()).includes('2026-10-30'))
         assert.equal(await last.locator('.xiaoy-product').count(), 1)
       } else {
-        assert(reply.includes('联网检索当前不可用'))
-        assert.equal(await last.locator('.xiaoy-product').count(), 0)
+        assert(/检索(?:没有返回|失败或超时)/.test(reply))
+        assert(reply.includes('历史参考价：325元'))
+        assert.equal(await last.locator('.xiaoy-product').count(), 1)
         assert.deepEqual(calls, scenario === 'unconfigured' ? [] : ['search'])
       }
       const geometry = await page.evaluate(() => {

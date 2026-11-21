@@ -3148,3 +3148,127 @@ git diff --check
 `server/app.cjs` 仍只包含原助手服务接线及助手路由的全局无 Key 拦截调整；`server/schemas.cjs` 仍只含助手历史商品 ID、回答模式与意图契约。22 文件哈希、26 路径集合及共享文件变更区域须在暂存前复核，`git diff --check` 和暂存内容空白检查均通过后仅暂存这 26 个已验收路径。归档操作不使用 stash、清理、rebase、强推、分支切换或删除；正常推送后核对远端实际 SHA，才报告“已归档”。本条写入时尚未生成新 SHA；按仓库规则由实际归档回执先行提供，下一次文档同步回填，不为回填 amend 历史。
 
 入口仍为主站“小Y智能选妆”，复现与验收步骤沿用 12:46 记录，包括“ysl粉底液怎么样→多少钱/有几个色号/持妆多久”“ysl多少钱→第二款”、保存油皮/1000 后请求干皮/600 推荐、朋友转述及“粉底和气垫有什么区别”。人工验收已确认本轮软件范围；真实 GLM/搜索质量、实体手机、公网部署仍未验证，有限语言覆盖、自由文本事实校验、无 Key 知识缺失及未缓存离线封面限制保留。没有新增长期记忆、存储字段或跨设备能力，比赛材料/视频未改。本阶段无新增核验，继承上一条结论。
+
+## AI-R02 2026-11-21 产品事实与证据缺口（待人工验收）
+
+### 基线、授权与状态
+
+本轮目标仅为让小Y读取已有商品事实并准确说明证据缺口。已阅读仓库规则、产品定义、README、迁移计划及本轮相关代码/记录；不使用旧 memory 或真实用户数据。AI-R01 人工验收后的实际归档提交为 `c4dbbb763c266dca009eabed8b4a9cd1ec125717`，13:12:20（北京时间）已核对正常推送 dev。AI-R02 于 13:18:52 fetch 后确认 dev/HEAD/origin/dev/实际远端相同、ahead/behind 0/0、暂存区/未提交/未跟踪列表全空后启动；13:42 再次 fetch 未前进。arch-stage-12/13 的对象和指向与迁移计划本轮记录一致，本轮不新建标签。
+
+问题编号检查确认既有编号至 YAS-2026-0060；本轮使用未占用的 YAS-2026-0061/0062/0063，不覆盖历史 ARCH/YAS 记录。AI-R02 已完成实现及自动验证，状态为“待人工验收”；AI-R03 待实施。未暂存、提交、推送或打标签，没有本轮提交 SHA/tag，不能将工作树称为干净；**当前仅含本轮变更，待验收**。
+
+### 问题、复现与修复依据
+
+| 问题 | 现象与复现输入 | 预期行为与根因 | 文件及回归 | 结果与限制 |
+|---|---|---|---|---|
+| YAS-2026-0061 | “NEO 小方块气垫（哑光）净含量是多少”；“15g 是正装还是带替换芯，一个能用多久” | 原商品摘要没有读取既有核验表的规格；只给泛化概览或统一缺失提示。应读取确切产品的原规格及来源，分别说明净含量、包装、正装、替换芯、套装和用量证据 | 新 knowledge schema/adapter/index、fact-query/fact-answer；合成规格、15g、无 Key、无关预算、缺用量及来源回归 | 读到 15g 并返回原 2026-10-30 记录；没有证据的包装/天数保持未知。没有新增产品转录或独立核验 |
+| YAS-2026-0062 | “星光气垫（哑光）SKU OTHER-30 净含量”；“某款最新价格”；“某款成分是什么” | 规格被强制联网，检索异常直接抛出丢失本地资料；版本/SKU 未显式关联，知识分类还可能抢占字段问题。应独立判断联网，按产品/版本/SKU 读字段，时效检索失败保留历史记录与缺口 | intent-router、product-resolver、事实索引与回答模块；不同版本/SKU、同名澄清、限定字段/比较、冲突和供应商异常用例 | 稳定字段无需模型；价格/成分/促销/上市/口碑先检索。明确 SKU 缺失不借用默认值；已覆盖 SKU 只读该范围，缺字段仍未知 |
+| YAS-2026-0063 | 已有记录无可公开直链；模型输出 `[99]`、未知产品 ID 或 `999元`；恶意网页指令 | 原来源仅支持链接，事实表达仅验证商品标记，可能让内部档案或不合格材料变成来源。应显示可读证据状态，校验所问字段、产品 ID、数字和引用 | 助手来源契约、SourceList、response/fact-answer、API/组件/页面测试 | 内部路径不进入公开 URL；短链接、错误域名/商品/版本、异常指令、无效字段与引用被拒绝。数值/引用检查不证明全部自然语言语义正确 |
+
+上述问题统一以 `c4dbbb763c266dca009eabed8b4a9cd1ec125717` 为修改前基线。与已有 YAS-2026-0058/0059 的聊天路由/指代回归兼容，原失败与归档事实保留，本轮不重复宣称解决全部语言理解问题。
+
+### 逐文件白名单与实际职责
+
+编辑前公布 25 路径。负责人随后分别明确允许追加前端意图两文件和 Hook 测试一文件，共 28 路径；两次追加都在对应编辑前确认，没有据此修改 Hook 实现。
+
+| 文件 | 本轮修改目的 |
+|---|---|
+| `server/knowledge/product-facts-schema.cjs` | 新增字段值、版本/SKU、日期、证据、状态及助手来源 schema |
+| `server/knowledge/product-facts-adapter.cjs` | 从现有产品/核验 exports 派生字段和来源映射，不复制维护产品事实 |
+| `server/knowledge/product-facts-index.cjs` | 按 ID、版本/SKU、字段读取，阻止跨范围借用并呈现冲突 |
+| `server/knowledge/product-facts.test.js` | 合成映射、链接、冲突、补充记录和 SKU 边界测试 |
+| `server/services/assistant/fact-query.cjs` | 所问字段与联网需要分离 |
+| `server/services/assistant/fact-answer.cjs` | 组织事实/建议/缺口，筛选检索材料并校验结构化提取 |
+| `server/services/assistant/product-facts.test.js` | 本轮服务链路失败复现、供应商异常和证据安全回归 |
+| `server/services/assistant-service.cjs` | 接入本轮事实读取与回答链路 |
+| `server/services/assistant/intent-router.cjs` | 商品字段问题与普通知识、稳定规格与实时检索分流 |
+| `server/services/assistant/product-resolver.cjs` | 规格省略追问及近期版本矛盾保护 |
+| `server/services/assistant/response.cjs` | 模型只接收相关资料，检查数字/引用；移除被新读取层替代的旧事实格式化函数 |
+| `server/services/assistant/assistant.test.js` | 保留 AI-R01 断言，更新稳定规格与不合格商品来源的预期 |
+| `server/app.cjs` | 仅增加助手核验记录读取接线及合成测试注入 |
+| `server/app.test.js` | 助手 API 的来源日期、路径隔离和无 Key 本地事实测试 |
+| `server/schemas.cjs` | 仅扩展助手 sources 的联合类型，不改其他 API 契约 |
+| `src/contracts/assistant.js` | 同步 product 来源、日期精度、SKU/状态和限制 |
+| `src/features/assistant/components/SourceList.jsx` | 展示归档来源/日期/版本/限制，安全链接与无链接记录分开 |
+| `src/features/assistant/components/SourceList.test.jsx` | 内部档案、不合格链接及来源元数据展示测试 |
+| `src/features/assistant/intentUtils.js` | 经追加授权，仅同步商品事实的前端联网判断 |
+| `src/features/assistant/intentUtils.test.js` | 经追加授权，同步稳定/时效问题预期 |
+| `src/features/assistant/hooks/useAssistant.test.js` | 经追加授权，仅修改旧提示预期；保留不转无关推荐断言 |
+| `tests/browser/assistant-ai-r02.mjs` | 新增真实页面到来源展示/点击及异常回归 |
+| `tests/browser/assistant-ai-r01.mjs` | 保留原 82 项链路，规格与检索场景按新契约分开 |
+| `tests/browser/assistant-product-question.mjs` | 稳定规格本地回答；价格异常仍回归，不删失败覆盖 |
+| `README.md` | 当前事实读取、来源契约、结构、验证及人工入口 |
+| `docs/frontend-architecture-migration-plan.md` | AI-R01 归档回填、AI-R02 范围/门禁/待验收状态 |
+| `docs/stage-delivery-test-report.md` | 追加本条真实问题、范围、失败、测试和限制 |
+| `docs/product-data-accuracy-audit.md` | 追加读取映射、继承状态及无新增核验结论 |
+
+共享区域核对：app 仅在既有助手服务创建处读取核验记录；schema 仅在 assistantResponseSchema 的 sources 中加入 product 来源。没有改变静态服务、CORS、安全头、限流、额度、其他 API、首页、产品展示/详情、收藏、妆台、3D、CSS、素材、部署、依赖或原始产品资料。未修改 zhipu-provider，无新增第三方调用适配或依赖。
+
+### 实现与证据边界
+
+原 35 款产品中，34 款原未在产品摘要暴露的规格现在可从既有核验记录读取；`fenty-pro-filtr` 的历史品牌/店铺身份差异在助手读取层标为冲突，不合并结论。111 款规格读取结果为 108 条已有记录、2 条待核验（catalog-037/041）、1 条冲突；这只是读取层对现有状态的保守表达，未重写原核验结论。组合规格如 `3.5g+3.5g` 保留原文，不擅自转成“含替换芯”或合并为单件净含量。所有原记录中的 SKU 缺失均明确保留。
+
+商品检索只使用本次匹配的官方旗舰店直接 URL 与版本材料，网页不是指令。模型提取须通过 schema、产品 ID/所问字段/来源 ID、原文值及价格数字/冲突检查；无效输出不展示原文，也不直接转述恶意摘录。无 Key 只跳过依赖供应商的步骤；原记录照常读取。查询和比较仅传目标字段，推荐仍先硬筛选最多三款；模型不会收到全部 111 款摘要。既有最近八条会话/本地二十条消息边界不变，没有新增存储键或服务端长期记忆。
+
+### 真实失败与验证
+
+证据均在已被忽略的 `.qa/ai-r02/`，未进入 Git：
+
+- `before.txt`：13:24:02，四项核心新回归全部失败，分别是规格未读、规格强制检索、价格检索失败丢失本地事实、SKU 未覆盖未提示；随后同组通过。
+- `compatibility-first.txt`：9 项失败，包含旧规格必须联网的测试预期及泛品类时效问题被新分支过早抢占；修正分流，旧预期在授权文件内更新，未删除其保护目的。
+- `sku-before.txt`：明确覆盖的 SKU 仍被拒绝，1 失败/10 通过；改为按确切版本/SKU 选取已有记录，缺字段不借用默认值。
+- `field-routing-before.txt`：“成分/包装内容/规格是什么”3 失败/31 通过；修正字段提问优先级，教程/普通知识回归保持。
+- `full-first.txt`：4 失败/543 通过，均是旧“事实必需联网”预期的剩余关联断言；负责人明确批准 Hook 测试文件后只同步提示预期，保留不推荐无关产品的检查。
+- `browser-first.txt`：来源链接已打开，但合成新页夹具未声明 UTF-8 导致中文文本断言失败；修正测试响应编码后通过，没有修改产品页面或真实外链。早期预览脚本路径错误也留在本地日志，修正后实际 HTTP 复验通过。
+
+| 实际命令 | 最终结果 | 证据 |
+|---|---|---|
+| `npm test -- --config .qa/ai-r01/qa.config.mjs` | 13:49:54 起，46 文件 552/552，退出 0 | `full-second.txt` |
+| `npm run build -- --config .qa/ai-r01/qa.config.mjs` | 1873 模块，退出 0；既有超过 500 kB 提示保留 | `build-delivery.txt` |
+| `node tests/browser/assistant-ai-r02.mjs` | 1440×900/360×900，42/42 | `delivery-assistant-ai-r02.txt` 及同名目录 |
+| `node tests/browser/assistant-ai-r01.mjs` | 既有链路 82/82 | `delivery-assistant-ai-r01.txt` 及同名目录 |
+| `node tests/browser/assistant-product-question.mjs` | 规格/价格异常 8/8 | `delivery-assistant-product-question.txt` 及同名目录 |
+
+测试/构建设置 `NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs`，Vite 隔离配置 `envDir:false`，防止 dotenv/Vite 读取真实环境文件。浏览器沿用已有 Playwright 模块和 Chrome 157.0.8103.79；通过 `YAS_QA_PLAYWRIGHT_MODULE`、`YAS_QA_BROWSER_EXECUTABLE` 选择现有安装，`YAS_QA_OUTPUT_DIR` 指定上述忽略目录，没有安装依赖。真实本地生产页面→HTTP→Fastify→助手→来源展示；输入/provider/存储均为合成数据。来源点击由隔离浏览器拦截为合成网页，没有进行真实商品访问或新核验。
+
+相关定向测试曾于 13:43:37 实跑 7 文件 183/183（`targeted-final.txt`）；之后新增的五个字段路由/缺口用例包含在最终全量 552 中，不把前次数字冒充最终定向重跑。桌面和 360px 截图已检查，几何断言无横向溢出/输入与发送按钮重叠，pageerror 和非预期 console.error 为空。场景覆盖成功、信息不足、歧义、无 Key、断网、搜索空/失败/超时、错误商品/版本/链接、恶意网页、冲突、模型超时/非法 JSON/未知 ID/伪造数字/无效引用。仅文档收尾后不无理由重复已通过的功能测试。
+
+### 人工验收入口与剩余限制
+
+本轮独立无 Key 预览为 http://127.0.0.1:8788/ ，不会加载 `.env`；13:51:55 实际 health 为 `services.assistant=false`，规格 HTTP 查询成功，证据 `preview-delivery-http.json`。该入口可验收本地事实与降级，不能据此验收真实 GLM 或在线检索质量。
+
+1. 进入“小Y智能选妆”，先发送“我是干皮，预算1元”，再问“LANEIGE NEO 小方块气垫（哑光）的净含量是多少”。应读到 15g，来源显示 2026-10-30 的原记录；不会因预算排除目标商品。
+2. 问“NEO 小方块气垫（哑光）15g 是正装还是带替换芯，一个能用多久，放包里补妆方便吗”。包装/替换芯/正装和天数保持未知；一般建议单独标明，不编造组合或天数。
+3. 问“NEO 小方块气垫（哑光）SKU OTHER-30 净含量是多少”及水光版本，不得套用哑光记录；不存在的产品应澄清。
+4. 问“小金盒高光修容盘规格是多少”，检查原规格、日期、版本与官方直链；内部归档说明不是假链接。原有产品来源/核验风险仍保留。
+5. 问“小金盒高光修容盘最新价格是多少”或“成分是什么”。无 Key 时明确无法联网确认；历史价不冒充最新价，缺成分证据不生成配方。成功搜索与异常提取已由合成回归覆盖，不能代表真实供应商质量。
+
+仍未验证：真实 Key/模型/搜索、实体手机、公网部署、全部自然语言表达、不同平台当前在售 SKU/结算价。程序只能检查结构、ID、数字及引用对应等可实现边界，不能证明所有自然语言事实；准确的语义与核验结论仍依赖证据和人工审查。完全断网时不在浏览器内伪装服务端事实成功，未缓存封面保持既有限制。没有新增向量数据库、账号、长期记忆、跨设备存储或依赖。比赛视频/材料未修改，公开表述不得超出上述结果。本阶段无新增核验，继承上一条结论。
+
+### 交付前范围与远端复核
+
+2026-11-21 13:59:03（北京时间），再次完成 `git fetch origin dev` 并查询实际远端：dev/HEAD/origin/dev/远端 dev 均为 `c4dbbb763c266dca009eabed8b4a9cd1ec125717`，ahead/behind 0/0，arch-stage-12/13 对象及提交指向与本轮基线记录一致。暂存区为空；20 个已跟踪修改、8 个未跟踪新增与最终 28 文件白名单逐项一致，无遗漏或范围外路径。`git diff --check` 通过，另行检查 8 个新增文件无行尾空白。两个共享文件的实际 diff 仅涉及上述助手区域。证据为 `.qa/ai-r02/final-scope-verification.json`。
+
+迁移计划、交付报告、产品审计相对本轮编辑前快照均为纯追加，历史原文完整保留；README 仅更新本轮相关现状/结构并追加记录，另为旧规格修复段落添加历史说明，避免与当前行为混淆。`.qa/ai-r02/` 继续被已有规则忽略。以上核对不表示工作树干净：仅含本轮变更，待验收；无暂存、提交、推送、标签或 AI-R03 实施。
+
+### 2026-11-21 15:02 AI-R02 人工验收与归档收尾（北京时间）
+
+负责人本次先表示“人工验收通过 继续”，因本聊天此前为AI-R01而当前工作树已有AI-R02，先只读核对并明确轮次；随后负责人明确回复“是，验收当前 AI-R02 并归档”。此确认针对当前28文件、YAS-2026-0061/0062/0063，授权在dev提交并正常推送；AI-R02状态从待人工验收推进为已验收待归档，不再重复请求授权。AI-R03仍待实施，本次不实施下一轮，不新建或复用ARCH编号/标签、不删除分支。旧待验收记录与失败证据保留。
+
+基线核验：2026-11-21 15:00:34执行`git fetch origin dev`及实际远端查询，dev/HEAD/origin/dev/远端dev均为 `c4dbbb763c266dca009eabed8b4a9cd1ec125717`，ahead/behind 0/0，索引为空；20个已跟踪修改与8个新增文件完全匹配本轮28路径白名单。arch-stage-12对象`c53e9c67e39614379843f21bd6955e683d11d17d`/提交`4862e2759ba3b7785b4138a2ae88b5e8053f292a`、arch-stage-13对象`9f2ff35740364a447f2bc3a91d1a387951fedd32`/提交`bcb9da04d65f45bfce8a7b13f8fc791c24865234`与远端一致，未移动或新建标签。
+
+编辑前公布收尾白名单为四份文档：README更新当前验收状态；迁移计划追加轮次状态及归档边界；本报告追加明确确认、复验与范围证据；产品审计追加无新增核验及继承风险。其余24个运行代码、契约和测试文件以 `.qa/ai-r02/archive-20261121/accepted-snapshot.json` 的SHA256核对保持验收内容。app/schema只保留原AI-R02助手接线和来源联合契约；未扩大安全、静态服务、CORS、限流或其他API变更范围。
+
+| 归档前实际验证 | 结果 | 本次证据 |
+|---|---|---|
+| `npm test -- --config .qa/ai-r01/qa.config.mjs` | 15:01:31开始，46文件552/552，退出0 | `tests.txt` |
+| `npm run build -- --config .qa/ai-r01/qa.config.mjs` | 1873模块，退出0；既有大包提示保留 | `build.txt` |
+| `node tests/browser/assistant-ai-r02.mjs` | 1440×900与360×900，本轮42/42 | `assistant-ai-r02.txt`及同名目录 |
+| `node tests/browser/assistant-ai-r01.mjs` | 原聊天链路82/82 | `assistant-ai-r01.txt`及同名目录 |
+| `node tests/browser/assistant-product-question.mjs` | 规格/价格异常8/8 | `assistant-product-question.txt`及同名目录 |
+
+以上证据均在已有忽略目录 `.qa/ai-r02/archive-20261121/`。测试与构建沿用`NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs`及`envDir:false`，未读取.env或真实Key；浏览器使用现有Playwright/Chrome、新上下文、真实HTTP和生产页面，provider/输入/存储均合成。没有安装依赖、读取真实对话/画像/照片或旧memory。全部测试已通过，收尾仅做文档、哈希、路径和暂存一致性验证，不把后续文档核对称为业务重跑。
+
+提交前重新fetch并核对远端、24文件哈希、28路径集合、文档历史纯追加、未跟踪文件空白和两个共享文件区域；`git diff --check`与`git diff --cached --check`通过后只提交本轮已确认路径。正常推送后读取实际远端SHA，匹配后报告已归档；本条为提交前记录，新提交SHA由实际回执先行提供、后续文档同步回填，不amend/rebase/强推/移动标签，也不新增自引用回填提交。
+
+入口仍为主站“小Y智能选妆”，原AI-R02无Key预览 http://127.0.0.1:8788/ 可查看本地规格/来源/缺口；人工确认只覆盖本轮软件范围，不能升级真实供应商质量、产品核验或公开授权。真实GLM/搜索、实体手机、公网部署、全部自然语言和当前SKU售价仍未验证；原大包与未缓存离线封面限制保留。本阶段无新增核验，继承上一条结论。没有新增保存字段、长期记忆或跨设备能力，比赛材料和视频未改。

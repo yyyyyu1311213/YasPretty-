@@ -20,9 +20,14 @@ describe('小Y前端流程意图', () => {
     '这瓶30ml粉底能用多久？',
     '这个气垫放包里补妆方便吗？',
     '这款气垫的规格是多少？',
-  ])('routes product details consistently to research instead of local recommendations: %s', (text) => {
+  ])('AI-R02 keeps stable product facts separate from online research and recommendation fallback: %s', (text) => {
     expect(detectIntent(text)).toBe('product_fact')
     expect(assistantService.intentRouter(text, products)).toBe('product_fact')
+    expect(needsOnlineResearch(text, 'product_fact')).toBe(false)
+    expect(assistantService.needsOnlineResearch(text, 'product_fact')).toBe(false)
+  })
+
+  it.each(['这款最新价格是多少', '这款成分是什么', '这款什么时候上市', '这款有促销吗', '这款口碑怎么样'])('keeps timely product questions dependent on research: %s', (text) => {
     expect(needsOnlineResearch(text, 'product_fact')).toBe(true)
     expect(assistantService.needsOnlineResearch(text, 'product_fact')).toBe(true)
   })
@@ -84,7 +89,7 @@ describe('小Y前端流程意图', () => {
   })
 
   it('retains explicit research flags without making ordinary questions online', () => {
-    expect(needsOnlineResearch('站内资料', 'product_fact')).toBe(true)
+    expect(needsOnlineResearch('站内资料', 'product_fact')).toBe(false)
     expect(needsOnlineResearch('站内资料', 'external_research')).toBe(true)
     expect(needsOnlineResearch('如何画清透妆容', 'makeup_plan')).toBe(false)
     expect(needsOnlineResearch('完整妆容，参考最新趋势', 'makeup_plan')).toBe(true)

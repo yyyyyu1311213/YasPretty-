@@ -27,7 +27,9 @@ function isProductFactQuestion(text, mentioned) {
 }
 
 function needsOnlineResearch(text, intent) {
-  if (intent === 'external_research' || intent === 'product_fact') return true
+  if (intent === 'external_research') return true
+  // Stable product facts are available from the server's local evidence index.
+  if (intent === 'product_fact') return /最新|最近|目前|今年|20\d{2}|新品|上市|发售|价格|多少钱|售价|到手价|促销|优惠|成分|配方|官网|测评|口碑|销量|排行|真假|哪里买/.test(text)
   if (/(今天|明天|天气|最新|最近|现在|目前|今年|2026|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买)/.test(text)) return true
   if (/(口红|唇釉|眼影|腮红|高光|修容|睫毛膏|眉笔|香水|护肤|面霜|精华|防晒)/.test(text)) return true
   return false

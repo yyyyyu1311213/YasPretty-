@@ -215,12 +215,12 @@ try {
     await check('laneige-fact', async () => {
       calls.length = 0
       const before = await profile()
-      assert((await send(laneige)).includes('合成产品事实回答'))
+      assert((await send(laneige)).includes('规格记录：15g'))
       assert.deepEqual(await profile(), before)
       assert.equal((await profile()).budget, 400)
-      assert.deepEqual(calls.map((call) => call.tool), ['search', 'chat'])
+      assert.deepEqual(calls, [])
       assert.deepEqual(await ids(), ['laneige-neo-matte'])
-      assert.equal(await last.getByRole('link', { name: /合成检索来源/ }).count(), 1)
+      assert((await last.locator('.xiaoy-sources').innerText()).includes('2026-10-30'))
     }, true)
     await check('profile-self-report', async () => {
       await send('我是干皮')
@@ -270,8 +270,8 @@ try {
       assert.deepEqual(await ids(), [])
     })
     for (scenario of ['empty-search', 'search-timeout']) await check(scenario, async () => {
-      assert((await send(laneige)).includes('联网检索当前不可用'))
-      assert.deepEqual(await ids(), [])
+      assert(/检索(?:没有返回|失败或超时)/.test(await send('NEO小方块哑光气垫最新价格是多少？')))
+      assert.deepEqual(await ids(), ['laneige-neo-matte'])
     })
     for (scenario of ['model-timeout', 'model-invalid']) await check(scenario, async () => {
       assert((await send('粉底怎么涂')).includes('已降级为受控知识库'))
@@ -281,7 +281,7 @@ try {
       assert(!reply.includes('先确认你的肤质'))
       assert.deepEqual(await ids(), [])
     })
-    await check('search-model-failure', async () => assert((await send(laneige)).includes('已降级为搜索结果摘要')))
+    await check('search-source-rejected', async () => assert((await send('NEO小方块哑光气垫最新价格是多少？')).includes('未取得可核对')))
     await check('catalog-expression-failure', async () => {
       assert((await send('ysl粉底液怎么样')).includes('已降级为站内资料回答'))
       assert.deepEqual(await ids(), ['ysl-all-hours'])
@@ -289,7 +289,7 @@ try {
     scenario = 'success'
     provider.configured = false
     await check('no-key-recommendation', async () => assert((await send('我是油皮，预算400元，推荐气垫')).includes('智能服务未配置')))
-    await check('no-key-fact', async () => assert((await send(laneige)).includes('无法联网确认')))
+    await check('no-key-fact', async () => assert((await send(laneige)).includes('规格记录：15g')))
     await check('no-key-knowledge', async () => assert((await send('粉底怎么涂')).includes('受控知识库')))
     await check('no-key-plan', async () => assert((await send('给我完整妆容')).includes('7. 唇妆')))
     await check('no-key-external', async () => {

@@ -307,17 +307,19 @@ describe('AI-R01 server orchestration', () => {
     expect(result.answer).not.toContain('[[PRODUCT:')
   })
 
-  it('checks search failure before generation and annotates model timeout after successful search', async () => {
+  it('AI-R02 keeps stable packaging gaps local and rejects unqualified sources for current prices', async () => {
     const zhipuProvider = provider()
     const api = service.createAssistantService({ products, zhipuProvider })
-    await expect(api.answer({ query: '星光哑光气垫15g含替换芯吗' })).rejects.toMatchObject({ code: 'SEARCH_EMPTY' })
+    expect((await api.answer({ query: '星光哑光气垫15g含替换芯吗' })).answer).toContain('替换芯：未知')
+    expect(zhipuProvider.search).not.toHaveBeenCalled()
     expect(zhipuProvider.chat).not.toHaveBeenCalled()
     zhipuProvider.search.mockResolvedValue([{ title: '合成来源', url: 'https://example.test/source', publisher: '测试', accessedAt: '2026-11-21T00:00:00.000Z', content: '仅测试，不代表产品事实' }])
     zhipuProvider.chat.mockRejectedValue(new Error('synthetic timeout'))
-    const result = await api.answer({ query: '星光哑光气垫15g含替换芯吗' })
-    expect(result).toMatchObject({ answerMode: 'search', model: null, usedWebSearch: true })
-    expect(result.answer).toContain('已降级')
-    expect(result.sources[0].title).toBe('合成来源')
+    const result = await api.answer({ query: '星光哑光气垫最新价格' })
+    expect(result).toMatchObject({ answerMode: 'local', model: null, usedWebSearch: false })
+    expect(result.answer).toContain('未取得可核对')
+    expect(result.sources.some((source) => source.url === 'https://example.test/source')).toBe(false)
+    expect(zhipuProvider.chat).not.toHaveBeenCalled()
   })
 
   it('blocks sensitive requests before provider invocation', async () => {

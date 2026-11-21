@@ -67,7 +67,7 @@ const productRecordSchema = z.object({
 
 const assistantResponseSchema = z.object({
   answer: z.string().trim().min(1).max(20000),
-  sources: z.array(sourceSchema).max(8),
+  sources: z.array(z.union([sourceSchema, require('./knowledge/product-facts-schema.cjs').assistantProductSourceSchema])).max(8),
   usedWebSearch: z.boolean(),
   answerMode: z.enum(['model', 'knowledge', 'search', 'weather', 'clarification', 'local']),
   model: z.string().trim().min(1).max(80).nullable(),

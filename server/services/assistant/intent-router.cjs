@@ -7,7 +7,7 @@ const isSensitive = (text) => /诊断|治疗|治愈|红肿|刺痛|过敏|破损|
 const isCompletePlan = (text) => /妆容方案|完整妆容|妆面规划|设计(?:一个)?妆|妆教(?!程)|教我.*妆容|(?:韩女|水光|拍照|秋日|落叶|约会|通勤|日常|晚宴)妆容/.test(text)
 const isKnowledge = (text, productRelated) => /怎么涂|怎么上|怎么用|怎么画|怎么化|如何画|怎么办|教程|技巧|原理|步骤|什么是|是什么|区别|差别|不同|作用|色号怎么选|肤质.*(?:判断|测试)|(?:判断|分辨).*肤质|(?:总|容易|之后|后).*(?:起皮|卡粉|脱妆)|卡粉$|起皮$/.test(text)
   && (productRelated || /粉底|底妆|妆|遮瑕|肤质|皮|工具|刷|海绵|口红|气垫|睫毛/.test(text))
-const isFact = (text) => /规格|色号|容量|净含量|价格|多少钱|成分|产地|功效|哪里买|官网|保质期|能用多久|可以用多久|大概用多久|用多长时间|便携|方便携带|补妆方便|适合.*(?:吗|么|[？?])/.test(text)
+const isFact = (text) => /规格|色号|容量|净含量|多少克|多少毫升|包装|SKU|货号|价格|多少钱|成分|产地|功效|哪里买|官网|保质期|能用多久|可以用多久|大概用多久|用多长时间|便携|方便携带|补妆方便|适合.*(?:吗|么|[？?])/i.test(text)
   || /正装|替换芯|替换装|补充装|套装/.test(text) && /吗|还是|是否|含不含|有没有|[？?]/.test(text)
 const isTimely = (text) => /天气|气温|下雨|最新|最近|目前|今年|20\d{2}|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买/.test(text)
 const isExternalObject = (text) => /手机|打印机|电脑|汽车|自行车|笔记本|耳机/.test(text)
@@ -25,9 +25,11 @@ function intentRouter(query, products = [], messages = []) {
   if (/调整方案|减少步骤|增加步骤|替换产品/.test(text)) return 'plan_adjustment'
   if (/(对比|比较|区别|哪个好|哪个更)/.test(text) && (specified || reference)) return 'product_comparison'
   if (isCompletePlan(text)) return 'makeup_plan'
+  if ((context || specified || reference) && /(?:规格|容量|净含量|包装内容|成分|配方|价格|售价).*(?:是什么|有哪些|多少|[？?])/.test(text)
+    && !/原理|是什么意思|怎么选/.test(text)) return 'product_fact'
   // A how-to task remains knowledge even when it mentions a product or a shade.
   if (isKnowledge(text, context || specified || reference)) return /肤质/.test(text) ? 'external_question' : 'beauty_knowledge'
-  if ((context || reference) && isFact(text)) return 'product_fact'
+  if ((context || reference) && isFact(text) || (specified || reference) && isTimely(text)) return 'product_fact'
   if (reference && !isExternalObject(text)) return resolution.allSelected && resolution.products.length > 1 ? 'product_comparison' : 'product_fact'
   if (/天气|气温|温度|下雨|降雨/.test(text)) return 'external_question'
   if (isTimely(text)) return 'external_research'
@@ -56,7 +58,7 @@ async function classifyIntent(query, products, provider, messages = []) {
 
 function needsOnlineResearch(query, intent = intentRouter(query)) {
   if (['unsupported_sensitive', 'greeting_help', 'clarification'].includes(intent)) return false
-  return intent === 'external_research' || intent === 'product_fact' && /规格|容量|净含量|替换|正装|套装|能用多久|补妆方便/.test(query) || isTimely(query)
+  return intent === 'external_research' || isTimely(query)
 }
 
 module.exports = { intentRouter, classifyIntent, needsOnlineResearch }

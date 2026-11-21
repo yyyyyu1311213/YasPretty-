@@ -79,6 +79,7 @@ async function createApp(options = {}) {
     logger: false,
     serveStatic: false,
     products: options.products || [product],
+    verificationRecords: options.verificationRecords,
     providers: {
       zhipu: options.zhipu || mockZhipu(),
       weather: options.weather || mockWeather(),
@@ -93,6 +94,21 @@ afterEach(async () => {
 })
 
 describe('YasPretty API gateway', () => {
+  it('AI-R02 returns dated archive provenance for facts without exposing internal evidence paths', async () => {
+    const zhipu = mockZhipu({ configured: false })
+    const app = await createApp({ zhipu, verificationRecords: { p1: { productId: 'p1',
+      reviewedFacts: { productId: 'p1', productName: product.name, specification: '30ml', reviewStatus: 'verified', verifiedAt: '2026-11-01', source: { workbookPath: '合成证据/private.xlsx', sheet: '测试', row: 2 } },
+      commerce: { status: 'verified', officialStoreFlag: '是', productUrl: 'https://e.tb.cn/h.synthetic?tk=test' } } } })
+    const response = await app.inject({ method: 'POST', url: '/api/assistant', payload: { query: 'Test Foundation 净含量是多少？', profile: { budget: 1 } } })
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toMatchObject({ intent: 'product_fact', answerMode: 'local', usedWebSearch: false,
+      sources: [expect.objectContaining({ kind: 'product', url: null, productId: 'p1', accessedAt: '2026-11-01', status: 'recorded' })] })
+    expect(response.json().answer).toContain('净含量：30ml')
+    expect(response.payload).not.toContain('private.xlsx')
+    expect(response.payload).not.toContain('e.tb.cn')
+    expect(zhipu.search).not.toHaveBeenCalled()
+    expect(zhipu.chat).not.toHaveBeenCalled()
+  })
   it('permits only same-origin frames for the embedded beauty shop', async () => {
     const app = await createApp()
     const response = await app.inject({ method: 'GET', url: '/api/health' })
@@ -143,20 +159,18 @@ describe('YasPretty API gateway', () => {
     expect(products.filter((item) => item.id.startsWith('catalog-')).every((item) => item.publicStatus === 'public_with_source_notice_authorization_pending' && item.recommendationReady === true)).toBe(true)
   })
 
-  it('researches the reported specification question before generating an answer', async () => {
+  it('AI-R02 returns specification gaps locally without forcing a provider call', async () => {
     const query = '这个兰芝NEO小方块哑光气垫，15g是正装还是带替换芯？一个大概能用多久？平时放包里补妆方便吗？'
     const source = { title: '合成规格来源', url: 'https://example.test/product', publisher: '测试', accessedAt: '2026-11-20T17:00:00.000Z', content: '仅用于验证检索和回答流程，不代表商品事实。' }
     const zhipu = mockZhipu({ search: vi.fn(async () => [source]) })
     const app = await createApp({ zhipu, products })
     const response = await app.inject({ method: 'POST', url: '/api/assistant', payload: { query, profile: { budget: 400 }, messages: [] } })
     expect(response.statusCode).toBe(200)
-    expect(zhipu.search).toHaveBeenCalledExactlyOnceWith(query, {})
-    expect(zhipu.search.mock.invocationCallOrder[0]).toBeLessThan(zhipu.chat.mock.invocationCallOrder[0])
-    const prompt = zhipu.chat.mock.calls[0][0][0].content
-    expect(prompt).toContain('归类为：product_fact')
-    expect(prompt).toContain('laneige-neo-matte')
-    expect(prompt).toContain('净含量不能证明是否含替换芯')
-    expect(response.json()).toMatchObject({ usedWebSearch: true, sources: [expect.objectContaining({ kind: 'web', url: source.url })] })
+    expect(zhipu.search).not.toHaveBeenCalled()
+    expect(zhipu.chat).not.toHaveBeenCalled()
+    expect(response.json()).toMatchObject({ intent: 'product_fact', usedWebSearch: false, answerMode: 'local' })
+    expect(response.json().answer).toContain('替换芯：未知')
+    expect(response.json().answer).toContain('用量与使用频率')
   })
 
   it('returns a minimal health response and security headers', async () => {

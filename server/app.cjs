@@ -113,7 +113,8 @@ async function buildApp(options = {}) {
     timeoutMs: Math.min(config.upstreamTimeoutMs, 8000),
   })
   const makeupPlanService = createMakeupPlanService({ zhipuProvider, products })
-  const assistantService = createAssistantService({ zhipuProvider, weatherProvider, makeupPlanService, products })
+  const verificationRecords = options.verificationRecords || (options.products ? {} : await require('./knowledge/product-facts-adapter.cjs').loadVerificationRecords())
+  const assistantService = createAssistantService({ zhipuProvider, weatherProvider, makeupPlanService, products, verificationRecords })
   const dailyQuota = createDailyQuota(config.aiDailyLimit)
 
   app.addHook('onSend', async (request, reply, payload) => {

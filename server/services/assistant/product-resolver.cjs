@@ -8,7 +8,7 @@ const categoryNames = {
   眉妆: ['眉妆', '眉笔', '眉粉'], 睫毛膏: ['睫毛膏'],
 }
 const collectiveChoice = /^(?:两款|两种|两个|这两款|这两种|这两个|三款|这三款)?都(?:可以|行|看看|看一下|介绍一下|想了解)(?:吧|啊|呢)?[。！!？?\s]*$/
-const implicitQuestion = /^(?:那|那么|请问|大概|现在)?(?:多少钱|价格(?:多少|呢)|适合(?:混油皮|混干皮|干皮|油皮|敏感肌)|有(?:哪些|几个|什么)色号|持妆(?:多久|几小时)|会不会(?:卡粉|脱妆|暗沉)|怎么(?:用|涂|上妆))[吗呢啊吧？?。！!\s]*$/
+const implicitQuestion = /^(?:那|那么|请问|大概|现在)?(?:多少钱|价格(?:多少|呢)|(?:净含量|规格|容量)(?:是多少|多少|呢)|(?:有|含|带)(?:没有|不含)?替换芯|能用多久|适合(?:混油皮|混干皮|干皮|油皮|敏感肌)|有(?:哪些|几个|什么)色号|持妆(?:多久|几小时)|会不会(?:卡粉|脱妆|暗沉)|怎么(?:用|涂|上妆))[吗呢啊吧？?。！!\s]*$/
 
 function questionForSelection(query, products, messages) {
   const text = String(query).trim()
@@ -47,7 +47,9 @@ function resolveRecentChoice(query, products, messages) {
   const collective = collectiveChoice.test(query)
   if (!collective && !referencePattern.test(query) && !categoryOnly && !implicitQuestion.test(query)) return { products: [], ambiguous: false, referenced: false }
   const recent = recentProducts(messages, products)
-  const candidates = categories.length ? recent.filter((p) => categories.includes(p.category)) : recent
+  const version = query.match(/哑光|水光|亮泽/)?.[0]
+  const candidates = recent.filter((p) => (!categories.length || categories.includes(p.category))
+    && (!version || normalize(p.name).includes(version)))
   const result = (selection, ambiguous = false, allSelected = false) => ({ products: selection, ambiguous, referenced: true, allSelected })
   if (!candidates.length || recent.length > 3) return result([], true)
   if (collective) return result(candidates, false, true)

@@ -35,11 +35,19 @@
 /**
  * 小Y响应的引用；与 ProductSource 的字段及日期精度不同。
  * @typedef {object} AssistantSource
- * @property {'web' | 'knowledge' | 'weather'} kind 服务端解析后总是存在。
+ * @property {'web' | 'knowledge' | 'weather' | 'product'} kind 服务端解析后总是存在。
  * @property {string} title
- * @property {string} url
+ * @property {string | null} url product 内部归档可以为空，不将内部证据路径当作 URL。
  * @property {string} publisher 未提供发布方时服务端补 ''。
- * @property {string} accessedAt ISO 8601 UTC 日期时间，如 2026-11-16T10:00:00.000Z。
+ * @property {string | null} accessedAt 外部来源为 ISO 日期时间；product 继承原核验日期，缺失为 null。
+ * @property {string} [id] product 来源标识。
+ * @property {string} [productId] product 的稳定 ID。
+ * @property {string} [version] 来源适用的产品版本。
+ * @property {string | null} [sku] 未明确记录时为 null。
+ * @property {'recorded' | 'pending' | 'unknown' | 'conflict'} [status] 证据状态，不升级原数据核验结论。
+ * @property {string} [evidenceLabel] 对用户可读的归档说明，不包含内部文件路径。
+ * @property {string[]} [supports] 支持本次回答的字段。
+ * @property {string[]} [limitations] 来源和核验范围限制。
  */
 
 /**
