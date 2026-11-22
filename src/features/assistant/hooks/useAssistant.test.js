@@ -117,11 +117,60 @@ describe('小Y状态与发送流程', () => {
     expect(value).toMatchObject({ profile: {}, profileTags: 0, input: '', busy: false, mode: 'ready', activeModel: '', activity: '小Y正在识别需求并查询...' })
     expect(value.messages).toEqual([{
       id: 'welcome', role: 'assistant',
-      content: '嗨，我是小Y。告诉我你的肤质、喜欢的妆效和使用场景，我会从 YasPretty 产品库里给出有依据的选择。',
+      content: '嗨，我是小Y。先用一句话告诉我你想解决什么；我会结合你的需求继续提问或给出建议。',
       productIds: [],
     }])
     expect(saved('messages')).toEqual(value.messages)
     expect(saved('profile')).toEqual({})
+  })
+
+  it('waits for the user’s first request before showing route choices and keeps the first request in the guided turn', async () => {
+    const firstQuestion = {
+      flowId: 'xiaoy-guided-intake-v1', step: 1, route: null, selections: [], initialQuery: '我想学男生修眉让眉眼看着自然',
+      options: [{ label: '我是男生，想看自然修饰', value: 'route-men' }, { label: '我是女生，按日常彩妆建议', value: 'route-women' }],
+    }
+    vi.mocked(requestAssistant).mockResolvedValue(answer({ text: '收到，我会结合你的问题继续。', question: firstQuestion }))
+    expect(render().messages[0].question).toBeUndefined()
+    await render().sendMessage('我想学男生修眉让眉眼看着自然')
+    expect(latest().question).toEqual(firstQuestion)
+    vi.mocked(requestAssistant).mockResolvedValue(answer({ text: '按你的路线给出建议。' }))
+    await render().sendMessage('我是男生，想看自然修饰', 'route-men')
+    expect(requestAssistant).toHaveBeenLastCalledWith(expect.objectContaining({
+      text: 'route-men',
+      messages: expect.arrayContaining([expect.objectContaining({
+        role: 'assistant', question: firstQuestion,
+      })]),
+    }))
+    expect(latest()).toMatchObject({ role: 'assistant', content: '按你的路线给出建议。' })
+    expect(render().profile).toEqual({})
+  })
+
+  it('applies a clicked skin option to this request without changing the saved profile', async () => {
+    const original = '我想选底妆，但不清楚自己的肤质'
+    const routeQuestion = { flowId: 'xiaoy-guided-intake-v1', step: 1, route: null, selections: [], initialQuery: original,
+      options: [{ label: '按需求选择，不区分性别', value: 'route-general' }] }
+    const skinQuestion = { flowId: 'xiaoy-guided-intake-v1', step: 2, route: 'general', selections: ['route-general'], initialQuery: original,
+      options: [{ label: '洗脸后常紧绷或起皮', value: 'skin-dry' }, { label: '不确定，先按原问题继续', value: 'skin-unknown' }] }
+    values.set('yaspretty-xiaoy-profile-v1', JSON.stringify({ version: 1, value: { skin: '油皮', budget: 300 } }))
+    vi.mocked(requestAssistant)
+      .mockResolvedValueOnce(answer({ text: '我会结合你的问题继续。', question: routeQuestion }))
+      .mockResolvedValueOnce(answer({ text: '选择日常感受。', question: skinQuestion }))
+      .mockResolvedValueOnce(answer({ text: '按这次日常感受筛选。', productIds: ['dry-product'], intent: 'catalog_recommendation' }))
+
+    await render().sendMessage(original)
+    render()
+    await render().sendMessage('按需求选择，不区分性别', 'route-general')
+    render()
+    await render().sendMessage('洗脸后常紧绷或起皮', 'skin-dry')
+
+    expect(requestAssistant).toHaveBeenLastCalledWith(expect.objectContaining({
+      text: 'skin-dry',
+      profile: { skin: '油皮', budget: 300 },
+      messages: expect.arrayContaining([expect.objectContaining({ role: 'assistant', question: skinQuestion })]),
+    }))
+    expect(render().profile).toEqual({ skin: '油皮', budget: 300 })
+    expect(saved('profile')).toEqual({ skin: '油皮', budget: 300 })
+    expect(latest()).toMatchObject({ content: '按这次日常感受筛选。', productIds: ['dry-product'] })
   })
 
   it('ignores blank sends without clearing a draft or changing the conversation', async () => {
@@ -134,7 +183,7 @@ describe('小Y状态与发送流程', () => {
   })
 
   it.each([
-    ['你好', '你好，我是小Y。先告诉我你的肤质吧', false],
+    ['你好', '你好，我是小Y。先用一句话告诉我你想解决什么', false],
     ['推荐通勤底妆', '为了避免只凭热度推荐', false],
     ['我是油皮，预算 400 元，想要柔雾通勤底妆', '根据目前记录的需求', true],
   ])('keeps a labeled local fallback after request failure for %s', async (text, expected, hasProducts) => {

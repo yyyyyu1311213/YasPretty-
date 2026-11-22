@@ -62,7 +62,10 @@
  * @property {string | null} model 非模型回答或无模型名时为 null，不是 UI 处理后的 ''。
  * @property {Array<{question: string, intent: string, status: 'answered'|'partial'|'unavailable'|'clarification', knowledgeIds: string[], productIds: string[], missing: string[]}>} [coverage] 当前响应的逐项覆盖及缺口，不发送到历史请求。
  * @property {import('./makeupPlan.js').KnowledgeEvidence[]} [knowledgeEvidence] 通用知识的版本、复核日期、适用条件与来源，不证明具体产品事实。
+ * @property {GuidedQuestion} [guidedQuestion] 有界的聊天点选问题；仅由服务端输出，最多三轮。
  */
+
+/** @typedef {{flowId: string, step: number, route: 'men'|'women'|'general'|'skin'|'plan'|null, selections: string[], initialQuery?: string, options: Array<{label: string, value: string}>}} GuidedQuestion */
 
 /**
  * 小Y界面和当前本地消息值；不包含 localStorage 的版本包装。
@@ -72,6 +75,7 @@
  * @property {string} content
  * @property {string[]} productIds 无关联产品时为 []。
  * @property {AssistantSource[]} [sources] 欢迎消息省略；createMessage 无来源时写入 []。
+ * @property {GuidedQuestion} [question] assistant 消息可附服务端点选问题；user 消息不带选项元数据。
  */
 
 /**

@@ -33,6 +33,147 @@ describe('AI-R01 server orchestration', () => {
   it.each(['气垫怎么用', '口红怎么涂', '我用粉底总起皮', '粉底色号怎么选'])('audit: routes the task, not just catalog nouns: %s', (query) => {
     expect(router.intentRouter(query, products)).toBe('beauty_knowledge')
   })
+  it('asks for a route after a beauty request and answers a selected male brow route from the research knowledge base', async () => {
+    const api = service.createAssistantService({ products, zhipuProvider: { ...provider(), configured: false } })
+    const query = '我想学男生日常自然修饰'
+    const first = await api.answer({ query, messages: [{ role: 'assistant', content: '先说说需求', id: 'welcome' }] })
+    expect(first.answerMode).toBe('clarification')
+    expect(first.guidedQuestion).toMatchObject({ step: 1, initialQuery: query })
+    expect(first.guidedQuestion.options.map(({ value }) => value)).toContain('route-women')
+
+    const second = await api.answer({ query: 'route-men', messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
+    ] })
+    expect(second.guidedQuestion).toMatchObject({ step: 2, route: 'men', initialQuery: query })
+
+    const third = await api.answer({ query: 'focus-men-brow', messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: second.answer, question: second.guidedQuestion },
+    ] })
+    expect(third.guidedQuestion).toMatchObject({ step: 3, route: 'men' })
+
+    const result = await api.answer({ query: 'finish-natural', messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: third.answer, question: third.guidedQuestion },
+    ] })
+    expect(result.intent).toBe('beauty_knowledge')
+    expect(result.answer).toContain('眉形、眉眼关系与五官观感')
+    expect(result.sources.some((source) => source.url.includes('frontiersin.org'))).toBe(true)
+    expect(result.answer).toContain('不构成医疗诊断')
+    expect(result.guidedQuestion).toBeUndefined()
+  })
+  it('continues with catalog candidates when the user explicitly skips an unknown skin type', async () => {
+    const api = service.createAssistantService({ products: products.map((product) => ({ ...product, category: '粉底液' })), zhipuProvider: { ...provider(), configured: false } })
+    const query = '我想选底妆，但不清楚自己的肤质'
+    const profile = { skin: '油皮' }
+    const first = await api.answer({ query, profile, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
+    const second = await api.answer({ query: 'route-women', messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
+    ] })
+    expect(second.guidedQuestion.options.map(({ label }) => label)).toContain('洗脸后常紧绷或起皮')
+    const result = await api.answer({ query: 'skin-unknown', messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: second.answer, question: second.guidedQuestion },
+    ], profile })
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.answer).toContain('[[PRODUCT:b]]')
+    expect(result.answer).toContain('没有按肤质筛选候选')
+    expect(result.answer).not.toContain('先告诉我你的肤质')
+    expect(result.answer).toContain('[[PRODUCT:a]]')
+    expect(profile).toEqual({ skin: '油皮' })
+  })
+
+  it.each([
+    ['skin-dry', ['dry', 'mixed-dry'], ['oily', 'mixed-oily']],
+    ['skin-oily', ['oily', 'mixed-oily'], ['dry', 'mixed-dry']],
+    ['skin-combination', ['mixed-oily', 'mixed-dry'], ['oily', 'dry']],
+  ])('uses the selected daily skin feeling as a request-only hard filter: %s', async (choice, expected, excluded) => {
+    const fixture = [
+      ['dry', ['干皮']], ['mixed-dry', ['混干皮']], ['oily', ['油皮']],
+      ['mixed-oily', ['混油皮']], ['unrelated', ['敏感肌']],
+    ].map(([id, skins]) => ({ ...products[0], id, name: `合成底妆-${id}`, category: '粉底液', skins, price: 100, recommendationReady: true }))
+    const api = service.createAssistantService({ products: fixture, zhipuProvider: { ...provider(), configured: false } })
+    const query = '我想选底妆，但不清楚自己的肤质'
+    const first = await api.answer({ query, profile: { skin: '油皮' }, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
+    const second = await api.answer({ query: 'route-general', profile: { skin: '油皮' }, messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
+    ] })
+    expect(second.guidedQuestion.step).toBe(2)
+    expect(second.guidedQuestion.options.map(({ label }) => label)).toContain('洗脸后常紧绷或起皮')
+    const result = await api.answer({ query: choice, profile: { skin: '油皮' }, messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: second.answer, question: second.guidedQuestion },
+    ] })
+    const ids = [...result.answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((match) => match[1])
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.answer).not.toContain('请先告诉我你的肤质')
+    expect(result.answer).toContain('本次按你提供的日常感受')
+    for (const id of expected) expect(ids).toContain(id)
+    for (const id of excluded) expect(ids).not.toContain(id)
+  })
+
+  it('does not invent a match when no product metadata matches the selected daily skin feeling', async () => {
+    const onlyOily = [{ ...products[0], id: 'only-oily', name: '合成油皮底妆', category: '粉底液', skins: ['油皮'], price: 100, recommendationReady: true }]
+    const api = service.createAssistantService({ products: onlyOily, zhipuProvider: { ...provider(), configured: false } })
+    const query = '我想选底妆，但不清楚自己的肤质'
+    const first = await api.answer({ query, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
+    const second = await api.answer({ query: 'route-general', messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
+    ] })
+    const result = await api.answer({ query: 'skin-dry', messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: second.answer, question: second.guidedQuestion },
+    ] })
+    expect(result.answer).toContain('没有找到适用肤质记录与“洗脸后常紧绷或起皮”相符')
+    expect(result.answer).not.toContain('[[PRODUCT:')
+    expect(result.answer).not.toContain('先告诉我你的肤质')
+  })
+
+  it('uses an existing daily description without asking again and ignores a one-off flake as a skin type', async () => {
+    const api = service.createAssistantService({ products, zhipuProvider: { ...provider(), configured: false } })
+    const described = '我想选底妆，T区容易出油、两颊偏干'
+    const first = await api.answer({ query: described, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
+    const result = await api.answer({ query: 'route-general', messages: [
+      { role: 'user', content: described }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
+    ] })
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(result.answer).toContain('T区油、两颊偏干')
+    expect(result.answer).not.toContain('请先告诉我你的肤质')
+
+    const occasional = '我想选底妆，偶尔起皮'
+    const firstOccasional = await api.answer({ query: occasional, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
+    const next = await api.answer({ query: 'route-general', messages: [
+      { role: 'user', content: occasional }, { role: 'assistant', content: firstOccasional.answer, question: firstOccasional.guidedQuestion },
+    ] })
+    expect(next.guidedQuestion.options.map(({ value }) => value)).toContain('skin-dry')
+  })
+
+  it('does not ask about sex for safety-sensitive skin discomfort', async () => {
+    const api = service.createAssistantService({ products, zhipuProvider: { ...provider(), configured: false } })
+    const result = await api.answer({ query: '我皮肤红肿刺痛，怎么上妆？', messages: [{ role: 'assistant', id: 'welcome', content: '先说说需求' }] })
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(result.intent).toBe('unsupported_sensitive')
+    expect(result.answer).toMatch(/停止使用|咨询合格专业人员/)
+  })
+  it('can recommend a brow category from catalog facts without requiring a base-skin profile', async () => {
+    const brow = { ...products[0], id: 'brow', name: '自然眉笔', category: '眉妆', skins: [], price: 60 }
+    const api = service.createAssistantService({ products: [...products, brow], zhipuProvider: { ...provider(), configured: false } })
+    const result = await api.answer({ query: '给我推荐一支男士眉笔' })
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.answer).toContain('[[PRODUCT:brow]]')
+    expect(result.answer).not.toContain('先告诉我你的肤质')
+  })
+  it('recognizes eyebrow and contour item recommendations as catalog tasks', () => {
+    expect(router.intentRouter('推荐适合男生的眉粉', products)).toBe('catalog_recommendation')
+    expect(router.intentRouter('推荐一款修容粉', products)).toBe('catalog_recommendation')
+  })
+  it('keeps a male eyebrow product request on the verified catalog path after the user chooses that route', async () => {
+    const brow = { ...products[0], id: 'brow', name: '自然眉笔', category: '眉妆', skins: [], price: 60 }
+    const api = service.createAssistantService({ products: [...products, brow], zhipuProvider: { ...provider(), configured: false } })
+    const query = '推荐适合男生的眉粉'
+    const first = await api.answer({ query, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
+    const result = await api.answer({ query: 'route-men', messages: [
+      { role: 'user', content: query }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
+    ] })
+    expect(first.guidedQuestion.step).toBe(1)
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.answer).toContain('[[PRODUCT:brow]]')
+  })
   it.each(['给我推荐电脑', '我想买手机', '推荐一款打印机'])('audit: keeps external shopping out of the catalog: %s', (query) => {
     expect(router.intentRouter(query, products)).toBe('external_question')
   })

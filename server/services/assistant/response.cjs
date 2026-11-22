@@ -1,4 +1,5 @@
 const { formatKnowledgeContext } = require('../../knowledge/beauty-knowledge.cjs')
+const { guidedBeautyPrompt } = require('./guided-beauty-prompt.cjs')
 
 function productDigest(products) {
   return products.map((product) => [
@@ -44,6 +45,8 @@ function buildSystemPrompt(profile, products, webResults, intent = 'external_que
 10. 一般问题控制在 120-220 字；需要步骤时用不超过 7 个短步骤。不要写长篇前言、空泛总结或重复免责声明。
 11. product_fact 是对指定产品的提问，不因用户画像的预算、肤质或品类条件改成推荐筛选。逐项回答用户关心的规格、包装和使用问题；资料缺失就明确说无法确认。净含量不能证明是否含替换芯；没有用量和频率依据时不能编造可用天数；便携性和补妆建议须区分一般建议与已核实的产品事实。
 
+${guidedBeautyPrompt}
+
 已知用户自述画像：${JSON.stringify(profile)}${catalogBlock}${knowledgeBlock}${sourceBlock}`
 }
 
@@ -68,7 +71,10 @@ function productMarkers(products) {
   return products.slice(0, 3).map((p) => `[[PRODUCT:${p.id}]]`).join('\n')
 }
 
-function recommendationAnswer(selection) {
+function recommendationAnswer(selection, conditions = {}) {
+  if (!selection.length && conditions.skinLabel) {
+    return `站内资料暂时没有找到适用肤质记录与“${conditions.skinLabel}”相符、且同时满足其他条件的底妆候选。我没有放宽肤质条件或推断产品适配；你可以跳过肤质筛选或调整其他条件后再试。`
+  }
   if (!selection.length) return '资料库中暂时没有同时满足这些硬条件的产品。你可以调整预算或品类后再试。'
   return `根据明确条件，优先看以下站内产品：\n\n${selection.map(({ product: p, evidence }, i) => `${i + 1}. ${p.brand} ${p.name}：${evidence.join('；') || '符合当前品类条件'}。`).join('\n\n')}\n\n参考资料有核验范围和时效限制，建议少量试用并在自然光下试色。\n${productMarkers(selection.map(({ product }) => product))}`
 }

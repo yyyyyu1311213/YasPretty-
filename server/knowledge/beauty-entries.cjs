@@ -567,5 +567,137 @@ module.exports = [
     "version": "knowledge.v2",
     "reviewedAt": "2026-11-21",
     "reviewNote": "2026-11-21北京时间成功访问品类说明的形式、用法与FAQ12段；不转录该页具体商品宣传或购买信息。"
+  },
+  {
+    "id": "contour-contrast-visual-perception",
+    "title": "修容与面部明暗：视觉观感和证据边界",
+    "keywords": [
+      "修容",
+      "男士修容",
+      "男生修容",
+      "修容能瘦脸吗",
+      "修容改变脸型",
+      "高光阴影",
+      "面部明暗",
+      "脸型修饰",
+      "固定修容公式",
+      "轮廓修饰"
+    ],
+    "topics": [
+      "makeup_knowledge",
+      "makeup_technique",
+      "makeup_style"
+    ],
+    "referenceIds": [
+      "norman-todd-shading-2025",
+      "killian-regional-contrast-2018",
+      "jones-russell-contrast-2015",
+      "jones-kramer-cosmetics-2016"
+    ],
+    "priority": 9,
+    "conditions": [
+      "询问修容、高光、阴影、脸型观感或面部立体感时。"
+    ],
+    "techniques": [
+      "阴影、亮度渐变和高光可能改变观察者对三维形状与立体感的观感，但不会改变真实骨骼、软组织或面部比例。",
+      "可以少量、分区地调整视觉重点，并在自然光下从正面和侧面观察；不同面部区域的对比效果可能不同。",
+      "圆脸、长脸或方脸可以作为尝试方向，但目前资料不支持对所有人都有效的固定修容公式或可保证的脸宽、脸长改变量。"
+    ],
+    "limitations": [
+      "证据包含受控图像和视觉机制研究，不能证明某个实际产品或具体手法对每张脸都有效。",
+      "光线、角度、原始五官、妆容组合和观察者偏好均会影响结果；普通照片与文字建议不能替代线下试妆。"
+    ],
+    "safetyBoundaries": [],
+    "version": "knowledge.research.v1",
+    "reviewedAt": "2026-11-22",
+    "reviewNote": "依据 docs/contour-eyebrow-perception-research.md 的R1–R8及个体差异条目整理；使用文档所记录的来源与访问日期。本轮未逐一重新访问原论文，不作系统综述或元分析声明。"
+  },
+  {
+    "id": "eyebrow-eye-face-perception",
+    "title": "眉形、眉眼关系与五官观感",
+    "keywords": [
+      "眉毛怎么画",
+      "眉形建议",
+      "眉毛对五官影响",
+      "眉毛和眼睛",
+      "眉眼间距",
+      "眉峰位置",
+      "男士眉毛",
+      "男生眉毛",
+      "男生眉型",
+      "长脸眉形",
+      "方脸眉形"
+    ],
+    "topics": [
+      "makeup_knowledge",
+      "makeup_technique",
+      "makeup_style"
+    ],
+    "referenceIds": [
+      "morikawa-eyebrow-eye-size-2015",
+      "knoll-eyebrow-expression-2008",
+      "baker-brow-face-shape-2007"
+    ],
+    "priority": 9,
+    "conditions": [
+      "询问眉形与眉眼关系、表情或脸型观感时。"
+    ],
+    "techniques": [
+      "眉毛位置、倾斜和轮廓可能改变眼睛大小、倾斜方向或表情的即时观感；这些是视觉呈现，不是对真实情绪或人格的判断。",
+      "可先观察原始眉眼间距和用户希望呈现的感觉，再小幅调整眉头、眉尾或整体线条；没有适用于所有脸型的标准眉形。",
+      "关于长脸、方脸的眉形偏好仅有小样本研究支持，适合作为可试错方向，不应说成“长脸必须平眉”或“方脸必须挑眉”。"
+    ],
+    "limitations": [
+      "部分研究使用有限样本、编辑图像或特定观察者群体，研究结果不能直接变成对每个人的效果承诺。",
+      "这份研究知识未提供眉笔、眉粉或染眉膏的具体商品事实，也不构成完整的画眉步骤教程。"
+    ],
+    "safetyBoundaries": [],
+    "version": "knowledge.research.v1",
+    "reviewedAt": "2026-11-22",
+    "reviewNote": "依据 docs/contour-eyebrow-perception-research.md 的R10–R13整理；R13为小样本偏好研究，按原文保留限制。本轮未逐一重新访问原论文。"
+  },
+  {
+    "id": "eyebrow-social-impression-boundary",
+    "title": "眉形与气质观感：研究边界",
+    "keywords": [
+      "眉毛显凶吗",
+      "眉毛显严肃",
+      "眉毛气质",
+      "眉压眼",
+      "低垂眉毛",
+      "V形眉毛",
+      "挑眉显凶吗",
+      "眉形温柔",
+      "男生眉毛气质"
+    ],
+    "topics": [
+      "makeup_knowledge",
+      "makeup_style"
+    ],
+    "referenceIds": [
+      "kempa-eyebrow-height-2025",
+      "witkower-tracy-head-tilt-2019",
+      "zhu-eyebrow-control-perception-2019",
+      "feser-brow-preference-2007"
+    ],
+    "priority": 8,
+    "conditions": [
+      "询问眉形是否会显得严肃、愤怒、温和或有压迫感时。"
+    ],
+    "techniques": [
+      "部分实验发现低垂、内聚或V形眉毛更容易被观察者评价为严肃、生气或有支配感；这是特定图像和评价任务中的即时印象，不代表被评价者的真实性格。",
+      "若希望减弱严肃感，可以观察眉头是否过低或过近，以及整体线条是否形成明显V形，再按个人偏好小幅调整；结果会受原始眉眼结构、头部角度和观察者影响。",
+      "眉形偏好会随观察者和文化背景变化，不存在唯一完美眉形；不要用眉毛推断用户或他人的人格、能力、可信度或品德。"
+    ],
+    "limitations": [
+      "来源包含编辑图像、头部姿态研究和摘要级记录，不能等同真实化妆效果或普遍规律。",
+      "本条只描述社会知觉研究边界，不用于面部人格分析或敏感属性推断。"
+    ],
+    "safetyBoundaries": [
+      "不得根据用户照片或眉形推断真实情绪、人格、身份、年龄、种族或其他敏感属性。"
+    ],
+    "version": "knowledge.research.v1",
+    "reviewedAt": "2026-11-22",
+    "reviewNote": "依据 docs/contour-eyebrow-perception-research.md 的R14–R17、R21–R22整理；R17仅摘要级复核，R21偏好研究保留群体差异。本轮未逐一重新访问原论文。"
   }
 ]

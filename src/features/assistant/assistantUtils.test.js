@@ -11,8 +11,38 @@ import {
   planPayloadFromConversation,
   recommendProducts,
 } from './assistantUtils'
+import { extractRequestConditions, skinRequestFromChoice } from './profileUtils'
 
 describe('小Y本地规则', () => {
+  it.each([
+    ['skin-dry', ['干皮', '混干皮']],
+    ['skin-oily', ['油皮', '混油皮']],
+    ['skin-combination', ['混油皮', '混干皮']],
+  ])('maps a daily-feeling choice to an ephemeral request condition: %s', (choice, values) => {
+    expect(skinRequestFromChoice(choice)).toMatchObject({ skinValues: values })
+    expect(skinRequestFromChoice(choice)).not.toHaveProperty('skin')
+  })
+
+  it('uses request-only skin values in offline filtering and lets skip override a saved skin', () => {
+    const profile = { skin: '油皮', budget: 1000 }
+    const dry = localReply('我想选底妆，但不清楚自己的肤质', profile, skinRequestFromChoice('skin-dry'))
+    expect(dry.products.length).toBeGreaterThan(0)
+    expect(dry.products.every((product) => product.skins.some((skin) => ['干皮', '混干皮'].includes(skin)))).toBe(true)
+    expect(dry.text).toContain('本次按你提供的日常感受')
+
+    const skip = localReply('我想选底妆，但不清楚自己的肤质', profile, skinRequestFromChoice('skin-unknown'))
+    expect(skip.products.length).toBeGreaterThan(0)
+    const unfiltered = recommendProducts({ budget: 1000, category: '粉底液', skin: undefined }, '我想选底妆，但不清楚自己的肤质')
+    expect(skip.products.map(({ id }) => id)).toEqual(unfiltered.map(({ id }) => id))
+    expect(skip.text).toContain('本次候选未按肤质筛选')
+    expect(profile).toEqual({ skin: '油皮', budget: 1000 })
+  })
+
+  it('recognizes existing daily observations but not an occasional flake as a skin category', () => {
+    expect(extractRequestConditions('我想选底妆，T区油、两颊偏干')).toMatchObject({ skinValues: ['混油皮', '混干皮'] })
+    expect(extractRequestConditions('我想选底妆，偶尔起皮')).not.toHaveProperty('skinValues')
+  })
+
   it.each(['我朋友说，预算200元，想要哑光气垫', 'YSL售价300元左右', '假如我是干皮，预算200元', '她喜欢哑光，想买气垫'])('audit: does not persist third-person, hypothetical or product-price statements: %s', (text) => {
     const current = { skin: '油皮', budget: 1000 }
     expect(extractProfile(text, current)).toEqual(current)
@@ -31,6 +61,14 @@ describe('小Y本地规则', () => {
     const result = localReply('推荐适合干皮、不超过600元的粉底液', { skin: '油皮', budget: 1000 })
     expect(result.text).toContain('适合干皮')
     expect(result.text).not.toContain('需求（油皮）')
+  })
+  it('can use the catalog category for eyebrow and contour suggestions without requiring a base-skin profile', () => {
+    const brows = localReply('推荐男士眉粉', {})
+    expect(brows.products.length).toBeGreaterThan(0)
+    expect(brows.products.every((product) => product.category === '眉妆')).toBe(true)
+    const contour = localReply('推荐修容粉', {})
+    expect(contour.products.length).toBeGreaterThan(0)
+    expect(contour.products.every((product) => product.category === '修容')).toBe(true)
   })
   it.each(['YSL适合喜欢哑光的人', '预算15-30g', '预算30-50ml'])('audit: keeps product descriptions and quantity ranges out of self reports: %s', (text) => {
     expect(extractProfile(text, { budget: 400 })).toEqual({ budget: 400 })

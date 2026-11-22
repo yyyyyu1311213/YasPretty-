@@ -46,6 +46,18 @@ describe('受控美妆知识库', () => {
     expect(knowledgeModule.localKnowledgeAnswer([entry])).toContain('先别急')
   })
 
+  it('retrieves eyebrow and contour research without expanding it into product facts or face-shape promises', () => {
+    const brow = retrieveKnowledge('男生眉毛怎么画，眉形对眉眼观感有什么影响', 'beauty_knowledge')
+    expect(brow.map((entry) => entry.id)).toContain('eyebrow-eye-face-perception')
+    expect(brow.find((entry) => entry.id === 'eyebrow-eye-face-perception').limitations.join('')).toContain('不构成完整的画眉步骤教程')
+    const contour = retrieveKnowledge('修容阴影会不会让脸型看起来更立体', 'beauty_knowledge')
+    expect(contour.map((entry) => entry.id)).toContain('contour-contrast-visual-perception')
+    const contourEntry = contour.find((entry) => entry.id === 'contour-contrast-visual-perception')
+    expect([...contourEntry.techniques, ...contourEntry.limitations].join('')).toContain('可保证的脸宽、脸长改变量')
+    expect(retrieveKnowledge('男生素颜霜的实际遮瑕功效怎么样', 'beauty_knowledge').map((entry) => entry.id))
+      .not.toContain('eyebrow-eye-face-perception')
+  })
+
   it('returns deduplicated reviewed source citations', () => {
     const entries = retrieveKnowledge('如何判断肤质和新产品刺痛怎么办', 'skin_safety')
     const sources = knowledgeSources(entries)
@@ -80,7 +92,7 @@ describe('受控美妆知识库', () => {
       expect(entry.techniques.length).toBeGreaterThan(0)
       expect(entry.limitations.length).toBeGreaterThan(0)
       expect(entry.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-      expect(entry.version).toBe('knowledge.v2')
+      expect(entry.version).toMatch(/^knowledge\.(?:v2|research\.v1)$/)
       const answer = knowledgeModule.localKnowledgeAnswer([entry])
       for (const boundary of entry.safetyBoundaries) expect(answer).toContain(boundary)
     }

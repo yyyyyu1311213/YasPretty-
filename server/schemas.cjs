@@ -11,10 +11,23 @@ const profileSchema = z.object({
   city: z.string().trim().max(40).optional(),
 }).strict()
 
+const guidedQuestionSchema = z.object({
+  flowId: z.string().trim().min(1).max(80),
+  step: z.number().int().min(1).max(3),
+  route: z.enum(['men', 'women', 'general', 'skin', 'plan']).nullable(),
+  selections: z.array(z.string().trim().min(1).max(80)).max(2),
+  initialQuery: z.string().trim().max(1000).optional(),
+  options: z.array(z.object({
+    label: z.string().trim().min(1).max(80),
+    value: z.string().trim().min(1).max(80),
+  }).strict()).min(2).max(5),
+}).strict()
+
 const conversationMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
   content: z.string().trim().min(1).max(4000),
   productIds: z.array(z.string().trim().min(1).max(120)).max(3).optional(),
+  question: guidedQuestionSchema.optional(),
 }).strict()
 
 const assistantRequestSchema = z.object({
@@ -93,6 +106,7 @@ const assistantResponseSchema = z.object({
   answerMode: z.enum(['model', 'knowledge', 'search', 'weather', 'clarification', 'local']),
   model: z.string().trim().min(1).max(80).nullable(),
   intent: z.enum(['catalog_recommendation', 'product_comparison', 'product_fact', 'beauty_knowledge', 'makeup_plan', 'plan_adjustment', 'external_question', 'external_research', 'greeting_help', 'unsupported_sensitive', 'clarification', 'compound']).optional(),
+  guidedQuestion: guidedQuestionSchema.optional(),
   coverage: z.array(assistantCoverageSchema).max(7).optional(),
   knowledgeEvidence: z.array(knowledgeEvidenceSchema).max(8).optional(),
 }).strict()

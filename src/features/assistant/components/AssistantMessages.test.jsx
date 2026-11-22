@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { products } from '../../../data/products'
 import AssistantMessages from './AssistantMessages'
 
-const props = { messages: [], profile: {}, busy: false, activity: '合成加载状态', messageEndRef: { current: null }, onOpenProduct: vi.fn() }
+const props = { messages: [], profile: {}, busy: false, activity: '合成加载状态', messageEndRef: { current: null }, onOpenProduct: vi.fn(), onChoose: vi.fn() }
 
 describe('小Y消息展示边界', () => {
   it('keeps user/assistant roles, message order and text without treating message text as HTML', () => {
@@ -17,6 +17,23 @@ describe('小Y消息展示边界', () => {
     expect(markup).toContain('&lt;b&gt;合成问题&lt;/b&gt;')
     expect(markup.indexOf('合成问题')).toBeLessThan(markup.indexOf('合成回答'))
     expect(markup).not.toContain('class="xiaoy-message assistant loading"')
+  })
+
+  it('shows route choices only after an assistant response and enables only the current choice set', () => {
+    const question = { flowId: 'xiaoy-guided-intake-v1', step: 1, route: null, selections: [],
+      options: [{ label: '我是男生，想看自然修饰', value: 'route-men' }, { label: '按需求选择', value: 'route-general' }] }
+    const markup = renderToStaticMarkup(<AssistantMessages {...props} messages={[
+      { id: 'welcome', role: 'assistant', content: '先描述需求。' },
+      { id: 'user', role: 'user', content: '想学习自然修眉。' },
+      { id: 'route', role: 'assistant', content: '我会结合你的需求继续。', question },
+    ]} />)
+    expect(markup).toContain('我是男生，想看自然修饰')
+    expect(markup).toContain('按需求选择')
+    expect(markup).toContain('可直接输入，也可以选“不确定”或跳过')
+    const busyMarkup = renderToStaticMarkup(<AssistantMessages {...props} busy messages={[
+      { id: 'route', role: 'assistant', content: '请继续选择。', question },
+    ]} />)
+    expect(busyMarkup).toContain('disabled=""')
   })
 
   it('renders only real catalog product IDs and keeps the attached sources', () => {

@@ -3,7 +3,9 @@ import { products } from '../../../data/products'
 import AssistantProduct from './AssistantProduct'
 import SourceList from './SourceList'
 
-export default function AssistantMessages({ messages, profile, busy, activity, messageEndRef, onOpenProduct }) {
+export default function AssistantMessages({ messages, profile, busy, activity, messageEndRef, onOpenProduct, onChoose }) {
+  const lastMessage = messages.at(-1)
+  const activeQuestionId = !busy && lastMessage?.role === 'assistant' && lastMessage.question ? lastMessage.id : null
   return (
     <div className="xiaoy-messages" aria-live="polite">
       {messages.map((message) => (
@@ -11,6 +13,20 @@ export default function AssistantMessages({ messages, profile, busy, activity, m
           <span className="xiaoy-message-icon">{message.role === 'assistant' ? <Bot size={17} /> : <UserRound size={17} />}</span>
           <div className="xiaoy-message-body">
             <p>{message.content}</p>
+            {message.question && (
+              <div className="xiaoy-choice-group" role="group" aria-label="小Y引导选项">
+                {message.question.options.map((option) => (
+                  <button key={option.value} type="button" disabled={activeQuestionId !== message.id}
+                    onClick={() => onChoose?.(option.label, option.value)}>
+                    {option.label}
+                  </button>
+                ))}
+                <span className="xiaoy-choice-note">
+                  第 {message.question.step}/3 轮 · 可直接输入，也可以选“不确定”或跳过
+                  {message.question.step === 1 ? ' · 路线只用于本次建议，不会记录性别' : ''}
+                </span>
+              </div>
+            )}
             {message.productIds?.length > 0 && (
               <div className="xiaoy-products">
                 {message.productIds.map((id) => {

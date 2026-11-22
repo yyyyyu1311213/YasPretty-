@@ -21,6 +21,15 @@ describe('小Y业务请求', () => {
     expect(result.knowledgeEvidence).toEqual(knowledgeEvidence)
     expect(JSON.parse(fetch.mock.calls[0][1].body).messages).toEqual([{ role: 'assistant', content: '合成历史', productIds: [] }])
   })
+  it('carries the bounded guided question forward with the user’s original request', async () => {
+    const question = { flowId: 'xiaoy-guided-intake-v1', step: 1, route: null, selections: [], initialQuery: '我想学男生日常修眉',
+      options: [{ label: '男生自然修饰', value: 'route-men' }, { label: '女生彩妆', value: 'route-women' }] }
+    const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ answer: '结合你的需求继续', guidedQuestion: question }) })
+    vi.stubGlobal('fetch', fetch)
+    const result = await requestAssistant(input)
+    expect(result.question).toEqual(question)
+    expect(JSON.parse(fetch.mock.calls[0][1].body).messages).toEqual([])
+  })
   it('posts the last eight messages with bounded existing product references and adapts valid IDs and sources', async () => {
     const messages = Object.freeze(Array.from({ length: 12 }, (_, index) => Object.freeze({
       id: String(index), role: index % 2 ? 'assistant' : 'user', content: `合成历史 ${index}`,

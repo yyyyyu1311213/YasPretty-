@@ -13,7 +13,7 @@ const isFact = (text) => /规格|色号|容量|净含量|多少克|多少毫升|
   || /正装|替换芯|替换装|补充装|套装/.test(text) && /吗|还是|是否|含不含|有没有|[？?]/.test(text)
 const isTimely = (text) => /天气|气温|下雨|最新|最近|目前|今年|20\d{2}|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买/.test(text)
 const isExternalObject = (text) => /手机|打印机|电脑|汽车|自行车|笔记本|耳机/.test(text)
-const isRecommendation = (text) => /推荐|选什么|怎么选|哪个好|我(?:是|的肤质是|肤质是).*(?:皮|肌)|^(?:混油皮|混干皮|干皮|油皮|敏感肌)$|^预算|我.*(?:想要|想找|想买|要买)/.test(text)
+const isRecommendation = (text) => /推荐|选什么|怎么选|哪个好|我(?:是|的肤质是|肤质是).*(?:皮|肌)|^(?:混油皮|混干皮|干皮|油皮|敏感肌)$|^预算|我.*(?:想要|想找|想买|想选|要买)/.test(text)
 const isOverview = (text) => /怎么样|好用|介绍|了解|评价|如何/.test(text)
 const isCatalogSizeQuestion = (text) => /^(?:请问)?(?:你们(?:的)?|本站|站内|网站(?:上)?|产品库(?:里|中)?|库里)(?:产品库(?:里|中)?|收录|列出|展示|推荐|卖|的|这些|产品|商品|化妆品)*(?:全部|全|都)?(?:是|是不是|是指|收录)?(?:正装|小样|中样|试用装)(?:规格)?(?:吗|么|对吗)?[？?。！!\s]*$/.test(text)
 
@@ -40,7 +40,8 @@ function intentRouter(query, products = [], messages = []) {
   if (reference && !isExternalObject(text)) return resolution.allSelected && resolution.products.length > 1 ? 'product_comparison' : 'product_fact'
   if (/天气|气温|温度|下雨|降雨/.test(text)) return 'external_question'
   if (isTimely(text)) return 'external_research'
-  if (isRecommendation(text) && (context || /皮|肌|预算|妆效/.test(text) || /^(?:请|帮我|给我)?(?:推荐(?:一下)?|选什么|哪个好)[。？?！!\s]*$/.test(text))) return 'catalog_recommendation'
+  if (isRecommendation(text) && (context || /皮|肌|预算|妆效/.test(text) || /粉底|底妆|气垫|素颜霜|眉妆|眉笔|眉粉|眉胶|修容粉|修容膏/.test(text)
+    || /^(?:请|帮我|给我)?(?:推荐(?:一下)?|选什么|哪个好)[。？?！!\s]*$/.test(text))) return 'catalog_recommendation'
   if (/^(你好|嗨|hello|hi|在吗)[！!。？?\s]*$/i.test(text)) return 'greeting_help'
   if (specified || context && (isFact(text) || isOverview(text))) return 'product_fact'
   if (/解释|介绍|为什么|是什么|如何|怎么|手机|打印机|电脑|汽车/.test(text)) return 'external_question'

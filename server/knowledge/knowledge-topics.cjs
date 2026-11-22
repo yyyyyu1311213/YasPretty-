@@ -31,6 +31,9 @@ const questionTerms = Object.freeze({
   'glowy-makeup-style-language': [['水光', '清透', '光泽', '韩女妆', '美妆风格', '妆容风格']],
   'patchy-base-adjustment': [['粉底', '底妆', '气垫'], ['卡粉', '起皮']],
   'foundation-and-cushion': [['粉底'], ['气垫'], ['区别', '不同', '是什么']],
+  'contour-contrast-visual-perception': [['修容', '高光', '阴影', '轮廓', '面部明暗'], ['怎么', '如何', '脸型', '观感', '立体', '影响']],
+  'eyebrow-eye-face-perception': [['眉毛', '眉形', '眉型', '眉眼', '眉峰'], ['怎么', '如何', '影响', '建议', '男生', '脸型', '眼睛', '观感']],
+  'eyebrow-social-impression-boundary': [['眉毛', '眉形', '挑眉', '眉压眼'], ['显凶', '严肃', '气质', '人格', '表情', '温柔']],
 })
 
 function normalizeKnowledgeText(value) {

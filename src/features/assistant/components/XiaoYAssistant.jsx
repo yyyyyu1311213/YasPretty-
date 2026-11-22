@@ -37,8 +37,8 @@ export default function XiaoYAssistant({ onOpenProduct }) {
       <div className="xiaoy-heading">
         <div>
           <p className="eyebrow"><Sparkles size={14} /> YASPRETTY AI BEAUTY ADVISOR</p>
-          <h1>和小Y一起，找到适合你的底妆。</h1>
-          <p>直接用一句话告诉小Y 你的肤质、妆效、场景和预算，识别到的条件会自动同步到条件卡；也可以随时手动调整。</p>
+          <h1>和小Y一起，找到适合你的妆容方向。</h1>
+          <p>先用一句话描述你想解决的问题，小Y会结合需求继续引导；肤质、肤色或色调不清楚也可以边聊边选。</p>
         </div>
         <div className="xiaoy-heading-actions">
           <span className={`xiaoy-mode ${mode}`}>{mode === 'weather' ? '天气数据' : mode === 'web' ? '联网思考' : mode === 'knowledge' ? activeModel ? `${activeModel} · 知识库` : '知识库参考' : mode === 'ai' ? activeModel || 'AI 对话' : mode === 'local' ? '资料库推荐' : mode === 'tool' ? '实时工具' : mode === 'error' ? '连接异常' : '已就绪'}</span>
@@ -60,9 +60,9 @@ export default function XiaoYAssistant({ onOpenProduct }) {
 
         <div className="xiaoy-main">
           <div className="xiaoy-chat">
-            <AssistantMessages messages={messages} profile={profile} busy={busy} activity={activity} messageEndRef={messageEndRef} onOpenProduct={onOpenProduct} />
+            <AssistantMessages messages={messages} profile={profile} busy={busy} activity={activity} messageEndRef={messageEndRef} onOpenProduct={onOpenProduct} onChoose={sendMessage} />
 
-            {messages.length === 1 && <div className="xiaoy-prompts">{quickPrompts.map((prompt) => <button key={prompt} onClick={() => sendMessage(prompt)}>{prompt}<ChevronRight size={15} /></button>)}</div>}
+            {messages.length === 1 && messages[0].id !== 'welcome' && !messages[0].question && <div className="xiaoy-prompts">{quickPrompts.map((prompt) => <button key={prompt} onClick={() => sendMessage(prompt)}>{prompt}<ChevronRight size={15} /></button>)}</div>}
 
             <form className="xiaoy-composer" onSubmit={(event) => { event.preventDefault(); sendMessage(input) }}>
               <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="例如：我是混油皮，想找 500 元内的通勤底妆" aria-label="向小Y描述你的需求" disabled={busy} />

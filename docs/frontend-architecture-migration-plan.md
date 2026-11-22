@@ -16,9 +16,10 @@
 | 合并前 master / 实际远端 | `19b87df58d0f8bf3874dc8e958175c7c22ac6f82`；fetch 和实际远端查询已核对 |
 | 原开发分支末端（历史定位） | `codex/frontend-contracts-yas-2026-0055` / `4062153c512107534b88f3bc6011ffa869334c8a`；末端已纳入 master，本地和远端分支均已删除，原提交及标签保留 |
 | 切换完成 master SHA / 已核验远端 | 普通合并 `8caf4dcdad416a2a8fbc6057a7f5a289403e9a1c`；纯文档归档提交 `3b7ceee79576d8d38ff3821d1d688914d49c2f18`，ARCH-05 启动时已核对实际远端 |
-| 当前阶段 | ARCH-12「展示层所有权收敛」已完成人工验收；本次归档后无新的 `current` |
-| 下一阶段 | 无新的 `current`；未授权开启其他阶段 |
-| 已验收阶段 | ARCH-00～11 均 `done` 且已归档；ARCH-11 最终提交 `57b0a877a9a6bbd769fdb079c2c4ef71629e28e9` / `arch-stage-11` 已核对本地及实际远端 |
+| 当前阶段 | 无新的 `current`；ARCH-14「小Y结构化引导与眉毛/修容知识接入」已由负责人于 2026-11-22 完成人工整阶段验收并改为 `done`，本次执行归档；修改前基线 `9f8841982f40f981a5234db4fbe90c017a98f0f0` |
+| 下一阶段 | 未预设新编号或范围；待负责人另行授权后再确定，不提前实施 |
+| 已验收阶段 | ARCH-00～12 均 `done`；ARCH-14 本次人工验收通过并改为 `done`。ARCH-11 最终提交 `57b0a877a9a6bbd769fdb079c2c4ef71629e28e9` / `arch-stage-11` 已核对本地及实际远端 |
+| 历史 `arch-stage-13` 标签 | 保留现有带注释标签对象 `9f2ff35740364a447f2bc3a91d1a387951fedd32` → 提交 `bcb9da04d65f45bfce8a7b13f8fc791c24865234`（YAS-2026-0056，产品库扩展）。产品审计将其归为产品阶段 3 资料迁入且明确“不是新 ARCH 阶段”；因此不据标签名推定或新建 ARCH-13 阶段状态，不移动/删除此标签 |
 | 前置 contracts | 六个 JSDoc 契约文件；原提交 `86b25b331106b49b02f10b499de7f7d94c24032b`（YAS-2026-0055）随合并保留 |
 | ARCH-00 | `arch-stage-00` 对象 `cb811573c820bc01bd5ee5628f24c5e30fc6600e` → `8c95966cf61367396fd6783da1f86c8569546668` |
 | ARCH-01 | `arch-stage-01` 对象 `ba59303891315291dcdab02b6906971b1799d339` → `5e58236f6897147b354153ea9b02d080641a3cea` |
@@ -29,10 +30,10 @@
 | ARCH-06 | arch-stage-06 对象 dc38c7ac170701918cae4e08bf20e2ccee2ffd50 → e78c87f6768444138b88adca33b1221aa6c03d89；本地和实际远端一致 |
 | ARCH-07 | arch-stage-07 对象 c7765c37a83ce0dc4806d2db50ae84ebfbd9c4a9 → 7f71699ddea914c36a1ad3b0c877ad0d6eb31755；本地和实际远端一致 |
 | ARCH-11 | `arch-stage-11` 对象 `89aa7c31466b3d270bab4820d0b34c6c38730c4e` → `57b0a877a9a6bbd769fdb079c2c4ef71629e28e9`；保留且不复用、移动或删除 |
-| 最近远端核对 | 2026-11-17 19:39–19:40（北京时间）ARCH-12 启动：fetch/实际 ls-remote 核对 master/HEAD/origin/master/FETCH_HEAD 均为 `57b0a877a9a6bbd769fdb079c2c4ef71629e28e9`，ahead/behind 0/0；00～11 本地/远端带注释标签对象与实际指向一致，12 不存在；起始工作树、未跟踪与索引为空 |
-| 最近验证结果 | ARCH-12：相关18文件143/143、全量42文件336/336、build2905；导入/所有权审计通过；前后开发各116/116、20状态计算样式/几何差异0、无Key生产38/38、HTTP路由73/73；人工验收通过，失败和限制见 ARCH-12 记录 |
+| 最近远端核对 | 2026-11-22（北京时间）约 13:02 执行 `git fetch origin dev` 并用 `git ls-remote` 核对；HEAD、`origin/dev` 与 GitHub `dev` 均为 `9f8841982f40f981a5234db4fbe90c017a98f0f0`，ahead/behind 0/0，索引为空；`arch-stage-13` 与本地/远端对象一致，`arch-stage-14` 尚不存在。 |
+| 最近验证结果 | ARCH-14 肤质引导续修：定向测试 2 文件/97 项通过，`npm test` 53 文件/626 项通过；`npm run build` 1885 模块成功（保留既有大包警告）；生产 HTTP+Playwright 在 1440×900 与 360×900 各覆盖干皮、油皮、混合倾向和跳过，8/8 通过；`node --check` 浏览器脚本和服务端改动通过。代码验证沿用上述真实运行结果；本次仅追加验收/归档文档，最终 `git diff --check` 在暂存前复核。负责人已完成人工整阶段验收。 |
 
-实际代码与测试是判断模块是否落地的事实依据。ARCH-11 在原批准范围内已经归档；ARCH-12 是后续新增的展示层归属整改，不是对 ARCH-11 测试或验收结论的否定。ARCH-00～11 的提交、标签、人工确认/豁免、失败和风险记录全部保留。下文既有待验收/未提交/current/无新的 current 描述是当时快照；ARCH-12 人工验收通过后当前无新的 `current`，最新事实以本节及 ARCH-12 收尾记录为准。
+实际代码与测试是判断模块是否落地的事实依据。ARCH-11 在原批准范围内已经归档；ARCH-12 是后续新增的展示层归属整改，不是对 ARCH-11 测试或验收结论的否定。ARCH-00～12 的提交、标签、人工确认/豁免、失败和风险记录全部保留。现有 `arch-stage-13` 是 YAS-2026-0056 产品资料的历史标签，产品审计未将其定义为新的 ARCH 阶段；本计划不通过其名称推断 ARCH-13 状态。下文既有待验收/未提交/current/无新的 current 描述是当时快照；ARCH-14 现已人工验收通过并改为 `done`，无新的 `current`。当前事实以本节状态表和最新 ARCH 阶段记录为准。
 
 ## 2. 文档分工
 
@@ -1591,6 +1592,9 @@ node -e "require('dotenv').config=()=>({parsed:{}});const {loadConfig}=require('
 | ARCH-10 | app | done | 完整13路径“人工审核完毕”；最终f8fcbfa2673af1b9f9f470796f6a206aedeffcc9，本地/实际远端arch-stage-10对象d51f5ee44f5140be1c38a2e4b6be133f2ca144c6、^{}指向该提交；18:55:48核对一致；原证据/失败/限制保留 |
 | ARCH-11 | 整体回归 | done | 已在原批准范围归档：`57b0a877a9a6bbd769fdb079c2c4ef71629e28e9` / arch-stage-11（对象 `89aa7c31466b3d270bab4820d0b34c6c38730c4e`）；原验收、验证、失败和风险全部保留 |
 | ARCH-12 | 展示层所有权收敛 | done | 负责人已完成人工验收并授权归档；最终提交与 `arch-stage-12` 的实际 SHA/对象由本次收尾回执核验；当前无新的 `current`，不否定 ARCH-11 的测试或验收结论 |
+| ARCH-14 | 小Y结构化引导与眉毛/修容知识接入 | done | 问题 YAS-2026-0064；基线 `9f8841982f40f981a5234db4fbe90c017a98f0f0`；负责人 2026-11-22 明确人工验收全部完成；本次归档 SHA/tag 由收尾回执提供 |
+
+注：本计划没有定义 ARCH-13 阶段；现有同名标签实际指向 YAS-2026-0056 的产品资料提交。产品审计把该资料迁入定义为产品阶段 3 范围、不是新 ARCH 阶段，所以不补造 ARCH-13 行或状态。
 
 2026-11-17 后续 `dev` 工作区记录（未提交、待负责人本地核验）：从已归档 master `4862e2759ba3b7785b4138a2ae88b5e8053f292a` 创建 `dev`。本次为独立的首页美妆店体验改造，不改写 ARCH-00～12 的验收和归档状态，也不新增其 `current`。新增根目录 `beauty-shop-3d.html` 作为 Vite 第二 HTML 构建入口；`src/features/makeup-table/components/MakeupTableExperience.jsx` 与同名 CSS 负责 iframe 状态、返回和品类导航，原 `MakeupTable.jsx` 仍为 2D 回退；`HomeView` 调整标题与节奏；`server/app.cjs` 将 iframe 的 CSP 与 X-Frame-Options 同时限制为仅同源，并在 `server/app.test.js` 验证；新增 `tests/browser/beauty-shop-experience.mjs`。场景运行时使用本地打包的 Three.js，页面只接收受控品类事件，不把模型文案作为产品事实。当前改动在 `dev`，未提交、未推送、未归档；待负责人体验后再决定提交。开发及生产同源地址的桌面1440px/手机360px商店、妆台、返回及实际模型品类点击回归均已通过；真实设备触控与运行性能尚待本地核验。阶段累计报告暂不将本次记为已完成阶段。
 
@@ -1786,3 +1790,44 @@ AI系列独立于ARCH历史；本轮从“待实施→实施中→待人工验�
 61455无Key预览已更新，刷新后发送新问题；旧消息不改写、不清理。README和两份累计报告同步，AGENTS/FINAL-PROMPT及ARCH阶段状态不变。**仍待人工验收，未暂存、提交、推送或打标签，无本轮SHA/tag。** 本阶段无新增逐商品外部核验，继承上一条结论；负责人确认的正装收录规则单独记入审计，不代表产品事实/素材授权全面升级。
 
 2026-11-21（北京时间）：负责人要求“AI-R03先去提交”，在本地 dev 保存本轮42文件，不推送、不打标签，人工验收状态不变。当前已知“我用粉底总起皮，怎么办？”可能将“怎么办”误拆为独立问题；本次提交保留该问题，不进入下一阶段。
+
+
+### 2026-11-22 ARCH-14：小Y结构化引导与眉毛/修容知识接入（已人工验收，归档回执见阶段报告）
+
+关联阶段 ARCH-14；问题编号 YAS-2026-0064。负责人当前任务授权实施；基线 `9f8841982f40f981a5234db4fbe90c017a98f0f0`。开始时 dev、HEAD、origin/dev 与实际远端一致，工作树/索引干净；本记录撰写时未提交、未推送、未打标签，阶段保持唯一 current。实际修改前再次确认本地 `dev` 与最新远端未分叉；现有 ARCH 标签不变。
+
+**交付行为**：首次欢迎只邀请用户先描述需求。用户提交美妆需求后，小Y保留原问题，再提供男生自然修饰、女生日常彩妆、性别无关或直接回答路线；仅在确实需要时再弹出小模块，每轮一个重点，最多三轮，并允许不确定、跳过、自由输入。已知选择结束后旧按钮禁用；无肤质自述时底妆可以在用户明确跳过后继续，但要显示未按肤质筛选。性别路线仅用于本次建议，不进入画像或推断。旧版本地欢迎消息如带预先选择卡片，仅在读取时归一为新欢迎文案，不增加存储键或清理对话。
+
+男生路线通过通用受控知识库使用新增眉形/眉眼关系、修容/明暗及研究边界条目，不创建另一份重复产品库。眉笔、眉粉和修容商品建议仍读取站内真实商品资料；研究文档不支持的素颜霜功效、商品事实和完整教程保持未知，不外推。知识引用与研究整理依据来自 `docs/contour-eyebrow-perception-research.md`，本轮没有逐篇重新访问原论文或重新验证其外部页面；摘要级研究边界在知识条目中保留。照片分析、产品事实及图片授权状态未修改。
+
+**实际改动路径**：
+
+| 路径 | 职责 |
+| --- | --- |
+| `server/services/assistant/guided-intake.cjs`、`guided-intake.test.js`、`guided-beauty-prompt.cjs` | 轮次状态、选项匹配、首问承接、提示词和上限测试 |
+| `server/services/assistant-service.cjs`、`assistant/intent-router.cjs`、`assistant/knowledge-answer.cjs`、`assistant/response.cjs`、`assistant/assistant.test.js` | `/api/assistant` 流程接线、眉妆/修容商品意图与受控知识回答 |
+| `server/schemas.cjs` | 服务端点选问题及答案 schema，step 最大值为 3 |
+| `server/knowledge/beauty-entries.cjs`、`reference-sites.cjs`、`knowledge-topics.cjs`、`beauty-knowledge.test.js` | 三条受控眉形/修容研究条目、来源范围与主题检索 |
+| `src/features/assistant/hooks/useAssistant.js`、`hooks/useAssistant.test.js`、`components/XiaoYAssistant.jsx`、`components/AssistantMessages.jsx`、`components/AssistantMessages.test.jsx`、`assistant.css` | 首条需求入口、历史消息携带问题、停用旧选项、移动端选择模块 |
+| `src/features/assistant/assistantApi.js`、`assistantApi.test.js`、`src/contracts/assistant.js` | 请求/响应契约与本轮问题适配 |
+| `src/features/assistant/assistantUtils.js`、`assistantUtils.test.js`、`profileUtils.js` | 本地问候与眉妆/修容品类意图适配；不记性别 |
+| `docs/prompts/xiaoy-guided-intake.md`、`FINAL-PROMPT.md`、`README.md` | 可复用对话提示词、产品要求和当前状态 |
+| `tests/browser/assistant-guided-intake.mjs` | 桌面/手机生产页面 HTTP 回归脚本 |
+| 本迁移计划、阶段交付报告、产品数据审计 | 本阶段状态、测试证据及无新增产品核验记录 |
+
+**验证结果**：2026-11-22（北京时间）`npm test` 52 个文件、610/610 项通过；`npm run build` 1885 模块通过，保留项目既有大于 500 KB 的 chunk 警告。`node tests/browser/assistant-guided-intake.mjs` 使用本地生产构建、Fastify HTTP、合成无 Key provider 与隔离 Chrome，1440×900 和 360×900 各完整走完 3 轮，合计 2/2 视口通过；确认初始欢迎没有选项、首条原需求被保留、路线选择未写画像、跳过未知肤质后不重复追问且不按肤质筛选、页面无横向溢出或遮挡。截图和机器结果只存于忽略目录 `.qa/arch-14/guided-intake/`。最终复核 `git diff --check` 通过。真实 GLM、联网检索、真实用户数据和实体手机未验证。
+
+未实现独立男性知识库、商品知识或专用素颜霜功效条目；真实模型质量与不同自由文本覆盖仍需人工体验。未新增依赖、API endpoint、画像字段、存储键或服务端永久记忆；没有新增商品、价格、色号、SKU、商品链接、图片、授权或商品事实核验。本次不改比赛视频。自动回归使用本地合成 provider，不宣称真实模型已验收。
+
+2026-11-22（北京时间）：负责人明确回复“人工全部验收完毕”。按整阶段门禁将 ARCH-14 改为 `done`；本次只归档这一已验收阶段，不新建下一编号、不删除分支。人工验收不扩展真实provider、设备、商品适配或公开部署的验证结论；**本阶段无新增核验，继承上一条结论。** 实际提交 SHA 与 `arch-stage-14` 标签对象/指向以本次 GitHub 收尾回执为准；当前无新的 `current`。
+
+**2026-11-22 肤质引导续修（YAS-2026-0064，待整阶段人工验收）**
+
+- 复现与原因：从“我想选底妆，但不清楚自己的肤质”进入路线，再选肤质时，前端将按钮值作为请求文本发送，但既有确定性筛选主要读取保存画像中的单值 `skin`；因此本次选择没有可靠成为硬条件，服务端可能再次追问。原先已有的不确定选项也需要明确清除本次继承画像条件并披露筛选范围。
+- 修复行为：将干皮映射到 `干皮/混干皮`、油皮映射到 `油皮/混油皮`、混合倾向映射到 `混油皮/混干皮`、敏感倾向映射到 `敏感肌`，作为当前请求 `skinValues` 交给 `selectRecommendations` 做确定性候选过滤；选择不确定/跳过时移除保存画像肤质条件，继续原请求并说明未按肤质筛选。未调用画像保存流程，选择不会写入长期画像。日常描述可直接命中请求级条件；“偶尔起皮”不单独映射为肤质。用户已提供“T区油、两颊偏干”等日常感受时，路线选择后不重复询问。
+- 安全复核：全量测试暴露了既有复合提问路径被单项皮肤不适短路，导致后续上妆/完整方案未列入覆盖；恢复复合拆分并让当前红肿、破损、明显刺痛等不适上下文暂缓后续上妆或方案子问题。一般刷具知识仍可回答并附上避免在不适处使用或测试的提示。单项不适问题仍维持原敏感意图结果。
+- 本轮续修路径：`server/services/assistant-service.cjs`、`server/services/assistant/assistant.test.js`、`server/services/assistant/tools.test.js`、`server/services/assistant/guided-intake.test.js`、`src/features/assistant/profileUtils.js`、`src/features/assistant/assistantUtils.js`、`src/features/assistant/assistantUtils.test.js`、`src/features/assistant/hooks/useAssistant.js`、`src/features/assistant/hooks/useAssistant.test.js`、`tests/browser/assistant-guided-intake.mjs`，以及 README、可复用提示词、本计划和两份累计报告。保留同一 ARCH-14 范围；没有新 API、依赖、产品数据、存储键或画像字段。
+- 自动验证：定向助手与 AI-R03 回归 `npm test -- server/services/assistant/assistant.test.js server/services/assistant/ai-r03.test.js` 97/97；全量 `npm test` 53 文件、626/626；`npm run build` 转换 1885 模块成功，既有大于 500 KB chunk 警告保留。生产页面浏览器脚本通过真实主站和本机 Fastify HTTP、隔离 Chrome 与无 Key provider 运行，在 1440×900 和 360×900 各点击干皮、油皮、混合倾向及跳过，共 8/8；核对首问原文与路线延续、按钮可点、选择后不复问、候选符合日常感受、跳过候选等于同品类妆效下不按肤质筛选的结果、画像值不变、选项无重叠、页面无横向溢出且无 pageerror。测试没有调用真实 GLM、联网 provider 或读取真实用户数据；未测试实体手机。
+- 验证过程保留：第一轮全量测试为 624/626，暴露复合不适问题与 H11；修复后另发现单问题安全意图需保持 `unsupported_sensitive`，已补兼容并以 97/97 定向测试及 626/626 全量测试复核。浏览器断言首次发现商品资料允许一款商品标记多个肤质，该断言按现有结构修正为候选须匹配所选值，而非错误排除所有带其他标签的候选。最终验证仅以本条记录的成功运行结果为准，不把首轮失败覆盖掉。
+- 产品/数据：本轮没有新增商品、价格、规格、色号、来源、图片、评分、授权或核验访问，产品数据审计明确记录“无新增核验，继承上一条结论”。未新增照片上传、用户数据持久化、服务端记忆或日志字段。
+- 最新状态：基线和实际远端仍为 `9f8841982f40f981a5234db4fbe90c017a98f0f0`，工作树保留 ARCH-14 未提交内容，索引为空；阶段仍为唯一 `current`、交付状态待整阶段人工验收。本轮无提交 SHA/tag，不暂存、提交、推送、打标签或删除分支。`git diff --check` 在全部文档编辑后复跑并记录于本条最终复核结果。

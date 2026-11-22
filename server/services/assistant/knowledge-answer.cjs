@@ -1,5 +1,6 @@
 const { z } = require('zod')
 const { retrieveKnowledge, knowledgeSources, knowledgeEvidence, localKnowledgeAnswer, formatKnowledgeContext, entryContext } = require('../../knowledge/beauty-knowledge.cjs')
+const { guidedBeautyPrompt } = require('./guided-beauty-prompt.cjs')
 
 const organizationSchema = z.object({ sections: z.array(z.object({
   id: z.string(), techniques: z.array(z.string()).min(1).max(8),
@@ -21,7 +22,7 @@ async function answerKnowledge({ query, intent, provider, budget, products = [] 
     try {
       // Extractive organization: the model may reorder supported methods, never author facts.
       const raw = await provider.chat([
-        { role: 'system', content: `按问题组织受控手法。只返回JSON {"sections":[{"id":"知识ID","techniques":["资料中完整的一般手法原句"]}]}。必须覆盖全部提供的知识ID和手法原句，每条一次；可调整顺序，不得增删、改写或创造商品与事实。适用条件、限制和安全边界由服务端完整附回。${formatKnowledgeContext(entries)}` },
+        { role: 'system', content: `按问题组织受控手法。只返回JSON {"sections":[{"id":"知识ID","techniques":["资料中完整的一般手法原句"]}]}。必须覆盖全部提供的知识ID和手法原句，每条一次；可调整顺序，不得增删、改写或创造商品与事实。适用条件、限制和安全边界由服务端完整附回。${guidedBeautyPrompt}${formatKnowledgeContext(entries)}` },
         { role: 'user', content: query },
       ], { timeoutMs: 8000, maxAttempts: 1 })
       const parsed = organizationSchema.parse(JSON.parse(String(raw).replace(/^```(?:json)?\s*|\s*```$/g, '')))

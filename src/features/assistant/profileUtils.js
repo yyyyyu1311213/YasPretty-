@@ -1,7 +1,7 @@
 // Pure text parsing shared with the server. Self reports and request conditions stay separate.
 const SKIN = /混油皮|混干皮|敏感肌|大油皮|大干皮|油皮|干皮/
 const FINISH = /自然光泽|奶油肌|柔雾|哑光|雾面|水光|亮泽/
-const CATEGORY = /粉底液|粉底|气垫|遮瑕|散粉|素颜霜|隔离|有色面霜|眉妆|眼影|眼线|睫毛膏|腮红|唇妆|修容/
+const CATEGORY = /粉底液|粉底|气垫|遮瑕|散粉|素颜霜|隔离|有色面霜|眉妆|眉笔|眉粉|眉胶|眼影|眼线|睫毛膏|腮红|唇妆|修容粉|修容膏|修容/
 const SCENE = /长时间带妆|通勤|约会|拍照|夏季|秋冬|答辩/
 const desire = /^(?:我)?(?:想要|想找|喜欢|偏好|需要|想买|要买|要用|希望|用于)/
 const otherSubject = /朋友|妈妈|姐姐|妹妹|同事|别人|她|他|这款|这瓶|这个|该款|产品|商品/
@@ -18,17 +18,64 @@ export function extractSpendingLimit(text) {
   return match ? Number(match[2] || match[1]) : undefined
 }
 
+function dailySkinCondition(text) {
+  const value = String(text || '').normalize('NFKC').toLowerCase().replace(/[\s，。！？、；：,.!?;:]/g, '')
+  const oilyArea = /(?:t区|字区|鼻子|额头).{0,8}(?:出油|偏油|油)/.test(value)
+    && !/(?:t区|字区|鼻子|额头).{0,8}(?:不油|不出油)/.test(value)
+  const dryCheeks = /(?:两颊|脸颊).{0,8}(?:偏干|干燥|干|紧绷)/.test(value)
+    && !/(?:两颊|脸颊).{0,8}(?:不干|不紧绷)/.test(value)
+  if (oilyArea && dryCheeks) return { values: ['混油皮', '混干皮'], label: 'T区油、两颊偏干' }
+
+  if (/(?:全脸|整脸)(?:容易|常|经常|总是|每次)?出油|容易全脸出油/.test(value)
+    && !/(?:全脸|整脸)(?:不油|不出油)/.test(value)) {
+    return { values: ['油皮', '混油皮'], label: '全脸容易出油' }
+  }
+  if (/洗脸后(?:常|经常|总是|每次).{0,8}(?:紧绷|起皮)|(?:常|经常|总是).{0,4}(?:起皮|紧绷)/.test(value)) {
+    return { values: ['干皮', '混干皮'], label: '洗脸后常紧绷或起皮' }
+  }
+  if (/容易刺痛|容易泛红|容易发红/.test(value)) {
+    return { values: ['敏感肌'], label: '容易刺痛或泛红' }
+  }
+  return null
+}
+
+export function skinRequestFromChoice(value) {
+  const conditions = {
+    'skin-oily': { skinValues: ['油皮', '混油皮'], skinLabel: '全脸容易出油' },
+    'skin-combination': { skinValues: ['混油皮', '混干皮'], skinLabel: 'T区油、两颊偏干' },
+    'skin-dry': { skinValues: ['干皮', '混干皮'], skinLabel: '洗脸后常紧绷或起皮' },
+    'skin-sensitive': { skinValues: ['敏感肌'], skinLabel: '容易刺痛或泛红' },
+    'skin-unknown': { skinValues: [], skinLabel: '不确定或跳过', skinSkipped: true },
+  }
+  return conditions[value] ? { ...conditions[value] } : null
+}
+
 // Ephemeral request conditions may describe someone else. Never persist this result as a profile.
 export function extractRequestConditions(text, current = {}) {
   const conditions = { ...current }
   const category = text.match(CATEGORY)?.[0] || (/底妆/.test(text) ? '粉底液' : undefined)
-  if (category) conditions.category = category === '粉底' ? '粉底液' : category
+  if (category) conditions.category = category === '粉底' ? '粉底液'
+    : ['眉笔', '眉粉', '眉胶'].includes(category) ? '眉妆'
+      : ['修容粉', '修容膏'].includes(category) ? '修容' : category
   const skin = text.match(/(?:适合|给|为|推荐(?:一款|一个)?)\s*(混油皮|混干皮|敏感肌|油皮|干皮)/)?.[1]
   if (skin) conditions.skin = skin
+  const dailySkin = dailySkinCondition(text)
+  if (dailySkin) {
+    delete conditions.skin
+    conditions.skinValues = dailySkin.values
+    conditions.skinLabel = dailySkin.label
+  } else if (/肤质|皮肤类型/.test(text) && /不清楚|不知道|不确定|说不清/.test(text)) {
+    delete conditions.skin
+    if (!current.skinValues?.length) {
+      delete conditions.skinValues
+      delete conditions.skinLabel
+    }
+  }
   const budget = extractSpendingLimit(text)
   if (budget !== undefined) conditions.budget = budget
   return conditions
 }
+
 
 export function extractProfile(text, current = {}) {
   const next = { ...current }
@@ -57,7 +104,9 @@ export function extractProfile(text, current = {}) {
       const finish = clause.match(FINISH)?.[0]
       if (finish) next.finish = ({ 雾面: '柔雾', 水光: '自然光泽', 亮泽: '自然光泽' })[finish] || finish
       const category = clause.match(CATEGORY)?.[0]
-      if (category) next.category = category === '粉底' ? '粉底液' : category
+      if (category) next.category = category === '粉底' ? '粉底液'
+        : ['眉笔', '眉粉', '眉胶'].includes(category) ? '眉妆'
+          : ['修容粉', '修容膏'].includes(category) ? '修容' : category
       const scene = clause.match(SCENE)?.[0]
       if (scene) next.scene = scene
       if (/高遮瑕|遮瑕强/.test(clause)) next.coverage = '高'
