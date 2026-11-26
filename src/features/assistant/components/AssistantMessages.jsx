@@ -1,9 +1,10 @@
-import { Bot, LoaderCircle, UserRound } from 'lucide-react'
+import { Bot, LoaderCircle, RotateCcw, UserRound } from 'lucide-react'
+import { isSkinQuestion } from '../skinObservation'
 import { products } from '../../../data/products'
 import AssistantProduct from './AssistantProduct'
 import SourceList from './SourceList'
 
-export default function AssistantMessages({ messages, profile, busy, activity, messageEndRef, onOpenProduct, onChoose }) {
+export default function AssistantMessages({ messages, profile, busy, activity, messageEndRef, onOpenProduct, onChoose, onRetry }) {
   const lastMessage = messages.at(-1)
   const activeQuestionId = !busy && lastMessage?.role === 'assistant' && lastMessage.question ? lastMessage.id : null
   return (
@@ -17,16 +18,21 @@ export default function AssistantMessages({ messages, profile, busy, activity, m
               <div className="xiaoy-choice-group" role="group" aria-label="小Y引导选项">
                 {message.question.options.map((option) => (
                   <button key={option.value} type="button" disabled={activeQuestionId !== message.id}
-                    onClick={() => onChoose?.(option.label, option.value)}>
+                    onClick={() => onChoose?.(option.label, option.value, message.id)}>
                     {option.label}
                   </button>
                 ))}
                 <span className="xiaoy-choice-note">
-                  第 {message.question.step}/5 轮 · 可直接输入，也可以选“不确定”或跳过
+                  第 {message.question.step}/{isSkinQuestion(message.question) ? 5 : 3} 轮 · 可直接输入，也可以选“不确定”或跳过
                   {message.question.options.some(({ value }) => value.startsWith('route-')) ? ' · 路线只用于本次建议，不会记录性别' : ''}
                 </span>
               </div>
             )}
+            {message.retry && <div className="xiaoy-choice-group">
+              <button type="button" disabled={busy || lastMessage?.id !== message.id} onClick={() => onRetry?.(message.id)}>
+                <RotateCcw size={14} aria-hidden="true" /> {message.retry.kind === 'followup' ? '重试这次追问' : '重试这次选择'}
+              </button>
+            </div>}
             {message.productIds?.length > 0 && (
               <div className="xiaoy-products">
                 {message.productIds.map((id) => {

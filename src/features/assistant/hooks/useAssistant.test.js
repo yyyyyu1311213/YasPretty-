@@ -75,6 +75,89 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('小Y状态与发送流程', () => {
+  it('retains advice progress across reload and failed follow-up retry without updating the profile', async () => {
+    const beginnerContext = { version: 1, initialQuery: '我想化妆', route: 'women', goal: 'goal-base', time: null, updates: [], lastStep: 'base' }
+    vi.mocked(requestAssistant).mockResolvedValueOnce(answer({ beginnerContext }))
+    await render().sendMessage('我想化妆')
+    render()
+    expect(saved('messages').at(-1).beginnerContext).toEqual(beginnerContext)
+    mount()
+    vi.mocked(requestAssistant).mockRejectedValueOnce(new TypeError('offline'))
+    await render().sendMessage('预算改为300元')
+    const failed = latest()
+    expect(failed.retry.kind).toBe('followup')
+    expect(saved('profile')).toEqual({})
+    const failedRequest = vi.mocked(requestAssistant).mock.calls.at(-1)[0]
+    mount()
+    vi.mocked(requestAssistant).mockResolvedValueOnce(answer({ beginnerContext: { ...beginnerContext, updates: ['预算改为300元'] } }))
+    await render().retryMessage(failed.id)
+    expect(vi.mocked(requestAssistant).mock.calls.at(-1)[0]).toEqual(failedRequest)
+    expect(latest().beginnerContext.lastStep).toBe('base')
+    expect(render().messages.filter(({ role, content }) => role === 'user' && content === '预算改为300元')).toHaveLength(1)
+    render().resetConversation()
+    render()
+    expect(saved('messages').some((message) => message.beginnerContext)).toBe(false)
+  })
+  const routeQuestion = { flowId: 'xiaoy-guided-intake-v1', step: 1, route: null, selections: [], initialQuery: '我想化妆',
+    options: [{ label: '我是女生，按日常彩妆建议', value: 'route-women' }, { label: '按需求选择，不区分性别', value: 'route-general' }] }
+  const seedQuestion = (question = routeQuestion) => {
+    values.set('yaspretty-xiaoy-messages-v1', JSON.stringify({ version: 1, value: [
+      { id: 'request', role: 'user', content: question.initialQuery }, { id: 'question', role: 'assistant', content: '请选择', question },
+    ] }))
+  }
+
+  it('blocks duplicate clicks before React rerenders and rejects completed or stale question IDs', async () => {
+    seedQuestion()
+    const pending = deferred()
+    vi.mocked(requestAssistant).mockReturnValue(pending.promise)
+    const value = render()
+    const first = value.sendMessage('我是女生，按日常彩妆建议', 'route-women', 'question')
+    await value.sendMessage('我是女生，按日常彩妆建议', 'route-women', 'question')
+    expect(requestAssistant).toHaveBeenCalledTimes(1)
+    expect(render().busy).toBe(true)
+    pending.resolve(answer())
+    await first
+    await value.sendMessage('我是女生，按日常彩妆建议', 'route-women', 'question')
+    await render().sendMessage('我是女生，按日常彩妆建议', 'route-women', 'old-question')
+    expect(requestAssistant).toHaveBeenCalledTimes(1)
+  })
+
+  it.each(['network', 'timeout', 'offline'])('retains failed selection and retries exactly its original request after %s', async (failure) => {
+    seedQuestion()
+    if (failure === 'offline') vi.stubGlobal('navigator', { onLine: false })
+    vi.mocked(requestAssistant).mockRejectedValueOnce(failure === 'network' ? new TypeError('Failed to fetch') : new Error('请求超时'))
+    await render().sendMessage('我是女生，按日常彩妆建议', 'route-women', 'question')
+    const failed = latest()
+    expect(failed).toMatchObject({ retry: { selectedValue: 'route-women', questionId: 'question' } })
+    expect(failed.content).toContain('尚未处理完成')
+    expect(render().messages[1].question).toEqual(routeQuestion)
+    expect(render().mode).toBe('error')
+    if (failure === 'offline') { vi.stubGlobal('navigator', { onLine: true }); vi.mocked(requestAssistant).mockReset() }
+    vi.mocked(requestAssistant).mockResolvedValueOnce(answer({ text: '你现在最想学什么？' }))
+    // Persisted error metadata also supports retry after a page refresh.
+    mount()
+    await render().retryMessage(failed.id)
+    expect(requestAssistant).toHaveBeenLastCalledWith(expect.objectContaining({ text: 'route-women', messages: [
+      expect.objectContaining({ content: '我想化妆' }), expect.objectContaining({ id: 'question', question: routeQuestion }),
+    ] }))
+    expect(latest().content).toContain('最想学什么')
+    expect(render().messages.filter((message) => message.role === 'user')).toHaveLength(2)
+    expect(render().messages.some((message) => message.retry)).toBe(false)
+  })
+
+  it('accepts a free correction after failure with the original question and does not save it as a profile', async () => {
+    const question = { ...routeQuestion, step: 3, route: 'women', selections: ['route-women', 'goal-daily'],
+      options: [{ label: '5分钟以内', value: 'time-five' }, { label: '10分钟左右', value: 'time-ten' }] }
+    seedQuestion(question)
+    vi.mocked(requestAssistant).mockRejectedValueOnce(new TypeError('Failed to fetch')).mockResolvedValueOnce(answer())
+    await render().sendMessage('5分钟以内', 'time-five', 'question')
+    await render().sendMessage('我是干皮，预算改为300元，每天10分钟')
+    expect(requestAssistant).toHaveBeenLastCalledWith(expect.objectContaining({ messages: expect.arrayContaining([
+      expect.objectContaining({ question }),
+    ]) }))
+    expect(saved('profile')).toEqual({})
+  })
+
   it('audit: does not persist a friend’s conditions after sending from the chat', async () => {
     vi.mocked(requestAssistant).mockResolvedValue(answer())
     await render().sendMessage('我朋友说，预算200元，想要哑光气垫')
@@ -410,7 +493,7 @@ describe('小Y状态与发送流程', () => {
     expect(render()).toMatchObject({ mode: 'local', activeModel: '', busy: false })
   })
 
-  it('resets messages/profile/mode without clearing a draft or cancelling a pending response', async () => {
+  it('resets idle messages/profile but preserves the pending conversation until its response arrives', async () => {
     await render().sendMessage('我是干皮，预算 300 元，推荐粉底')
     render().setInput('保留的草稿')
     render().resetConversation()
@@ -422,11 +505,11 @@ describe('小Y状态与发送流程', () => {
     const activity = render().activity
     render().resetConversation()
     expect(render()).toMatchObject({ busy: true, mode: 'ready', activity })
-    expect(render().messages).toHaveLength(1)
+    expect(render().messages).toHaveLength(2)
     waiting.resolve(answer())
     await pending
     expect(render()).toMatchObject({ busy: false, mode: 'ai', activeModel: 'synthetic-model' })
-    expect(render().messages).toHaveLength(2)
+    expect(render().messages).toHaveLength(3)
     expect(latest().content).toBe('合成回答')
   })
 

@@ -3,14 +3,17 @@ const { AppError } = require('../errors.cjs')
 const { knowledgeSources, knowledgeEvidence, retrieveKnowledge } = require('../knowledge/beauty-knowledge.cjs')
 const { intentRouter, classifyIntent, needsOnlineResearch, hasSkinDiscomfort, isCatalogSizeQuestion } = require('./assistant/intent-router.cjs')
 const { resolveProducts, questionForSelection } = require('./assistant/product-resolver.cjs')
-const { extractParameters, planInput } = require('./assistant/parameters.cjs')
+const { extractParameters, extractGuidedParameters, planInput } = require('./assistant/parameters.cjs')
 const { selectRecommendations, searchSources } = require('./assistant/tools.cjs')
+const { buildResearchRequest, filterResearchResults } = require('./assistant/research-request.cjs')
+const { researchMessages, researchAnswer } = require('./assistant/research-answer.cjs')
 const { buildSystemPrompt, searchFallbackAnswer, recommendationAnswer, clarificationAnswer, planAnswer, validateAnswer, organizeCatalogAnswer } = require('./assistant/response.cjs')
 const { createProductFactsIndex } = require('../knowledge/product-facts-index.cjs')
 const { catalogSize } = require('../knowledge/product-facts-adapter.cjs')
 const { answerProductFacts } = require('./assistant/fact-answer.cjs')
 const { answerKnowledge } = require('./assistant/knowledge-answer.cjs')
 const { advanceGuidedIntake, beginGuidedIntake } = require('./assistant/guided-intake.cjs')
+const { isBeginnerRequest, goalFromText, beginnerNext, beginnerAnswer, continueBeginner, beginnerFollowupAnswer } = require('./assistant/beginner-guidance.cjs')
 const { decomposeQuestions } = require('./assistant/questions.cjs')
 const { requestBudget, boundedProvider, combineAnswers } = require('./assistant/compound-answer.cjs')
 const SHANGHAI_TIME_ZONE = 'Asia/Shanghai'
@@ -118,10 +121,21 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       if (guidance?.query) query = guidance.query
       const intent = guidance?.kind === 'ask' ? 'clarification'
         : guidance?.kind === 'plan' ? 'makeup_plan'
-          : ['knowledge', 'skin-knowledge'].includes(guidance?.kind) ? 'beauty_knowledge'
+          : ['knowledge', 'skin-knowledge', 'beginner', 'beginner-followup'].includes(guidance?.kind) ? 'beauty_knowledge'
             : guidance?.requestConditions?.skin ? 'catalog_recommendation'
             : await classifyIntent(query, products, zhipuProvider, messages)
-      const parameters = await extractParameters(query, profile, products)
+      const parameters = guidance?.initialQuery
+        ? await extractGuidedParameters(guidance.initialQuery, guidance.updates, profile, products)
+        : await extractParameters(query, profile, products)
+      if (guidance?.previousConditions) {
+        Object.assign(parameters.recommendation, guidance.previousConditions)
+        if (guidance.correctionQuery) {
+          const correction = await extractGuidedParameters('', [guidance.correctionQuery], {}, products)
+          const { brands, productIds, excludedBrands, ...changed } = correction.recommendation
+          Object.assign(parameters.recommendation, changed)
+          parameters.recommendation.excludedBrands = [...new Set([...(parameters.recommendation.excludedBrands || []), ...excludedBrands])]
+        }
+      }
       const guidedSkin = guidance?.requestConditions?.skin
       if (guidedSkin?.mode === 'unknown') {
         delete parameters.recommendation.skin
@@ -138,6 +152,7 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       const reply = (answer, answerMode = 'local', sources = [], usedWebSearch = false, model = null, evidence = {}) => assistantResponseSchema.parse({
         answer, answerMode, sources, usedWebSearch, model, intent,
         ...(evidence.guidedQuestion ? { guidedQuestion: evidence.guidedQuestion } : {}),
+        ...(evidence.beginnerContext ? { beginnerContext: evidence.beginnerContext } : {}),
         knowledgeEvidence: evidence.knowledgeEvidence || [],
         coverage: [{ question: query, intent, status: evidence.status || (answerMode === 'clarification' ? 'clarification' : 'answered'),
           knowledgeIds: evidence.knowledgeIds || [], productIds: [...new Set([...answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((m) => m[1]))].slice(0, 6),
@@ -149,6 +164,14 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       if (guidance?.kind === 'ask') return reply(guidance.answer, 'clarification', knowledgeSources(skinEntries), false, null,
         { ...skinEvidence, guidedQuestion: guidance.question, status: 'clarification', missing: ['等待用户选择；可跳过或直接输入。'] })
       if (guidance?.kind === 'skin-knowledge') return reply(guidance.summary, 'knowledge', knowledgeSources(skinEntries), false, null, skinEvidence)
+      if (guidance?.kind === 'beginner-followup') {
+        const result = beginnerFollowupAnswer(guidance, parameters.recommendation)
+        return reply(result.answer, result.answerMode, result.sources, false, null, result)
+      }
+      if (guidance?.kind === 'beginner') {
+        const result = beginnerAnswer(guidance, parameters.recommendation)
+        return reply(result.answer, result.answerMode, result.sources, false, null, result)
+      }
       if (guidance?.kind === 'knowledge') {
         const knowledgeQuery = guidance.knowledgeQuery || guidance.query
         const result = await answerKnowledge({ query: knowledgeQuery, intent: 'beauty_knowledge', provider: zhipuProvider, budget: context.budget, products })
@@ -163,9 +186,10 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       }
       if (guidance?.kind === 'plan') {
         const planQuery = `${guidance.promptContext ? `${guidance.promptContext}。` : ''}${guidance.query}`
+        const conditions = { ...parameters.recommendation, route: guidance.route }
         const plan = context.provider
-          ? await plans.create(planInput(planQuery, parameters.profile), { provider: zhipuProvider, knowledgeBudget: context.budget })
-          : await plans.create(planInput(planQuery, parameters.profile))
+          ? await plans.create(planInput(planQuery, parameters.profile, conditions), { provider: zhipuProvider, knowledgeBudget: context.budget })
+          : await plans.create(planInput(planQuery, parameters.profile, conditions))
         const evidence = plan.knowledgeEvidence || []
         const sources = [...new Map(evidence.flatMap((item) => item.sources).map(({ supports, ...source }) => [source.url, { ...source, kind: 'knowledge' }])).values()]
         return reply(planAnswer(plan), plan.sourceMode === 'local' ? 'local' : 'model', sources, false, plan.sourceMode === 'model' ? zhipuProvider.modelName || null : null,
@@ -188,16 +212,16 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       if (intent === 'makeup_plan') {
         const planQuery = routedQuery
         const plan = context.provider
-          ? await plans.create(planInput(planQuery, parameters.profile), { provider: zhipuProvider, knowledgeBudget: context.budget })
-          : await plans.create(planInput(planQuery, parameters.profile))
+          ? await plans.create(planInput(planQuery, parameters.profile, parameters.recommendation), { provider: zhipuProvider, knowledgeBudget: context.budget })
+          : await plans.create(planInput(planQuery, parameters.profile, parameters.recommendation))
         const evidence = plan.knowledgeEvidence || []
         const sources = [...new Map(evidence.flatMap((item) => item.sources).map(({ supports, ...source }) => [source.url, { ...source, kind: 'knowledge' }])).values()]
         return reply(planAnswer(plan), plan.sourceMode === 'local' ? 'local' : 'model', sources, false, plan.sourceMode === 'model' ? zhipuProvider.modelName || null : null, { knowledgeEvidence: evidence, knowledgeIds: evidence.map((item) => item.id) })
       }
       if (intent === 'catalog_recommendation') {
         const baseCategories = ['粉底液', '气垫', '遮瑕', '散粉', '素颜霜', '隔离', '有色面霜']
-        const skippedSkin = parameters.recommendation.skinSkipped === true || guidance?.selections?.includes('skin-unknown') === true
         const hasSkinCondition = Boolean(parameters.recommendation.skin || parameters.recommendation.skinValues?.length)
+        const skippedSkin = parameters.recommendation.skinSkipped === true || guidance?.selections?.includes('skin-unknown') === true || guidance?.stopGuidance && !hasSkinCondition
         if (!hasSkinCondition && !skippedSkin && (!parameters.recommendation.category || baseCategories.includes(parameters.recommendation.category))) {
           // Reuse the same observation flow for an existing plain-text clarification.
           const next = await advanceGuidedIntake('不知道自己啥肤质', [
@@ -240,6 +264,10 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
         }])
       }
       if (!needsOnlineResearch(question, intent) && (intent === 'beauty_knowledge' || intent === 'external_question' && retrieveKnowledge(query, intent).length)) {
+        if (isBeginnerRequest(query) || goalFromText(query) === 'goal-daily') {
+          const result = beginnerAnswer(beginnerNext({ initialQuery: query, direct: true }), parameters.recommendation)
+          return reply(result.answer, result.answerMode, result.sources, false, null, result)
+        }
         const result = await answerKnowledge({ query, intent, provider: zhipuProvider, budget: context.budget, products })
         const safetyNote = context.skinDiscomfort ? '\n\n你提到当前皮肤有不适，不要在不适部位使用或测试工具，也不要继续上妆。' : ''
         return reply(`${result.answer}${safetyNote}`, result.answerMode, result.sources, false, result.model || null, result)
@@ -250,16 +278,23 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       if (!zhipuProvider?.configured) {
         throw new AppError('PROVIDER_NOT_CONFIGURED', '智能服务暂未配置，当前无法回答该问题。', 503)
       }
-      const webResults = useWebSearch ? await searchSources(zhipuProvider, query) : []
+      const searchRequest = buildResearchRequest(query, clock())
+      if (useWebSearch && !searchRequest.query) return reply('请告诉我想搜索的主题，例如“联网搜索人工智能的定义”。', 'clarification')
+      const webResults = useWebSearch ? filterResearchResults(await searchSources(zhipuProvider, searchRequest.query, searchRequest.options), searchRequest) : []
+      if (useWebSearch && !webResults.length) {
+        throw new AppError('SEARCH_NO_CURRENT_SOURCES', '检索未取得目标日期的可核验来源，请稍后重试或调整日期；不会把旧资料当作今日结果。', 502)
+      }
       const prompt = buildSystemPrompt(parameters.profile, [], webResults, intent)
       let answer
       let answerMode = 'model'
       try {
-        answer = validateAnswer(await zhipuProvider.chat([
+        const raw = await zhipuProvider.chat(useWebSearch ? researchMessages(question, webResults) : [
           { role: 'system', content: prompt },
           ...messages.slice(-8).map(({ role, content }) => ({ role, content })),
           { role: 'user', content: question === query ? routedQuery : `我选择：${routedQuery}。请继续回答此前的问题：${question}` },
-        ], { timeoutMs: useWebSearch ? 12000 : 20000, maxAttempts: 1 }), [])
+        ], { timeoutMs: useWebSearch ? 12000 : 20000, maxAttempts: 1 })
+        answer = useWebSearch ? researchAnswer(raw, webResults) : validateAnswer(raw, [])
+        if (useWebSearch) answerMode = 'search'
       } catch (error) {
         if (webResults.length) {
           answer = searchFallbackAnswer(webResults)
@@ -268,7 +303,8 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
           throw new AppError('ASSISTANT_UNAVAILABLE', '智能回答未能完成，请稍后重试或补充问题。', 503)
         }
       }
-      return reply(answer, answerMode, webResults.map(({ title, url, publisher, accessedAt }) => ({ kind: 'web', title, url, publisher, accessedAt })), useWebSearch, answerMode === 'model' ? zhipuProvider.modelName || null : null)
+      return reply(answer, answerMode, webResults.map(({ title, url, publisher, accessedAt }) => ({ kind: 'web', title, url, publisher, accessedAt })), useWebSearch, answerMode === 'model' ? zhipuProvider.modelName || null : null,
+        answerMode === 'search' ? { status: 'partial', missing: ['当前提供来源摘录，未独立核验网页事实；相关性、完整性和适用范围请查看原文。'] } : {})
   }
   return {
     async answer(input) {
@@ -276,7 +312,10 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       const skipSkinGuidance = leavesSkinGuidance(input.query)
       const hasExplicitFollowup = /[;；\n]|另外|此外|还想|顺便|再问|并且|同时|以及/.test(String(input.query || ''))
       if (hasSkinDiscomfort(input.query) && !hasExplicitFollowup) return answerOne(input, { skinDiscomfort: true })
-      if (!hasSkinDiscomfort(input.query)) {
+      if (!hasSkinDiscomfort(input.query) && intentRouter(input.query, products) !== 'unsupported_sensitive') {
+        const followup = await continueBeginner(input.query, input.messages || [])
+        if (followup) return hasSkinDiscomfort(followup.query)
+          ? answerOne({ ...input, query: followup.query }, { skinDiscomfort: true }) : answerOne(input, { guided: followup })
         const continued = await advanceGuidedIntake(input.query, input.messages || [], input.profile || {})
         if (continued) return answerOne(input, { guided: continued })
       }

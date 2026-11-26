@@ -18,11 +18,13 @@
  */
 
 /**
- * API 历史消息，只发送角色、正文及已有的近期商品 ID；不发送其他 UI 元数据。
+ * API 历史消息发送角色、正文、近期商品 ID 及有界的引导/入门进度。
  * @typedef {object} ConversationMessage
  * @property {'user' | 'assistant'} role
  * @property {string} content 去除首尾空白后 1–4000 字符。
  * @property {string[]} [productIds] 最多 3 个既有商品 ID，按回答顺序；仅助手消息参与指代定位。
+ * @property {GuidedQuestion} [question]
+ * @property {BeginnerContext} [beginnerContext] 仅助手消息携带，不是长期画像。
  */
 
 /**
@@ -63,9 +65,12 @@
  * @property {Array<{question: string, intent: string, status: 'answered'|'partial'|'unavailable'|'clarification', knowledgeIds: string[], productIds: string[], missing: string[]}>} [coverage] 当前响应的逐项覆盖及缺口，不发送到历史请求。
  * @property {import('./makeupPlan.js').KnowledgeEvidence[]} [knowledgeEvidence] 通用知识的版本、复核日期、适用条件与来源，不证明具体产品事实。
  * @property {GuidedQuestion} [guidedQuestion] 有界的聊天点选问题；肤质观察含路线最多五轮，网络失败时复用同一纯规则。
+ * @property {BeginnerContext} [beginnerContext] 用于建议后的下一步追问，切换话题不沿用。
  */
 
-/** @typedef {{flowId: string, step: number, route: 'men'|'women'|'general'|'skin'|'plan'|null, selections: string[], initialQuery?: string, options: Array<{label: string, value: string}>}} GuidedQuestion */
+/** @typedef {{flowId: string, step: number, route: 'men'|'women'|'general'|'skin'|'plan'|null, selections: string[], initialQuery?: string, updates?: string[], options: Array<{label: string, value: string}>}} GuidedQuestion */
+
+/** @typedef {{version: 1, initialQuery: string, route: 'men'|'women'|'general'|'skin'|'plan', goal: 'goal-base'|'goal-brow'|'goal-eye-lip'|'goal-daily', time: 'time-five'|'time-ten'|'time-learn'|null, updates: string[], conditions?: Omit<AssistantProfile, 'city'> & {excludedBrands?: string[]}, lastStep: 'base'|'brow'|'eye-lip'|'daily'|'color'|'finish'|'done'}} BeginnerContext */
 
 /**
  * 小Y界面和当前本地消息值；不包含 localStorage 的版本包装。
@@ -76,7 +81,9 @@
  * @property {string[]} productIds 无关联产品时为 []。
  * @property {AssistantSource[]} [sources] 欢迎消息省略；createMessage 无来源时写入 []。
  * @property {GuidedQuestion} [question] assistant 消息可附服务端点选问题；user 消息不带选项元数据。
+ * @property {BeginnerContext} [beginnerContext] 随原版本化消息保存，重置时一起清除；不写入画像。
  * @property {boolean} [skinGuidance] 从既有知识证据派生的展示标记；折叠观察依据与局限，不保存肤质推断到画像。
+ * @property {{text: string, selectedValue: string, questionId: string, kind?: 'followup'}} [retry] 失败选择/追问的本地重试信息；不发往 API，不表示本轮已完成。
  */
 
 /**

@@ -11,6 +11,18 @@ afterEach(() => {
 })
 
 describe('小Y业务请求', () => {
+  it('round-trips bounded progress on assistant messages only', async () => {
+    const beginnerContext = { version: 1, initialQuery: '我想化妆', route: 'general', goal: 'goal-base', time: null, updates: [], lastStep: 'base' }
+    const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ answer: '接下来是眉毛', beginnerContext: { ...beginnerContext, lastStep: 'brow' } }) })
+    vi.stubGlobal('fetch', fetch)
+    const result = await requestAssistant({ ...input, messages: [
+      { role: 'assistant', content: '底妆建议', beginnerContext }, { role: 'user', content: '然后呢', beginnerContext },
+    ] })
+    const history = JSON.parse(fetch.mock.calls[0][1].body).messages
+    expect(history[0].beginnerContext).toEqual(beginnerContext)
+    expect(history[1].beginnerContext).toBeUndefined()
+    expect(result.beginnerContext.lastStep).toBe('brow')
+  })
   it('adapts coverage and knowledge evidence without adding them to conversation requests', async () => {
     const coverage = [{ question: '合成复合问题', intent: 'beauty_knowledge', status: 'partial', knowledgeIds: ['kb'], productIds: [], missing: ['缺少资料'] }]
     const knowledgeEvidence = [{ id: 'kb', version: 'knowledge.v2' }]

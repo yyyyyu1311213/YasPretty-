@@ -3653,3 +3653,176 @@ node tests/browser/assistant-guided-intake.mjs
 用户入口仍是主站“小Y智能选妆”，可体验五轮肤质观察及男生自然方案。无Key/网络失败的既有本地降级、未知条件及候选不足说明保留。没有读取真实.env、用户照片、画像或对话，没有增加持久化、外部调用、依赖或API端点。真实GLM/搜索质量、实体手机、公网部署及人工体验验收未在此轮补做，产品适配与图片授权结论不升级；视频和参赛材料未修改，不能据上传声明已公开上线。
 
 本阶段无新增核验，继承上一条结论。两份报告保留此前证据和风险；本条写入时尚待提交/推送，新提交SHA及远端核对由本轮回执提供，可在后续文档同步回填，不为回填改写历史。不新建Release、标签或删除分支。
+
+### 2026-11-26 路线选择续接修复（YAS-2026-0064，待人工验收）
+
+**目的与版本边界**：修复小Y在“我想化妆→我是女生，按日常彩妆建议”之后回到无法理解兜底的问题，完成路线、目标、一个关键条件到实质建议的承接。负责人明确要求实现、测试、文档同步后交人工验收，不提交、不推送、不打标签。本次为已归档ARCH-14相关的定向修复，不重开阶段；ARCH-14保持done，无新current。本次无提交SHA/tag，未暂存或删除分支。
+
+**基线和远端（北京时间）**：19:45:31开始与20:11:46复核均已运行git fetch origin dev，并检查当前分支、HEAD、工作树、暂存区与实际远端。dev/HEAD/origin/dev/实际远端一致为 `6ccbe31fccb4b4d3b89546659888fa7b3c4ca256`。开始时工作树及索引干净，前次五轮肤质和男妆知识已包含在该提交；此为前次上传回执的后续回填，不把上传授权写成人工验收。arch-stage-14对象 `2e09f6ffc64b6f742e62caf0de5971f2feb63f01` → `f65780588b96de71c8ff79c81c2a9c333fa266f5`，本地及实际远端一致。本次保留上述代码与历史。Git初次运行遇到执行环境不完整的GIT_CONFIG_COUNT注入，后续仅在各命令进程设置GIT_CONFIG_COUNT=0以成功核验，未修改仓库Git配置。
+
+**真实根因**：先用createAssistantService和无Key provider复现，女生路线后确实返回“我还不确定你的意思……请补充具体需求”。question.initialQuery已经带有首问，原因并非前端丢弃原文，而是女生/通用路线缺少入门目标续接分支；回到原文再次分类时，“我想化妆”进入clarification。男生原有专用知识选项未覆盖三路线统一入门。另有前端异常缺口：失败后原问题按钮变成旧消息禁用，却没有保留原选择的重试动作；只依赖React busy状态也不能阻止同一渲染周期的重复调用。
+
+**实际文件、接口与行为**：
+
+| 文件 | 本次职责 |
+| --- | --- |
+| server/services/assistant/beginner-guidance.cjs（新增） | 识别入门需求，目标六选项/用时三选项，未知默认简单日常，已知信息跳过，最多三轮；从既有受控条目抽取建议和证据 |
+| server/services/assistant/guided-intake.cjs | 接入原flowId，保留首问/路线/条件；直接回答停止追问，校正条件沿用当前问题；保留原五轮肤质及男妆分支 |
+| server/services/assistant/intent-router.cjs | 将入门表达及明确场景化妆需求识别为美妆知识，避免通用不理解兜底 |
+| server/services/assistant/parameters.cjs、src/features/assistant/profileUtils.js | 初始请求和有界自由补充逐项合并；预算/肤质/场景/妆效纠正保留其余条件；补入面试场景，完整方案继续保留排除品牌与所选路线 |
+| server/services/assistant-service.cjs | 调度受控入门建议，直接回答不重新开启肤质问卷；完整妆容复用原方案服务，安全路径优先 |
+| server/schemas.cjs、src/contracts/assistant.js | 原question兼容增加可选updates（最多4条、每条1000字符）及最多6个选项；step1–5、selections最多4的肤质契约保持；记录本地retry消息元数据 |
+| src/features/assistant/hooks/useAssistant.js | 同步发送锁、当前问题ID/选项与已完成检查；失败保存重试信息，不显示完成；刷新后可按原上下文重试，无重复用户消息；请求进行中禁用重置 |
+| src/features/assistant/components/AssistantMessages.jsx、XiaoYAssistant.jsx | 将问题ID传入选择动作；原样式/Lucide重试按钮，普通3轮/肤质5轮显示，处理中和旧按钮禁用 |
+| server/services/assistant/beginner-guidance.test.js（新增）、useAssistant.test.js、AssistantMessages.test.jsx | 入门续接、条件合并、知识边界、直接退出、安全、重复调用、失败/超时/离线/重挂载及消息状态验证 |
+| tests/browser/assistant-route-continuation.mjs（新增） | 生产页面真实导航和HTTP请求，桌面/360px键盘与点击、选项几何、旧按钮、失败重试及刷新恢复 |
+| server/services/assistant/guided-beauty-prompt.cjs、docs/prompts/xiaoy-guided-intake.md | 运行时与可复用提示词同步三路线续接、三轮/五轮边界、缺口和退出/重试规则 |
+| FINAL-PROMPT.md、README.md、docs/frontend-architecture-migration-plan.md及两份累计报告 | 产品约束、真实能力/路径、基线/版本、验证与风险同步；AGENTS规则未变更 |
+
+不新增API端点、依赖、存储键、长期画像字段或无关页面，不重写整套助手。路线仅是用户本次建议选择，不根据路线推断身份或限制可学妆容。5分钟建议聚焦薄底妆与眉毛梳理，10分钟增加眉毛空隙处理和局部遮瑕，慢慢学按步骤拆开练；女生不默认熟练或全妆。眼/唇目标明确缺少完整眼线、眼影分区、唇形描画步骤，返回有依据的浓淡/边缘方向及partial缺口，不编造教程。原粉底请求仍走选品/必要肤质观察，已知眉毛直接回答，面试只在缺少用时时补问。
+
+**真实验证**：
+
+| 命令/检查 | 结果 |
+| --- | --- |
+| 相关服务/组件/Hook回归 | 相关组合最终213/213；其后新增已知肤质与面试覆盖，以下全量结果覆盖全部最终代码 |
+| npm test | 20:07:44开始，56文件744/744，退出码0；包括原五轮肤质及男妆知识 |
+| npm run build -- --config .qa/route-continuation-20261126/vite.config.mjs | 1886模块，退出码0；既有>500kB chunk提示保留（main约864kB、Three约743kB） |
+| node tests/browser/assistant-route-continuation.mjs | 最终20:08，1440×900/360×900各18场景，36/36 |
+| node tests/browser/assistant-guided-intake.mjs | 最终20:08，同两视口各18场景，36/36，五轮上限与刷新承接保持 |
+| node tests/browser/mens-makeup-knowledge.mjs | 最终20:08，同两视口合计30/30 |
+| 本次无Key验收预览 | 127.0.0.1:63818首页HTTP200；同实例HTTP首问/路线/目标/用时step1、2、3后返回beauty_knowledge与5分钟实际建议，无新问题 |
+| git diff --check / git diff --cached --check | 文档全部同步后执行，结果见本条末尾最终核对；索引应保持为空 |
+
+新浏览器脚本覆盖三路线、我不会化妆/想学化妆、已知粉底/眉毛/面试目标、连续不知道/跳过、首轮及后续直接回答、自由目标/用时、预算修正保留肤质/场景/妆效/排除品牌、目标修正、话题切换、安全、眼唇资料缺口。API层追加已知用时不重复问、旧画像场景不能盖过本次面试、完整方案保留品牌排除等。点击等待时显示处理中；按钮锁定、重置禁用；故意延迟并返回HTTP503后显示尚未完成，刷新后重试发送与失败前相同API正文，再继续目标/用时。已完成旧按钮再次调用不发请求。同一渲染周期的并发与过期回调由Hook测试覆盖；超时/离线由Hook模拟，不能称为真实断网浏览器验收。
+
+最终桌面和360px页面未见选项重叠或横向溢出，浏览器无pageerror；正常场景无console.error。故障用例故意注入的503产生预期资源错误，单独记录，不声称全部网络零错误。已查看最终360-goals.png及1440-advice.png，按钮换行和建议可读。浏览器使用减少动效、隔离上下文和合成输入，外部字体请求被隔离；不代表实体手机、全部浏览器/字体/默认动效/弱网组合测试。
+
+**失败与复跑保留**：首轮相关183/184，旧测试预期处理中可重置，现有请求未取消会污染新会话，因此改为同步锁和按钮禁用，并更新为验证此行为。新增测试文件曾漏闭合括号而解析失败（其他189测试通过），修正语法后再跑。新增预算修正测试一度93/94，错误期望300元内有匹配油皮粉底；实际资料中匹配候选MAC为390元，只将有候选测试预算改为400元，未改价格/标签或放宽硬筛选，保留独立无候选覆盖。后续213/213，全量先742/742、构建及浏览器102/102；补充已知肤质和面试场景回归后最终744/744及三套浏览器102/102，以上最终结果对应当前代码。
+
+**复跑环境与证据**：使用已有Node、Vitest、Chrome及Playwright，不安装新依赖。单测使用 `NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs` 关闭dotenv；构建隔离配置继承原vite.config.js并设置envDir:false，未读取真实.env或Key。当前工作树可复跑：
+
+```powershell
+$env:NODE_OPTIONS='--require=./.qa/ai-r01/no-secrets.cjs'
+npm test
+npm run build -- --config .qa/route-continuation-20261126/vite.config.mjs
+$env:YAS_QA_PLAYWRIGHT_MODULE='file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE='C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_OUTPUT_DIR='.qa/route-continuation-20261126/routes-rerun'
+node tests/browser/assistant-route-continuation.mjs
+$env:YAS_QA_OUTPUT_DIR='.qa/route-continuation-20261126/skin-rerun'
+node tests/browser/assistant-guided-intake.mjs
+$env:YAS_QA_OUTPUT_DIR='.qa/route-continuation-20261126/men-rerun'
+node tests/browser/mens-makeup-knowledge.mjs
+$env:GIT_CONFIG_COUNT='0'
+git diff --check
+git diff --cached --check
+```
+
+隔离文件是忽略的本机QA辅助，不作为新增依赖或提交文件；其他机器若复跑需自行在忽略目录创建同样两行配置：no-secrets.cjs为 `require('dotenv').config = () => ({ parsed: {} })`，vite.config.mjs为 `import config from '../../vite.config.js'; export default { ...config, envDir: false }`，并将Playwright/Chrome路径改为本机已有安装位置。浏览器脚本自行启动和关闭随机本机端口的生产Fastify，空Key及不可用provider确保不调用真实服务。
+
+最终日志在忽略目录 `.qa/route-continuation-20261126/test-final.log`、`build-final.log`，机器结果/截图在 `routes-final/`、`skin-final/`、`men-final/`；首轮test.log/build.log及routes/skin/men目录保留。测试及截图只含合成会话，不提交临时产物。
+
+**人工体验**：新启动的隔离无Key预览为 http://127.0.0.1:63818/ ，主站“小Y智能选妆”→“我想化妆”→“我是女生，按日常彩妆建议”→“简单日常入门”→“5分钟以内”，应输出薄底妆和眉毛整理的可执行建议。重新开始后可分别测试男生/通用、还没想好、10分钟、眉毛、面试、原问题直接回答和五轮肤质观察；旧预览服务不加载本次服务端代码，不作为本次入口。已请求在应用侧打开新预览，人工验收仍待负责人操作。
+
+**隐私、降级与剩余风险**：临时路线、肤质观察、引导中的自由纠正仅用于当前请求；重试元数据随既有版本化本地消息保存，清除对话时一起删除，不发往API或写入长期画像。普通首问明确自述仍按既有规则更新画像，未改变这项已存在的用户数据行为。没有照片要求、上传或新增日志/服务端永久记忆；当前不适优先停止上妆/选品。入门选择请求失败显示未完成并允许重试，原肤质本地降级保持；无Key仍能用受控知识完成基础建议。真实GLM、实时搜索、实体手机、公网部署和个体适配未新增验证；规则不能保证理解所有自由表达，完整眼/唇教程仍有明确缺口。原大包警告保留。
+
+**数据与材料**：本阶段无新增核验，继承上一条结论。无商品、价格、图片、评分、来源或授权数据修改，知识仍28条/40来源，未重新访问来源或升级验证状态。代码、运行时/可复用提示词、FINAL-PROMPT、README、迁移计划及两份报告已对齐本次行为和待人工验收状态；AGENTS无须修改。视频及参赛材料未更新，不可声称本次已人工验收、公开部署或产品实测通过。未提交现场不是新增Git回退点；基线6ccbe31及原标签可定位，后续如获批准再按具体范围归档，回退用依赖评估后的revert，不覆盖浏览器数据或外部状态。
+
+**20:17:19 最终文档复核（北京时间）**：全部22个代码/测试/文档路径均属于本次范围（19个已跟踪修改、3个新增）；git diff --check、git diff --cached --check通过，索引为空，新增文件行尾检查及README/FINAL-PROMPT/可复用提示词的本地链接目标检查通过。文档首轮检查曾发现追加段落末行CRLF混用，已修复并复查。最后代码验证之后只编辑文档和忽略的本机预览，不将其记为重新跑全量测试；沿用最终744/744、构建通过和浏览器102/102。待人工验收，未暂存、提交、推送、打标签或删分支。
+
+
+**2026-11-26 21:00 默认开发入口恢复补记（YAS-2026-0064，北京时间）**：负责人提供“连接异常”截图后，20:54:13重新fetch并核对dev/HEAD/origin/dev及实际远端，仍为6ccbe31fccb4b4d3b89546659888fa7b3c4ca256，原未提交22路径保持，索引为空、arch-stage-14未改变。诊断时5174无监听，访问/api/health为ECONNREFUSED；8787虽健康，但进程启动于17:38:50，早于本次路线续接修复；63818无Key预览通过四次HTTP请求完成step1–3和最终建议。截图没有显示URL，不能仅凭截图确定当时请求的端口或具体错误码。
+
+启动npm run dev:web（沿用本机envDir:false配置）恢复127.0.0.1:5174→8787原代理；核对8787监听进程确为node/fishtalk-server.cjs后只重启该项目网关，执行npm run dev:ai加载当前代码与既有服务端配置，未查看或输出密钥、未更改配置。21:00:36核对5174/8787均监听，5174代理健康检查HTTP200，原问题/女生路线/简单日常/5分钟四次API均成功，step1、2、3后返回beauty_knowledge的薄底妆和眉毛建议。
+
+应用内浏览器在localhost:5174真实导航与点击完成相同链路，显示目标六选项、用时三选项及实质建议，提交中/旧按钮禁用，最终“知识库参考”，console.error为空。使用localhost独立源会话，保留127.0.0.1既有对话与偏好；原浏览器中的Failed to fetch历史消息未清除。本轮无功能代码改动，不重跑并冒称新的744测试/102场景；此前自动结果保持。本轮初次开发页等待超时但后续正常加载，最终精确文本定位器因整段正文包含多行而未命中，通过最新可见页面状态核对成功，未重复发送。截图为忽略目录.qa/route-continuation-20261126/5174-acceptance.jpg。既有服务已配置不代表本轮测试了GLM或联网质量，本入门链路使用受控知识；人工验收仍待确认，未暂存/提交/推送/打标签。
+
+
+### 2026-11-26 21:48 建议后“然后呢”续修（YAS-2026-0064，待人工验收）
+
+**范围与基线**：承接“修复小Y路线引导承接”聊天中负责人“底妆结束后还有接下来的步骤，上下文没有联系起来”的反馈。前次任务中断在定位阶段，没有完成此追加范围；原22路径修改保留。21:29开始fetch及21:48复核，dev/HEAD/origin/dev/实际远端均为6ccbe31fccb4b4d3b89546659888fa7b3c4ca256，索引为空；进程继承的不完整GIT_CONFIG_COUNT首次导致fetch失败，只在本次命令进程设置为0重试成功，未修改全局配置。arch-stage-14对象2e09f6ffc64b6f742e62caf0de5971f2feb63f01→f65780588b96de71c8ff79c81c2a9c333fa266f5与远端一致。关联ARCH-14后的独立授权修复，不重开阶段、不新建current/tag；本次无新提交SHA/tag，未暂存/提交/推送/删除分支。
+
+**根因与修改**：原question保存了首问，但最终beginnerAnswer返回知识文本后没有携带当前步骤。“然后呢”重新进入通用分类，落入无法理解兜底。新beginnerContext版本1保存原问题、路线、目标、用时、最近四段补充、有限条件快照和最近步骤；不复制商品事实。底妆→眉毛→可选唇颊或眼部重点→边缘检查与按需定妆→完成，完成后不无限续写，不重新问路线。已讲过的简单日常建议含底妆/眉毛，继续时直接进入可选重点。五分钟约束保留，额外步骤不变成必做。条件修正不推进步骤，快照防止超过四次补充后预算等旧修正回退。当前安全意图优先于续接。
+
+本次相对前轮新增修改的实际文件：
+
+| 文件 | 职责 |
+| --- | --- |
+| src/features/assistant/beginnerContext.js（新） | 共享有限追问识别、读取最近进度、兼容紧邻旧版建议及一次旧版无法理解回复，不越过话题切换 |
+| server/services/assistant/beginner-guidance.cjs | 构造建议进度、继续下一步、条件修正和明确收束；引用既有知识与缺口 |
+| server/services/assistant-service.cjs | 在常规分类前接续、安全优先、沿用并更新当前条件快照、响应schema验证 |
+| server/schemas.cjs、src/contracts/assistant.js | beginnerContext请求/响应边界、枚举/长度/版本/条件字段；消息和retry契约 |
+| src/features/assistant/assistantApi.js、hooks/useAssistant.js | 响应适配、最近八条历史传递、既有本地消息恢复、临时修正不写画像、失败重试同一步 |
+| src/features/assistant/components/AssistantMessages.jsx | 复用原按钮样式与Lucide，追问失败显示“重试这次追问” |
+| server/services/assistant/beginner-guidance.test.js、src/features/assistant/assistantApi.test.js、hooks/useAssistant.test.js | 三路线连续追问、结束不循环、时间/条件保留、旧版恢复、切题/安全、schema边界、刷新/失败/重试/清除 |
+| tests/browser/assistant-route-continuation.mjs | 新增连续追问、条件修正、刷新恢复、追问失败/重试与话题切换；原测试保留 |
+| server/services/assistant/guided-beauty-prompt.cjs、docs/prompts/xiaoy-guided-intake.md、FINAL-PROMPT.md | 同步建议后进度、结束、资料边界、隐私及失败行为 |
+| README.md、docs/frontend-architecture-migration-plan.md、本报告及产品审计 | 同步真实能力、文件、状态和验证；AGENTS规则无须改变 |
+
+加上原路线续接范围，当前共25路径（21已跟踪修改、4新文件）。没有修改产品/知识事实文件、UI布局/CSS、依赖或新增API端点。此前五轮肤质观察及男妆知识均保留。
+
+**真实验证**：21:45:41最终npm test：56文件760/760，退出0；npm run build -- --config .qa/route-continuation-20261126/vite.config.mjs：1887模块、退出0，main约867kB/Three约743kB的既有大包警告保留。最终三个浏览器脚本分别路线48/48、肤质36/36、男妆30/30，合计114/114；Chrome、真实生产构建→HTTP→Fastify、1440×900及360×900、隔离上下文、合成输入、禁用真实provider。检查键盘/真实点击、处理中/旧按钮禁用、来源、横向溢出与选项重叠；无pageerror，正常场景无console.error，故意503场景只允许预期资源错误。已查看桌面和360px的收尾截图，版面可读。真实手机、全部字体/动效/浏览器、真实网络故障及实时GLM/搜索未验证。
+
+复跑环境沿用前条：NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs，dotenv文件加载关闭；构建envDir:false；Playwright与Chrome路径同前条，不安装新依赖。命令为npm test、上述build、node tests/browser/assistant-route-continuation.mjs、node tests/browser/assistant-guided-intake.mjs、node tests/browser/mens-makeup-knowledge.mjs；YAS_QA_OUTPUT_DIR分别设到本轮忽略目录。证据位于.qa/route-continuation-20261126/下followup-test-rerun.log、followup-build-rerun.log，以及followup-routes-final/、followup-skin-final/、followup-men-final/的results.json与截图。初轮757/757及114/114快照保留，后续增加边界后最终760/760、114/114。
+
+**失败记录**：新增相关测试初轮120/122，两项为测试设置错误：已知面试目标本来直接问用时，测试发送了并不存在的goal-base选项；改用真实自由输入“底妆怎么上”。Hook模拟器在读取已保存消息前未执行下一次render/effect，补齐后122/122。增加多次修正回归后123/123。随后全量759/760暴露“底妆结束后还有接下来的步骤呀”被宽泛“结束”规则截断；只让单独的结束对话命令停止，修复后全量760/760，重新构建和页面114/114。不删除失败结果或缩减业务断言。
+
+**默认入口与原会话**：按进程命令确认8787是本项目网关后重启，21:47默认127.0.0.1:5174/api/health为200，七轮合成HTTP实际返回路线1、目标2、base、brow、color、finish、done，全部200；服务端加载最终代码。未读取或输出Key，既有服务端配置沿用，本链路不调用模型。应用内浏览器只读查看localhost与127.0.0.1原消息，不清除或重写用户会话；尝试localhost.隔离源被Vite正常拒绝，未放宽allowedHosts。原localhost会话在底妆失败后已转到斑点遮盖，因此不会跨该回答恢复旧教程。旧斑点回答可见“内部问题/护理改善”等缺少来源支持的推断，是独立回答路径的未解决风险；本次没有将其改写、重新验证或宣称已修复。
+
+**人工路径**：http://127.0.0.1:5174/ → 小Y智能选妆 → 我想化妆 → 任一路线 → 底妆怎么上 → 然后呢（应继续眉毛）→ 接下来呢（可选重点及资料缺口）→ 继续（收尾）→ 然后呢（明确结束）。可在中间刷新、修正预算或用时。紧邻旧版入门回答或一次旧版失败可直接追问；若后来已换话题，需明确重新说要学的内容，不扫描更早历史猜测恢复。
+
+**隐私、降级与剩余边界**：进度和有限条件快照仅随既有匿名版本化消息保存，最近八条发送至原API，原二十条本地裁剪不变；清除会话一起清除，无新Key/长期画像字段/服务端永久存储/照片上传/日志。追问失败不推进、不假装成功，重试同一请求；离线不伪造受控教程。原自由首问明确自述的画像规则保持。旧版兼容只覆盖紧邻已知模板和一次通用失败，不保证任意久远、截断、跨题或模型自由回答恢复。有限话术规则不能覆盖所有口语；完整眼线、眼影分区、腮红定位和唇形教程仍缺资料，返回partial与具体缺口，不虚构商品或适配。
+
+本阶段无新增核验，继承上一条结论。受控知识28条/40来源和所有产品、价格、图片、评分、来源、授权状态保持；没有重新外部检索或独立实测。运行时/可复用提示词、FINAL-PROMPT、README、迁移计划及两份报告同步；比赛视频未更新，不把本地自动通过描述为人工验收或已上线。最终Git差异和链接检查见后续收尾补记。
+
+
+21:51收尾核对（北京时间）：README实际结构已补充beginnerContext路径；git diff --check、git diff --cached --check通过，索引为空；README、FINAL-PROMPT、可复用提示词的本地链接目标全部存在。最终25路径均在原路线续接及本次追问范围内；无商品/知识事实文件、依赖或QA产物进入修改清单。最终代码验证后只同步文档，沿用760/760、1887模块构建和114/114页面结果，不冒称重跑。待人工验收，未暂存/提交/推送/打标签。
+
+
+### 2026-11-26 22:14 天气与联网失败续修（YAS-2026-0064，待人工验收）
+
+**范围与基线**：负责人要求再次检查天气和联网。保留既有25路径路线/追问现场；21:53:46任务开始fetch与22:03:57复核，dev/HEAD/origin/dev均为6ccbe31fccb4b4d3b89546659888fa7b3c4ca256，索引为空。arch-stage-14既有对象2e09f6ffc64b6f742e62caf0de5971f2feb63f01及指向f65780588b96de71c8ff79c81c2a9c333fa266f5未变。ARCH-14 done、无新current，本次为独立授权修复，不新增阶段标签。当前合计34路径，未提交、未推送，无本次SHA/tag；不是新增Git回退点。
+
+**复现事实与保留失败**：
+
+- 8787和5174健康接口均200/assistant=true，但该状态仅表示配置存在。原页面“今天石家庄天气怎么样”显示WEATHER_PROVIDER_UNAVAILABLE/8秒响应超时。同问HTTP复测约4.9秒成功，后续约2.9秒成功，说明上游波动而非代理断开；上海常规查询亦成功。
+- 调试首轮错用question字段被schema以400拒绝，修正为正式query字段后验证，未为诊断放宽schema。
+- 原句“请联网搜索今天的科技新闻，并给出来源”真实返回502 SEARCH_EMPTY；直接将题意整理为“2026年11月26日 科技新闻”并传oneDay可取得来源。仅缩短成“今天 科技新闻”会拿到2024年等旧资料，不能作为修复成功。
+- 取得来源后真实glm-4-flash曾回复“无法直接联网”，再一次出现与来源不符的新闻标题/链接；仅检查引用编号仍不够。上述失败截图/HTTP保留在忽略的.qa/weather-search-20261126，最终改为可逐字校验的来源摘录，不将这些编造标题入库或当作事实。
+- 中途全量790项中的1项复合回答测试仍使用旧自由文本fixture而失败（789通过）；更新fixture为原文JSON选段，仍验证合并后的来源编号，后续全量通过。中途780/784结果不是最终覆盖结果。
+
+**实际修改文件与接口**：
+
+- server/providers/weather-provider.cjs及其test：连接或响应体超时、网络异常、429/5xx共享最多一次重试（250ms间隔），地名解析和预报共享默认约16.25秒总预算。其他4xx、JSON/schema错误不重试；持续错误仍返回脱敏WEATHER_PROVIDER_UNAVAILABLE，不使用旧预报冒充实时。未更换供应商或缓存天气。
+- 新增server/services/assistant/research-request.cjs及research-request.test.js：移除请求包装，保留主题；北京时间“今天/今日”转日期并oneDay检索，最近/本周oneWeek、无指定年份的最新/本月oneMonth。今日来源优先核对publishDate，没有时仅接受标题的完整目标日期；旧日期/无日期结果排除，没有可用结果返回SEARCH_NO_CURRENT_SOURCES。测试覆盖来源、当前日期、空结果、无主题、安全优先与显式搜索。
+- 新增server/services/assistant/research-answer.cjs：模型仅选至多3段、每段最多400字原文，Zod拒绝额外字段，检查来源号、重复引用、原文包含关系；标题/链接/引用由真实搜索结果生成。任何不合格输出回退已有搜索摘要，覆盖标记partial，不把取得来源等同事实已独立核验。
+- server/services/assistant/intent-router.cjs、assistant-service.cjs：接入明确联网请求、查询整理和摘录校验；仍走POST /api/assistant。response.cjs补服务端已检索和发布日期规则。商品事实及推荐继续原证据路径；天气仍沿用旧provider，目标架构差异不在本次改为完成。
+- server/app.test.js、server/services/assistant/ai-r03.test.js：更新真实API选段fixture并保留来源隔离、注入规则和复合引用编号断言。src/features/assistant/intentUtils.js仅补显式检索失败标记，主路由仍在服务端。
+- README修正“当前一定是glm-5.3-flash”的过时断言，说明运行环境决定模型、默认glm-4-flash；未修改任何实际密钥、模型或搜索引擎配置。README、本计划、两份累计报告同步当前可用性及限制；AGENTS/FINAL-PROMPT目标不因本次修复改写。
+
+**最终自动验证**（北京时间22:13）：
+
+- `$env:NODE_OPTIONS='--require=./.qa/ai-r01/no-secrets.cjs'; npm test`：57文件791/791。隔离dotenv、合成provider，不代表真实网络稳定性。日志.qa/weather-search-20261126/test-final.log。
+- 同一隔离环境 `npm run build -- --config .qa/route-continuation-20261126/vite.config.mjs`：1887模块成功，沿用envDir:false以免构建读取私有配置；原>500kB警告保留。日志build-final.log。
+- 真实HTTP：默认5174经代理到8787查询石家庄天气200；最终“今日科技新闻”约10.6秒返回200、真实来源5条、search/partial，模型摘录未通过而回退来源摘要。证据live-http-verified.json；较早live-http.json和live-http-final.json保留中间失败，不等同最终实现。
+- 真实浏览器：独立5184前端连同一8787网关，桌面1440×900及手机360×900完成天气与显式搜索输入/结果展示。“人工智能的定义”已返回通过原文匹配的3段摘录及5个真实来源，非合成响应。桌面/手机document宽1425/345，不超视口；检查截图未见横向溢出、输入与来源重叠；捕获的console error为空。手机天气和联网、桌面联网最终截图为mobile-weather-verified.jpg、mobile-search-verified.jpg、desktop-search-verified.jpg，临时视口已恢复。首次临时页导航工具超时，但页面实际加载，重新读取后继续，未改Vite安全设置。
+- 原路线/肤质/男妆的114项浏览器回归沿用21:45–21:48证据，本次没有冒称再次运行；其单元/接口测试在最终全量中仍通过。
+
+**隐私与降级**：用户5174原会话和画像未清理/改写。UI回归使用独立端口和自行创建的测试问题；API只发公共问题。未查看/展示真实Key、未改.env，启动入口按原配置正常调用服务端provider。照片、存储键、服务端长期记忆和用户日志策略不变。无新依赖/付费服务开通或供应商切换；所有外部能力仍经过服务端。
+
+**交付与风险**：入口仍http://127.0.0.1:5174/，刷新后重新发送天气或显式搜索问题；旧错误不自动改写。本次证明可拿到天气/来源并按实际结果回答，不保证Open-Meteo持续可达、搜索引擎相关性、网页真实性或模型每次都能选出合格摘录；现有search_std出现聚合页/综合新闻，保留partial及来源说明，不将其用作医疗、成分或商品核验结论。实体手机、公网和长期弱网未验证，原包体积与素材授权风险不变。视频未更新，不把本机验证声称上线/人工验收通过。回退将来须按实际获批提交及依赖revert，当前不擅自建立提交、标签或stash。
+
+
+22:17收尾补记：最终网关已重启加载含响应体超时重试的代码，5174健康检查200/assistant=true，石家庄天气实际200、约2.4秒（证据weather-runtime-complete.json）。已关闭自行启动的5184临时预览，5174和8787保留。README写入曾引入CRLF导致空白检查失败，已恢复LF，北京时间22:16:54的完整及暂存区diff检查通过；只修正文档换行，未改功能代码。当前34路径、索引为空，无本轮SHA/tag，待人工验收。
+
+
+### 2026-11-26 22:23 人工验收与dev提交授权（YAS-2026-0064）
+
+负责人明确回复“人工审核完毕，上传到github上”，本轮路线/追问、天气和联网修复已获人工验收及当前34路径上传授权。基线和22:21:24北京时间fetch/实际远端均为6ccbe31fccb4b4d3b89546659888fa7b3c4ca256，索引为空，arch-stage-14对象2e09f6ffc64b6f742e62caf0de5971f2feb63f01→f65780588b96de71c8ff79c81c2a9c333fa266f5保持。ARCH-14 done、无新current，不新建阶段/tag/Release，不删除分支；旧待验收记录保留为当时事实。
+
+提交范围为前述34路径，共同修复小Y引导续接和外部查询；共享assistant-service/intent-router与契约、界面、测试、提示词及四份说明记录作为一个已验证版本归档，避免缺少互相依赖模块的中间提交。运行代码自22:13最终57文件791/791和1887模块构建后未改变，本轮只更新README、迁移计划及两份累计报告的人工确认与版本说明；既有真实HTTP、桌面/360px和路线浏览器证据沿用，不虚构重跑。提交前检查白名单、差异空白、文档当前状态与本地链接，QA/私有配置/用户数据不提交。
+
+**本阶段无新增核验，继承上一条结论。** 产品、价格、图片、评分、来源和授权均未变化。人工验收不将网页摘要、模型输出或软件测试升级为产品事实核验，不扩展此前独立任务的人工确认；已记录的第三方可用性、搜索相关性、实体手机/公网覆盖与素材风险继续保留，视频未变更。
+
+本条写入时新SHA/远端推送尚未产生，实际结果由本轮交付回执提供，下一次文档同步可回填；提交和推送前再次fetch，不强推。后续回退应依实际提交与依赖使用revert，不改写既有历史，也不恢复浏览器本地数据、环境变量或外部状态。

@@ -1,5 +1,6 @@
 const FLOW_ID = 'xiaoy-guided-intake-v1'
 const MAX_INITIAL_QUERY = 1000
+const { isBeginnerRequest, isBeginnerQuestion, wantsDirectAnswer, goalFromText, beginnerNext, advanceBeginner } = require('./beginner-guidance.cjs')
 
 const option = (label, value) => ({ label, value })
 const routeOptions = [
@@ -38,7 +39,7 @@ function shouldBeginGuidedIntake(query, messages = [], intent = '') {
   if (['unsupported_sensitive', 'external_research', 'product_fact', 'product_comparison', 'plan_adjustment', 'greeting_help'].includes(intent)) return false
   if (/^(你好|嗨|hello|hi|在吗)$/.test(text)) return false
   if (/天气|气温|下雨|最新|新闻|促销|多少钱|价格|成分|规格|保质期|上市|官网/.test(text)) return false
-  return /化妆|妆容|妆面|底妆|肤质|皮肤|肤色|色调|底色|粉底|气垫|素颜霜|眉毛|眉形|眉粉|眉笔|修容|修饰|高光|遮瑕|腮红|唇妆|彩妆/.test(text)
+  return Boolean(goalFromText(text)) || /化妆|妆容|妆面|底妆|肤质|皮肤|肤色|色调|底色|粉底|气垫|素颜霜|眉毛|眉形|眉粉|眉笔|修容|修饰|高光|遮瑕|腮红|唇妆|彩妆/.test(text)
 }
 
 function summarizeRequest(query) {
@@ -81,7 +82,8 @@ function matchOption(query, question) {
   if (exact) return exact.value
 
   if (question.step === 1) {
-    if (/不确定|随便|按需求|不区分|都可以/.test(text)) return 'route-general'
+    if (/跳过/.test(text)) return 'route-direct'
+    if (/不知道|不清楚|不确定|随便|按需求|不区分|都可以/.test(text)) return 'route-general'
     if (/男生|男士|男性|男妆|男生日常/.test(text)) return 'route-men'
     if (/女生|女士|女性|女生日常/.test(text)) return 'route-women'
     if (/不区分性别|不想说性别|按需求/.test(text)) return 'route-general'
@@ -278,19 +280,23 @@ function legacyQuestion(route, selections, initialQuery) {
   return detailQuestion(route, selections, initialQuery, focus)
 }
 
-async function advanceGuidedIntake(query, messages = [], profile = {}) {
+async function advanceGuidedIntakeCore(query, messages = [], profile = {}) {
   const { assessSkin, readSkinObservation, observationFromChoice, asksSkinGuidance, isSkinUncertain, isSkinSkip,
     isSkinQuestion, skinConversationContext, leavesSkinGuidance, advanceSkinObservation, skinQuestionSpec, SKIN_GUIDANCE_MAX_ROUNDS } = await import('../../../src/features/assistant/skinObservation.js')
-  if (leavesSkinGuidance(query)) return null
   const last = messages.at(-1)
   const current = last?.role === 'assistant' ? last.question : null
+  // Goal replies belong to the pending request, including a freely typed new focus.
+  const beginner = advanceBeginner(current, query, makeQuestion)
+  if (beginner) return beginner
+  if (leavesSkinGuidance(query)) return null
   const context = skinConversationContext(messages)
   const initial = context?.initialQuery || query
   const observation = readSkinObservation(query)
   const hasObservation = Object.keys(observation).length > 0
+  const readCurrentSkin = (text) => (current?.updates || []).reduce((value, update) => readSkinObservation(update, value), readSkinObservation(text))
   const finishSkin = (original, route, selections, value, skipped = false) => skinResult(original, route || 'general', selections, assessSkin(value, skipped))
   const startSkin = (original, route, selections, step) => {
-    const value = readSkinObservation(original)
+    const value = readCurrentSkin(original)
     const assessment = assessSkin(value)
     if (!assessment.need || step > SKIN_GUIDANCE_MAX_ROUNDS) return skinResult(original, route || 'general', selections, assessment)
     const spec = skinQuestionSpec(assessment.need)
@@ -307,7 +313,9 @@ async function advanceGuidedIntake(query, messages = [], profile = {}) {
   }
 
   const help = /^(?:你)?帮我看看(?:吧)?[。？?！!]*$/.test(query)
-  const skinReply = context && (asksSkinGuidance(query) || isSkinUncertain(query) || isSkinSkip(query) || hasObservation || help)
+  const skinReply = context && (context.askingSkin || context.baseSelection || asksSkinGuidance(initial))
+    && !wantsDirectAnswer(query)
+    && (asksSkinGuidance(query) || isSkinUncertain(query) || isSkinSkip(query) || hasObservation || help)
   if (skinReply) {
     const original = hasObservation ? `${initial}；${query}`.slice(0, MAX_INITIAL_QUERY) : initial
     if (isSkinSkip(query)) return finishSkin(`${initial}；${query}`.slice(0, MAX_INITIAL_QUERY), current?.route, current?.selections || [], readSkinObservation(initial), true)
@@ -318,14 +326,29 @@ async function advanceGuidedIntake(query, messages = [], profile = {}) {
     return startSkin(query, 'general', [], 1)
   }
   if (current?.flowId !== FLOW_ID || current.step < 1 || current.step > 3) return null
+  const originalQuery = current.initialQuery || messages.find((message) => message.role === 'user')?.content || ''
+  if (wantsDirectAnswer(query)) {
+    if (!isBaseMakeupRecommendation(originalQuery) && (isBeginnerRequest(originalQuery) || goalFromText(originalQuery) && !/素颜霜|修容|轮廓/.test(originalQuery))) {
+      return beginnerNext({ ...current, initialQuery: originalQuery, direct: true }, makeQuestion)
+    }
+    const kind = answerKind(current.route, current.selections || [])
+    return { kind, route: current.route || 'general', selections: current.selections || [], query: originalQuery,
+      knowledgeQuery: guidedQuery(originalQuery, current.route, current.selections || []), stopGuidance: true,
+      promptContext: `${promptContext(current.route, current.selections || [])}；用户要求按已有信息直接回答，不再提问。` }
+  }
   const selected = matchOption(query, current)
-  if (!selected || !current.options.some((item) => item.value === selected)) return null
+  if (!selected || !current.options.some((item) => item.value === selected)) {
+    if (current.step === 1 && isBeginnerRequest(originalQuery) && /预算|分钟|慢慢学|皮|妆效|面试|通勤/.test(query)) {
+      return beginnerNext({ initialQuery: originalQuery, route: 'general', selections: ['route-general'], updates: [query.slice(0, 1000)] }, makeQuestion)
+    }
+    return null
+  }
 
   const initialQuery = current.initialQuery || messages.find((message) => message.role === 'user')?.content || ''
   if (current.step === 1) {
-    if (selected === 'route-direct') return isBaseMakeupRecommendation(initialQuery) || needFromRequest(initialQuery) === 'skin-type'
-      ? finishSkin(initialQuery, 'general', [], {}, true)
-      : { kind: 'continue', query: initialQuery, promptContext: '用户选择直接按原问题回答，不再追问。' }
+    if (selected === 'route-direct') return isBeginnerRequest(initialQuery)
+      ? beginnerNext({ initialQuery, direct: true }, makeQuestion)
+      : { kind: 'continue', query: initialQuery, stopGuidance: true, promptContext: '用户选择直接按原问题回答，不再追问。' }
     const route = selected === 'route-men' ? 'men'
       : selected === 'route-women' ? 'women'
         : selected === 'route-general' ? 'general'
@@ -333,7 +356,13 @@ async function advanceGuidedIntake(query, messages = [], profile = {}) {
             : selected === 'route-plan' ? 'plan' : null
     if (!route) return null
 
-    const originalObservation = readSkinObservation(initialQuery)
+    // Every route can continue a beginner request. A known goal skips goal selection.
+    if ((isBeginnerRequest(initialQuery) || goalFromText(initialQuery)) && !isBaseMakeupRecommendation(initialQuery)
+      && !needFromRequest(initialQuery) && !asksSkinGuidance(initialQuery) && !/素颜霜|修容|轮廓/.test(initialQuery)) {
+      return beginnerNext({ initialQuery, route, selections: [selected], updates: current.updates || [] }, makeQuestion)
+    }
+
+    const originalObservation = readCurrentSkin(initialQuery)
     const assessment = assessSkin(originalObservation)
     const alreadyDescribedSkin = assessment.values.length || assessment.kind === 'balanced' || originalObservation.conflicting
     const multipleNeeds = multipleUncertainNeeds(initialQuery).filter((need) => need !== 'focus-skin-type' || !alreadyDescribedSkin)
@@ -427,6 +456,29 @@ async function advanceGuidedIntake(query, messages = [], profile = {}) {
   const kind = answerKind(current.route, selections)
   return { kind, route: current.route, selections, query: initialQuery,
     knowledgeQuery: guidedQuery(initialQuery, current.route, selections), promptContext: promptContext(current.route, selections) }
+}
+
+async function advanceGuidedIntake(query, messages = [], profile = {}) {
+  const last = messages.at(-1)
+  const current = last?.role === 'assistant' && last.question?.flowId === FLOW_ID ? last.question : null
+  if (!current || isBeginnerQuestion(current)) return advanceGuidedIntakeCore(query, messages, profile)
+  const { leavesSkinGuidance } = await import('../../../src/features/assistant/skinObservation.js')
+  if (leavesSkinGuidance(query)) return null
+  const correction = !current.options.some(({ value, label }) => query === value || query === label)
+    && /预算|(?:我是|肤质改为|更正为)(?:混油皮|混干皮|油皮|干皮)|(?:妆效|场景).*(?:改|换)|(?:改为|换成)(?:通勤|面试|约会|哑光|水光)|(?:不要|排除)\s*[\p{L}]/u.test(query)
+  const updates = correction ? [...(current.updates || []), query.slice(0, 1000)].slice(-4) : current.updates || []
+  const history = updates.length ? [...messages.slice(0, -1), { ...last, question: { ...current, updates } }] : messages
+  const result = await advanceGuidedIntakeCore(query, history, profile)
+  if (!result && correction) return { kind: 'ask', answer: `已更新本次条件。${current.step === 1 ? '接着选择希望的建议路线：' : last.content}`,
+    question: { ...current, updates } }
+  if (!result || !updates.length) return result
+  if (result.question) result.question.updates = updates
+  else {
+    result.initialQuery = current.initialQuery
+    result.updates = updates
+    result.query = [result.query, ...updates].join('；').slice(0, 2000)
+  }
+  return result
 }
 
 module.exports = { FLOW_ID, advanceGuidedIntake, beginGuidedIntake, makeQuestion, shouldBeginGuidedIntake }

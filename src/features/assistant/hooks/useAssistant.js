@@ -6,6 +6,7 @@ import { LEGACY_MESSAGES_KEY, LEGACY_PROFILE_KEY, MESSAGES_KEY, PROFILE_KEY } fr
 import { requestAssistant } from '../assistantApi'
 import { cleanErrorMessage, extractProfile, localMakeupReply, localReply } from '../assistantUtils'
 import { canRecommendOffline, detectIntent, needsOnlineResearch } from '../intentUtils'
+import { beginnerFollowup, readBeginnerContext } from '../beginnerContext'
 import { assessSkin, readSkinObservation, observationFromChoice, skinConditions, skinConversationContext,
   skinObservationFromQuestion, isSkinQuestion, isSkinUncertain, isSkinSkip, asksSkinGuidance, skinChoiceFromReply, leavesSkinGuidance, advanceSkinObservation } from '../skinObservation'
 
@@ -16,7 +17,7 @@ const welcomeMessage = {
   productIds: [],
 }
 
-function createMessage(role, content, productIds = [], sources = [], question = undefined, skinGuidance = false) {
+function createMessage(role, content, productIds = [], sources = [], question = undefined, skinGuidance = false, beginnerContext = undefined) {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     role,
@@ -25,6 +26,7 @@ function createMessage(role, content, productIds = [], sources = [], question = 
     sources,
     ...(question ? { question } : {}),
     ...(skinGuidance ? { skinGuidance: true } : {}),
+    ...(beginnerContext ? { beginnerContext } : {}),
   }
 }
 
@@ -46,6 +48,10 @@ export function useAssistant() {
   const [activeModel, setActiveModel] = useState('')
   const [activity, setActivity] = useState('小Y正在识别需求并查询...')
   const messageEndRef = useRef(null)
+  const sendLockRef = useRef(false)
+  const messagesRef = useRef(messages)
+  messagesRef.current = messages
+  const completedQuestionsRef = useRef(new Set())
 
   useEffect(() => {
     clearLegacyCredentials()
@@ -65,24 +71,35 @@ export function useAssistant() {
 
   const profileTags = useMemo(() => Object.values(profile).filter(Boolean).length, [profile])
 
-  async function sendMessage(value, selectedValue = '') {
+  async function sendMessage(value, selectedValue = '', questionId = '', retry = null) {
     const text = value.trim()
-    if (!text || busy) return
-    const context = skinConversationContext(messages)
+    if (!text || sendLockRef.current) return
+    const visibleMessages = messagesRef.current
+    const history = retry?.messages || (visibleMessages.at(-1)?.retry ? visibleMessages.slice(0, -2) : visibleMessages)
+    const activeQuestion = history.at(-1)
+    if (selectedValue && !retry && visibleMessages.at(-1)?.id !== activeQuestion?.id) return
+    if (selectedValue && (activeQuestion?.role !== 'assistant' || !activeQuestion.question
+      || questionId && activeQuestion.id !== questionId || completedQuestionsRef.current.has(activeQuestion.id)
+      || !activeQuestion.question.options.some(({ value }) => value === selectedValue))) return
+    sendLockRef.current = true
+    const context = skinConversationContext(history)
     const choice = selectedValue || skinChoiceFromReply(text, context?.question)
     const hasObservation = Object.keys(readSkinObservation(text)).length > 0
     const skinTurn = context && !leavesSkinGuidance(text) && ((choice && (isSkinQuestion(context.question) || context.baseSelection)) || isSkinUncertain(text) || isSkinSkip(text) || asksSkinGuidance(text) || hasObservation)
-    const nextProfile = selectedValue || skinTurn ? profile : extractProfile(text, profile)
+    const guidedTurn = activeQuestion?.question?.flowId === 'xiaoy-guided-intake-v1' && !leavesSkinGuidance(text)
+    const beginnerTurn = Boolean(beginnerFollowup(text) && readBeginnerContext(history))
+    const nextProfile = selectedValue || skinTurn || guidedTurn || beginnerTurn ? profile : extractProfile(text, profile)
     setInput('')
-    if (!selectedValue && !skinTurn) setProfile(nextProfile)
-    setMessages((current) => [...current, createMessage('user', text)])
+    if (!selectedValue && !skinTurn && !guidedTurn && !beginnerTurn) setProfile(nextProfile)
+    setMessages((current) => retry ? current.filter(({ id }) => id !== retry.id) : [...current, createMessage('user', text)])
     setBusy(true)
     setActivity('小Y正在组织回答...')
     try {
       if (globalThis.navigator?.onLine === false) throw new TypeError('浏览器已断网')
-      const result = await requestAssistant({ text: selectedValue || text, messages, profile: nextProfile })
+      const result = await requestAssistant({ text: selectedValue || text, messages: history, profile: nextProfile })
+      if (activeQuestion?.question) completedQuestionsRef.current.add(activeQuestion.id)
       setMessages((current) => [...current, createMessage('assistant', result.text, result.productIds, result.sources, result.question,
-        result.knowledgeEvidence?.some(({ id }) => id === 'self-reported-skin-type'))])
+        result.knowledgeEvidence?.some(({ id }) => id === 'self-reported-skin-type'), result.beginnerContext)])
       setMode(result.answerMode === 'local' ? result.intent && result.intent !== 'catalog_recommendation' ? 'ready' : 'local'
         : result.answerMode === 'weather' || result.sources.some((source) => source.kind === 'weather') ? 'weather'
           : result.sources.some((source) => source.kind === 'web') ? 'web'
@@ -103,6 +120,11 @@ export function useAssistant() {
       if (/红肿|刺痛|破损|皮肤破|明显不适/.test(text)) {
         setMessages((current) => [...current, createMessage('assistant', '先停止使用让你不适的产品，并咨询合格专业人员。现在有明显不适，先暂停上妆和产品推荐。')])
         setMode('ready')
+      } else if (beginnerTurn || guidedTurn && !isSkinQuestion(activeQuestion.question)) {
+        const failed = createMessage('assistant', `${reason}，这次${beginnerTurn ? '追问' : '选择'}尚未处理完成。已保留原问题和“${text}”，可以重试，也可以直接输入新的要求。`)
+        failed.retry = { text, selectedValue, questionId: activeQuestion.id, ...(beginnerTurn ? { kind: 'followup' } : {}) }
+        setMessages((current) => [...current, failed])
+        setMode('error')
       } else if (progress?.question) {
         setMessages((current) => [...current, createMessage('assistant', `${reason}，可以继续本地观察。\n\n${progress.answer}`, [], [], progress.question, true)])
         setMode('local')
@@ -124,16 +146,27 @@ export function useAssistant() {
       }
       setActiveModel('')
     } finally {
+      sendLockRef.current = false
       setBusy(false)
     }
   }
 
+  function retryMessage(id) {
+    const current = messagesRef.current
+    const failed = current.at(-1)
+    if (failed?.id !== id || !failed.retry || sendLockRef.current) return
+    const { text, selectedValue, questionId } = failed.retry
+    return sendMessage(text, selectedValue, questionId, { id, messages: current.slice(0, -2) })
+  }
+
   function resetConversation() {
+    if (sendLockRef.current) return
+    completedQuestionsRef.current.clear()
     setMessages([welcomeMessage])
     setProfile({})
     setMode('ready')
     setActiveModel('')
   }
 
-  return { messages, profile, input, setInput, busy, mode, activeModel, activity, messageEndRef, profileTags, sendMessage, resetConversation }
+  return { messages, profile, input, setInput, busy, mode, activeModel, activity, messageEndRef, profileTags, sendMessage, retryMessage, resetConversation }
 }

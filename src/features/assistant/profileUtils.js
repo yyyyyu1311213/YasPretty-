@@ -3,7 +3,7 @@ import { assessSkin, readSkinObservation, observationFromChoice, skinConditions 
 const SKIN = /混油皮|混干皮|敏感肌|大油皮|大干皮|油皮|干皮/
 const FINISH = /自然光泽|奶油肌|柔雾|哑光|雾面|水光|亮泽/
 const CATEGORY = /粉底液|粉底|气垫|遮瑕|散粉|素颜霜|隔离|有色面霜|眉妆|眉笔|眉粉|眉胶|眼影|眼线|睫毛膏|腮红|唇妆|修容粉|修容膏|修容/
-const SCENE = /长时间带妆|通勤|约会|拍照|夏季|秋冬|答辩/
+const SCENE = /长时间带妆|面试|通勤|约会|拍照|夏季|秋冬|答辩/
 const desire = /^(?:我)?(?:想要|想找|喜欢|偏好|需要|想买|要买|要用|希望|用于)/
 const otherSubject = /朋友|妈妈|姐姐|妹妹|同事|别人|她|他|这款|这瓶|这个|该款|产品|商品/
 

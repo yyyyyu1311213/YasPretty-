@@ -17,10 +17,22 @@ const guidedQuestionSchema = z.object({
   route: z.enum(['men', 'women', 'general', 'skin', 'plan']).nullable(),
   selections: z.array(z.string().trim().min(1).max(80)).max(4),
   initialQuery: z.string().trim().max(1000).optional(),
+  updates: z.array(z.string().trim().min(1).max(1000)).max(4).optional(),
   options: z.array(z.object({
     label: z.string().trim().min(1).max(80),
     value: z.string().trim().min(1).max(80),
-  }).strict()).min(2).max(5),
+  }).strict()).min(2).max(6),
+}).strict()
+
+const beginnerContextSchema = z.object({
+  version: z.literal(1),
+  initialQuery: z.string().trim().min(1).max(1000),
+  route: z.enum(['men', 'women', 'general', 'skin', 'plan']),
+  goal: z.enum(['goal-base', 'goal-brow', 'goal-eye-lip', 'goal-daily']),
+  time: z.enum(['time-five', 'time-ten', 'time-learn']).nullable(),
+  updates: z.array(z.string().trim().min(1).max(1000)).max(4),
+  conditions: profileSchema.omit({ city: true }).extend({ excludedBrands: z.array(z.string().trim().min(1).max(120)).max(120).optional() }).optional(),
+  lastStep: z.enum(['base', 'brow', 'eye-lip', 'daily', 'color', 'finish', 'done']),
 }).strict()
 
 const conversationMessageSchema = z.object({
@@ -28,6 +40,7 @@ const conversationMessageSchema = z.object({
   content: z.string().trim().min(1).max(4000),
   productIds: z.array(z.string().trim().min(1).max(120)).max(3).optional(),
   question: guidedQuestionSchema.optional(),
+  beginnerContext: beginnerContextSchema.optional(),
 }).strict()
 
 const assistantRequestSchema = z.object({
@@ -107,6 +120,7 @@ const assistantResponseSchema = z.object({
   model: z.string().trim().min(1).max(80).nullable(),
   intent: z.enum(['catalog_recommendation', 'product_comparison', 'product_fact', 'beauty_knowledge', 'makeup_plan', 'plan_adjustment', 'external_question', 'external_research', 'greeting_help', 'unsupported_sensitive', 'clarification', 'compound']).optional(),
   guidedQuestion: guidedQuestionSchema.optional(),
+  beginnerContext: beginnerContextSchema.optional(),
   coverage: z.array(assistantCoverageSchema).max(7).optional(),
   knowledgeEvidence: z.array(knowledgeEvidenceSchema).max(8).optional(),
 }).strict()

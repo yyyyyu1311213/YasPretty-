@@ -1,6 +1,8 @@
 const { z } = require('zod')
 const { productContext, referencePattern, resolveProducts } = require('./product-resolver.cjs')
 const { retrieveKnowledge } = require('../../knowledge/beauty-knowledge.cjs')
+const { isBeginnerRequest, goalFromText } = require('./beginner-guidance.cjs')
+const { requestsWebSearch } = require('./research-request.cjs')
 
 const intents = ['catalog_recommendation', 'product_comparison', 'product_fact', 'beauty_knowledge', 'makeup_plan', 'plan_adjustment', 'external_question', 'external_research', 'greeting_help', 'unsupported_sensitive', 'clarification']
 const classificationSchema = z.object({ intent: z.enum(intents), confidence: z.number().min(0).max(1) }).strict()
@@ -26,11 +28,13 @@ function intentRouter(query, products = [], messages = []) {
   const reference = (referencePattern.test(text) || resolution.referenced) && !/手机|打印机|电脑|汽车/.test(text)
   const specified = resolution.products.length > 0
   if (isSensitive(text)) return 'unsupported_sensitive'
+  if (requestsWebSearch(text) && !specified && !reference && !context) return 'external_research'
   if (isCatalogSizeQuestion(text)) return 'product_fact'
   if (isExternalObject(text) && !context) return 'external_question'
   if (/调整方案|减少步骤|增加步骤|替换产品/.test(text)) return 'plan_adjustment'
   if (/(对比|比较|区别|差多少|哪个好|哪个更)/.test(text) && (specified || reference)) return 'product_comparison'
   if (isCompletePlan(text)) return 'makeup_plan'
+  if ((isBeginnerRequest(text) || goalFromText(text) === 'goal-daily') && !isRecommendation(text)) return 'beauty_knowledge'
   if ((context || specified || reference) && /(?:规格|容量|净含量|包装内容|成分|配方|价格|售价).*(?:是什么|有哪些|多少|[？?])/.test(text)
     && !/原理|是什么意思|怎么选/.test(text)) return 'product_fact'
   if ((context || reference) && isFact(text) && !isKnowledge(text, context || reference)) return 'product_fact'
@@ -68,7 +72,7 @@ async function classifyIntent(query, products, provider, messages = []) {
 
 function needsOnlineResearch(query, intent = intentRouter(query)) {
   if (['unsupported_sensitive', 'greeting_help', 'clarification'].includes(intent)) return false
-  return intent === 'external_research' || isTimely(query)
+  return intent === 'external_research' || requestsWebSearch(query) || isTimely(query)
 }
 
 module.exports = { intentRouter, classifyIntent, needsOnlineResearch, hasSkinDiscomfort, isCatalogSizeQuestion }

@@ -82,40 +82,56 @@ function createWeatherProvider({
   fetchImpl = globalThis.fetch,
   timeoutMs = 8000,
   now = () => new Date(),
+  waitImpl = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 } = {}) {
   const geocodeCache = new Map()
 
-  async function getJson(url, schema) {
+  async function getJson(url, schema, budget) {
+    const remaining = budget.deadline - Date.now()
+    if (remaining <= 0) throw createRequestError('天气数据源响应超时。')
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), timeoutMs)
+    const timer = setTimeout(() => controller.abort(), Math.min(timeoutMs, remaining))
+    let failure
     try {
       const response = await fetchImpl(url, {
         method: 'GET',
         headers: { Accept: 'application/json' },
         signal: controller.signal,
       })
-      if (!response.ok) throw createRequestError('天气数据源暂时不可用。')
+      if (!response.ok) {
+        const error = createRequestError('天气数据源暂时不可用。')
+        error.retryable = response.status === 429 || response.status >= 500
+        throw error
+      }
       let body
       try {
         body = await response.json()
       } catch (error) {
+        if (error?.name === 'AbortError') throw error
         throw createRequestError('天气数据源返回了无法解析的内容。', error)
       }
       const parsed = schema.safeParse(body)
       if (!parsed.success) throw createRequestError('天气数据源返回格式异常。')
       return parsed.data
     } catch (error) {
-      if (error instanceof AppError) throw error
-      throw createRequestError(
+      failure = error instanceof AppError ? error : createRequestError(
         error?.name === 'AbortError' ? '天气数据源响应超时。' : '天气数据源连接失败。',
         error,
       )
+      if (!(error instanceof AppError)) failure.retryable = true
     } finally {
       clearTimeout(timer)
     }
+    // One retry budget is shared by geocoding and forecast; never retry bad data.
+    if (failure.retryable && budget.retries > 0 && budget.deadline - Date.now() > 250) {
+      budget.retries -= 1
+      await waitImpl(250)
+      return getJson(url, schema, budget)
+    }
+    throw failure
   }
 
-  async function geocode(city) {
+  async function geocode(city, budget) {
     const normalizedCity = String(city).trim().replace(/[市地区县]$/u, '')
     const cached = geocodeCache.get(normalizedCity)
     if (cached && cached.expiresAt > Date.now()) return cached.location
@@ -139,7 +155,7 @@ function createWeatherProvider({
       language: 'zh',
       format: 'json',
     })
-    const data = await getJson(`${OPEN_METEO_GEOCODING}?${params.toString()}`, geocodingResponseSchema)
+    const data = await getJson(`${OPEN_METEO_GEOCODING}?${params.toString()}`, geocodingResponseSchema, budget)
     const result = data.results.find((item) => item.country_code?.toUpperCase() === 'CN') || data.results[0]
     if (!result) throw createRequestError('没有找到这个城市的天气数据。')
     geocodeCache.set(normalizedCity, { location: result, expiresAt: Date.now() + 24 * 60 * 60 * 1000 })
@@ -151,7 +167,8 @@ function createWeatherProvider({
     providerName: 'Open-Meteo',
 
     async forecast({ city, date }) {
-      const location = await geocode(city)
+      const budget = { deadline: Date.now() + timeoutMs * 2 + 250, retries: 1 }
+      const location = await geocode(city, budget)
       const params = new URLSearchParams({
         latitude: String(location.latitude),
         longitude: String(location.longitude),
@@ -161,7 +178,7 @@ function createWeatherProvider({
         forecast_days: '3',
       })
       const forecastUrl = `${OPEN_METEO_FORECAST}?${params.toString()}`
-      const data = await getJson(forecastUrl, forecastResponseSchema)
+      const data = await getJson(forecastUrl, forecastResponseSchema, budget)
       const index = data.daily.time.indexOf(date)
       if (index < 0) throw createRequestError('天气数据源没有返回目标日期。')
 

@@ -22,7 +22,7 @@ const quickPrompts = [
 ]
 
 export default function XiaoYAssistant({ onOpenProduct }) {
-  const { messages, profile, input, setInput, busy, mode, activeModel, activity, messageEndRef, profileTags, sendMessage, resetConversation } = useAssistant()
+  const { messages, profile, input, setInput, busy, mode, activeModel, activity, messageEndRef, profileTags, sendMessage, retryMessage, resetConversation } = useAssistant()
   const { form, plan, status: planStatus, error: planError, update, togglePriority, createPlan } = useMakeupPlan(profile)
   const planSectionRef = useRef(null)
 
@@ -42,7 +42,7 @@ export default function XiaoYAssistant({ onOpenProduct }) {
         </div>
         <div className="xiaoy-heading-actions">
           <span className={`xiaoy-mode ${mode}`}>{mode === 'weather' ? '天气数据' : mode === 'web' ? '联网思考' : mode === 'knowledge' ? activeModel ? `${activeModel} · 知识库` : '知识库参考' : mode === 'ai' ? activeModel || 'AI 对话' : mode === 'local' ? '资料库推荐' : mode === 'tool' ? '实时工具' : mode === 'error' ? '连接异常' : '已就绪'}</span>
-          <button onClick={resetConversation} aria-label="重新开始" title="重新开始"><RefreshCw size={18} /></button>
+          <button onClick={resetConversation} disabled={busy} aria-label="重新开始" title="重新开始"><RefreshCw size={18} /></button>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export default function XiaoYAssistant({ onOpenProduct }) {
 
         <div className="xiaoy-main">
           <div className="xiaoy-chat">
-            <AssistantMessages messages={messages} profile={profile} busy={busy} activity={activity} messageEndRef={messageEndRef} onOpenProduct={onOpenProduct} onChoose={sendMessage} />
+            <AssistantMessages messages={messages} profile={profile} busy={busy} activity={activity} messageEndRef={messageEndRef} onOpenProduct={onOpenProduct} onChoose={sendMessage} onRetry={retryMessage} />
 
             {messages.length === 1 && messages[0].id !== 'welcome' && !messages[0].question && <div className="xiaoy-prompts">{quickPrompts.map((prompt) => <button key={prompt} onClick={() => sendMessage(prompt)}>{prompt}<ChevronRight size={15} /></button>)}</div>}
 

@@ -123,12 +123,12 @@ describe('AI-R03 actual API evaluation', () => {
   it('maps a timely search citation to its actual source after merging with knowledge', async () => {
     const zhipu = { ...provider(), configured: true,
       search: vi.fn(async () => [{ title: '合成趋势证据', url: 'https://example.test/ai-r03-trend', publisher: '合成测试', accessedAt: '2026-11-21T00:00:00.000Z', content: '合成趋势说明，仅测试。' }]),
-      chat: vi.fn(async (messages) => messages[0].content.startsWith('按问题组织') ? 'invalid' : '合成趋势说明。[1]') }
+      chat: vi.fn(async (messages) => messages[0].content.startsWith('按问题组织') ? 'invalid' : JSON.stringify({ excerpts: [{ source: 1, quote: '合成趋势说明，仅测试。' }] })) }
     const server = await app(zhipu)
     try {
       const result = (await ask(server, '粉底怎么涂；今年最新的粉底上妆技巧是什么')).json()
       const number = result.sources.findIndex((source) => source.url === 'https://example.test/ai-r03-trend') + 1
-      expect(result.answer).toContain(`合成趋势说明。[${number}]`)
+      expect(result.answer).toContain(`合成趋势说明，仅测试。 [${number}]`)
       expect(zhipu.chat.mock.calls[1][0][0].content).not.toContain('受控知识库资料开始')
     } finally { await server.close() }
   })

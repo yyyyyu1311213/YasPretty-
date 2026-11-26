@@ -11,7 +11,7 @@ export async function requestAssistant({ text, messages, profile }) {
   const { data } = await postJson(ASSISTANT_ENDPOINT, {
     query: text,
     profile,
-    messages: messages.slice(-8).map((message) => ({ role: message.role, content: message.content.slice(0, 4000), ...(message.role === 'assistant' ? { productIds: (message.productIds || []).slice(0, 3), ...(message.question ? { question: message.question } : {}) } : {}) })),
+    messages: messages.slice(-8).map((message) => ({ role: message.role, content: message.content.slice(0, 4000), ...(message.role === 'assistant' ? { productIds: (message.productIds || []).slice(0, 3), ...(message.question ? { question: message.question } : {}), ...(message.beginnerContext ? { beginnerContext: message.beginnerContext } : {}) } : {}) })),
   }, (response, data) => createApiError(
     data?.error?.message || `请求失败（${response.status}）`,
     data?.error?.code || 'REQUEST_FAILED',
@@ -26,6 +26,7 @@ export async function requestAssistant({ text, messages, profile }) {
     ...(data.coverage ? { coverage: data.coverage } : {}),
     ...(data.knowledgeEvidence ? { knowledgeEvidence: data.knowledgeEvidence } : {}),
     ...(data.guidedQuestion ? { question: data.guidedQuestion } : {}),
+    ...(data.beginnerContext ? { beginnerContext: data.beginnerContext } : {}),
   }
 }
 

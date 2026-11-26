@@ -14,9 +14,30 @@ async function extractParameters(query, profile = {}, products = []) {
   return { profile: stated, recommendation: { ...extractRequestConditions(query, stated), brands, excludedBrands, productIds } }
 }
 
-function planInput(query, profile) {
+// Apply only fields stated in each follow-up. Earlier constraints survive unrelated answers.
+async function extractGuidedParameters(initialQuery, updates = [], profile = {}, products = []) {
+  const result = await extractParameters(initialQuery, profile, products)
+  for (const update of updates) {
+    const text = update.replace(/预算(?:改成|改为|换成|调整为|是)/g, '预算')
+    const next = await extractParameters(text, {}, products)
+    Object.assign(result.profile, next.profile)
+    const { brands, excludedBrands, productIds, ...conditions } = next.recommendation
+    Object.assign(result.recommendation, conditions)
+    if (brands.length) result.recommendation.brands = brands
+    if (productIds.length) result.recommendation.productIds = productIds
+    result.recommendation.excludedBrands = [...new Set([...result.recommendation.excludedBrands, ...excludedBrands])]
+  }
+  // Plan inputs use these temporary request conditions, never the persisted profile.
+  for (const field of ['budget', 'finish', 'scene', 'skin']) {
+    if (result.recommendation[field] !== undefined) result.profile[field] = result.recommendation[field]
+  }
+  return result
+}
+
+function planInput(query, profile, conditions = {}) {
   const wear = query.match(/(\d{1,2})\s*(?:小时|h)/i)
-  const mensRoute = /男生|男士|男性/.test(query) && !/(?:不是|不按|不要|不走).{0,4}(?:男生|男士|男性)/.test(query)
+  const mensRoute = conditions.route ? conditions.route === 'men'
+    : /男生|男士|男性/.test(query) && !/(?:不是|不按|不要|不走).{0,4}(?:男生|男士|男性)/.test(query)
   const style = /水光|清透|韩女/.test(query) ? '清透' : /氛围|浓妆/.test(query) ? '氛围' : /精致/.test(query) ? '精致' : /柔雾|哑光/.test(query) ? '柔雾' : '自然'
   const priorities = [
     /轻薄|水光|清透/.test(query) && '轻薄', /持妆|长时间/.test(query) && '持妆',
@@ -29,10 +50,10 @@ function planInput(query, profile) {
       skinTypeSource: profile.skin ? 'self_reported' : 'unknown',
       undertone: ['冷调', '暖调', '中性调'].includes(profile.tone) ? profile.tone : 'unknown',
       finishPreferences: [profile.finish || '自然光泽'], concerns: [], budgetTotal: profile.budget || 0,
-      skillLevel: '新手', excludedBrands: [], sensitivities: [], city: profile.city || '',
+      skillLevel: '新手', excludedBrands: conditions.excludedBrands || [], sensitivities: [], city: profile.city || '',
     },
     makeupRequest: {
-      scene: profile.scene || query.match(/通勤|约会|拍照|夏季|秋冬|长时间带妆|答辩/)?.[0] || '日常',
+      scene: profile.scene || query.match(/面试|通勤|约会|拍照|夏季|秋冬|长时间带妆|答辩/)?.[0] || '日常',
       // Explicit request style only; never infer or persist a gender identity.
       style: mensRoute ? `男生·${style}` : style,
       wearHours: wear ? Math.min(24, Math.max(1, Number(wear[1]))) : 8,
@@ -41,4 +62,4 @@ function planInput(query, profile) {
   }
 }
 
-module.exports = { extractParameters, planInput }
+module.exports = { extractParameters, extractGuidedParameters, planInput }

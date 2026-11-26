@@ -59,6 +59,15 @@ describe('小Y消息展示边界', () => {
     expect(markup).toContain('合成证据')
   })
 
+  it('renders an actionable retry only for the latest failed choice and disables it while pending', () => {
+    const failed = { id: 'failure', role: 'assistant', content: '本轮尚未完成', retry: { text: '5分钟以内', selectedValue: 'time-five', questionId: 'time' } }
+    const markup = renderToStaticMarkup(<AssistantMessages {...props} messages={[failed]} />)
+    expect(markup).toContain('重试这次选择')
+    expect(markup).not.toContain('disabled=""')
+    expect(renderToStaticMarkup(<AssistantMessages {...props} busy messages={[failed]} />)).toContain('disabled=""')
+    expect(renderToStaticMarkup(<AssistantMessages {...props} messages={[failed, { id: 'new', role: 'assistant', content: '新话题' }]} />)).toContain('disabled=""')
+  })
+
   it('keeps the complete busy indicator and places the original end ref after messages and loading', () => {
     const tree = AssistantMessages({ ...props, busy: true })
     expect(tree.props.className).toBe('xiaoy-messages')
