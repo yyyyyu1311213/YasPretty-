@@ -1,7 +1,13 @@
 const { retrieveKnowledge, knowledgeEvidence, entryContext } = require('./beauty-knowledge.cjs')
 
 function selectPlanKnowledge(profile, request, budget) {
-  const queries = [
+  const naturalMensRoute = /男生|男士|男性/.test(request.style) && !/浓|氛围/.test(request.style)
+  const queries = naturalMensRoute ? [
+    ['男生底妆教程', ['base']],
+    ['男生眉毛怎么画', ['eyes-brows']],
+    ['男生修容教程', ['contour']],
+    [/油/.test(profile.skinType) ? '油皮怎么定妆' : '先遮瑕还是先粉底', /油/.test(profile.skinType) ? ['set'] : ['conceal']],
+  ] : [
     ['底妆怎么涂', ['base']],
     ['先遮瑕还是先粉底', ['conceal']],
     [/油/.test(profile.skinType) ? '油皮怎么定妆' : '粉底色号怎么选', /油/.test(profile.skinType) ? ['set'] : ['base']],
@@ -26,14 +32,24 @@ function selectPlanKnowledge(profile, request, budget) {
 
 function applyPlanKnowledge(plan, selected) {
   const overflowCautions = new Set()
-  const steps = plan.steps.map((step) => {
+  const contour = selected.find(({ entry, stepIds }) => entry.id === 'mens-subtle-contour' && stepIds.includes('contour'))
+  const sourceSteps = [...plan.steps]
+  if (contour && !sourceSteps.some((step) => step.id === 'contour')) {
+    // A separate optional step avoids representing a blush product as contour.
+    sourceSteps.push({ id: 'contour', category: '可选轻修容', goal: '按个人偏好调整明暗观感，可跳过',
+      technique: contour.entry.techniques.join(''), texture: '容易少量晕开的粉状或膏状质地',
+      colorDirection: '接近自然阴影的低饱和方向，先少量试画', primaryProductId: null, alternativeProductIds: [],
+      reasons: ['本条仅提供受控手法，没有匹配经过核验的修容商品。'], cautions: [] })
+  }
+  const steps = sourceSteps.map((step) => {
     const applicable = selected.filter(({ stepIds }) => stepIds.includes(step.id))
     if (!applicable.length) return step
     const methods = applicable.flatMap(({ entry }) => entry.techniques).join('')
     const cautions = [...new Set([...step.cautions, ...applicable.flatMap(({ entry }) => [...entry.safetyBoundaries, ...entry.limitations])])]
     cautions.slice(6).forEach((caution) => overflowCautions.add(caution))
     // Only technique/evidence fields change. Candidate IDs, ranks and hard conditions stay untouched.
-    return { ...step, technique: ['base', 'conceal', 'set'].includes(step.id) && methods ? methods : step.technique,
+    const tutorialStep = applicable.some(({ entry }) => ['mens-natural-brows', 'mens-subtle-contour'].includes(entry.id))
+    return { ...step, technique: (['base', 'conceal', 'set'].includes(step.id) || tutorialStep) && methods ? methods : step.technique,
       reasons: [...step.reasons, `一般手法依据：${applicable.map(({ entry }) => `${entry.title}（${entry.version}）`).join('；')}`].slice(0, 6),
       cautions: cautions.slice(0, 6),
     }

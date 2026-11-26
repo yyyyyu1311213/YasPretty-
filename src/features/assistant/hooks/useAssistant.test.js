@@ -183,6 +183,83 @@ describe('小Y状态与发送流程', () => {
   })
 
   it.each([
+    ['鼻子油两边干', false, ['混油皮', '混干皮']],
+    ['我是干皮', false, ['干皮']],
+    ['先跳过', false, []],
+    ['偶尔会', true, []],
+    ['经常会', true, ['干皮', '混干皮']],
+    ['现在脸红，还刺痛', false, null],
+  ])('keeps offline skin reply %s request-only with original category and budget', async (text, cheeks, allowed) => {
+    const profile = { skin: '油皮', budget: 1000, category: '粉底液' }
+    const initialQuery = '想买气垫，两百以内'
+    const question = { flowId: 'xiaoy-guided-intake-v1', step: cheeks ? 3 : 2, route: 'general',
+      selections: cheeks ? ['route-general', 'skin-low-oil'] : ['route-general'], initialQuery,
+      options: cheeks ? [{ label: '经常会', value: 'cheek-often' }, { label: '偶尔会', value: 'cheek-sometimes' }]
+        : [{ label: '全脸都容易油', value: 'skin-oily' }, { label: '没注意过，先跳过', value: 'skin-unknown' }] }
+    values.set('yaspretty-xiaoy-profile-v1', JSON.stringify({ version: 1, value: profile }))
+    values.set('yaspretty-xiaoy-messages-v1', JSON.stringify({ version: 1, value: [
+      { role: 'user', content: initialQuery }, { role: 'assistant', content: '选择日常感受', question },
+    ] }))
+    vi.mocked(requestAssistant).mockRejectedValue(new TypeError('Failed to fetch'))
+    await render().sendMessage(text)
+    expect(saved('profile')).toEqual(profile)
+    expect(render().profile).toEqual(profile)
+    const candidates = latest().productIds.map((id) => products.find((p) => p.id === id))
+    if (allowed === null) {
+      expect(candidates).toEqual([])
+      expect(latest().content).toContain('停止使用')
+    } else {
+      expect(candidates.every((p) => p.category === '气垫' && p.price <= 200)).toBe(true)
+      if (allowed.length) expect(candidates.every((p) => p.skins.some((skin) => allowed.includes(skin)))).toBe(true)
+      else if (text === '偶尔会') {
+        expect(candidates).toEqual([])
+        expect(latest().question.step).toBe(4)
+        expect(latest().content).toContain('大多数日子')
+      } else expect(latest().content).toContain('未按肤质筛选')
+    }
+  })
+
+  it('does not persist an explicit skin answer to an online observation question', async () => {
+    const profile = { skin: '油皮', budget: 300 }
+    values.set('yaspretty-xiaoy-profile-v1', JSON.stringify({ version: 1, value: profile }))
+    values.set('yaspretty-xiaoy-messages-v1', JSON.stringify({ version: 1, value: [
+      { role: 'user', content: '推荐个粉底' }, { role: 'assistant', content: '请告诉我你的肤质。' },
+    ] }))
+    vi.mocked(requestAssistant).mockResolvedValue(answer({ knowledgeEvidence: [{ id: 'self-reported-skin-type' }] }))
+    await render().sendMessage('我是干皮')
+    expect(saved('profile')).toEqual(profile)
+    expect(latest().skinGuidance).toBe(true)
+  })
+
+  it('continues unknown answers offline through round five and keeps the original request after remount', async () => {
+    const profile = { skin: '油皮', budget: 1000 }
+    values.set('yaspretty-xiaoy-profile-v1', JSON.stringify({ version: 1, value: profile }))
+    values.set('yaspretty-xiaoy-messages-v1', JSON.stringify({ version: 1, value: [{ role: 'assistant', content: '哪里容易出油？',
+      question: { flowId: 'xiaoy-guided-intake-v1', step: 2, route: 'general', selections: ['route-general'],
+        initialQuery: '推荐个粉底，预算500元', options: [{ label: '全脸都容易油', value: 'skin-oily' },
+          { label: '没注意过，换个问法', value: 'skin-unknown' }] } }] }))
+    vi.stubGlobal('navigator', { onLine: false })
+    await render().sendMessage('不知道')
+    expect(latest().question.step).toBe(3)
+    expect(latest().content).toContain('换个好回想的问法')
+    await render().sendMessage('还是想不起来', 'skin-clue-unknown')
+    expect(latest().question.step).toBe(4)
+    await render().sendMessage('经常会', 'cheek-often')
+    expect(latest().question.step).toBe(5)
+    mount()
+    await render().sendMessage('很少出油，两颊经常干', 'skin-pattern-dry')
+    expect(latest().question).toBeUndefined()
+    expect(latest().content).toContain('偏向干性肤质')
+    expect(latest().productIds.length).toBeGreaterThan(0)
+    expect(latest().productIds.every((id) => {
+      const product = products.find((item) => item.id === id)
+      return product.price <= 500 && product.category === '粉底液' && product.skins.some((skin) => ['干皮', '混干皮'].includes(skin))
+    })).toBe(true)
+    expect(saved('profile')).toEqual(profile)
+    expect(requestAssistant).not.toHaveBeenCalled()
+  })
+
+  it.each([
     ['你好', '你好，我是小Y。先用一句话告诉我你想解决什么', false],
     ['推荐通勤底妆', '为了避免只凭热度推荐', false],
     ['我是油皮，预算 400 元，想要柔雾通勤底妆', '根据目前记录的需求', true],

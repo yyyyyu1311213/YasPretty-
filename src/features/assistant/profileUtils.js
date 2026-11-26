@@ -1,4 +1,5 @@
 // Pure text parsing shared with the server. Self reports and request conditions stay separate.
+import { assessSkin, readSkinObservation, observationFromChoice, skinConditions } from './skinObservation.js'
 const SKIN = /混油皮|混干皮|敏感肌|大油皮|大干皮|油皮|干皮/
 const FINISH = /自然光泽|奶油肌|柔雾|哑光|雾面|水光|亮泽/
 const CATEGORY = /粉底液|粉底|气垫|遮瑕|散粉|素颜霜|隔离|有色面霜|眉妆|眉笔|眉粉|眉胶|眼影|眼线|睫毛膏|腮红|唇妆|修容粉|修容膏|修容/
@@ -8,46 +9,28 @@ const otherSubject = /朋友|妈妈|姐姐|妹妹|同事|别人|她|他|这款|�
 
 // A monetary ceiling is not a specification, a quoted selling price or a lower bound.
 export function extractSpendingLimit(text) {
+  // Normalize spoken amounts only next to an explicit money/budget boundary.
+  text = String(text).replace(/([一二两三四五六七八九])百(?=(?:元|块钱|块)?(?:以内|以下|内|左右|上下))/g,
+    (_, digit) => String(({ 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 })[digit] * 100))
   if (/售价|价格|定价|标价|原价|参考价/.test(text)) return undefined
   const amount = '(\\d{1,5}(?:\\.\\d{1,2})?)'
   const range = `(?:\\s*(?:-|到|至|~|～)\\s*[¥￥]?\\s*${amount})?`
   const units = '(?![\\d.]|\\s*(?:-|到|至|~|～|g|ml|h|克|毫升|小时|天|年|号|岁|分钟))'
   const explicit = new RegExp(`(?:预算\\s*(?:是|为|在|约|大约|大概|不超过|最多|控制在)?|不超过|最多|上限|控制在)\\s*[¥￥]?\\s*${amount}${range}${units}`, 'i')
-  const bounded = new RegExp(`(?<![\\d.])${amount}\\s*(?:元|块钱|块)\\s*(?:以内|以下|内|左右|上下)`)
+  const bounded = new RegExp(`(?<![\\da-z.])${amount}\\s*(?:元|块钱|块)?\\s*(?:以内|以下|内|左右|上下)`, 'i')
   const match = text.match(explicit) || text.match(bounded)
   return match ? Number(match[2] || match[1]) : undefined
 }
 
 function dailySkinCondition(text) {
-  const value = String(text || '').normalize('NFKC').toLowerCase().replace(/[\s，。！？、；：,.!?;:]/g, '')
-  const oilyArea = /(?:t区|字区|鼻子|额头).{0,8}(?:出油|偏油|油)/.test(value)
-    && !/(?:t区|字区|鼻子|额头).{0,8}(?:不油|不出油)/.test(value)
-  const dryCheeks = /(?:两颊|脸颊).{0,8}(?:偏干|干燥|干|紧绷)/.test(value)
-    && !/(?:两颊|脸颊).{0,8}(?:不干|不紧绷)/.test(value)
-  if (oilyArea && dryCheeks) return { values: ['混油皮', '混干皮'], label: 'T区油、两颊偏干' }
-
-  if (/(?:全脸|整脸)(?:容易|常|经常|总是|每次)?出油|容易全脸出油/.test(value)
-    && !/(?:全脸|整脸)(?:不油|不出油)/.test(value)) {
-    return { values: ['油皮', '混油皮'], label: '全脸容易出油' }
-  }
-  if (/洗脸后(?:常|经常|总是|每次).{0,8}(?:紧绷|起皮)|(?:常|经常|总是).{0,4}(?:起皮|紧绷)/.test(value)) {
-    return { values: ['干皮', '混干皮'], label: '洗脸后常紧绷或起皮' }
-  }
-  if (/容易刺痛|容易泛红|容易发红/.test(value)) {
-    return { values: ['敏感肌'], label: '容易刺痛或泛红' }
-  }
-  return null
+  const observation = readSkinObservation(text)
+  if (observation.explicit) return null // explicit self reports retain the existing profile parser
+  const assessment = assessSkin(observation)
+  return assessment.values.length ? assessment : null
 }
 
 export function skinRequestFromChoice(value) {
-  const conditions = {
-    'skin-oily': { skinValues: ['油皮', '混油皮'], skinLabel: '全脸容易出油' },
-    'skin-combination': { skinValues: ['混油皮', '混干皮'], skinLabel: 'T区油、两颊偏干' },
-    'skin-dry': { skinValues: ['干皮', '混干皮'], skinLabel: '洗脸后常紧绷或起皮' },
-    'skin-sensitive': { skinValues: ['敏感肌'], skinLabel: '容易刺痛或泛红' },
-    'skin-unknown': { skinValues: [], skinLabel: '不确定或跳过', skinSkipped: true },
-  }
-  return conditions[value] ? { ...conditions[value] } : null
+  return /^(skin-|cheek-)/.test(value) ? skinConditions(assessSkin(observationFromChoice(value), /unknown/.test(value))) : null
 }
 
 // Ephemeral request conditions may describe someone else. Never persist this result as a profile.
@@ -64,6 +47,7 @@ export function extractRequestConditions(text, current = {}) {
     delete conditions.skin
     conditions.skinValues = dailySkin.values
     conditions.skinLabel = dailySkin.label
+    delete conditions.skinSkipped
   } else if (/肤质|皮肤类型/.test(text) && /不清楚|不知道|不确定|说不清/.test(text)) {
     delete conditions.skin
     if (!current.skinValues?.length) {
@@ -73,6 +57,10 @@ export function extractRequestConditions(text, current = {}) {
   }
   const budget = extractSpendingLimit(text)
   if (budget !== undefined) conditions.budget = budget
+  const finish = text.match(FINISH)?.[0]
+  if (finish && !/不(?:要|喜欢|想要)?(?:哑光|柔雾|雾面|水光|亮泽)/.test(text)) conditions.finish = ({ 雾面: '柔雾', 水光: '自然光泽', 亮泽: '自然光泽' })[finish] || finish
+  const scene = text.match(SCENE)?.[0]
+  if (scene) conditions.scene = scene
   return conditions
 }
 

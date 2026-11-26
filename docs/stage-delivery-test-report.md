@@ -3500,3 +3500,156 @@ node tests/browser/assistant-ai-r03.mjs
 2026-11-22（北京时间约 13:02）再次执行 `git fetch origin dev` 并查询 `git ls-remote origin refs/heads/dev`：当前分支 `dev`，HEAD、`origin/dev` 与 GitHub `dev` 均为 `9f8841982f40f981a5234db4fbe90c017a98f0f0`，ahead/behind 0/0，暂存区为空。现有修改均为已验收 ARCH-14 工作树；未清理、覆盖或回退任何内容。`arch-stage-13` 对象 `9f2ff35740364a447f2bc3a91d1a387951fedd32` → `bcb9da04d65f45bfce8a7b13f8fc791c24865234`，本地/远端一致；`arch-stage-14` 在提交前尚不存在。
 
 人工确认后未修改运行代码，沿用上一节成功运行的真实证据，不将本次文档同步说成重跑：定向助手与 AI-R03 回归 2 文件/97 项通过；全量 `npm test` 53 文件/626 项通过；`npm run build` 成功转换 1885 模块，保留既有大包警告；桌面 1440×900 与手机视口 360×900 的实际浏览器流程合计 8/8；`node --check` 浏览器脚本与服务端入口通过。已覆盖首轮需求保留、路线后点选干/油/混合肤质进入当前请求筛选、不重复追问、跳过时不筛选并披露限制、画像不变及无横向溢出/控件重叠。真实 GLM、联网质量、真实用户数据、实体手机和公网部署仍未覆盖。文档收尾后重新运行 `git diff --check`；其结果及提交/推送/tag 的实际 SHA 由本次归档回执提供。产品数据方面**无新增核验，继承上一结论**；既有图片 `pending/blocked`、商品来源/官方店证据差异与独立实测缺口保留。
+
+### 2026-11-26 YAS-2026-0064：小Y肤质口语引导续修（北京时间，待人工验收）
+
+**范围与基线**：本次任务明确授权修复现有肤质引导触发、上下文承接和分支；关联已归档 ARCH-14，不新建 ARCH 阶段、不把旧阶段重新标为 current。13:58:43 开始核对：dev/HEAD/origin/dev/实际远端均为 `f65780588b96de71c8ff79c81c2a9c333fa266f5`，工作树与索引干净。14:28:06 再次 fetch/ls-remote，一致且 ahead/behind 0/0；`arch-stage-14` 注释标签对象 `2e09f6ffc64b6f742e62caf0de5971f2feb63f01` 指向该基线，本地/远端相同。本条修复尚无新 SHA/tag，交付为未提交的本地工作树；既有归档和失败历史全部保留。
+
+**原因与行为**：原实现已有 flowId、路线、小模块和请求级肤质筛选，但主要接受固定选项，口语“不知道自己啥肤质”与自由描述没有可靠回接原选品任务；原“紧绷/起皮”还可能被直接当作干皮。当前复用 `xiaoy-guided-intake-v1`、受限问题 schema、最近8条对话和可点击组件；用户在路线或肤质问题后表达不知道、没注意过、帮我看看等，可进入日常出油位置观察。必要时再问两颊经常干燥与否；肤质不超过两问、含路线不超过三轮；“鼻子油两边干”直接形成暂时混合倾向并续接原推荐，不复问。
+
+原品类、预算（含“两百以内”）、妆效、排除品牌和场景被保留并进入候选筛选。全脸经常油映射现有油皮/混油皮，T区油两颊干映射混油皮/混干皮，少油经常干映射干皮/混干皮；明确自述用对应现有标签。平衡、偶发起皮、矛盾、未知/跳过不制造标签，也不偷偷继承保存画像的干油条件；敏感倾向单独约束并披露。用户换话题可离开流程，纯知识观察不会推荐商品。当前明显刺痛、红肿、破损停止上妆/选品建议，保留停止使用与合格专业人员提示及知识依据。简短观察结论与本次候选直接返回；依据/局限默认折叠。不要求洗脸、停护理、等待或照片。
+
+**本次实际修改文件（不含并行工作）**：
+
+- `src/features/assistant/skinObservation.js`（新增）：共享纯解析、观察评估、短答识别和最近问题上下文，避免在线/离线重复判断。
+- `server/services/assistant/guided-intake.cjs`、`assistant-service.cjs`：原引导触发、自由回答/跳过、两问上限、原需求续接、复合问题/安全边界与知识依据；API 仍为 POST `/api/assistant`，无新 endpoint/schema 字段。
+- `server/services/assistant/intent-router.cjs`、`tools.cjs`、`response.cjs`、`guided-beauty-prompt.cjs`：识别“想买”、独立敏感过滤、简短受控回答和同步提示词。
+- `src/features/assistant/profileUtils.js`、`assistantUtils.js`、`hooks/useAssistant.js`：中文金额/请求偏好、共享观察、断网本地候选、跳过覆盖保存肤质、引导中自由自述和点选均不写长期画像；不新增存储键。
+- `src/features/assistant/components/AssistantMessages.jsx`、`src/contracts/assistant.js`：复用按钮/来源组件，UI-only `skinGuidance` 标记显示可键盘展开的观察依据与局限；不改全局样式或引入UI框架。
+- `server/services/assistant/skin-guidance.test.js`（新增）、`guided-intake.test.js`、`assistant.test.js`、`server/app.test.js`、`src/features/assistant/assistantUtils.test.js`、`hooks/useAssistant.test.js`、`tests/browser/assistant-guided-intake.mjs`：短句、实际筛选、保存/离线、规格与预算区分、安全、三轮上限和真实浏览器回归。
+- `README.md`、`docs/prompts/xiaoy-guided-intake.md`、迁移计划、本报告及产品数据审计：当前行为、真实结果、并行范围、人工验收与回退边界。
+
+**自动验证及证据**：14:30:42 运行 `npm test`，54 文件、671/671 通过；同轮 `npm run build` 转换1886模块成功，保留既有 >500 KB chunk 警告。之前定向助手/Hook/规则及 AI-R03 安全回归6文件221/221通过，后续增加短句/离线/金额边界后以全量结果为准。全量包括 Fastify inject 和现有 AI-R03 回归，不用合成结果宣称真实模型准确率。
+
+浏览器复跑命令（先 build；可用本机既有 Playwright runtime，不新增项目依赖）：
+
+```powershell
+$env:YAS_QA_PLAYWRIGHT_MODULE='file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE='C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_OUTPUT_DIR='.qa/skin-guidance-20261126/browser-final'
+node tests/browser/assistant-guided-intake.mjs
+```
+
+生产构建页面 → 实际HTTP → Fastify → 助手服务，使用合成无Key provider，未mock `/api/assistant`；1440×900与360×900各11条链路，最终22/22通过。覆盖用户六条验收短句及油/干/混合/平衡点选、纯知识观察；检查原需求与200元上限、推荐ID实际命中肤质、跳过结果等于不含肤质条件的候选集、长期画像未被引导改写、步骤<=3、旧按钮禁用、键盘Enter/点击、依据默认收起且可开关、按钮无重叠/越界、页面无横向溢出、pageerror与console error均为0。截图人工查看了桌面与360px的油问、两颊问和结果布局。机器结果与截图仅存忽略目录 `.qa/skin-guidance-20261126/browser/` 与 `browser-final/`，不纳入Git或当作真实用户数据。
+
+**失败与修正留痕**：初次182项中11项失败，主要为异步引导未await和旧单选干皮/混合文案断言；改为实际观察组合并保留候选排除断言。新套件首次有测试helper缺闭合括号，修正后运行；干皮候选顺序按实际稳定排序修正，不降低筛选检查。H11安全回归暴露停止上妆措辞丢失，恢复简短明确提示。首轮全量662/663，剩余API旧断言要求长篇“受控知识库/不构成诊断”正文，已改检停止使用、专业人员、暂停选品和实际知识证据。话题切换测试暴露复合拆分后重进旧问，现整条新任务不消费旧肤质答复；测试weather provider缺失用合成不可用provider核对新话题路径，不改实际天气模块。浏览器首轮误以为“两百以内”应写长期预算；实际请求预算200、长期预算1000正确，改为核验两者分离。后续全量664/664、最终671/671及22/22结果真实保留，不抹掉以上失败。
+
+**并行变更边界**：约14:31收尾检查发现男妆知识/检索、方案知识、参考来源与 `parameters.cjs` 的其他工作修改（部分写入时间为14:28–14:30），以及新增 `mens-makeup-entries.cjs`/`mens-makeup-references.cjs`。负责人在本会话明确确认“是，保留并行修改，只交付本次肤质范围”。本次未编辑、回退或验收这些路径；最终全量和浏览器运行使用当时共享工作树，包含其并行修改，不声称为独立检出的肤质提交验证，也不将全工作树变更纳入本次提交范围。提交前须再次核对范围与交叉依赖。
+
+**隐私、降级与剩余边界**：观察只在已有匿名对话中承接，不更新长期画像，无新持久化字段/上传、照片处理、服务端记忆或敏感日志；未读取真实密钥/.env、用户照片或真实历史。传输失败时明确“网络/智能服务不可用”，用原需求及当前观察进行本地基础推荐，跳过清除保存干油条件；未知仍可继续，不虚构数据。未增加真实GLM、检索、医学诊断、产品适配实验或实体手机/公网验证；产品标签仍是既有资料，不因软件筛选成功升级为真实适配证据。AGENTS/FINAL-PROMPT 产品目标无需修改；README、提示词及累计记录已同步，视频/参赛材料未改，不宣称已提交或本轮已人工验收。
+
+**人工入口与回退**：主站“小Y智能选妆”，按本次六条短句和桌面/手机点击验收。当前状态待人工验收，不暂存、提交、推送、打标签或删分支；现有 `f657805` / `arch-stage-14` 是已归档基线，本轮未提交内容不是新Git回退版本。验收后按明确范围创建可独立验证的提交，消息使用 `【问题】…【修改】…`；不移动旧标签，不以回退为由清理并行工作。后续已公开提交需要回退时评估依赖并使用可追溯revert，Git不恢复浏览器数据或外部服务。新SHA/tag仅在实际产生后回填，不虚构。
+
+
+**2026-11-26 14:36 最终自动复核（北京时间）**：并行修改按负责人确认保留后，全量 `npm test` 为55文件691/691通过（包含并行工作新增的20项，肤质范围此前为54文件671项）；`npm run build` 为1886模块成功、既有大包警告保留。最后一次真实页面回归 `browser-final/results.json` 为22/22通过。代码与浏览器脚本语法检查通过，暂存区为空。首次diff检查发现本次追加文档与脚本末行的CR换行，已仅统一这些文件换行后复核；最终diff结果见交付回执。当前仍待人工验收，未提交/推送/打标签，原回退基线和并行范围不变。
+
+
+**2026-11-26 14:38 收尾补记（北京时间）**：检查话题切换时发现，复合新任务的缺条件追问应优先使用刚建立的引导，不能被“退出旧引导”标记压掉；已修正优先级并补一条真实服务回归。14:37:49全量55文件692/692通过，构建1886模块通过。桌面/360px22/22记录仍有效（本次收尾改动只涉及服务端复合追问优先级，单问题主链路未变）。并行工作还在共享文件 `intent-router.cjs` 添加剃须不适词、`response.cjs` 调整planAnswer限制、`assistant-service.cjs` 安全谓词复用；这些男妆相关变更按已获确认保留，不算本次肤质提交范围，提交时需按hunk核对。14:36:44 diff/cached检查均通过、索引为空；最终文档后再次复核。无新SHA/tag，仍待人工验收。
+
+
+**14:39交付回执**：最终 `git diff --check` / `git diff --cached --check` 均通过、索引为空，HEAD/origin/dev仍为f65780588b96de71c8ff79c81c2a9c333fa266f5。本机无Key人工验收预览为 http://127.0.0.1:59178/ ，主站与实际HTTP三句链路验证成功：粉底→未知肤质→鼻油两颊干，最终catalog_recommendation、有候选、无新追问；预览不启用模型或联网搜索，仅绑定127.0.0.1。首次手工HTTP探针误带UI内部id字段被严格schema以400拒绝，按现有前端适配器去除后通过，未改API校验规则。
+
+
+### 2026-11-26 男生妆容知识扩展（YAS-2026-0064，独立授权，待人工验收）
+
+本轮负责人要求把男生化妆、肤质与五官研究资料“接入运行知识库，完善一下”，并确认现有小Y/肤质修改“是本次相关工作，可以衔接完善”。本范围是知识接入及必要的对话/方案连接，不重开已归档 ARCH-14，不新建 ARCH 阶段或标签。当前仍为参赛交付模式。
+
+基线：2026-11-26 14:12:09（北京时间）已执行 `git fetch origin dev`，dev/HEAD/origin/dev 为 `f65780588b96de71c8ff79c81c2a9c333fa266f5`，暂存区为空，无分叉，原阶段标签保留。开始时存在已获确认的肤质引导修改；本轮保留并衔接，没有回退、暂存、清理或提交这些修改。肤质续修与本条知识扩展的执行范围分别记录，全量测试使用共享工作树，不代表任一范围已人工验收。
+
+实际实现：
+
+- `server/knowledge/mens-makeup-entries.cjs`、`mens-makeup-references.cjs` 新增10条知识、10个来源，现有入口 `beauty-entries.cjs`、`reference-sites.cjs`加载；合计28条知识、40个来源。覆盖自然流程、底妆/局部遮瑕、眉毛、轻修容、皮肤群体差异、剃须、卫生、男性淡妆实验、比例与自拍研究。
+- `knowledge-topics.cjs`、`beauty-knowledge.cjs` 增加同义词和问题组合，先通过相关性门槛，再按教程/研究目的排序；无命中与上下文预算仍有效。用户原始“面部干净、眉毛有型、五官立体”表述可召回整体流程。
+- `server/services/assistant/guided-intake.cjs` 中男生眉/修容重点检索具体步骤；底妆教程重点直接给手法，避免误转为商品筛选问答。此文件的其他肤质观察修改保留在独立续修范围。
+- `assistant/parameters.cjs` 将明确男生路线保存在请求的风格中，不新增性别画像；`server/knowledge/plan-knowledge.cjs` 将底妆/眉毛手法应用到方案，并加入独立、可跳过、无商品ID的轻修容第8步。原候选ID、打分和硬条件保留。`src/contracts/makeupPlan.js` 的步骤说明同步。
+- `assistant/response.cjs` 的 `planAnswer` 补回知识限制与安全边界，防止结构化方案有边界而聊天展示丢失。该文件其他简短推荐文案变更属于肤质续修。
+- `assistant/intent-router.cjs` 与 `assistant-service.cjs` 的安全分支识别刮破、剃破、出血、渗液；明确“没有破损/没有出血”不当作当前不适，仍保留同句其他肯定不适。停止上妆与商品推荐，不作诊断或治疗。
+- 新增 `server/knowledge/mens-makeup.test.js`、`tests/browser/mens-makeup-knowledge.mjs`；README、`docs/mens-makeup-knowledge.md`、本报告、数据审计与迁移执行记录同步。AGENTS/FINAL-PROMPT 产品定位与约束未改变，不需要修改。
+
+用户入口：主站“小Y智能选妆”，发送“男生眉毛怎么画”“男士底妆怎么涂”“男生修容教程”“生成男生自然妆容方案”“男生化妆有什么科学证据”。首次需求后选择男生路线，仍可直接回答或使用其他路线。教程来源和必要限制在实际聊天中展示。明确男生自然方案支持8步，通用方案仍默认7步；不增加修容商品事实或把腮红候选替代为修容商品。
+
+来源证据：10个新增来源的URL、访问时间、发布方、支持结论、全文/摘要深度及商业属性见 `docs/mens-makeup-knowledge.md`。AAD/DermNet支持基础护理，CT/Eldridge只支持专业手法；Batres、Rahrovan、Naini、Ward分别保留实验、综述、评论和数学模型的边界。PMC复访的三页出现验证码，Europe PMC两篇全文可读，Naini全文请求超时后改用摘要；没有把HTTP200或超时包装成全文核验。Russell/Morikawa为既有引用，未记录精确复核时刻的来源不伪造新时刻。没有导入来源商品、价格、照片或视频，没有新增许可授权声明。
+
+真实自动验证（北京时间）：
+
+| 验证 | 实际结果 |
+| --- | --- |
+| 初始共享现场基线，14:17 | 54文件，651项中637通过/14失败；当时肤质续修进行中，失败日志 `.qa/mens-knowledge/baseline-tests.log` 保留，不归为男妆知识引入的回归 |
+| 接入后第一次全量，14:28 | 54文件664/664；肤质续修同时推进，不声称本轮独自修复全部基线失败 |
+| 男妆/既有知识/助手/引导定向，14:32 | 4文件116/116 |
+| 最终共享工作树全量，14:39:28 | `npm test -- --config .qa/mens-knowledge/vite.config.mjs`：55文件693/693，退出码0；最终日志 `.qa/mens-knowledge/final-tests.log` |
+| 生产构建，14:33 | `npm run build -- --config .qa/mens-knowledge/vite.config.mjs`：1886模块，退出码0；既有 >500KB chunk 警告保留；之后只修改服务端、测试、契约注释与文档，无前端运行代码改动 |
+| 生产页面 HTTP，最终14:38 | `node tests/browser/mens-makeup-knowledge.mjs`：1440×900与360×900各15项，共30/30，退出码0；包含引导眉毛、底妆、修容、剃须、卫生、研究、比例、自拍、8步方案、合法/无效/超时模型、无命中、刮破安全、断网 |
+| 空白与索引检查 | `git diff --check`、`git diff --cached --check`通过；最终文档追加后再次检查，结果见收尾回执 |
+
+页面通过真实主站控件→Fastify HTTP，不拦截助手API；provider为合成夹具，不读真实Key、不调用付费模型。外部字体请求在隔离浏览器中替换为空样式。核对来源链接真实渲染、知识边界不丢、桌面/360px无横向溢出、无pageerror；已查看桌面方案与手机眉毛来源截图。初次30/30后发现聊天方案未展示知识限制，补回并新增断言，再跑30/30；之后补充原始需求召回与否定不适的单元回归，最终693/693。截图/访问记录仅存忽略目录 `.qa/mens-knowledge/`，不提交测试图片或论文缓存。
+
+无Key/模型错误时返回受控知识；全断网明确服务不可用，不伪装成本次知识检索成功。未验证真实GLM回答质量、实时搜索、实体手机和公网发布；未实现照片分析、视频教学、自动文献更新、个体肤质诊断或修容商品匹配。所有皮肤/五官材料只作妆容辅助，不推断身份、年龄、种族、人格，不给颜值分。已有商品事实、图片授权和大包风险保留。
+
+当前状态：本地已实现和自动验证，待负责人本范围人工验收；未提交、未推送、未打标签，无本轮SHA/tag。上一归档基线仍为上述f657805/arch-stage-14，未提交现场不构成新Git回退点。README与实现同步，未修改比赛视频，材料不得声称已公开部署或已完成真实模型/人体效果验证。
+
+
+**2026-11-26 14:41:50（北京时间）男妆知识收尾核对**：再次 `git fetch origin dev` 后，dev/HEAD/origin/dev 仍为 `f65780588b96de71c8ff79c81c2a9c333fa266f5`，ahead/behind 0/0、暂存区为空。`git diff --check` 通过；新增5文件UTF-8/末尾换行、README与知识文档本地链接、脚本语法通过；运行统计28条知识/40来源与文档一致。浏览器最终结果时间14:38:24、30/30；693/693为14:39:28全量真实结果，之后只追加文档，不将文档检查计作重跑业务测试。保留所有已授权的并行肤质改动；男妆知识仍待人工验收，未提交、推送或打标签。
+
+
+### 2026-11-26 五轮肤质引导反馈收尾（YAS-2026-0064，待人工验收）
+
+**授权与范围**：承接原任务中负责人反馈“还是不完善，根本就没得到自己是什么肤质，可以适量多加几轮，不超过五轮”，以及删除观察说明中“这不是诊断，也不保证产品适配。本次选择不会写入长期画像。”的明确要求。本次续接中断的五轮修改，不把先前 14:39 的三轮交付当作本次验收。关联 ARCH-14 已归档范围的定向修复，不新建阶段或标签；ARCH-14 保持 done，无新的 current。本范围完成实现和自动验证，仍待人工验收。
+
+**基线与来源**：2026-11-26 15:12（北京时间）完成 git fetch origin dev；本地 dev、HEAD、origin/dev 均为 f65780588b96de71c8ff79c81c2a9c333fa266f5，索引为空。15:21:22 以 ls-remote 复核实际远端 dev 相同；arch-stage-14 标签对象 2e09f6ffc64b6f742e62caf0de5971f2feb63f01 指向该基线。本机继承已确认的肤质续修及男妆知识并行现场；男妆知识、方案步骤和 parameters 等原修改保留，本次没有代为验收或重新编辑它们。Git 首次受工具进程中残缺 GIT_CONFIG_COUNT 注入影响报错，清除该子进程变量后 fetch 成功，未修改仓库 Git 配置。
+
+**原因与结果**：旧分支把“不知道/说不清”和“跳过”混为结束指令，三轮上限使未观察过肤质的用户过早得到“先不判断”。现在明确区分不确定与主动退出：出油位置不清楚时用油亮和触感帮助回想；两颊不清楚时问大多数日子的干燥/紧绷；信息矛盾时确认整体规律。信息足够即可给出偏油、混合、偏干或当前较平衡的暂时结论，原需求、品类、预算、妆效、排除品牌及场景继续参与本次筛选；含路线最多五轮，第五轮后仍不足则具体说明缺口，不强贴标签，也不沿用保存的干油条件。纯知识观察不转成购物；主动跳过/直接推荐和当前不适暂停仍有效。
+
+**本反馈实际文件**：
+
+- src/features/assistant/skinObservation.js：五轮常量、观察问法及有界推进，区分不确定和跳过，兼容旧已保存问题；前后端共享纯逻辑。
+- server/services/assistant/guided-intake.cjs：接上共享推进，原需求已经包含矛盾描述时也补问整体规律，修正仍显示“先跳过”的旧选项。
+- server/schemas.cjs、src/contracts/assistant.js：同一 POST /api/assistant 问题契约，step 1–5、selections 最多四个；没有新 endpoint、字段或存储键。
+- src/features/assistant/hooks/useAssistant.js：网络失败后继续同一观察轮次，保持请求级肤质，不自动改画像；src/features/assistant/components/AssistantMessages.jsx：五轮显示及指定说明句删除，仍折叠展示观察依据和季节、环境、护理的影响。
+- server/services/assistant/skin-guidance.test.js、guided-intake.test.js、assistant.test.js，server/app.test.js，src/features/assistant/hooks/useAssistant.test.js、components/AssistantMessages.test.jsx，tests/browser/assistant-guided-intake.mjs：继承中断任务的断言调整，新增换问法、第五轮、HTTP上限、断网与刷新恢复、初始矛盾、无候选及文案回归。
+- server/services/assistant/guided-beauty-prompt.cjs、docs/prompts/xiaoy-guided-intake.md、README.md、FINAL-PROMPT.md：同步负责人已批准的五轮例外和回答方式；AGENTS.md 无需修改。迁移计划及两份累计报告追加真实结果，保留旧三轮记录作为历史。
+
+**实际验证（北京时间）**：
+
+| 命令/检查 | 结果 |
+| --- | --- |
+| 15:14 接手时 npm test | 55 文件 700/700，证明中断现场基线，不代替后续新增修改验证 |
+| 15:19 定向 API、肤质及 Hook 测试 | 3 文件 119/119 |
+| 15:20 npm test -- --config .qa/skin-guidance-five-rounds/vite.config.mjs | 55 文件 704/704，退出码 0；包含并行已保留测试，不将全分母归为肤质新增 |
+| 15:20 npm run build -- --config .qa/skin-guidance-five-rounds/vite.config.mjs | 1886 模块，退出码 0；原有 >500 kB chunk 警告保留 |
+| 15:22 node tests/browser/assistant-guided-intake.mjs | 真实生产页面→本机 Fastify HTTP，1440×900 与 360×900 各18条，36/36；无 pageerror/console.error，按钮无重叠/横向溢出 |
+| git diff --check / git diff --cached --check | 实现后检查通过，文档追加后最终检查见本条末尾回执；索引为空 |
+
+浏览器覆盖原六条短句、干/油/混合/平衡点选、知识观察、四轮换问法、第五轮判断、第五轮前刷新并继续、五轮仍未知（知识和选品）、初始矛盾、两颊回想、预算内无候选；验证旧按钮禁用、键盘/点击、依据展开/收起和删除指定句子、候选肤质/预算/品类与画像未变。已查看手机第五轮及桌面结果截图。断网继续至第五轮并重挂载后完成、原预算与画像不变由 Hook 测试覆盖；不将其称为真实网络中断浏览器测试。
+
+**失败保留**：新增离线测试前两次为118/119：合成提问用了200元和400元，但当前真实粉底资料中没有这些预算内匹配干皮/混干皮的商品；只调整“有候选”测试预算至500元，保留独立200元无候选页面用例，没有改产品价格、标签或放宽筛选。第一轮浏览器在桌面已通过14条后遇到同类问题（矛盾后偏油的200元期望有候选），改为400元并追加无候选/选品五轮封顶场景，最终36/36；失败日志和首轮结果位于 .qa/skin-guidance-five-rounds/browser.log 与 browser/results.json，最终证据另存 browser-final/，不覆盖首轮证据。
+
+**复跑**：使用已有 Node、Playwright 与 Chrome，不新增依赖。最终单测/构建用 NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs 禁用 dotenv，临时 Vite 配置继承仓库配置并设置 envDir:false。浏览器脚本自行使用空Key/合成不可用provider并关闭dotenv读取；YAS_QA_PLAYWRIGHT_MODULE 指向已有 playwright/index.mjs file URL，YAS_QA_BROWSER_EXECUTABLE 为 C:/Program Files/Google/Chrome/Application/chrome.exe，YAS_QA_OUTPUT_DIR 可另设忽略目录。测试、构建、截图及机器结果在 .qa/skin-guidance-five-rounds/，不提交临时产物。
+
+**体验与边界**：本机无Key预览 http://127.0.0.1:52113/ → 小Y智能选妆。可发送“推荐个粉底，预算500元”→“不清楚”→“不知道”→“还是想不起来”→“经常会”→“很少出油，两颊经常干”，应给出偏干倾向并保留500元预算。新端口加载本次服务端，旧预览不作为本次验收入口。未使用照片、真实用户对话/画像、真实模型或搜索；真实GLM质量、实体手机、默认动画/全部弱网行为及公网部署未验证。未修改比赛视频，文案不得宣称已公开部署、个体诊断或产品适配验证。
+
+**数据与版本**：本阶段无新增核验，继承上一条结论。没有新增/修改产品、价格、图片、评分、来源或授权；既有素材pending/blocked与商品实测缺口保留。匿名本地会话保存范围未增加，观察只用于本次请求，服务端无永久记忆。未暂存、提交、推送、打标签或删除分支；无本反馈SHA/tag。可定位的已归档回退基线仍为f657805/arch-stage-14，当前未提交现场不是新的Git回退点；验收后仅按确认范围及共享文件hunk创建可追踪提交，回退用实际提交及依赖评估后的revert，保留历史，不改写旧标签。
+
+
+**15:25:23 最终交付核对（北京时间）**：文档同步后的 git diff --check / git diff --cached --check 均通过，索引为空；HEAD/origin/dev仍为f65780588b96de71c8ff79c81c2a9c333fa266f5。浏览器脚本语法检查通过。新预览52113首页HTTP200，按上述六条自由输入实际走完step 1–5，最终catalog_recommendation含偏干结论及3个真实候选，无新追问；已请求在应用侧打开此预览。未提交、推送或建标签。
+
+
+### 2026-11-26 GitHub上传复验与授权（YAS-2026-0064，北京时间）
+
+负责人明确要求“帮我把东西传到github上去”。本轮据此提交并正常推送现有39路径：五轮肤质引导、男生妆容知识、共享助手接线、契约、测试与相关文档。各实现文件、接口行为及失败记录见同日三项交付记录；当前两项依赖共享助手流程，以完整运行版本归档，不将其误记为新的ARCH阶段。ARCH-14保持已归档done，无新的current或tag；上传授权不代表已完成人工体验验收。
+
+基线：19:33:50完成fetch，dev/HEAD/origin/dev均为f65780588b96de71c8ff79c81c2a9c333fa266f5，实际远端一致；19:36逐一核对全部既有标签的对象和解引用提交一致，arch-stage-14仍为2e09f6ffc64b6f742e62caf0de5971f2feb63f01→f657805。原索引为空，32个已跟踪修改和7个新增文件均属于上述范围。本轮仅补README、迁移计划及两份累计报告，未再编辑功能代码。
+
+| 实际复验（19:35–19:37） | 结果 |
+| --- | --- |
+| npm test -- --config .qa/skin-guidance-five-rounds/vite.config.mjs | 55文件704/704，退出码0 |
+| npm run build -- --config .qa/skin-guidance-five-rounds/vite.config.mjs | 1886模块，退出码0，保留大于500 kB分包警告 |
+| node tests/browser/assistant-guided-intake.mjs | 1440×900、360×900合计36/36，退出码0 |
+| node tests/browser/mens-makeup-knowledge.mjs | 相同两个视口合计30/30，退出码0 |
+| 上传路径与内容检查 | 39个文本路径；疑似凭据模式无命中，无.env、server/key.txt、本地记忆、构建或QA产物；全部远端标签一致 |
+
+复跑沿用已存在的隔离配置（envDir:false）与NODE_OPTIONS=--require=./.qa/ai-r01/no-secrets.cjs禁用dotenv，环境Key置空。浏览器使用既有Playwright/Chrome、随机本机端口、隔离上下文和合成provider。真实输出仅在忽略目录.qa/github-upload-20261126/的test.log、build.log、skin-browser.log、mens-browser.log和两个页面结果目录；不上传测试截图。最终文档编辑后及暂存前后另运行git diff --check/--cached --check，实际结果以交付回执为准。
+
+用户入口仍是主站“小Y智能选妆”，可体验五轮肤质观察及男生自然方案。无Key/网络失败的既有本地降级、未知条件及候选不足说明保留。没有读取真实.env、用户照片、画像或对话，没有增加持久化、外部调用、依赖或API端点。真实GLM/搜索质量、实体手机、公网部署及人工体验验收未在此轮补做，产品适配与图片授权结论不升级；视频和参赛材料未修改，不能据上传声明已公开上线。
+
+本阶段无新增核验，继承上一条结论。两份报告保留此前证据和风险；本条写入时尚待提交/推送，新提交SHA及远端核对由本轮回执提供，可在后续文档同步回填，不为回填改写历史。不新建Release、标签或删除分支。

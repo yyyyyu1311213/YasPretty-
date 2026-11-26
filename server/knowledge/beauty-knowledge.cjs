@@ -21,7 +21,12 @@ function scoreEntry(entry, query, intent) {
   let lexical = 0
   for (const token of queryTokens) if (documents.get(entry.id).has(token)) lexical += Math.log(1 + entries.length / (frequency.get(token) || 1))
   const topic = entry.topics.some((name) => topicsForIntent(intent).includes(name)) ? 2 : 0
-  return exact * 5 + lexical + topic
+  // A tutorial should precede perception papers for a how-to question. This bonus
+  // cannot create a hit; the lexical/grouped relevance gate above still applies.
+  const wantsResearch = /研究|证据|实验|科学|原理/.test(text)
+  const role = wantsResearch ? 'research' : /怎么|如何|教程|步骤|整理|入门/.test(text) ? 'tutorial' : ''
+  const purpose = role && entry.retrievalRole === role ? 30 : 0
+  return exact * 5 + lexical + topic + purpose
 }
 
 function entryContext(entry) {

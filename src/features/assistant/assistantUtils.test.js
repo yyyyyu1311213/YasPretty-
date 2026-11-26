@@ -11,11 +11,15 @@ import {
   planPayloadFromConversation,
   recommendProducts,
 } from './assistantUtils'
-import { extractRequestConditions, skinRequestFromChoice } from './profileUtils'
+import { extractRequestConditions, extractSpendingLimit, skinRequestFromChoice } from './profileUtils'
+import { assessSkin, readSkinObservation, skinConditions } from './skinObservation'
 
 describe('小Y本地规则', () => {
+  it.each([['两百以内', 200], ['气垫200以内', 200], ['50ml以内', undefined], ['SPF50以内', undefined], ['售价200元以内', undefined], ['预算300-500元', 500]])('parses request spending separately from specifications: %s', (text, budget) => {
+    expect(extractSpendingLimit(text)).toBe(budget)
+  })
   it.each([
-    ['skin-dry', ['干皮', '混干皮']],
+    ['skin-dry', []], // The old broad flaking choice alone cannot establish dry skin.
     ['skin-oily', ['油皮', '混油皮']],
     ['skin-combination', ['混油皮', '混干皮']],
   ])('maps a daily-feeling choice to an ephemeral request condition: %s', (choice, values) => {
@@ -25,7 +29,7 @@ describe('小Y本地规则', () => {
 
   it('uses request-only skin values in offline filtering and lets skip override a saved skin', () => {
     const profile = { skin: '油皮', budget: 1000 }
-    const dry = localReply('我想选底妆，但不清楚自己的肤质', profile, skinRequestFromChoice('skin-dry'))
+    const dry = localReply('我想选底妆，但不清楚自己的肤质', profile, skinConditions(assessSkin(readSkinObservation('不太出油，两颊经常干'))))
     expect(dry.products.length).toBeGreaterThan(0)
     expect(dry.products.every((product) => product.skins.some((skin) => ['干皮', '混干皮'].includes(skin)))).toBe(true)
     expect(dry.text).toContain('本次按你提供的日常感受')

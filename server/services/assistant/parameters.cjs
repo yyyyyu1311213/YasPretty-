@@ -16,6 +16,8 @@ async function extractParameters(query, profile = {}, products = []) {
 
 function planInput(query, profile) {
   const wear = query.match(/(\d{1,2})\s*(?:小时|h)/i)
+  const mensRoute = /男生|男士|男性/.test(query) && !/(?:不是|不按|不要|不走).{0,4}(?:男生|男士|男性)/.test(query)
+  const style = /水光|清透|韩女/.test(query) ? '清透' : /氛围|浓妆/.test(query) ? '氛围' : /精致/.test(query) ? '精致' : /柔雾|哑光/.test(query) ? '柔雾' : '自然'
   const priorities = [
     /轻薄|水光|清透/.test(query) && '轻薄', /持妆|长时间/.test(query) && '持妆',
     /遮瑕/.test(query) && '遮瑕', /控油|油皮/.test(query) && '控油',
@@ -31,7 +33,8 @@ function planInput(query, profile) {
     },
     makeupRequest: {
       scene: profile.scene || query.match(/通勤|约会|拍照|夏季|秋冬|长时间带妆|答辩/)?.[0] || '日常',
-      style: /水光|清透|韩女/.test(query) ? '清透' : /氛围|浓妆/.test(query) ? '氛围' : /精致/.test(query) ? '精致' : /柔雾|哑光/.test(query) ? '柔雾' : '自然',
+      // Explicit request style only; never infer or persist a gender identity.
+      style: mensRoute ? `男生·${style}` : style,
       wearHours: wear ? Math.min(24, Math.max(1, Number(wear[1]))) : 8,
       timeOfDay: '白天', photoEnabled: false, priorities: priorities.length ? priorities : ['轻薄'],
     },

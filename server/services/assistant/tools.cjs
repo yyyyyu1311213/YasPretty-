@@ -9,6 +9,7 @@ function selectRecommendations(products, conditions, query = '') {
     && (!conditions.productIds?.length || conditions.productIds.includes(p.id))
     && (!conditions.category || p.category === conditions.category)
     && (!skinValues.length || skinValues.some((skin) => p.skins?.includes(skin)))
+    && (!conditions.sensitive || p.skins?.includes('敏感肌'))
     && (!conditions.budget || Number.isFinite(p.price) && p.price <= conditions.budget)
     && !conditions.excludedBrands?.some((brand) => p.brand.toLowerCase().includes(brand.toLowerCase()))
     && !(/不(?:要|喜欢|想要)?哑光/.test(query) && p.finish === '哑光'))

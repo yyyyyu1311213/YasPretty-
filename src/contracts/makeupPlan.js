@@ -39,7 +39,7 @@
  * @property {string} summary
  * @property {MakeupPlanInputsSnapshot} inputsSnapshot
  * @property {string} externalContextSummary 当前服务说明未调用外部上下文，不代表已接入外部工具。
- * @property {PlanStep[]} steps Schema 接受 5–8 步；当前本地模板生成 7 步。
+ * @property {PlanStep[]} steps Schema 接受 5–8 步；默认本地模板 7 步，明确男生自然路线可增加第 8 步可选轻修容。
  * @property {string[]} recommendedProductIds 无候选时为 []，最多 6 项。
  * @property {CandidateEvidence[]} candidateEvidence 无候选时为 []，最多 12 项。
  * @property {KnowledgeEvidence[]} [knowledgeEvidence] 通用手法依据，最多 8 项；兼容旧方案缺省。

@@ -46,52 +46,22 @@ function summarizeRequest(query) {
   return summary.length > 72 ? `${summary.slice(0, 72)}…` : summary
 }
 
-const skinConditions = {
-  'skin-oily': { mode: 'selected', values: ['油皮', '混油皮'], label: '全脸容易出油' },
-  'skin-combination': { mode: 'selected', values: ['混油皮', '混干皮'], label: 'T区油、两颊偏干' },
-  'skin-dry': { mode: 'selected', values: ['干皮', '混干皮'], label: '洗脸后常紧绷或起皮' },
-  'skin-sensitive': { mode: 'selected', values: ['敏感肌'], label: '容易刺痛或泛红' },
-  'skin-unknown': { mode: 'unknown', values: [], label: '不确定或跳过' },
-}
-
-function describedSkinCondition(query) {
-  const text = normalizedText(query)
-  const oilyArea = /(?:t区|字区|鼻子|额头).*(?:油|出油)/.test(text)
-    && !/(?:t区|字区|鼻子|额头).*不(?:油|出油)/.test(text)
-  const dryCheeks = /(?:两颊|脸颊).*(?:偏干|干燥|紧绷|干)/.test(text)
-    && !/(?:两颊|脸颊).*不(?:干|紧绷)/.test(text)
-  if (oilyArea && dryCheeks) {
-    return { mode: 'described', values: ['混油皮', '混干皮'], label: 'T区油、两颊偏干' }
-  }
-  if (/全脸(?:容易|常|经常)?出油|整脸(?:容易|常|经常)?出油|容易全脸出油/.test(text)) {
-    return { mode: 'described', values: ['油皮', '混油皮'], label: '全脸容易出油' }
-  }
-  if (/洗脸后(?:常|经常|总是).{0,4}(?:紧绷|起皮)|(?:常|经常|总是).{0,3}(?:起皮|紧绷)/.test(text)) {
-    return { mode: 'described', values: ['干皮', '混干皮'], label: '洗脸后常紧绷或起皮' }
-  }
-  if (/容易刺痛|容易泛红|容易发红/.test(text)) {
-    return { mode: 'described', values: ['敏感肌'], label: '容易刺痛或泛红' }
-  }
-  return null
-}
-
-function requestSkinCondition(selections, initialQuery, allowUnknown = false) {
-  const selected = [...(selections || [])].reverse().find((value) => skinConditions[value])
-  if (selected) return skinConditions[selected]
-  const described = describedSkinCondition(initialQuery)
-  if (described) return described
-  if (allowUnknown && needFromRequest(initialQuery) === 'skin-type') return skinConditions['skin-unknown']
-  return null
-}
-
 function isBaseMakeupRecommendation(query) {
   return /推荐|选什么|怎么选|想买|想选|找.*(?:粉底|底妆|素颜霜|气垫)/.test(query)
     && /底妆|粉底|气垫|素颜霜/.test(query)
 }
 
-function withSkinRequestConditions(result, selections, initialQuery, allowUnknown = false) {
-  const skin = requestSkinCondition(selections, initialQuery, allowUnknown)
-  return skin ? { ...result, requestConditions: { skin } } : result
+function skinResult(initialQuery, route, selections, skin) {
+  return { kind: isBaseMakeupRecommendation(initialQuery) ? 'continue' : 'skin-knowledge',
+    query: initialQuery, route, selections, summary: skin.summary, requestConditions: { skin },
+    promptContext: `${promptContext(route, selections)}；本次肤质仅依据日常自述，肤质暂不确定时不使用保存画像的肤质条件，不再追问。` }
+}
+
+function askSkin(initialQuery, route, selections, step, need = 'oil') {
+  return { kind: 'ask', answer: need === 'cheeks'
+    ? '两颊平时会紧绷、干燥或起皮吗？'
+    : `${isBaseMakeupRecommendation(initialQuery) ? `我们继续选${/气垫/.test(initialQuery) ? '气垫' : '底妆'}。` : ''}没关系，不用先给自己贴标签。平时到下午，你脸上通常哪里容易出油？`,
+    question: skinTypeQuestion(route, selections, initialQuery, step, need) }
 }
 
 function beginGuidedIntake(query, messages = [], intent = '') {
@@ -125,10 +95,6 @@ function matchOption(query, question) {
   if (/不确定|不知道|说不清|跳过|都不清楚|还不清楚|先按原问题/.test(text)) {
     return question.options.find((item) => /unknown|skip/.test(item.value))?.value || question.options.at(-1)?.value
   }
-  if (/全脸.*(出油|油)|容易出油|出油明显/.test(text)) return 'skin-oily'
-  if (/t区|两颊干|混油|混合/.test(text)) return 'skin-combination'
-  if (/紧绷|干燥|起皮|干皮/.test(text)) return 'skin-dry'
-  if (/刺痛|发红|易不适|敏感/.test(text)) return 'skin-sensitive'
   if (/偏亮|更亮|比脖子白/.test(text)) return 'tone-brighter'
   if (/接近|差不多|一致/.test(text)) return 'tone-close'
   if (/偏深|更深|比脖子深/.test(text)) return 'tone-deeper'
@@ -169,13 +135,16 @@ function multipleUncertainNeeds(query) {
   ].filter(Boolean)
 }
 
-function skinTypeQuestion(route, selections, initialQuery, step = 2) {
+function skinTypeQuestion(route, selections, initialQuery, step = 2, need = 'oil') {
+  if (need === 'cheeks') return makeQuestion(step, route, selections, [
+    option('经常会', 'cheek-often'), option('偶尔会', 'cheek-sometimes'),
+    option('基本不会', 'cheek-never'), option('说不清', 'cheek-unknown'),
+  ], initialQuery)
   return makeQuestion(step, route, selections, [
-    option('全脸容易出油', 'skin-oily'),
-    option('T区油、两颊偏干', 'skin-combination'),
-    option('洗脸后常紧绷或起皮', 'skin-dry'),
-    option('容易刺痛或泛红', 'skin-sensitive'),
-    option('不确定，先按原问题继续', 'skin-unknown'),
+    option('全脸都容易油', 'skin-oily'),
+    option('主要是额头和鼻子', 'skin-zone'),
+    option('不太出油', 'skin-low-oil'),
+    option('没注意过，换个问法', 'skin-unknown'),
   ], initialQuery)
 }
 
@@ -272,8 +241,8 @@ function guidedQuery(initialQuery, route, selections) {
   const focus = selections[1]
   const detail = selections[2]
   const routeContext = `用户主动选择${routeName(route)}路线。`
-  if (focus === 'focus-men-brow') return `${routeContext}用户原始需求：${initialQuery}。男士眉毛、眉形、眉眼关系与日常眉毛整理。`
-  if (focus === 'focus-men-contour') return `${routeContext}用户原始需求：${initialQuery}。男士修容、高光阴影、面部明暗与立体感观感。`
+  if (focus === 'focus-men-brow') return `${routeContext}用户原始需求：${initialQuery}。男生眉毛怎么画、眉毛整理教程。`
+  if (focus === 'focus-men-contour') return `${routeContext}用户原始需求：${initialQuery}。男生修容教程、阴影怎么晕染。`
   if (focus === 'focus-men-base') return `${routeContext}用户原始需求：${initialQuery}。素颜霜或底妆选择。${detail ? selectedCondition(detail) : ''}`
   if (focus === 'focus-men-routine') return `${routeContext}用户原始需求：${initialQuery}。快速日常自然妆容方案。${detail ? selectedCondition(detail) : ''}`
   if (focus === 'focus-skin-type') return `${routeContext}用户原始需求：${initialQuery}。肤质自述与日常观察。${detail ? selectedCondition(detail) : ''}`
@@ -309,16 +278,54 @@ function legacyQuestion(route, selections, initialQuery) {
   return detailQuestion(route, selections, initialQuery, focus)
 }
 
-function advanceGuidedIntake(query, messages = [], profile = {}) {
+async function advanceGuidedIntake(query, messages = [], profile = {}) {
+  const { assessSkin, readSkinObservation, observationFromChoice, asksSkinGuidance, isSkinUncertain, isSkinSkip,
+    isSkinQuestion, skinConversationContext, leavesSkinGuidance, advanceSkinObservation, skinQuestionSpec, SKIN_GUIDANCE_MAX_ROUNDS } = await import('../../../src/features/assistant/skinObservation.js')
+  if (leavesSkinGuidance(query)) return null
   const last = messages.at(-1)
   const current = last?.role === 'assistant' ? last.question : null
+  const context = skinConversationContext(messages)
+  const initial = context?.initialQuery || query
+  const observation = readSkinObservation(query)
+  const hasObservation = Object.keys(observation).length > 0
+  const finishSkin = (original, route, selections, value, skipped = false) => skinResult(original, route || 'general', selections, assessSkin(value, skipped))
+  const startSkin = (original, route, selections, step) => {
+    const value = readSkinObservation(original)
+    const assessment = assessSkin(value)
+    if (!assessment.need || step > SKIN_GUIDANCE_MAX_ROUNDS) return skinResult(original, route || 'general', selections, assessment)
+    const spec = skinQuestionSpec(assessment.need)
+    return { kind: 'ask', answer: assessment.need === 'oil' ? askSkin(original, route, selections, step).answer : spec.answer,
+      question: makeQuestion(step, route || 'general', selections, spec.options, original) }
+  }
+
+  // Consume a whole skin answer before general intent routing or compound splitting.
+  if (isSkinQuestion(current)) {
+    const progress = advanceSkinObservation(current, query)
+    if (!progress) return null
+    if (progress.question) return { kind: 'ask', answer: progress.answer, question: progress.question }
+    return skinResult(progress.initialQuery, current.route || 'general', progress.selections, progress.assessment)
+  }
+
+  const help = /^(?:你)?帮我看看(?:吧)?[。？?！!]*$/.test(query)
+  const skinReply = context && (asksSkinGuidance(query) || isSkinUncertain(query) || isSkinSkip(query) || hasObservation || help)
+  if (skinReply) {
+    const original = hasObservation ? `${initial}；${query}`.slice(0, MAX_INITIAL_QUERY) : initial
+    if (isSkinSkip(query)) return finishSkin(`${initial}；${query}`.slice(0, MAX_INITIAL_QUERY), current?.route, current?.selections || [], readSkinObservation(initial), true)
+    return startSkin(original, current?.route, current?.selections || [], current ? current.step + 1 : 1)
+  }
+  if (!current && !(isFreshConversation(messages) && isBaseMakeupRecommendation(query))
+    && (asksSkinGuidance(query) || hasObservation && !isBaseMakeupRecommendation(query) && !observation.explicit)) {
+    return startSkin(query, 'general', [], 1)
+  }
   if (current?.flowId !== FLOW_ID || current.step < 1 || current.step > 3) return null
   const selected = matchOption(query, current)
   if (!selected || !current.options.some((item) => item.value === selected)) return null
 
   const initialQuery = current.initialQuery || messages.find((message) => message.role === 'user')?.content || ''
   if (current.step === 1) {
-    if (selected === 'route-direct') return withSkinRequestConditions({ kind: 'continue', route: 'general', selections: [], query: initialQuery, promptContext: '用户选择直接按原问题回答，不再追问。' }, [], initialQuery, true)
+    if (selected === 'route-direct') return isBaseMakeupRecommendation(initialQuery) || needFromRequest(initialQuery) === 'skin-type'
+      ? finishSkin(initialQuery, 'general', [], {}, true)
+      : { kind: 'continue', query: initialQuery, promptContext: '用户选择直接按原问题回答，不再追问。' }
     const route = selected === 'route-men' ? 'men'
       : selected === 'route-women' ? 'women'
         : selected === 'route-general' ? 'general'
@@ -326,7 +333,9 @@ function advanceGuidedIntake(query, messages = [], profile = {}) {
             : selected === 'route-plan' ? 'plan' : null
     if (!route) return null
 
-    const alreadyDescribedSkin = describedSkinCondition(initialQuery)
+    const originalObservation = readSkinObservation(initialQuery)
+    const assessment = assessSkin(originalObservation)
+    const alreadyDescribedSkin = assessment.values.length || assessment.kind === 'balanced' || originalObservation.conflicting
     const multipleNeeds = multipleUncertainNeeds(initialQuery).filter((need) => need !== 'focus-skin-type' || !alreadyDescribedSkin)
     if (multipleNeeds.length > 1) {
       return { kind: 'ask', answer: `收到，按你选的${routeName(route)}路线，我会接着处理「${summarizeRequest(initialQuery)}」。先选一个最想弄清楚的方面：`,
@@ -335,17 +344,17 @@ function advanceGuidedIntake(query, messages = [], profile = {}) {
 
     const need = needFromRequest(initialQuery)
     if (alreadyDescribedSkin && isBaseMakeupRecommendation(initialQuery)) {
-      return withSkinRequestConditions({ kind: 'continue', route, selections: [selected], query: initialQuery,
-        promptContext: promptContext(route, [selected]) }, [selected], initialQuery)
+      if (assessment.need) return startSkin(initialQuery, route, [selected], 2)
+      return skinResult(initialQuery, route, [selected], assessment)
     }
     if (need && !(need === 'skin-type' && alreadyDescribedSkin)) {
+      if (need === 'skin-type') return startSkin(initialQuery, route, [selected], 2)
       const question = needQuestion(need, route, [selected], initialQuery)
       return { kind: 'ask', answer: `收到，按你选的${routeName(route)}路线，我会继续围绕「${summarizeRequest(initialQuery)}」。再选一个你目前能确认的情况；不确定可以跳过。`, question }
     }
 
     if (isBaseMakeupRecommendation(initialQuery) && !profile.skin && !alreadyDescribedSkin) {
-      return { kind: 'ask', answer: `收到，按你选的${routeName(route)}路线继续。为了按站内资料筛选底妆候选，可以选一个平时的肤质感受；不确定也可以跳过。`,
-        question: skinTypeQuestion(route, [selected], initialQuery) }
+      return startSkin(initialQuery, route, [selected], 2)
     }
 
     if (route === 'men' && /推荐|购买|想买|想找|哪个产品|哪款/.test(initialQuery)
@@ -371,11 +380,14 @@ function advanceGuidedIntake(query, messages = [], profile = {}) {
 
   const selections = [...(current.selections || []), selected]
   if (current.step === 2) {
+    if (current.route === 'men' && selected === 'focus-men-base' && !isBaseMakeupRecommendation(initialQuery)) {
+      return { kind: 'knowledge', route: current.route, selections, query: initialQuery,
+        knowledgeQuery: `${initialQuery} 男生底妆教程`, promptContext: promptContext(current.route, selections) }
+    }
     const isLegacyFocus = current.route === 'skin' || current.route === 'plan'
     const isNeedChoice = /^(?:skin-|tone-|undertone-)/.test(selected)
     if (!isLegacyFocus && current.route === 'men' && selected === 'focus-men-base' && !profile.skin) {
-      return { kind: 'ask', answer: '收到。若要按站内记录筛选具体底妆，还需要肤质自述；可以按平时感受选一个，不确定也可先跳过。',
-        question: detailQuestion(current.route, selections, initialQuery, selected) }
+      return startSkin(initialQuery, current.route, selections, 3)
     }
     if (isLegacyFocus) {
       const question = legacyQuestion(current.route, selections, initialQuery)
@@ -383,17 +395,13 @@ function advanceGuidedIntake(query, messages = [], profile = {}) {
     }
     if (['focus-skin-type', 'focus-shade-depth', 'focus-undertone'].includes(selected)) {
       const need = selected === 'focus-skin-type' ? 'skin-type' : selected === 'focus-shade-depth' ? 'shade-depth' : 'undertone'
+      if (need === 'skin-type') return startSkin(initialQuery, current.route, selections, 3)
       return { kind: 'ask', answer: `收到，你想先了解${focusLabel(selected)}。再按日常感受选一个；没有把握可以跳过。`,
         question: needQuestion(need, current.route, selections, initialQuery, 3) }
     }
     if (isNeedChoice) {
       const baseRequest = isBaseMakeupRecommendation(initialQuery)
-      if (selected === 'skin-unknown' && baseRequest) {
-        return withSkinRequestConditions({ kind: 'continue', route: current.route, selections, query: initialQuery,
-          promptContext: `${promptContext(current.route, selections)}；用户本次明确选择肤质暂不确定，底妆候选不要按肤质筛选，并清楚说明此限制` }, selections, initialQuery)
-      }
-      if (baseRequest && /^skin-/.test(selected)) return withSkinRequestConditions({ kind: 'continue', route: current.route, selections, query: initialQuery,
-        promptContext: promptContext(current.route, selections) }, selections, initialQuery)
+      if (baseRequest && /^skin-/.test(selected)) return finishSkin(initialQuery, current.route, selections, observationFromChoice(selected), selected === 'skin-unknown')
       return { kind: 'knowledge', route: current.route, selections, query: initialQuery,
         knowledgeQuery: guidedQuery(initialQuery, current.route, selections), promptContext: promptContext(current.route, selections) }
     }
@@ -403,8 +411,7 @@ function advanceGuidedIntake(query, messages = [], profile = {}) {
       return { kind: 'continue', route: current.route, selections, query: initialQuery, promptContext: promptContext(current.route, selections) }
     }
     if (selected === 'focus-men-base' && !profile.skin) {
-      return { kind: 'ask', answer: '收到。若要按站内记录筛选具体底妆，还需要肤质自述；可以按平时感受选一个，不确定也可先跳过。',
-        question: detailQuestion(current.route, selections, initialQuery, selected) }
+      return startSkin(initialQuery, current.route, selections, 3)
     }
     const question = ['men', 'women', 'general'].includes(current.route)
       ? detailQuestion(current.route, selections, initialQuery, selected)
@@ -414,13 +421,12 @@ function advanceGuidedIntake(query, messages = [], profile = {}) {
 
   const baseRequest = isBaseMakeupRecommendation(initialQuery)
   if (selected === 'skin-unknown' && baseRequest) {
-    return withSkinRequestConditions({ kind: 'continue', route: current.route, selections, query: initialQuery,
-      promptContext: `${promptContext(current.route, selections)}；用户本次明确选择肤质暂不确定，底妆候选不要按肤质筛选，并清楚说明此限制` }, selections, initialQuery)
+    return finishSkin(initialQuery, current.route, selections, {}, true)
   }
 
   const kind = answerKind(current.route, selections)
-  return withSkinRequestConditions({ kind, route: current.route, selections, query: initialQuery,
-    knowledgeQuery: guidedQuery(initialQuery, current.route, selections), promptContext: promptContext(current.route, selections) }, selections, initialQuery)
+  return { kind, route: current.route, selections, query: initialQuery,
+    knowledgeQuery: guidedQuery(initialQuery, current.route, selections), promptContext: promptContext(current.route, selections) }
 }
 
 module.exports = { FLOW_ID, advanceGuidedIntake, beginGuidedIntake, makeQuestion, shouldBeginGuidedIntake }

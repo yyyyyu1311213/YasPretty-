@@ -13,9 +13,9 @@ const profileSchema = z.object({
 
 const guidedQuestionSchema = z.object({
   flowId: z.string().trim().min(1).max(80),
-  step: z.number().int().min(1).max(3),
+  step: z.number().int().min(1).max(5),
   route: z.enum(['men', 'women', 'general', 'skin', 'plan']).nullable(),
-  selections: z.array(z.string().trim().min(1).max(80)).max(2),
+  selections: z.array(z.string().trim().min(1).max(80)).max(4),
   initialQuery: z.string().trim().max(1000).optional(),
   options: z.array(z.object({
     label: z.string().trim().min(1).max(80),

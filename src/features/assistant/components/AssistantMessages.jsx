@@ -22,8 +22,8 @@ export default function AssistantMessages({ messages, profile, busy, activity, m
                   </button>
                 ))}
                 <span className="xiaoy-choice-note">
-                  第 {message.question.step}/3 轮 · 可直接输入，也可以选“不确定”或跳过
-                  {message.question.step === 1 ? ' · 路线只用于本次建议，不会记录性别' : ''}
+                  第 {message.question.step}/5 轮 · 可直接输入，也可以选“不确定”或跳过
+                  {message.question.options.some(({ value }) => value.startsWith('route-')) ? ' · 路线只用于本次建议，不会记录性别' : ''}
                 </span>
               </div>
             )}
@@ -36,7 +36,11 @@ export default function AssistantMessages({ messages, profile, busy, activity, m
                 })}
               </div>
             )}
-            <SourceList sources={message.sources} />
+            {message.skinGuidance ? <details className="xiaoy-sources">
+              <summary>观察依据与局限</summary>
+              <p>根据你描述的日常出油位置、两颊干燥程度和出现频率，判断当前肤质倾向。季节、环境和护理可能影响感受，可以随实际变化调整。</p>
+              <SourceList sources={message.sources} />
+            </details> : <SourceList sources={message.sources} />}
           </div>
         </article>
       ))}

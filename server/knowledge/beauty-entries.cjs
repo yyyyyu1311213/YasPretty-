@@ -1,5 +1,6 @@
 // Curated knowledge units. Source access and editorial review dates are distinct.
 module.exports = [
+  ...require('./mens-makeup-entries.cjs'),
   {
     "id": "self-reported-skin-type",
     "title": "肤质自测：油皮、干皮还是混合皮",

@@ -94,6 +94,22 @@ afterEach(async () => {
 })
 
 describe('YasPretty API gateway', () => {
+  it('accepts the fifth skin question over HTTP and rejects a sixth round', async () => {
+    const app = await createApp({ zhipu: mockZhipu({ configured: false }) })
+    const payload = { query: 'skin-pattern-oily', messages: [{ role: 'assistant', content: '最近多数日子更像哪一种？',
+      question: { flowId: 'xiaoy-guided-intake-v1', step: 5, route: 'general', initialQuery: '推荐粉底，预算200元',
+        selections: ['route-general', 'skin-unknown', 'skin-clue-unknown', 'cheek-unknown'],
+        options: [{ label: '大部分脸常油，干燥只是偶尔', value: 'skin-pattern-oily' },
+          { label: '都不太像，暂时说不清', value: 'skin-pattern-unknown' }] } }] }
+    const response = await app.inject({ method: 'POST', url: '/api/assistant', payload })
+    expect(response.statusCode).toBe(200)
+    expect(response.json().guidedQuestion).toBeUndefined()
+    expect(response.json().answer).toContain('偏向油性肤质')
+    expect(response.json().answer).toContain('[[PRODUCT:p1]]')
+    payload.messages[0].question.step = 6
+    expect((await app.inject({ method: 'POST', url: '/api/assistant', payload })).statusCode).toBe(400)
+  })
+
   it('AI-R02 returns dated archive provenance for facts without exposing internal evidence paths', async () => {
     const zhipu = mockZhipu({ configured: false })
     const app = await createApp({ zhipu, verificationRecords: { p1: { productId: 'p1',
@@ -363,8 +379,10 @@ describe('YasPretty API gateway', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.json()).toMatchObject({ ok: true, usedWebSearch: false })
-    expect(response.json().answer).toContain('直接来自 YasPretty 受控知识库')
-    expect(response.json().answer).toContain('不构成医疗诊断')
+    expect(response.json().answer).toContain('停止使用')
+    expect(response.json().answer).toContain('咨询合格专业人员')
+    expect(response.json().answer).toContain('暂不提供继续上妆或产品推荐')
+    expect(response.json().knowledgeEvidence.some(({ id }) => id === 'skin-reaction-safety')).toBe(true)
     expect(response.json().sources[0].kind).toBe('knowledge')
   })
 

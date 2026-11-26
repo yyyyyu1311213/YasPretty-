@@ -68,8 +68,8 @@ describe('AI-R01 server orchestration', () => {
     const second = await api.answer({ query: 'route-women', messages: [
       { role: 'user', content: query }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
     ] })
-    expect(second.guidedQuestion.options.map(({ label }) => label)).toContain('洗脸后常紧绷或起皮')
-    const result = await api.answer({ query: 'skin-unknown', messages: [
+    expect(second.guidedQuestion.options.map(({ label }) => label)).toContain('不太出油')
+    const result = await api.answer({ query: '先跳过', messages: [
       { role: 'user', content: query }, { role: 'assistant', content: second.answer, question: second.guidedQuestion },
     ], profile })
     expect(result.intent).toBe('catalog_recommendation')
@@ -81,9 +81,9 @@ describe('AI-R01 server orchestration', () => {
   })
 
   it.each([
-    ['skin-dry', ['dry', 'mixed-dry'], ['oily', 'mixed-oily']],
+    ['不太出油，两颊经常干', ['dry', 'mixed-dry'], ['oily', 'mixed-oily']],
     ['skin-oily', ['oily', 'mixed-oily'], ['dry', 'mixed-dry']],
-    ['skin-combination', ['mixed-oily', 'mixed-dry'], ['oily', 'dry']],
+    ['鼻子油两边干', ['mixed-oily', 'mixed-dry'], ['oily', 'dry']],
   ])('uses the selected daily skin feeling as a request-only hard filter: %s', async (choice, expected, excluded) => {
     const fixture = [
       ['dry', ['干皮']], ['mixed-dry', ['混干皮']], ['oily', ['油皮']],
@@ -96,7 +96,7 @@ describe('AI-R01 server orchestration', () => {
       { role: 'user', content: query }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
     ] })
     expect(second.guidedQuestion.step).toBe(2)
-    expect(second.guidedQuestion.options.map(({ label }) => label)).toContain('洗脸后常紧绷或起皮')
+    expect(second.guidedQuestion.options.map(({ label }) => label)).toContain('不太出油')
     const result = await api.answer({ query: choice, profile: { skin: '油皮' }, messages: [
       { role: 'user', content: query }, { role: 'assistant', content: second.answer, question: second.guidedQuestion },
     ] })
@@ -116,10 +116,10 @@ describe('AI-R01 server orchestration', () => {
     const second = await api.answer({ query: 'route-general', messages: [
       { role: 'user', content: query }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
     ] })
-    const result = await api.answer({ query: 'skin-dry', messages: [
+    const result = await api.answer({ query: '不太出油，两颊经常干', messages: [
       { role: 'user', content: query }, { role: 'assistant', content: second.answer, question: second.guidedQuestion },
     ] })
-    expect(result.answer).toContain('没有找到适用肤质记录与“洗脸后常紧绷或起皮”相符')
+    expect(result.answer).toContain('没有找到适用肤质记录与“偏干倾向”相符')
     expect(result.answer).not.toContain('[[PRODUCT:')
     expect(result.answer).not.toContain('先告诉我你的肤质')
   })
@@ -132,7 +132,7 @@ describe('AI-R01 server orchestration', () => {
       { role: 'user', content: described }, { role: 'assistant', content: first.answer, question: first.guidedQuestion },
     ] })
     expect(result.guidedQuestion).toBeUndefined()
-    expect(result.answer).toContain('T区油、两颊偏干')
+    expect(result.answer).toContain('T区出油和两颊偏干')
     expect(result.answer).not.toContain('请先告诉我你的肤质')
 
     const occasional = '我想选底妆，偶尔起皮'
@@ -140,7 +140,7 @@ describe('AI-R01 server orchestration', () => {
     const next = await api.answer({ query: 'route-general', messages: [
       { role: 'user', content: occasional }, { role: 'assistant', content: firstOccasional.answer, question: firstOccasional.guidedQuestion },
     ] })
-    expect(next.guidedQuestion.options.map(({ value }) => value)).toContain('skin-dry')
+    expect(next.guidedQuestion.options.map(({ value }) => value)).toContain('skin-low-oil')
   })
 
   it('does not ask about sex for safety-sensitive skin discomfort', async () => {

@@ -13,21 +13,21 @@ describe('小Y首次需求后的点选引导', () => {
     expect(shouldBeginGuidedIntake('我想学怎么遮痘，皮肤还红肿刺痛', [{ id: 'welcome', role: 'assistant' }], 'unsupported_sensitive')).toBe(false)
   })
 
-  it('retains the first request, asks the route after it, and finishes in at most three rounds', () => {
+  it('retains the first request, asks the route after it, and finishes in at most three rounds', async () => {
     const first = beginGuidedIntake(initial, [{ id: 'welcome', role: 'assistant' }], 'beauty_knowledge')
     expect(first).toMatchObject({ kind: 'ask', question: { step: 1, initialQuery: initial } })
 
-    const second = advanceGuidedIntake('route-men', [
+    const second = await advanceGuidedIntake('route-men', [
       { role: 'user', content: initial }, answerWith(first.question),
     ])
     expect(second).toMatchObject({ kind: 'ask', question: { step: 2, route: 'men', initialQuery: initial } })
 
-    const third = advanceGuidedIntake('focus-men-brow', [
+    const third = await advanceGuidedIntake('focus-men-brow', [
       { role: 'user', content: initial }, answerWith(second.question),
     ])
     expect(third).toMatchObject({ kind: 'ask', question: { step: 3, route: 'men', initialQuery: initial } })
 
-    const result = advanceGuidedIntake('finish-natural', [
+    const result = await advanceGuidedIntake('finish-natural', [
       { role: 'user', content: initial }, answerWith(third.question),
     ])
     expect(result).toMatchObject({ kind: 'knowledge', route: 'men', query: initial })
@@ -35,33 +35,33 @@ describe('小Y首次需求后的点选引导', () => {
     expect(result.promptContext).toContain('用户本次主动选择的建议路线：男生自然修饰')
   })
 
-  it('asks only about the missing self-reported condition and lets an unknown answer continue', () => {
+  it('asks only about the missing self-reported condition and lets an unknown answer continue', async () => {
     const original = '我想选底妆，但不清楚自己的肤质'
     const first = beginGuidedIntake(original, [{ id: 'welcome', role: 'assistant' }], 'beauty_knowledge')
-    const second = advanceGuidedIntake('route-women', [
+    const second = await advanceGuidedIntake('route-women', [
       { role: 'user', content: original }, answerWith(first.question),
     ])
     expect(second).toMatchObject({ kind: 'ask', question: { step: 2, route: 'women' } })
-    const result = advanceGuidedIntake('skin-unknown', [
+    const result = await advanceGuidedIntake('先跳过', [
       { role: 'user', content: original }, answerWith(second.question),
     ])
-    expect(result).toMatchObject({ kind: 'continue', route: 'women', query: original })
+    expect(result).toMatchObject({ kind: 'continue', route: 'women', query: expect.stringContaining(original) })
     expect(result.promptContext).toContain('肤质暂不确定')
   })
 
-  it('offers one focus choice when several complexion questions are unknown, within the three-round cap', () => {
+  it('offers one focus choice when several complexion questions are unknown, within the three-round cap', async () => {
     const original = '我想做日常底妆，但不清楚肤质、肤色深浅和冷暖'
     const first = beginGuidedIntake(original, [{ id: 'welcome', role: 'assistant' }], 'beauty_knowledge')
-    const second = advanceGuidedIntake('route-general', [
+    const second = await advanceGuidedIntake('route-general', [
       { role: 'user', content: original }, answerWith(first.question),
     ])
     expect(second.question.step).toBe(2)
     expect(second.question.options.map(({ value }) => value)).toContain('focus-undertone')
-    const third = advanceGuidedIntake('focus-undertone', [
+    const third = await advanceGuidedIntake('focus-undertone', [
       { role: 'user', content: original }, answerWith(second.question),
     ])
     expect(third.question.step).toBe(3)
-    const result = advanceGuidedIntake('undertone-warm', [
+    const result = await advanceGuidedIntake('undertone-warm', [
       { role: 'user', content: original }, answerWith(third.question),
     ])
     expect(result.kind).toBe('knowledge')

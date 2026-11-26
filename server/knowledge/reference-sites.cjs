@@ -1,6 +1,7 @@
 const REVIEWED_AT = '2026-11-06T00:00:00.000Z'
 
 const referenceSites = Object.freeze([
+  ...require('./mens-makeup-references.cjs'),
   {
     id: 'aad-skin-care-testing',
     title: 'How to test skin care products',

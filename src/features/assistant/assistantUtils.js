@@ -67,13 +67,21 @@ function scoreProduct(product, profile) {
 }
 
 export function recommendProducts(profile, text) {
-  profile = extractRequestConditions(text, profile)
-  const mentioned = findMentionedProducts(text)
+  const requestSkin = profile.skinValues || profile.skinSkipped ? { skinValues: profile.skinValues || [], skinSkipped: profile.skinSkipped, skinLabel: profile.skinLabel } : null
+  profile = { ...extractRequestConditions(text, profile), ...requestSkin }
+  if (requestSkin) delete profile.skin
+  const excludedBrands = [...new Set(products.map((p) => p.brand))].filter((brand) => {
+    const index = text.toLowerCase().indexOf(brand.toLowerCase())
+    return index >= 0 && /(?:不要|排除|不考虑)\s*$/.test(text.slice(0, index))
+  })
+  const mentioned = findMentionedProducts(text).filter((p) => !excludedBrands.includes(p.brand))
   const skinValues = profile.skinValues?.length ? profile.skinValues : profile.skin ? [profile.skin] : []
   const pool = (mentioned.length ? mentioned : products).filter((product) => {
+    if (product.recommendationReady === false || excludedBrands.includes(product.brand)) return false
     if (profile.category && product.category !== profile.category) return false
     if (!profile.category && /底妆|粉底/.test(text) && product.category !== '粉底液') return false
     if (skinValues.length && !product.skins.some((skin) => skinValues.includes(skin))) return false
+    if (profile.sensitive && !product.skins.includes('敏感肌')) return false
     if (/不(?:要|喜欢|想要)?哑光/.test(text) && product.finish === '哑光') return false
     if (profile.budget && (!Number.isFinite(product.price) || product.price > profile.budget)) return false
     return true
@@ -95,13 +103,14 @@ export function localReply(text, profile, requestConditions = {}) {
     return { text: '为了避免只凭热度推荐，我需要先确认你的肤质。你是油皮、混油皮、干皮、混干皮，还是敏感肌？', products: [] }
   }
 
-  const matches = mentioned.length > 1 && !/推荐/.test(text) ? mentioned.slice(0, 3) : recommendProducts(profile, text)
+  const comparing = mentioned.length > 1 && !/推荐|想买|想选|排除|不要/.test(text) && !requestConditions.skinValues && !requestConditions.skinSkipped
+  const matches = comparing ? mentioned.slice(0, 3) : recommendProducts(profile, text)
   if (!matches.length) {
-    if (profile.skinLabel) {
+    if (profile.skinLabel && !profile.skinSkipped) {
       return { text: `站内资料暂时没有找到适用肤质记录与“${profile.skinLabel}”相符、且同时满足其他条件的候选。我没有放宽筛选或推断适配；可以跳过肤质筛选或调整其他条件后再试。`, products: [] }
     }
     return {
-      text: '资料库中暂时没有同时满足这些硬条件的产品。你可以提高预算、放宽品类，或保留最重要的一项条件后再试。',
+      text: `资料库中暂时没有同时满足这些硬条件的产品。你可以调整预算或品类后再试。${profile.skinSkipped ? '本次候选未按肤质筛选。' : ''}`,
       products: [],
     }
   }
@@ -109,7 +118,7 @@ export function localReply(text, profile, requestConditions = {}) {
     const shade = pickShade(product, profile)
     const reasons = []
     const matchedSkins = skinValuesFor(profile).filter((skin) => product.skins.includes(skin))
-    if (profile.skinLabel && matchedSkins.length) reasons.push(`资料库适用肤质记录包含${matchedSkins.join('、')}（本次按日常感受筛选）`)
+    if (profile.skinLabel && matchedSkins.length) reasons.push(`符合本次${profile.skinLabel}`)
     else if (profile.skin && product.skins.includes(profile.skin)) reasons.push(`适合${profile.skin}`)
     if (profile.finish && product.finish === profile.finish) reasons.push(`符合${profile.finish}偏好`)
     if (profile.scene && product.scenes.includes(profile.scene)) reasons.push(`适合${profile.scene}`)
@@ -118,11 +127,12 @@ export function localReply(text, profile, requestConditions = {}) {
     return `${index + 1}. ${product.brand} ${product.name}：${shadeSuggestion(shade)}，${reasons.join('、')}。`
   })
 
-  const lead = mentioned.length > 1
+  const lead = comparing
     ? `我按资料库信息比较你提到的产品：\n\n${mentioned.map(formatProductComparison).join('\n\n')}\n\n结合你的已知偏好，再看具体选择：`
     : `根据目前记录的需求${profile.skinValues?.length ? `（${profile.skinLabel}）` : profile.skin ? `（${profile.skin}${profile.finish ? `、${profile.finish}` : ''}${profile.scene ? `、${profile.scene}` : ''}）` : ''}，优先看这几款：`
-  const skinLimit = profile.skinValues?.length ? `\n\n本次按你提供的日常感受“${profile.skinLabel}”筛选候选，仅作本次参考，不是肤质诊断。`
-    : profile.skinSkipped ? '\n\n你选择暂不判断肤质，因此本次候选未按肤质筛选；这不能说明产品与某种肤质适配。' : ''
+  const skinLimit = profile.skinValues?.length ? '\n\n本次按你提供的日常感受筛选候选。'
+    : profile.skinSkipped ? profile.sensitive ? '\n\n本次未按干油倾向筛选；仍单独考虑你已说明的敏感倾向。'
+      : '\n\n本次候选未按肤质筛选，先按已知的品类、预算等条件选择。' : ''
   return {
     text: `${lead}\n\n${lines.join('\n\n')}\n\n色号仅作为初筛建议，实际结果还会受光线、肤色明度和氧化情况影响。${skinLimit}`,
     products: matches,

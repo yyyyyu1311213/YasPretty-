@@ -71,11 +71,19 @@ function productMarkers(products) {
   return products.slice(0, 3).map((p) => `[[PRODUCT:${p.id}]]`).join('\n')
 }
 
-function recommendationAnswer(selection, conditions = {}) {
+function recommendationAnswer(selection, conditions = {}, { concise = false } = {}) {
   if (!selection.length && conditions.skinLabel) {
     return `站内资料暂时没有找到适用肤质记录与“${conditions.skinLabel}”相符、且同时满足其他条件的底妆候选。我没有放宽肤质条件或推断产品适配；你可以跳过肤质筛选或调整其他条件后再试。`
   }
   if (!selection.length) return '资料库中暂时没有同时满足这些硬条件的产品。你可以调整预算或品类后再试。'
+  if (concise) {
+    const lines = selection.map(({ product: p }, index) => {
+      const reasons = [conditions.budget && '参考价在预算内', conditions.finish === p.finish && `符合${p.finish}偏好`,
+        conditions.scene && p.scenes?.includes(conditions.scene) && `可用于${conditions.scene}`].filter(Boolean)
+      return `${index + 1}. ${p.brand} ${p.name}${reasons.length ? `：${reasons.join('、')}` : ''}。`
+    })
+    return `继续看这几款${conditions.category || '底妆'}：\n\n${lines.join('\n')}\n\n建议少量试用，并在自然光下试色。\n${productMarkers(selection.map(({ product }) => product))}`
+  }
   return `根据明确条件，优先看以下站内产品：\n\n${selection.map(({ product: p, evidence }, i) => `${i + 1}. ${p.brand} ${p.name}：${evidence.join('；') || '符合当前品类条件'}。`).join('\n\n')}\n\n参考资料有核验范围和时效限制，建议少量试用并在自然光下试色。\n${productMarkers(selection.map(({ product }) => product))}`
 }
 
@@ -88,7 +96,10 @@ function clarificationAnswer(resolution) {
 }
 
 function planAnswer(plan) {
-  return `${plan.title}\n\n${plan.summary}\n\n${plan.steps.map((step, i) => `${i + 1}. ${step.category}：${step.technique}${step.colorDirection && step.colorDirection !== '不涉及颜色' ? `\n颜色方向：${step.colorDirection}` : ''}`).join('\n\n')}\n\n${plan.sourceMode === 'local' ? '已降级为本地规则方案，模型未生成有效结构化方案。' : '模型方案已通过结构和产品 ID 校验。'}\n${productMarkers(plan.recommendedProductIds.map((id) => ({ id })))}`
+  // The chat view must retain the same knowledge boundaries as the structured plan.
+  const boundaries = [...new Set((plan.knowledgeEvidence || []).flatMap((entry) => [...entry.limitations, ...(entry.safetyBoundaries || [])]))]
+  const notes = boundaries.length ? `\n\n手法的适用限制：\n${boundaries.join('\n')}` : ''
+  return `${plan.title}\n\n${plan.summary}\n\n${plan.steps.map((step, i) => `${i + 1}. ${step.category}：${step.technique}${step.colorDirection && step.colorDirection !== '不涉及颜色' ? `\n颜色方向：${step.colorDirection}` : ''}`).join('\n\n')}${notes}\n\n${plan.sourceMode === 'local' ? '已降级为本地规则方案，模型未生成有效结构化方案。' : '模型方案已通过结构和产品 ID 校验。'}\n${productMarkers(plan.recommendedProductIds.map((id) => ({ id })))}`
 }
 
 function validateAnswer(raw, allowedProducts) {

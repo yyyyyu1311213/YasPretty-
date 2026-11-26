@@ -4,8 +4,10 @@ const { retrieveKnowledge } = require('../../knowledge/beauty-knowledge.cjs')
 
 const intents = ['catalog_recommendation', 'product_comparison', 'product_fact', 'beauty_knowledge', 'makeup_plan', 'plan_adjustment', 'external_question', 'external_research', 'greeting_help', 'unsupported_sensitive', 'clarification']
 const classificationSchema = z.object({ intent: z.enum(intents), confidence: z.number().min(0).max(1) }).strict()
-const isSensitive = (text) => /诊断|治疗|治愈|红肿|刺痛|过敏|破损|皮肤破|瘙痒|识别身份|识别人脸|推断种族|(?:照片|人脸).*(?:身份|年龄|种族)|API\s*Key|Authorization|系统提示词/i.test(text)
-const hasSkinDiscomfort = (text) => /红肿|刺痛|破损|皮肤破|瘙痒|明显不适/.test(text)
+const discomfortTerms = '红肿|刺痛|破损|皮肤破|瘙痒|明显不适|刮破|剃破|出血|渗液'
+const negatedDiscomfort = new RegExp(`(?:没有|没|并无|未见|无|不再)(?:明显)?(?:${discomfortTerms})(?:[、和或及与]*(?:${discomfortTerms}))*`, 'g')
+const hasSkinDiscomfort = (text) => new RegExp(discomfortTerms).test(String(text || '').replace(negatedDiscomfort, ''))
+const isSensitive = (text) => hasSkinDiscomfort(text) || /诊断|治疗|治愈|过敏|识别身份|识别人脸|推断种族|(?:照片|人脸).*(?:身份|年龄|种族)|API\s*Key|Authorization|系统提示词/i.test(text)
 const isCompletePlan = (text) => /妆容方案|完整妆容|妆面规划|设计(?:一个)?妆|妆教(?!程)|教我.*妆容|(?:韩女|水光|拍照|秋日|落叶|约会|通勤|日常|晚宴)妆容/.test(text)
 const isKnowledge = (text, productRelated) => /怎么涂|怎么上|怎么用|怎么画|怎么化|如何画|怎么办|教程|技巧|原理|步骤|什么是|是什么|区别|差别|不同|作用|色号怎么选|肤质.*(?:判断|测试)|(?:判断|分辨).*肤质|(?:总|容易|之后|后).*(?:起皮|卡粉|脱妆)|卡粉$|起皮$/.test(text)
   && (productRelated || /粉底|底妆|妆|遮瑕|肤质|皮|工具|刷|海绵|口红|气垫|睫毛/.test(text))
@@ -13,7 +15,7 @@ const isFact = (text) => /规格|色号|容量|净含量|多少克|多少毫升|
   || /正装|替换芯|替换装|补充装|套装/.test(text) && /吗|还是|是否|含不含|有没有|[？?]/.test(text)
 const isTimely = (text) => /天气|气温|下雨|最新|最近|目前|今年|20\d{2}|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买/.test(text)
 const isExternalObject = (text) => /手机|打印机|电脑|汽车|自行车|笔记本|耳机/.test(text)
-const isRecommendation = (text) => /推荐|选什么|怎么选|哪个好|我(?:是|的肤质是|肤质是).*(?:皮|肌)|^(?:混油皮|混干皮|干皮|油皮|敏感肌)$|^预算|我.*(?:想要|想找|想买|想选|要买)/.test(text)
+const isRecommendation = (text) => /推荐|选什么|怎么选|哪个好|我(?:是|的肤质是|肤质是).*(?:皮|肌)|^(?:混油皮|混干皮|干皮|油皮|敏感肌)$|^预算|(?:我.*)?(?:想要|想找|想买|想选|要买)/.test(text)
 const isOverview = (text) => /怎么样|好用|介绍|了解|评价|如何/.test(text)
 const isCatalogSizeQuestion = (text) => /^(?:请问)?(?:你们(?:的)?|本站|站内|网站(?:上)?|产品库(?:里|中)?|库里)(?:产品库(?:里|中)?|收录|列出|展示|推荐|卖|的|这些|产品|商品|化妆品)*(?:全部|全|都)?(?:是|是不是|是指|收录)?(?:正装|小样|中样|试用装)(?:规格)?(?:吗|么|对吗)?[？?。！!\s]*$/.test(text)
 

@@ -113,11 +113,13 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
   const facts = createProductFactsIndex(products, verificationRecords)
   async function answerOne({ query, messages = [], profile = {} }, context = {}) {
       const zhipuProvider = context.provider || provider
-      const guidance = context.guided || advanceGuidedIntake(query, messages, profile)
+      const guidance = context.skinDiscomfort || hasSkinDiscomfort(query) ? null
+        : context.guided || (context.skipSkinGuidance ? null : await advanceGuidedIntake(query, messages, profile))
       if (guidance?.query) query = guidance.query
       const intent = guidance?.kind === 'ask' ? 'clarification'
         : guidance?.kind === 'plan' ? 'makeup_plan'
-          : guidance?.kind === 'knowledge' ? 'beauty_knowledge'
+          : ['knowledge', 'skin-knowledge'].includes(guidance?.kind) ? 'beauty_knowledge'
+            : guidance?.requestConditions?.skin ? 'catalog_recommendation'
             : await classifyIntent(query, products, zhipuProvider, messages)
       const parameters = await extractParameters(query, profile, products)
       const guidedSkin = guidance?.requestConditions?.skin
@@ -131,6 +133,7 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
         parameters.recommendation.skinValues = guidedSkin.values
         parameters.recommendation.skinLabel = guidedSkin.label
       }
+      if (guidedSkin && (guidedSkin.sensitive || parameters.profile.skin === '敏感肌')) parameters.recommendation.sensitive = true
       const routedQuery = guidance?.promptContext ? `${guidance.promptContext}\n${query}` : query
       const reply = (answer, answerMode = 'local', sources = [], usedWebSearch = false, model = null, evidence = {}) => assistantResponseSchema.parse({
         answer, answerMode, sources, usedWebSearch, model, intent,
@@ -140,8 +143,12 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
           knowledgeIds: evidence.knowledgeIds || [], productIds: [...new Set([...answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((m) => m[1]))].slice(0, 6),
           missing: evidence.missing || (answerMode === 'clarification' ? ['需要补充明确的对象或条件，当前尚未完成回答。'] : []) }],
       })
-      if (guidance?.kind === 'ask') return reply(guidance.answer, 'clarification', [], false, null,
-        { guidedQuestion: guidance.question, status: 'clarification', missing: ['等待用户选择；可跳过或直接输入。'] })
+      const skinEntries = guidance && (guidedSkin || guidance.question?.options.some(({ value }) => /^(skin-|cheek-)/.test(value)))
+        ? retrieveKnowledge('判断肤质', 'beauty_knowledge').filter((entry) => entry.id === 'self-reported-skin-type') : []
+      const skinEvidence = { knowledgeEvidence: knowledgeEvidence(skinEntries), knowledgeIds: skinEntries.map((entry) => entry.id) }
+      if (guidance?.kind === 'ask') return reply(guidance.answer, 'clarification', knowledgeSources(skinEntries), false, null,
+        { ...skinEvidence, guidedQuestion: guidance.question, status: 'clarification', missing: ['等待用户选择；可跳过或直接输入。'] })
+      if (guidance?.kind === 'skin-knowledge') return reply(guidance.summary, 'knowledge', knowledgeSources(skinEntries), false, null, skinEvidence)
       if (guidance?.kind === 'knowledge') {
         const knowledgeQuery = guidance.knowledgeQuery || guidance.query
         const result = await answerKnowledge({ query: knowledgeQuery, intent: 'beauty_knowledge', provider: zhipuProvider, budget: context.budget, products })
@@ -168,8 +175,8 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       if (intent === 'greeting_help') return reply('你好，我是小Y。可以帮你选产品、比较产品、查询资料、学习化妆手法或生成完整妆容。')
       if (intent === 'unsupported_sensitive') {
         const entries = retrieveKnowledge('新产品红肿刺痛不适', 'skin_safety').slice(0, 1)
-        return reply(/红肿|刺痛|过敏|破损|皮肤破|瘙痒|治疗|诊断/.test(query)
-          ? `${entries.flatMap((entry) => [...entry.safetyBoundaries, ...entry.limitations]).join('')}\n\n当前皮肤有不适时，我暂不提供继续上妆或产品推荐。以上内容直接来自 YasPretty 受控知识库，不构成医疗诊断。`
+        return reply(hasSkinDiscomfort(query) || /过敏|治疗|诊断/.test(query)
+          ? '先停止使用让你不适的产品，并咨询合格专业人员。现在有明显不适，暂不提供继续上妆或产品推荐。'
           : '我不能协助身份识别、敏感属性推断或披露凭据。可以继续讨论美妆手法和产品资料。', 'knowledge', knowledgeSources(entries), false, null, { knowledgeEvidence: knowledgeEvidence(entries), knowledgeIds: entries.map((entry) => entry.id) })
       }
       if (context.skinDiscomfort && !hasSkinDiscomfort(query) && isMakeupApplicationOrRecommendation(query, intent)) {
@@ -192,11 +199,19 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
         const skippedSkin = parameters.recommendation.skinSkipped === true || guidance?.selections?.includes('skin-unknown') === true
         const hasSkinCondition = Boolean(parameters.recommendation.skin || parameters.recommendation.skinValues?.length)
         if (!hasSkinCondition && !skippedSkin && (!parameters.recommendation.category || baseCategories.includes(parameters.recommendation.category))) {
-          return reply('为了更有依据地推荐底妆，请先告诉我你的肤质，例如“我是干皮”；不确定时也可以先看不按肤质筛选的产品资料。', 'clarification')
+          // Reuse the same observation flow for an existing plain-text clarification.
+          const next = await advanceGuidedIntake('不知道自己啥肤质', [
+            { role: 'user', content: query }, { role: 'assistant', content: '请告诉我你的肤质。' },
+          ], profile)
+          return answerOne({ query, messages, profile }, { ...context, guided: next })
         }
         const selection = selectRecommendations(products, parameters.recommendation, query)
-        const skinNote = skippedSkin ? '\n\n你选择暂不判断肤质，因此本次没有按肤质筛选候选；这不能说明产品与某种肤质适配。'
-          : parameters.recommendation.skinLabel ? `\n\n本次按你提供的日常感受“${parameters.recommendation.skinLabel}”筛选候选，仅作本次参考，不是肤质诊断。` : ''
+        const skinNote = skippedSkin ? parameters.recommendation.sensitive
+          ? '\n\n本次未按干油倾向筛选；仍单独考虑你已说明的敏感倾向。'
+          : '\n\n本次没有按肤质筛选候选，先按已知的品类、预算等条件选择。'
+          : parameters.recommendation.skinLabel ? '\n\n本次按你提供的日常感受筛选候选。' : ''
+        if (guidedSkin) return reply(`${guidance.summary}\n\n${recommendationAnswer(selection, parameters.recommendation, { concise: true })}${skinNote}`,
+          'local', knowledgeSources(skinEntries), false, null, skinEvidence)
         const requestProfile = { ...parameters.profile }
         if (skippedSkin || parameters.recommendation.skinValues?.length) delete requestProfile.skin
         const result = await organizeCatalogAnswer({ provider: zhipuProvider, profile: requestProfile, products: selection.map(({ product }) => product), intent, query: routedQuery, messages,
@@ -257,20 +272,26 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
   }
   return {
     async answer(input) {
+      const { leavesSkinGuidance } = await import('../../src/features/assistant/skinObservation.js')
+      const skipSkinGuidance = leavesSkinGuidance(input.query)
       const hasExplicitFollowup = /[;；\n]|另外|此外|还想|顺便|再问|并且|同时|以及/.test(String(input.query || ''))
       if (hasSkinDiscomfort(input.query) && !hasExplicitFollowup) return answerOne(input, { skinDiscomfort: true })
+      if (!hasSkinDiscomfort(input.query)) {
+        const continued = await advanceGuidedIntake(input.query, input.messages || [], input.profile || {})
+        if (continued) return answerOne(input, { guided: continued })
+      }
       const initialIntent = intentRouter(input.query, products, input.messages || [])
       const initialGuidance = beginGuidedIntake(input.query, input.messages || [], initialIntent)
       if (initialGuidance) return answerOne(input, { guided: initialGuidance })
       const { questions, deferred } = decomposeQuestions(input.query, products, input.messages || [])
-      if (questions.length <= 1 && !deferred.length) return answerOne(input)
+      if (questions.length <= 1 && !deferred.length) return answerOne(input, { skipSkinGuidance })
       const budget = requestBudget(questions.some((query) => intentRouter(query, products, input.messages || []) === 'unsupported_sensitive'))
       const limitedProvider = boundedProvider(provider)
       const results = []
       let messages = input.messages || []
       for (const query of questions) {
         try {
-          const result = await answerOne({ ...input, query, messages }, { provider: limitedProvider, budget, skinDiscomfort: hasSkinDiscomfort(input.query) })
+          const result = await answerOne({ ...input, query, messages }, { provider: limitedProvider, budget, skinDiscomfort: hasSkinDiscomfort(input.query), skipSkinGuidance })
           results.push(result)
           const ids = result.coverage[0].productIds
           // Only the preceding subquestion's validated product selection may resolve a pronoun.

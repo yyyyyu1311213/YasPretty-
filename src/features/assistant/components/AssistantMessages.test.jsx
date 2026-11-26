@@ -6,6 +6,16 @@ import AssistantMessages from './AssistantMessages'
 const props = { messages: [], profile: {}, busy: false, activity: '合成加载状态', messageEndRef: { current: null }, onOpenProduct: vi.fn(), onChoose: vi.fn() }
 
 describe('小Y消息展示边界', () => {
+  it('shows concise observation evidence without the removed sentence', () => {
+    const markup = renderToStaticMarkup(<AssistantMessages {...props} messages={[
+      { id: 'skin', role: 'assistant', content: '暂时偏向混合肤质。', skinGuidance: true },
+    ]} />)
+    expect(markup).toContain('观察依据与局限')
+    expect(markup).toContain('日常出油位置、两颊干燥程度和出现频率')
+    expect(markup).not.toContain('这不是诊断')
+    expect(markup).not.toContain('不保证产品适配')
+    expect(markup).not.toContain('不会写入长期画像')
+  })
   it('keeps user/assistant roles, message order and text without treating message text as HTML', () => {
     const markup = renderToStaticMarkup(<AssistantMessages {...props} messages={[
       { id: 'user', role: 'user', content: '<b>合成问题</b>' },

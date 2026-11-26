@@ -1,0 +1,146 @@
+// Curated summaries only. Provenance and exclusions: docs/mens-makeup-knowledge.md.
+// The route is a stated makeup preference, never a gender/skin inference.
+const practical = {
+  topics: ['makeup_tutorial', 'makeup_technique'], priority: 12,
+  retrievalRole: 'tutorial', version: 'knowledge.v2', reviewedAt: '2026-11-26', safetyLast: true,
+  reviewNote: '2026-11-26 复核来源文字并编辑为可操作步骤；品牌/化妆师教程不作为临床或商品证据，视频未逐段核验。详见 docs/mens-makeup-knowledge.md。',
+}
+const pause = '如有红肿、刺痛、破损或明显不适，先停止使用并咨询合格专业人员，暂不继续上妆。'
+
+module.exports = [
+  {
+    ...practical, id: 'mens-natural-routine', title: '男生自然妆：肤色均匀、眉毛有型、轮廓轻修饰',
+    keywords: ['男生化妆入门', '男士化妆步骤', '男生自然妆', '男生淡妆教程', '男生整体妆容'],
+    referenceIds: ['ct-men-makeup', 'eldridge-men-makeup', 'ct-men-brows'],
+    conditions: ['主动选择男生自然修饰路线，且皮肤没有明显不适；这些手法也适用于其他有同样偏好的人。'],
+    techniques: [
+      '先明确想修饰的位置：肤色不匀、局部暗沉、眉毛空隙或轮廓；皮肤原有纹理无需全部遮掉。',
+      '先少量底妆并局部遮瑕，检查鼻翼、胡须和下颌边缘的积粉；再梳眉，只补稀疏处。',
+      '想增加立体感时再少量晕染阴影，容易泛油的位置按需薄定妆；最后在自然光下查看边界，决定是否需要继续叠加。',
+    ],
+    limitations: ['“干净”在这里指妆面边界自然、少积粉，不是对肤色、毛孔或痘印的评价。', '这是专业教程的编辑整合，可跳过不需要的步骤；男生也可以选择浓妆、腮红或其他风格。'],
+    safetyBoundaries: [pause],
+  },
+  {
+    ...practical, id: 'mens-natural-base', title: '自然底妆与局部遮瑕：注意胡须和眉毛边缘',
+    keywords: ['男生底妆教程', '男士底妆步骤', '男生底妆怎么涂', '胡须积粉', '胡茬卡粉', '男生局部遮瑕'],
+    referenceIds: ['ct-men-makeup', 'eldridge-men-makeup'],
+    conditions: ['希望均匀肤色、保留自然肌理，且上妆部位没有破损或明显不适。'],
+    techniques: [
+      '先比较接近面部肤色的颜色，少量从面中向外铺开；不需要覆盖的区域可以少涂或跳过。',
+      '局部暗沉或眼下只点少量遮瑕，轻拍并晕开边缘，避免为遮一处而把全脸加厚。',
+      '检查眉毛、胡须和胡茬中是否残留粉底，轻轻清理积粉，并把下颌边缘晕开；出油处按需少量定妆。',
+    ],
+    limitations: ['上脸试色比手背更有参考价值；灯光、相机和屏幕都会影响颜色判断，文字建议不能替代试色。', '教程支持上妆手法，不支持某款素颜霜的功效或“全天不脱妆”的承诺。'],
+    safetyBoundaries: [pause],
+  },
+  {
+    ...practical, id: 'mens-natural-brows', title: '自然眉毛教程：先梳理，再少量补空隙',
+    keywords: ['男生眉毛怎么画', '男士画眉步骤', '眉毛整理教程', '眉毛稀疏怎么补', '眉毛有型', '自然画眉'],
+    referenceIds: ['ct-men-brows', 'aad-makeup-acne'],
+    conditions: ['想保留原生眉毛、只整理形状和空隙；不是按脸型套固定模板。'],
+    techniques: [
+      '用眉刷梳开眉毛，先看原有走向和真正稀疏的位置，不急着重画整条眉。',
+      '按毛发生长方向，用短而轻的笔触少量补空隙，再梳散边缘；眉毛本来浓密时可以只梳理。',
+      '需要固定毛流时可少量使用眉部定型产品；退远看左右眉的整体平衡，不必追求完全对称。',
+    ],
+    limitations: ['短笔触、梳理与可选定型来自品牌专业教程；退远检查是编辑建议，不能保证某种眉形适合所有人。', '不必购买教程中的整套商品；自然眉形、粗细与浓淡由个人偏好决定。'],
+    safetyBoundaries: ['保持眉部工具清洁，不共用；眼周或眉部出现红肿、刺痛或破损时停止使用并咨询合格专业人员。'],
+  },
+  {
+    ...practical, id: 'mens-subtle-contour', title: '轻修容教程：少量阴影与柔和边界',
+    keywords: ['男生修容教程', '男士修容步骤', '男生修容怎么画', '五官立体怎么画', '鼻影怎么画', '自然修容'],
+    referenceIds: ['ct-men-makeup'],
+    conditions: ['希望通过妆面明暗调整轮廓观感，且没有皮肤不适。'],
+    techniques: [
+      '先在稳定光线下看自己原有阴影，再选择想强调的位置；颧骨下方、太阳穴、下颌或鼻侧都只是可选区域，无需全部画满。',
+      '先取少量修容，轻轻晕开边界，观察正面与侧面；边界明显时先晕淡，再决定是否加深。',
+      '鼻侧不必从眉头连画两条深线，也不必固定加高光；先少量试画并比较整体效果，觉得自然即可停下。',
+    ],
+    limitations: ['可选位置和晕染来自品牌教程，光线下比较与少量试画是编辑建议，不是临床验证的定位公式。', '明暗修饰只改变视觉呈现，不改变骨骼，也不保证脸宽、鼻宽或立体感的固定变化。'],
+    safetyBoundaries: [pause],
+  },
+  {
+    ...practical, id: 'mens-skin-variation', title: '男生肤质：群体差异不能替代个人观察',
+    retrievalRole: 'research', topics: ['skin_profile_guidance', 'makeup_knowledge'],
+    reviewNote: 'AAD公众指南及皮肤生理综述全文复核；群体差异不用于个人判断。来源层级见 docs/mens-makeup-knowledge.md。',
+    keywords: ['男生皮肤研究', '男性皮肤差异', '男生都是油皮', '男生皮肤厚', '男士肤质护理'],
+    referenceIds: ['aad-men-skin', 'rahrovan-skin-2018'],
+    conditions: ['了解男性皮肤研究或基础护理；不从性别或照片确定个人肤质。'],
+    techniques: [
+      '按自己日常的出油、紧绷、起皮和不适感选择护理，男生也可能偏干、偏油或分区不同；敏感与出油多少应分别观察。',
+      '使用温和洁面和温水，按需保湿，并做好防晒；剃须刺激也应作为单独的使用条件。',
+      '一篇纳入57项研究的综述讨论了皮脂、厚度等群体差异；结果还受年龄、部位、环境和测量方法影响，不能据此判定某个人的肤质。',
+    ],
+    limitations: ['不采用“所有男生都更油”“皮厚所以更耐刺激”等推论；自述观察用于妆容选择，不是医疗诊断。'],
+    safetyBoundaries: [pause],
+  },
+  {
+    ...practical, id: 'shaving-and-makeup', title: '剃须与上妆：先减少刺激，确认没有不适',
+    keywords: ['剃须后化妆', '刮胡子后上妆', '胡须倒长', '剃须护理', '剃须和底妆'],
+    referenceIds: ['aad-men-skin', 'dermnet-shaving'],
+    conditions: ['有剃须需求，了解基础护理和上妆前的停止条件。'],
+    techniques: [
+      '剃须前先润湿、软化胡须，顺着毛发生长方向轻轻剃，不拉紧皮肤，也不在同一处反复追求贴根。',
+      '保持剃须工具清洁并及时更换变钝的刀片；整理后先观察是否有刺激或破损。',
+      '如果皮肤完整且没有不适，可按平时耐受情况少量上妆；不要用厚遮瑕掩盖剃须后的不适。',
+    ],
+    limitations: ['上妆前观察是项目的保守编辑建议，来源没有证明所有人都适用的固定等待分钟数。', '倒长毛发相关丘疹可能与其他情况相似，本工具不能凭照片或描述辨别病因，不提供药物、治疗或激光建议。'],
+    safetyBoundaries: [pause],
+  },
+  {
+    ...practical, id: 'makeup-hygiene', title: '上妆卫生与易长痘时的使用边界',
+    keywords: ['化妆卫生', '化妆刷清洁', '刷具多久洗', '彩妆致痘', '不致痘标签', '卸妆注意'],
+    referenceIds: ['aad-makeup-acne'],
+    conditions: ['日常上妆、工具清洁，或在皮肤完整无明显不适时了解彩妆选择。'],
+    techniques: [
+      '易长痘时可把不易致痘（non-comedogenic）、不含油（oil-free）标签作为选择线索，并观察自己的使用反应。',
+      '轻柔上妆，睡前卸除彩妆；化妆刷按AAD建议每周清洁，不与他人共用彩妆或工具。',
+    ],
+    limitations: ['标签不是对每个人都不长痘的保证；彩妆可以修饰外观，不能治疗痘痘，也不据此推荐具体商品。'],
+    safetyBoundaries: [pause],
+  },
+  {
+    ...practical, id: 'mens-makeup-evidence', title: '男生淡妆研究：小样本结果与适用限制',
+    retrievalRole: 'research', topics: ['makeup_knowledge'], version: 'knowledge.research.v1',
+    reviewNote: '淡妆实验全文及Russell对比度摘要复核；保留样本、反例、不能拆分手法贡献的边界。见 docs/mens-makeup-knowledge.md。',
+    keywords: ['男生化妆研究', '男性化妆实验', '男士淡妆证据', '男生妆容研究', '男生面部对比度'],
+    referenceIds: ['batres-men-makeup-2022', 'russell-facial-contrast-2009'],
+    conditions: ['询问男生化妆或面部对比度的研究依据。'],
+    techniques: [
+      '一项研究让专业化妆师为20张男性面孔做淡妆，目标包括均匀肤色、降低面部对比度和强调骨骼轮廓；200名美国评价者对照片评分。',
+      '七分量表的平均吸引力评分由3.76到3.91，效果较小，20张面孔中有4张评分下降；这不是对个人化妆效果的保证。',
+      '面部对比度研究考察特定图像中眼、唇与周围皮肤的明暗关系，不等同于把眉毛、鼻影或整张脸全部加深或减淡。',
+    ],
+    limitations: ['实验面孔年龄18–36岁，19人自述为白人、1人为亚洲人，不能直接推广到所有中国男性；整体淡妆实验无法拆出底妆或修容各自的贡献。', '对比度资料本次只复核摘要；研究评价反映特定样本和任务，不是普适审美标准。'],
+    safetyBoundaries: ['不据此给用户颜值打分，或从照片推断性别、身份、年龄、种族。'],
+  },
+  {
+    ...practical, id: 'face-proportions-boundary', title: '五官比例：不以黄金比例设定唯一标准',
+    retrievalRole: 'research', topics: ['makeup_knowledge'], version: 'knowledge.research.v1',
+    reviewNote: 'Naini学术评论摘要复核，非比例实验；试画与不打分为项目编辑边界。见 docs/mens-makeup-knowledge.md。',
+    keywords: ['黄金比例', '三庭五眼', '五官比例研究', '完美脸型', '人脸比例标准'],
+    referenceIds: ['naini-golden-ratio-2024'],
+    conditions: ['了解五官比例与审美的研究边界。'],
+    techniques: [
+      '关于黄金比例的学术评论指出，没有令人信服的证据把它当作普遍适用的面部美学理想。',
+      '妆容设计可以记录眉眼间距、轮廓和用户偏好，再做可撤回的小幅试画；不把黄金比例、三庭五眼或左右对称程度转成颜值分或缺陷标签。',
+    ],
+    limitations: ['来源是讨论黄金比例的学术评论，并非验证所有比例口诀的实验；小幅试画是本项目的编辑建议。'],
+    safetyBoundaries: ['不使用单一比例要求用户改变外貌，不从五官推断人格或敏感属性。'],
+  },
+  {
+    ...practical, id: 'selfie-perspective-boundary', title: '自拍与五官观感：近距离会改变比例呈现',
+    retrievalRole: 'research', topics: ['makeup_knowledge'], version: 'knowledge.research.v1',
+    reviewNote: 'Ward等短文全文复核，研究是数学投影模型；拍摄观察建议为编辑整理。见 docs/mens-makeup-knowledge.md。',
+    keywords: ['自拍鼻子大', '近距离自拍', '自拍畸变', '镜头五官', '人脸照片比例'],
+    referenceIds: ['ward-selfie-2018'],
+    conditions: ['比较自拍、镜子中的五官观感，或准备参考照片观察妆容。'],
+    techniques: [
+      '一项短距离摄影的数学模型研究表明，拍摄距离会改变鼻部相对面部宽度的呈现；一张近距离自拍不等于真实五官比例。',
+      '比较妆前妆后时，可把相机放远一些，尽量保持相近光线和角度、关闭美颜；这是减少观察干扰的编辑建议，不是专业测量流程。',
+    ],
+    limitations: ['来源研究的是透视几何，不是肤质诊断或某款手机的准确率；照片仍受镜头、姿态、光线和屏幕影响。'],
+    safetyBoundaries: ['不凭单张照片诊断肤质、给外貌打分或判断身份；是否提供照片完全自愿。'],
+  },
+]
