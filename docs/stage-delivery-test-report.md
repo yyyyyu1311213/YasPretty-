@@ -3936,3 +3936,112 @@ git diff --cached --check
 运行代码保持19:44最终验收版本，本轮仅追加人工确认与归档记录；沿用58文件794/794、1887模块构建、diff空白检查、桌面1440×900/手机360×900页面及最终真实5174原句1638ms的证据，不声称重新测试。既有构建大包提示、第三方波动、真机/公网和其他品牌别名覆盖限制保留。本阶段无新增核验，继承上一条结论；人工验收不升级产品事实、图片授权或独立实测状态。
 
 本条写入时待执行提交/推送，实际提交SHA和远端核对由本次交付回执提供，后续文档可回填；不为回填改写历史。提交及推送前再次fetch，正常推进dev；后续按实际提交与依赖使用revert保留追溯。
+
+
+### 2026-11-28 小Y通用兜底调整（YAS-2026-0065，待人工验收）
+
+基线与已核验远端均为 b9edf94bb7859a1787982a198bd04088b0dfbe1c；2026-11-28 00:10（北京时间）完成 fetch/实际远端 dev 与阶段标签核对，确认方案后再次 fetch，HEAD/origin/dev 未变。arch-stage-14 对象 2e09f6ffc64b6f742e62caf0de5971f2feb63f01 指向 f65780588b96de71c8ff79c81c2a9c333fa266f5，既有标签保留。起始索引为空；knowledge-answer.cjs 已有末尾换行删除，按确认方案保留、不纳入本次修改。
+
+**授权与状态。** 负责人先要求检查 intent-router.cjs、assistant-service.cjs、response.cjs 及提示词，提交最小方案后明确“确认”。本次仅调整兜底，不新建ARCH阶段、不扩大业务/RAG能力。ARCH-14保持done，无新的current。本地实现已完成自动检查，待人工验收；未暂存、提交、推送、打标签或删分支，无本次SHA/tag。
+
+**原因与实现。** 原末尾规则返回clarification；classifyIntent的不确定、低置信度、异常结果仍返回clarification，服务层固定输出菜单；分类为greeting_help还可能转成功能介绍。现末尾规则直接external_question，移除该二次分类函数/调用及固定菜单出口。现有通用模型分支继续接收当前问题和最近八条role/content消息，单次20秒、maxAttempts=1，复用现有错误与ID/输出校验。response.cjs仅对external_question替换表达规则、不注入guidedBeautyPrompt，不限制为固定字数/建议条数；明确直接回应、必要时针对性追问，历史不能覆盖安全规则或成为事实依据。已有引导、具体产品澄清、知识、比较、推荐、方案、天气和联网逻辑不修改。
+
+**行为差异。** 原先只能靠二次模型分类才能识别的隐晦表达现在由通用模型结合上下文回答，不据此触发新的业务工具。未配置返回PROVIDER_NOT_CONFIGURED，超时/失败/空内容/非法产品ID返回ASSISTANT_UNAVAILABLE；前端显示智能服务不可用。明确问候仍走原问候分支。已有“这两款”等词的识别范围未扩张，产品指代测试使用原规则已支持的表达。
+
+**实际文件。**
+
+- 运行：server/services/assistant/intent-router.cjs、server/services/assistant-service.cjs、server/services/assistant/response.cjs。
+- 回归：server/services/assistant/assistant.test.js、beginner-guidance.test.js、skin-guidance.test.js；新增同目录general-fallback.test.js，新增tests/browser/assistant-general-fallback.mjs。
+- 文档：README.md、FINAL-PROMPT.md、docs/prompts/xiaoy-guided-intake.md、docs/frontend-architecture-migration-plan.md、本报告及docs/product-data-accuracy-audit.md。AGENTS无规则变化无需修改；guided-beauty-prompt.cjs原文保留。
+
+**真实验证与失败记录（北京时间2026-11-28）。**
+
+- 00:16首次定向163项中1项失败：新测试使用“比较这两款”，原referencePattern不识别此完整短语，未命中时自然走模型。为保持本次不扩大业务规则，改用原规则识别的“这款和那款比较”；未修改产品解析器。00:17复跑163/163通过。
+- 00:17首次全量59文件，796通过/5失败。旧测试依赖无模型时仍返回clarification菜单，涉及话题切换后“然后呢”、购物建议后“先按原问题直接回答”及“直接给我建议”。按已确认兜底语义更新测试：无模型明确不可用；有模型传递原条件且不重启问卷，保留原有引导退出与条件断言。未改入门/肤质业务运行逻辑。
+- 00:19最终 npm test：59文件、801/801通过，退出0。覆盖业务回归、近期上下文、无二次分类、针对性追问、旧菜单历史、商品澄清、安全、未配置/超时/失败/空内容/非法ID的HTTP错误。
+- 00:17 npm run build：成功，1887模块，退出0，保留原有>500kB分包警告。之后仅测试与文档更新，运行代码未变。
+- 生产构建页面→本机Fastify→合成provider：1440×900与360×900各7项、合计14/14，包含普通兜底、上下文续问、必要追问、产品澄清、未配置、超时、失败。无pageerror，控制台只有主动注入503对应的预期资源错误；无横向溢出或路线选项，已通过截图视觉复核。输出位于忽略目录.qa/general-fallback-20261128/browser/，不提交临时截图和结果。
+
+复跑命令：
+
+```powershell
+npx vitest run server/services/assistant/general-fallback.test.js server/services/assistant/assistant.test.js server/services/assistant/product-comparison.test.js server/services/assistant/research-request.test.js server/app.test.js
+npm test
+npm run build
+$env:YAS_QA_PLAYWRIGHT_MODULE='file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE='C:/Program Files/Google/Chrome/Application/chrome.exe'
+node tests/browser/assistant-general-fallback.mjs
+git diff --check
+```
+
+**人工入口与限制。** 重启现有Node网关加载本轮代码后，从主站“小Y智能选妆”发送“有点烦，陪我聊聊”，再发“再展开说说”；另测“帮我写一句话”和“这款多少钱”，前者可针对性追问，后者保留产品名称/版本澄清。模型需使用既有服务端配置；无模型只能验收明确不可用，不能声称自然回答成功。本轮未调用真实GLM/搜索、未验证实体手机/公网或模型全部措辞质量；提示词不能作为事实准确性保证，商品和实时事实仍必须有依据。没有更改现有开发进程或部署。
+
+**隐私、材料与回退。** 只用合成对话及隔离存储，无新API/依赖/画像字段/本地键，无照片上传或服务端永久记忆，既有密钥与日志边界保持。README原“分类不确定调用GLM、失败追问”与新代码不一致，已修正当前说明，历史证据保留。视频未修改，不能把自动验证称为人工验收或已部署。审计同步“本阶段无新增核验，继承上一条结论”。原基线可定位，未提交现场不是新版本回退点；后续获准归档后的回退按实际提交及依赖使用revert，不改写历史。
+
+收尾检查：2026-11-28 git diff --check 与 git diff --cached --check 均通过，索引为空；本次14个路径，另保留既存knowledge-answer.cjs末尾换行差异。服务端运行代码中已无classifyIntent、不确定分类提示或通用固定菜单出口。仅测试用例保留旧菜单文本用于回归。文档当前说明已同步，历史记录不改写。
+
+
+### 2026-11-28 00:31–00:35 截图反馈排查（YAS-2026-0065，人工验收未通过）
+
+负责人反馈修改后仍返回菜单/资料不足/重复本地方案。本轮先只读复核，00:31:21北京时间fetch后dev/HEAD/origin/dev仍为b9edf94bb7859a1787982a198bd04088b0dfbe1c；未提交现场均为上轮已知范围，索引为空。没有改动新的业务规则或提示词。
+
+1. 已确认运行入口未更新：5174 Vite PID40260始于11月27日19:24；8787网关PID46488始于23:44:52，早于11月28日00:15:16的兜底代码修改。磁盘源码已移除classifyIntent和通用固定菜单，但旧HTTP对“我怕化完妆看起来不像自己”仍路由makeup_plan并返回本地模板（200，1539ms）；当前源码合成provider同句为external_question/model。前轮未重启用户实际网关，单凭隔离合成测试不足以证明默认入口已更新。
+2. 确认监听端口及进程命令归属后，00:32:46重启对应网关为PID48312，继续监听8787，保留5174和浏览器会话。通过真实5174代理进行GLM抽样：有点烦/不想让别人看出化妆/怕不像自己/第一次尝试没底/想有气色五句均200、external_question/model，耗时3426/13548/7641/10230/8609ms，不再固定菜单。调用使用服务既有配置，没有读取或展示真实密钥。证据保存忽略目录.qa/general-fallback-20261128/runtime/real-probe.json。
+3. 新版仍存在知识分支拦截：“每次看到那么多化妆步骤就不想动了”命中isKnowledge的“步骤”关键词；assistant-service将beauty_knowledge直接交answerKnowledge，无相关条目时15行提前返回资料不足，不调用通用模型。合成检查modelCalls=0，实际HTTP200/clarification、23ms。此路径不属于前轮已确认的“业务规则未命中”末尾兜底。建议另经确认后，让真正无相关知识的普通问题复用external_question；保留已有知识、业务安全和预算限制，不把知识预算耗尽当无匹配绕过。
+4. 真实回复质量未通过：不显妆感问题返回过长列表且包含无关指甲油；“帮我想一个简单的日常妆容方向”仍按原日常妆容规则进入makeup_plan/local（273ms），该完整方案路由保留，不能据此称结构化模型成功。其后“我不想画眼线”已进入external_question/model（16830ms），但GLM仍建议内眼线，违反明确排除项。待确认的提示词调整为尊重当前“不想/不要”的限制，不以变体绕过，优先简短贴题回应，不主动扩展全妆或无关商品清单。证据real-plan-followup.json仅为软件/模型行为，不作为产品或知识事实。
+
+本轮只重启已确认归属的本地网关、真实HTTP抽样与文档补记；未修改运行代码、未重新声称全量构建或页面测试。此前801项/14项合成测试证据保留，但不能代表此次人工通过或真实模型内容合格。原测试集将“妆容方向”列为可自然局部调整，超过当前完整方案路由的实际保证，应以此排查记录纠正。旧聊天记录不会因服务重启改写，需重新发送确认最新行为。
+
+待负责人确认上述知识无匹配规则与通用提示词前后差异后再编辑；依据最初要求“如需更改本地规则或提示词，先列出修改前后差异及影响，由我确认后再改”。ARCH-14继续done，无新current，本次修复仍待验收，未提交/推送/打标签，未改变既存knowledge-answer.cjs换行差异。
+
+
+### 2026-11-28 美妆知识无匹配与排除项续修（YAS-2026-0065，待人工验收）
+
+**授权与基线。** 负责人针对00:35排查结论明确“确认”，授权本次两处最小续修。00:42:29北京时间fetch核验dev/HEAD/origin/dev仍b9edf94bb7859a1787982a198bd04088b0dfbe1c，索引为空，既存未提交文件保留。ARCH-14保持done，无新current/阶段/tag。未暂存、提交、推送或删分支；实现确认不等于人工验收。
+
+**实现与实际文件。**
+
+- server/services/assistant-service.cjs：知识分支先按原检索上限独立判断是否有相关条目；无匹配的普通问题改为external_question，继续原模型调用、上下文、输出校验及错误路径。有知识但复合请求预算不足时继续原unavailable，不绕过知识或4次模型调用预算；当前不适情形继续原安全处理。原beginner/guided知识分支与完整方案保留。
+- server/services/assistant/response.cjs：external_question使用独立短提示，避免混入商品推荐数量和商品标记等表达规则；保留产品事实、隐私、安全、时效来源约束。当前排除项优先，不能用内眼线等变体绕过；默认短段落，不主动增加全妆、工具或商品清单，不虚构功效/来源，不声称工作台已修改或保存。
+- 测试：assistant.test.js更新知识无匹配的无Key/超时/空内容断言；general-fallback.test.js新增6项，覆盖无知识匹配及上下文、已有知识和耗尽预算、总模型调用上限、复合不适安全、方案后排除项走通用回复而不重新生成方案；tests/browser/assistant-general-fallback.mjs增加知识无匹配、排除项和失败展示，并等待新消息而非匹配上轮相同错误文本。
+- 同步README、FINAL-PROMPT、docs/prompts/xiaoy-guided-intake.md、迁移计划及两份累计报告。AGENTS、商品资料、知识条目、provider、API契约、画像/本地键均未变；knowledge-answer.cjs末尾换行差异仍保留不纳入本次。
+
+**自动与真实验证（北京时间）。**
+
+- 00:43首轮定向108项中1项失败：预算测试使用6次单条知识，只消耗6条，未达到8条预算；调整为每次可匹配4条眉毛/修容知识的真实查询，以实际耗尽预算验证。00:44复跑108/108；最终短提示后00:47四文件136/136。
+- 00:46中间全量807/807、构建1887模块及页面24/24通过。真实中间抽样仍出现3条建议、英文夹词、无依据“隔离霜保护皮肤”和排除眼线后铺开全妆；未据这些中间测试宣称内容合格，继续在确认范围内收紧通用提示。
+- 00:48最终 npm test：59文件807/807通过；npm run build成功、1887模块，保留既有>500kB分包警告。没有新依赖或RAG重构。
+- 最终页面首次与构建并发导致构建目录清空时资源404，脚本按预期失败；构建完成后顺序复跑24/24，通过桌面1440×900和手机360×900，每端12项，只有主动注入503的预期控制台资源错误，无pageerror或横向溢出。截图视觉复核；证据.qa/general-fallback-20261128/browser-final/。
+- 最终网关00:48:15重启为PID34880加载新提示。HTTP探测首次6句TypeError，检查发现原Vite进程40260已结束、5174无监听，8787健康；原因未推断。00:49:10在确认端口空闲后恢复Vite PID43652，先验证5174/api/health，再进行真实GLM抽样。最终六句均HTTP200/external_question/model：步骤太多7579ms、不显妆感7578ms、不画眼线7576ms、第一次尝试9257ms、怕不像自己9256ms、想有气色9255ms。回答为短回复，不再固定菜单/无知识直接拒答；不画眼线回复接受省略，未建议内眼线或重复整套方案。本次样本没有再出现指甲油和隔离保护皮肤。证据real-final-probe-retry.json；此前失败real-final-probe.json及real-v2/real-v3记录保留，不提交临时产物。
+
+复跑命令（仓库根目录，构建与页面检查必须顺序执行）：
+
+```powershell
+npx vitest run server/services/assistant/general-fallback.test.js server/services/assistant/assistant.test.js server/services/assistant/ai-r03.test.js server/app.test.js
+npm test
+npm run build
+$env:YAS_QA_PLAYWRIGHT_MODULE='file:///C:/Users/%E5%B4%94%E9%A6%A8%E7%91%9C/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
+$env:YAS_QA_BROWSER_EXECUTABLE='C:/Program Files/Google/Chrome/Application/chrome.exe'
+$env:YAS_QA_OUTPUT_DIR='.qa/general-fallback-20261128/browser-final'
+node tests/browser/assistant-general-fallback.mjs
+git diff --check
+```
+
+**交付与限制。** 默认本地入口已恢复并加载本轮实现，用户可刷新主站进入小Y，重新发送“每次看到那么多化妆步骤就不想动了”“我不想画眼线”“周末第一次尝试化妆，有点没底”。旧浏览器消息不会被改写；不自动清除用户记录。真实GLM返回具有随机性，规则和抽样不能保证所有措辞、专业建议或排除项永不出错；现有20秒时限和失败提示保留。完整妆容方案的结构化失败/本地模板是保留的独立流程，本次未宣称解决全部方案质量或实现聊天局部调整。公网部署、实体手机及所有业务真实外部服务未全面验证。
+
+没有新照片上传、密钥展示、长期画像或服务端永久保存；真实调用只发送本轮测试问题与有限测试上下文。模型输出不作为产品事实或知识核验，审计同步“本阶段无新增核验，继承上一条结论”。视频未改，本地实现/真实抽样与未提交状态已同步，不把软件测试或实现授权称为人工通过。当前待人工验收，无新SHA/tag；原基线可定位，未提交现场不是Git回退点，未来回退按实际获准提交及依赖使用revert。
+
+00:52收尾补记：默认5174真实页面→8787→GLM在1440×900与360×900分别连续发送“每次看到那么多化妆步骤就不想动了”“我不想画眼线”，4/4均200/model/external_question，接受省略眼线、没有重复完整方案或固定菜单，无pageerror与横向溢出。使用全新隔离上下文，未改写用户现有浏览器数据；结果和截图在.qa/general-fallback-20261128/runtime/real-browser-results.json及real-1440.png、real-360.png，截图已视觉复核。该脚本为本轮临时真实抽样，受控可复跑浏览器脚本仍为tests/browser/assistant-general-fallback.mjs。最终git diff --check与git diff --cached --check通过，索引为空，本次14路径加既存knowledge-answer.cjs换行差异保留，未提交/推送/tag。
+
+
+### 2026-11-28 01:00 本次兜底修复上传授权与收尾（YAS-2026-0065）
+
+负责人明确要求“把本次修改上传到github上去”，授权本次兜底修复、知识无匹配续接、排除项提示及对应测试/文档在dev提交并正常推送。该上传授权不补记未发生的逐项人工测试；前述失败、待人工验收与真实模型限制保留为当时记录。ARCH-14保持done，无新的current，不新建/移动标签或Release，不删除分支。
+
+00:59:32北京时间fetch核对，dev/HEAD/origin/dev/实际远端均b9edf94bb7859a1787982a198bd04088b0dfbe1c，索引为空；arch-stage-14对象2e09f6ffc64b6f742e62caf0de5971f2feb63f01→f65780588b96de71c8ff79c81c2a9c333fa266f5与远端一致。仅提交本次14个路径；knowledge-answer.cjs既存末尾换行删除继续保留在本地，不纳入提交。临时QA、截图、运行日志、构建产物和私有配置不提交。
+
+运行代码及测试保持00:48最终验证版本，本轮仅补上传授权和当前版本说明；沿用59文件807/807、1887模块构建、合成provider页面24/24、真实GLM六句HTTP及桌面/360px四句页面抽样证据，不声称重新测试。提交前复核白名单、差异空白、文档链接与暂存内容；原大包警告和模型随机性、实体手机/公网及完整方案质量限制保持。
+
+本阶段无新增核验，继承上一条结论。商品、价格、图片、评分、来源和授权未变，上传不升级产品事实或素材许可。新增通用回复仍不能替代受控知识、商品核验或实时来源。
+
+本条写入时提交/推送尚未执行，实际SHA及远端匹配结果由本次交付回执提供，后续文档可回填，不为回填改写历史。提交与推送前再次fetch，正常推进dev；后续回退依实际提交及依赖使用revert，不修改旧tag或历史，不恢复浏览器数据、环境变量及外部服务状态。

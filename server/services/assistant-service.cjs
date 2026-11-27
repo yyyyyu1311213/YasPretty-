@@ -1,7 +1,7 @@
 const { assistantResponseSchema } = require('../schemas.cjs')
 const { AppError } = require('../errors.cjs')
 const { knowledgeSources, knowledgeEvidence, retrieveKnowledge } = require('../knowledge/beauty-knowledge.cjs')
-const { intentRouter, classifyIntent, needsOnlineResearch, hasSkinDiscomfort, isCatalogSizeQuestion } = require('./assistant/intent-router.cjs')
+const { intentRouter, needsOnlineResearch, hasSkinDiscomfort, isCatalogSizeQuestion } = require('./assistant/intent-router.cjs')
 const { resolveProducts, questionForSelection } = require('./assistant/product-resolver.cjs')
 const { extractParameters, extractGuidedParameters, planInput } = require('./assistant/parameters.cjs')
 const { selectRecommendations, searchSources } = require('./assistant/tools.cjs')
@@ -132,11 +132,11 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       const guidance = context.skinDiscomfort || hasSkinDiscomfort(query) ? null
         : context.guided || (context.skipSkinGuidance ? null : await advanceGuidedIntake(query, messages, profile))
       if (guidance?.query) query = guidance.query
-      const intent = guidance?.kind === 'ask' ? 'clarification'
+      let intent = guidance?.kind === 'ask' ? 'clarification'
         : guidance?.kind === 'plan' ? 'makeup_plan'
           : ['knowledge', 'skin-knowledge', 'beginner', 'beginner-followup'].includes(guidance?.kind) ? 'beauty_knowledge'
             : guidance?.requestConditions?.skin ? 'catalog_recommendation'
-            : await classifyIntent(query, products, zhipuProvider, messages)
+            : intentRouter(query, products, messages)
       const parameters = guidance?.initialQuery
         ? await extractGuidedParameters(guidance.initialQuery, guidance.updates, profile, products)
         : await extractParameters(query, profile, products, messages)
@@ -216,7 +216,6 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
         return reply(planAnswer(plan), plan.sourceMode === 'local' ? 'local' : 'model', sources, false, plan.sourceMode === 'model' ? zhipuProvider.modelName || null : null,
           { knowledgeEvidence: evidence, knowledgeIds: evidence.map((item) => item.id) })
       }
-      if (intent === 'clarification') return reply('我还不确定你的意思。你想查询某款产品、比较产品、学习手法，还是生成完整妆容？请补充具体需求。', 'clarification')
       if (intent === 'greeting_help') return reply('你好，我是小Y。可以帮你选产品、比较产品、查询资料、学习化妆手法或生成完整妆容。')
       if (intent === 'unsupported_sensitive') {
         const entries = retrieveKnowledge('新产品红肿刺痛不适', 'skin_safety').slice(0, 1)
@@ -284,9 +283,14 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
           const result = beginnerAnswer(beginnerNext({ initialQuery: query, direct: true }), parameters.recommendation)
           return reply(result.answer, result.answerMode, result.sources, false, null, result)
         }
-        const result = await answerKnowledge({ query, intent, provider: zhipuProvider, budget: context.budget, products })
-        const safetyNote = context.skinDiscomfort ? '\n\n你提到当前皮肤有不适，不要在不适部位使用或测试工具，也不要继续上妆。' : ''
-        return reply(`${result.answer}${safetyNote}`, result.answerMode, result.sources, false, result.model || null, result)
+        // Check relevance independently of the remaining compound-question budget.
+        // A relevant entry that cannot fit that budget must still report unavailable.
+        if (retrieveKnowledge(query, intent).length || context.skinDiscomfort) {
+          const result = await answerKnowledge({ query, intent, provider: zhipuProvider, budget: context.budget, products })
+          const safetyNote = context.skinDiscomfort ? '\n\n你提到当前皮肤有不适，不要在不适部位使用或测试工具，也不要继续上妆。' : ''
+          return reply(`${result.answer}${safetyNote}`, result.answerMode, result.sources, false, result.model || null, result)
+        }
+        intent = 'external_question'
       }
       const useWebSearch = needsOnlineResearch(question, intent)
       // Timely questions use current search evidence. Independent technique questions

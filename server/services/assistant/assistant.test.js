@@ -179,16 +179,13 @@ describe('AI-R01 server orchestration', () => {
     const result = await service.createAssistantService({ products, zhipuProvider: provider() }).answer({ query })
     expect(result.answer).toMatch(expected)
   })
-  it('audit: gives uncertain beauty wording to the validated classifier instead of forcing product lookup', async () => {
-    const zhipuProvider = { ...provider(), chat: vi.fn(async () => '{"intent":"beauty_knowledge","confidence":0.92}') }
-    expect(await router.classifyIntent('气垫这事我还没弄明白', products, zhipuProvider)).toBe('beauty_knowledge')
+  it.each(['气垫这事我还没弄明白', '再展开说说', '想聊聊上脸的小门道', '帮我看看那个情况'])('routes unmatched wording directly to a natural model reply: %s', async (query) => {
+    const zhipuProvider = { ...provider(), chat: vi.fn(async () => '合成的针对性回答。') }
+    expect(router.intentRouter(query, products)).toBe('external_question')
+    const result = await service.createAssistantService({ products, zhipuProvider }).answer({ query })
+    expect(result).toMatchObject({ intent: 'external_question', answerMode: 'model', answer: '合成的针对性回答。' })
     expect(zhipuProvider.chat).toHaveBeenCalledOnce()
-  })
-  it('audit: supplies bounded conversation context to uncertain classification without metadata or profile inference', async () => {
-    const zhipuProvider = { ...provider(), chat: vi.fn(async () => '{"intent":"beauty_knowledge","confidence":0.93}') }
-    const messages = [{ role: 'user', content: '粉底怎么涂' }, { role: 'assistant', content: '合成教程', productIds: [] }]
-    expect(await router.classifyIntent('再展开说说', products, zhipuProvider, messages)).toBe('beauty_knowledge')
-    expect(zhipuProvider.chat.mock.calls[0][0].slice(1, -1)).toEqual([{ role: 'user', content: '粉底怎么涂' }, { role: 'assistant', content: '合成教程' }])
+    expect(zhipuProvider.search).not.toHaveBeenCalled()
   })
   it('audit: does not mistake words in a product name for a request about those fields', async () => {
     const result = await service.createAssistantService({ products, zhipuProvider: { ...provider(), configured: false } }).answer({ query: '星光气垫（哑光）怎么样' })
@@ -286,17 +283,15 @@ describe('AI-R01 server orchestration', () => {
     const result = await api.answer({ query, messages: [{ role: 'assistant', content: '合成比较', productIds: ['a', 'b'] }] })
     expect(result.answerMode).toBe('clarification')
   })
-  it.each(['no-key', 'timeout', 'invalid-output'])('preserves the knowledge intent when no matching knowledge exists and the model is unavailable: %s', async (failure) => {
+  it.each(['no-key', 'timeout', 'invalid-output'])('reports model unavailability when an unmatched knowledge request falls through: %s', async (failure) => {
     const zhipuProvider = { ...provider(), configured: failure !== 'no-key', chat: vi.fn(async () => {
       if (failure === 'timeout') throw new Error('synthetic timeout')
       return ''
     }) }
-    const result = await service.createAssistantService({ products, zhipuProvider }).answer({ query: '磁性眼影的吸附原理是什么' })
-    expect(result).toMatchObject({ intent: 'beauty_knowledge', answerMode: 'clarification', model: null, usedWebSearch: false, sources: [] })
-    expect(result.answer).toContain('知识问题')
-    expect(result.answer).toContain('暂时无法')
-    expect(result.answer).not.toMatch(/肤质|\[\[PRODUCT:/)
-    if (failure === 'no-key') expect(zhipuProvider.chat).not.toHaveBeenCalled()
+    await expect(service.createAssistantService({ products, zhipuProvider }).answer({ query: '磁性眼影的吸附原理是什么' }))
+      .rejects.toMatchObject({ code: failure === 'no-key' ? 'PROVIDER_NOT_CONFIGURED' : 'ASSISTANT_UNAVAILABLE' })
+    expect(zhipuProvider.chat).toHaveBeenCalledTimes(failure === 'no-key' ? 0 : 1)
+    expect(zhipuProvider.search).not.toHaveBeenCalled()
   })
   it.each(['粉底怎么涂', '底妆出油怎么办', '粉底和气垫有什么区别', '气垫和粉底液有什么差别', '粉底和气垫有什么不同', '什么是底妆', '粉底色号怎么选'])('routes %s to knowledge, not recommendation', (query) => {
     expect(service.intentRouter(query, products)).toBe('beauty_knowledge')
@@ -385,22 +380,6 @@ describe('AI-R01 server orchestration', () => {
     expect(create).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ userProfile: expect.objectContaining({ skinType: '干皮', budgetTotal: 300 }), makeupRequest: expect.objectContaining({ wearHours: 10, photoEnabled: false }) }))
     expect(result).toMatchObject({ intent: 'makeup_plan', answerMode: 'local' })
     expect(result.answer).toContain('已降级')
-  })
-
-  it.each(['not json', '{"intent":"made_up","confidence":1}', '{"intent":"product_fact","confidence":0.3}', '{"intent":"product_fact","confidence":1,"profile":{"skin":"干皮"}}'])('rejects unvalidated GLM classification %s', async (raw) => {
-    const zhipuProvider = { ...provider(), chat: vi.fn(async () => raw) }
-    const result = await service.createAssistantService({ products, zhipuProvider }).answer({ query: '帮我看看那个情况' })
-    expect(result.answerMode).toBe('clarification')
-    expect(zhipuProvider.chat).toHaveBeenCalledTimes(1)
-    expect(zhipuProvider.search).not.toHaveBeenCalled()
-  })
-
-  it('uses GLM only for uncertain classification and safely handles classifier timeout', async () => {
-    const zhipuProvider = { ...provider(), chat: vi.fn(async () => '{"intent":"beauty_knowledge","confidence":0.95}') }
-    expect(await router.classifyIntent('想聊聊上脸的小门道', products, zhipuProvider)).toBe('beauty_knowledge')
-    expect(zhipuProvider.chat.mock.calls[0][1]).toEqual({ timeoutMs: 5000, maxAttempts: 1 })
-    zhipuProvider.chat.mockRejectedValue(new Error('synthetic timeout'))
-    expect(await router.classifyIntent('帮我看看那个情况', products, zhipuProvider)).toBe('clarification')
   })
 
   it.each(['', '[[PRODUCT:invented]]', null])('safely degrades malformed model answers %s', async (answer) => {

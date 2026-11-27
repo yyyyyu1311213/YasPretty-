@@ -36,7 +36,8 @@ describe('YAS-2026-0065 answer-first 对话流程', () => {
 
   it.each(['不用再问了', '别继续问了', '直接给我建议', '先按这些条件回答', '你先说结论', '不清楚的地方你自己假设'])
     ('直接回答表达 %s 可以退出新手引导', async (query) => {
-      const flow = conversation()
+      const flow = conversation({}, query === '直接给我建议')
+      flow.provider.chat.mockResolvedValue('可以围绕刚才想学日常化妆的需求继续，不需要重新选择路线。')
       const first = await flow.send('我想学日常化妆')
       expect(first.guidedQuestion).toBeDefined()
       const result = await flow.send(query)

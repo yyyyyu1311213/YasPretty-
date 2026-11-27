@@ -110,7 +110,8 @@ describe('路线选择承接入门需求', () => {
     await chat.turn('goal-base')
     const result = await chat.turn(query)
     expect(result.beginnerContext).toBeUndefined()
-    expect((await chat.turn('然后呢')).beginnerContext).toBeUndefined()
+    // With no active progress, this is now a general model request, not a local menu.
+    await expect(chat.turn('然后呢')).rejects.toMatchObject({ code: 'PROVIDER_NOT_CONFIGURED' })
   })
 
   it('rejects unbounded or unknown progress fields at the API boundary', () => {
@@ -335,11 +336,14 @@ describe('路线选择承接入门需求', () => {
     expect(ids.every((id) => { const p = products.find((item) => item.id === id); return p.price <= 400 && p.brand !== 'NARS' })).toBe(true)
   })
 
-  it('does not erase known skin when directly answering the original purchasing request', async () => {
-    const chat = conversation()
+  it('passes the original purchasing conditions to the general follow-up without reopening intake', async () => {
+    const provider = { configured: true, chat: vi.fn(async () => '可以继续围绕刚才的需求讨论，已有条件不需要重新填写。') }
+    const chat = conversation({}, provider)
     await chat.turn('我是干皮，推荐个粉底，预算500元')
     const result = await chat.turn('先按原问题直接回答')
     expect(result.guidedQuestion).toBeUndefined()
     expect(result.answer).not.toContain('没有按肤质筛选')
+    expect(result.intent).toBe('external_question')
+    expect(provider.chat.mock.calls.at(-1)[0]).toContainEqual({ role: 'user', content: '我是干皮，推荐个粉底，预算500元' })
   })
 })
