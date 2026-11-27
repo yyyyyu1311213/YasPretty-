@@ -29,10 +29,13 @@ function isProductFactQuestion(text, mentioned) {
 function needsOnlineResearch(text, intent) {
   if (intent === 'external_research') return true
   if (/(?:联网|上网|网上|网络)(?:搜索|检索|查询|查|搜)|搜索|检索|搜一下|搜一搜/.test(text)) return true
+  if (/(?:现在|目前|当前|实时|官网).{0,12}(?:价格|多少钱|售价|到手价|促销|优惠|成分|配方|口碑|市场信息|上市|发售)/.test(text)
+    || /(?:价格|多少钱|售价|到手价|促销|优惠|成分|配方|口碑|市场信息|上市|发售).{0,12}(?:现在|目前|当前|实时|官网)/.test(text)) return true
   // Stable product facts are available from the server's local evidence index.
   if (intent === 'product_fact') return /最新|最近|目前|今年|20\d{2}|新品|上市|发售|价格|多少钱|售价|到手价|促销|优惠|成分|配方|官网|测评|口碑|销量|排行|真假|哪里买/.test(text)
-  if (/(今天|明天|天气|最新|最近|现在|目前|今年|2026|新品|上市|发售|价格|多少钱|促销|成分|官网|新闻|测评|口碑|销量|排行|真假|哪里买)/.test(text)) return true
-  if (/(口红|唇釉|眼影|腮红|高光|修容|睫毛膏|眉笔|香水|护肤|面霜|精华|防晒)/.test(text)) return true
+  if (/(今天|明天|当前|实时).{0,10}(?:天气|气温|温度|下雨|降雨)|(?:天气|气温|温度|下雨|降雨).{0,10}(?:今天|明天|当前|实时)/.test(text)) return true
+  if (/(?:最新|近期|最近).{0,12}(?:价格|促销|上市|发售|研究|成分|配方|口碑|市场|市场信息|新闻|测评|销量|排行|真假|官网|政策|规定|法规|公告|趋势|流行)/.test(text)) return true
+  if (/(?:今年|2026).{0,12}(?:价格|促销|上市|发售|研究|成分|配方|口碑|市场|新闻|测评|销量|排行|真假|官网)/.test(text)) return true
   return false
 }
 

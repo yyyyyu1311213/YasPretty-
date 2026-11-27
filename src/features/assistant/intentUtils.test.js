@@ -69,7 +69,9 @@ describe('小Y前端流程意图', () => {
   it('requires online research for timely or out-of-catalog facts', () => {
     expect(needsOnlineResearch('这款现在官网多少钱', 'catalog_recommendation')).toBe(true)
     expect(needsOnlineResearch('推荐一款油皮粉底', 'catalog_recommendation')).toBe(false)
-    expect(needsOnlineResearch('推荐一支口红', 'catalog_recommendation')).toBe(true)
+    expect(needsOnlineResearch('推荐一支口红', 'catalog_recommendation')).toBe(false)
+    expect(needsOnlineResearch('最近总觉得妆很脏，可能是什么原因', 'beauty_knowledge')).toBe(false)
+    expect(needsOnlineResearch('最新粉底价格是多少', 'catalog_recommendation')).toBe(true)
     expect(needsOnlineResearch('给我介绍一下巴黎时装周', 'external_question')).toBe(false)
     expect(needsOnlineResearch('明天上海天气怎么样', 'external_question')).toBe(true)
   })

@@ -16,7 +16,7 @@ export function extractSpendingLimit(text) {
   const amount = '(\\d{1,5}(?:\\.\\d{1,2})?)'
   const range = `(?:\\s*(?:-|到|至|~|～)\\s*[¥￥]?\\s*${amount})?`
   const units = '(?![\\d.]|\\s*(?:-|到|至|~|～|g|ml|h|克|毫升|小时|天|年|号|岁|分钟))'
-  const explicit = new RegExp(`(?:预算\\s*(?:是|为|在|约|大约|大概|不超过|最多|控制在)?|不超过|最多|上限|控制在)\\s*[¥￥]?\\s*${amount}${range}${units}`, 'i')
+  const explicit = new RegExp(`(?:预算\\s*(?:是|为|在|约|大约|大概|不超过|最多|控制在|改为|改成|调整为|换成)?|不超过|最多|上限|控制在)\\s*[¥￥]?\\s*${amount}${range}${units}`, 'i')
   const bounded = new RegExp(`(?<![\\da-z.])${amount}\\s*(?:元|块钱|块)?\\s*(?:以内|以下|内|左右|上下)`, 'i')
   const match = text.match(explicit) || text.match(bounded)
   return match ? Number(match[2] || match[1]) : undefined

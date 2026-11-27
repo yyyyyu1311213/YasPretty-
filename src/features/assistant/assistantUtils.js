@@ -97,12 +97,6 @@ export function localReply(text, profile, requestConditions = {}) {
   }
 
   const mentioned = findMentionedProducts(text)
-  const baseCategories = ['粉底液', '气垫', '遮瑕', '散粉', '素颜霜', '隔离', '有色面霜']
-  if (!profile.skin && !profile.skinValues?.length && !profile.skinSkipped && !mentioned.length && /推荐|怎么选|底妆|粉底|适合/.test(text)
-    && (!profile.category || baseCategories.includes(profile.category))) {
-    return { text: '为了避免只凭热度推荐，我需要先确认你的肤质。你是油皮、混油皮、干皮、混干皮，还是敏感肌？', products: [] }
-  }
-
   const comparing = mentioned.length > 1 && !/推荐|想买|想选|排除|不要/.test(text) && !requestConditions.skinValues && !requestConditions.skinSkipped
   const matches = comparing ? mentioned.slice(0, 3) : recommendProducts(profile, text)
   if (!matches.length) {
@@ -132,7 +126,8 @@ export function localReply(text, profile, requestConditions = {}) {
     : `根据目前记录的需求${profile.skinValues?.length ? `（${profile.skinLabel}）` : profile.skin ? `（${profile.skin}${profile.finish ? `、${profile.finish}` : ''}${profile.scene ? `、${profile.scene}` : ''}）` : ''}，优先看这几款：`
   const skinLimit = profile.skinValues?.length ? '\n\n本次按你提供的日常感受筛选候选。'
     : profile.skinSkipped ? profile.sensitive ? '\n\n本次未按干油倾向筛选；仍单独考虑你已说明的敏感倾向。'
-      : '\n\n本次候选未按肤质筛选，先按已知的品类、预算等条件选择。' : ''
+      : '\n\n本次候选未按肤质筛选，先按已知的品类、预算等条件选择。'
+      : /底妆|粉底|气垫|素颜霜/.test(text) ? '\n\n你没有提供肤质，我先按品类、预算和已知妆效做保守筛选。' : ''
   return {
     text: `${lead}\n\n${lines.join('\n\n')}\n\n色号仅作为初筛建议，实际结果还会受光线、肤色明度和氧化情况影响。${skinLimit}`,
     products: matches,

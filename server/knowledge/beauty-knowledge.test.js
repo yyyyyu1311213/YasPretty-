@@ -29,6 +29,21 @@ describe('受控美妆知识库', () => {
     expect(retrieveKnowledge('粉底怎么涂，怎么选色号，遮瑕应该先还是后，油皮怎么定妆', 'beauty_knowledge')).toHaveLength(4)
   })
 
+  it('answers colloquial dirty-looking makeup questions from reviewed local knowledge', () => {
+    const entries = retrieveKnowledge('我最近总觉得妆很脏，可能是什么原因？', 'beauty_knowledge')
+    expect(entries.map((entry) => entry.id)).toContain('patchy-base-adjustment')
+    const answer = knowledgeModule.localKnowledgeAnswer(entries)
+    expect(answer).toContain('少量')
+    expect(answer).toContain('停止使用')
+    expect(knowledgeSources(entries).every((source) => source.kind === 'knowledge')).toBe(true)
+  })
+
+  it('retrieves the reviewed base-makeup guidance for colloquial patchiness questions', () => {
+    const entries = retrieveKnowledge('我想问的是，妆总是卡粉应该怎么办？', 'beauty_knowledge')
+    expect(entries.map((entry) => entry.id)).toContain('patchy-base-adjustment')
+    expect(knowledgeModule.localKnowledgeAnswer(entries)).toContain('少量开始')
+  })
+
   it('retrieves skin-type self-check and acne care without medical treatment claims', () => {
     const skin = retrieveKnowledge('我不清楚自己是油皮还是干皮', 'beauty_knowledge')
     expect(skin.map((entry) => entry.id)).toContain('self-reported-skin-type')

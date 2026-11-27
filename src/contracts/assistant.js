@@ -66,6 +66,26 @@
  * @property {import('./makeupPlan.js').KnowledgeEvidence[]} [knowledgeEvidence] 通用知识的版本、复核日期、适用条件与来源，不证明具体产品事实。
  * @property {GuidedQuestion} [guidedQuestion] 有界的聊天点选问题；肤质观察含路线最多五轮，网络失败时复用同一纯规则。
  * @property {BeginnerContext} [beginnerContext] 用于建议后的下一步追问，切换话题不沿用。
+ * @property {DialogueDecision} dialogueDecision 先回答、按需追问的服务端决策，不写入长期画像。
+ */
+
+/**
+ * @typedef {object} DialogueDecision
+ * @property {'xiaoy-dialogue-v2'} schemaVersion
+ * @property {'YAS-2026-0065'} issueId
+ * @property {'answer-first-v1'} flowVersion
+ * @property {'answer'|'answer_with_assumption'|'ask_one'|'followup_offer'|'safety'|'clarification'} decisionMode
+ * @property {string} intent
+ * @property {number} confidence
+ * @property {string[]} missingFields
+ * @property {string[]} assumptions
+ * @property {'natural_refinement'|'daily_makeup'|'neutral_makeup'|'unspecified'} routePreference
+ * @property {boolean} interruptedFlow
+ * @property {string} reason
+ * @property {object[]} sources
+ * @property {string} createdAt ISO 时间，服务端同时提供 timezone
+ * @property {'Asia/Shanghai'} timezone
+ * @property {string} [followupOffer]
  */
 
 /** @typedef {{flowId: string, step: number, route: 'men'|'women'|'general'|'skin'|'plan'|null, selections: string[], initialQuery?: string, updates?: string[], options: Array<{label: string, value: string}>}} GuidedQuestion */

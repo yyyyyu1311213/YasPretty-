@@ -9,10 +9,10 @@ const timeOptions = [
   ['5分钟以内', 'time-five'], ['10分钟左右', 'time-ten'], ['愿意慢慢学', 'time-learn'],
 ].map(([label, value]) => ({ label, value }))
 
-const isBeginnerRequest = (text) => /(?:想|不会|不太会|学|入门|新手|零基础).*化妆|化妆.*(?:入门|新手|零基础)|^(?:男生|女生|男士|女士)?(?:怎么|如何)化妆[？?。！!]*$/.test(text)
+const isBeginnerRequest = (text) => /(?:想|不会|不太会|学|入门|新手|零基础).*(?:化妆|妆容|自然修饰|日常彩妆)|(?:化妆|妆容).*(?:入门|新手|零基础)|^(?:男生|女生|男士|女士)?(?:怎么|如何)化妆[？?。！!]*$/.test(text)
 const isBeginnerQuestion = (question) => question?.flowId === 'xiaoy-guided-intake-v1'
   && question.options?.some(({ value }) => /^(goal-|time-)/.test(value))
-const wantsDirectAnswer = (text) => /先按原问题|直接(?:回答|推荐|给建议)|不用问|别问|不问了|^(?:route-direct|focus-skip)$/.test(text)
+const wantsDirectAnswer = (text) => /先按原问题|直接(?:回答|推荐|给建议)|不用(?:再)?问了?|别(?:再)?继续问了?|先按这些条件回答|你先说结论|不清楚的地方你自己假设|换(?:个)?(?:话题|问题)|我想问的是|^(?:route-direct|focus-skip)$/.test(text)
 const uncertain = (text) => /^(?:我)?(?:还|暂时|也)?(?:没想好|不知道|不清楚|不确定|随便|都可以|跳过|先跳过)[。！!？?]*$/.test(text.trim())
 const purchase = (text) => /推荐|购买|想买|想选|想找|选什么|怎么选/.test(text) && /粉底|底妆|气垫|素颜霜|眉笔|眉粉|产品|口红/.test(text)
 
@@ -22,7 +22,7 @@ function goalFromText(text) {
   if (/眉毛|眉形|眉妆/.test(text)) return 'goal-brow'
   if (/眼妆|唇妆|眼影|口红/.test(text)) return 'goal-eye-lip'
   if (/底妆|粉底|气垫/.test(text) && /上|涂|画|化|学/.test(text)) return 'goal-base'
-  if (/简单日常|日常入门|面试|答辩|通勤|上班|约会|拍照/.test(text) && /妆|修饰|怎么化|如何化/.test(text)) return 'goal-daily'
+  if (/简单日常|日常入门|日常|自然修饰|自然妆|面试|答辩|通勤|上班|约会|拍照/.test(text) && /妆|修饰|怎么化|如何化/.test(text)) return 'goal-daily'
   return null
 }
 
@@ -42,7 +42,7 @@ function beginnerNext({ initialQuery, route = 'general', selections = [], update
     || goalFromText(query) || (direct ? 'goal-daily' : null)
   const time = selections.findLast((value) => /^time-/.test(value)) || timeFromText(query)
   const context = { query, initialQuery, route, selections, updates, stopGuidance: direct,
-    promptContext: `本次选择${route === 'men' ? '男生自然修饰' : route === 'women' ? '女生日常彩妆' : '不区分性别'}路线，保留原需求和已知条件；不推断身份。` }
+    promptContext: `本次选择${route === 'men' ? '自然修饰' : route === 'women' ? '日常彩妆' : '按需求搭配、不区分性别'}路线，保留原需求和已知条件；不推断身份。` }
   if (!goal && !direct && step <= 3) return { kind: 'ask', answer: '好，我们从一点开始。你现在最想学什么？',
     question: { ...makeQuestion(step, route, selections, goalOptions, initialQuery), ...(updates.length ? { updates } : {}) } }
   if (goal === 'goal-daily' && !time && !direct && step <= 3) return { kind: 'ask', answer: '每天大概愿意花多久？不确定也可以跳过，我会先给简单的练习。',
@@ -53,7 +53,7 @@ function beginnerNext({ initialQuery, route = 'general', selections = [], update
 
 function advanceBeginner(question, text, makeQuestion) {
   if (!isBeginnerQuestion(question)) return null
-  if (/换(?:个)?话题|不聊|天气|新闻|电脑|手机|推荐|想买|想选|怎么选|成分|多少钱/.test(text)) return null
+  if (/换(?:个)?(?:话题|问题)|我想问的是|不聊|天气|新闻|电脑|手机|比较|对比|推荐|想买|想选|怎么选|成分|多少钱/.test(text)) return null
   const option = question.options.find(({ value, label }) => value === text || label === text)
   const updates = option || uncertain(text) || wantsDirectAnswer(text) && !/预算|皮|妆效|面试|通勤/.test(text) ? question.updates || []
     : [...(question.updates || []), text.slice(0, 1000)].slice(-4)

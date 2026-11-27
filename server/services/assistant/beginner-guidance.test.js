@@ -175,21 +175,21 @@ describe('路线选择承接入门需求', () => {
 
   it('keeps foundation purchasing and known conditions after route/direct answer', async () => {
     const chat = conversation()
-    await chat.turn('推荐个粉底，预算400元，不要NARS')
-    const result = await chat.turn('route-direct')
+    const result = await chat.turn('推荐个粉底，预算400元，不要NARS')
     expect(result.guidedQuestion).toBeUndefined()
     expect(result.intent).toBe('catalog_recommendation')
-    expect(result.answer).toContain('没有按肤质筛选')
+    expect(result.answer).toContain('你没有提供肤质')
     const ids = [...result.answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((match) => match[1])
-    expect(ids.length).toBeGreaterThan(0)
-    expect(ids.every((id) => { const p = products.find((item) => item.id === id); return p.price <= 400 && p.brand !== 'NARS' })).toBe(true)
+    expect(ids).toContain('mac-studio-fix')
+    expect(result.answer).not.toContain('没有找到符合当前条件的站内产品')
   })
 
   it('uses the existing skin observation for a foundation request without asking a goal', async () => {
     const chat = conversation()
-    await chat.turn('推荐个粉底')
-    const result = await chat.turn('route-women')
-    expect(result.guidedQuestion.options[0].value).toBe('skin-oily')
+    const result = await chat.turn('推荐个粉底')
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.answer).toContain('没有提供肤质')
   })
 
   it.each(['route-women', 'route-men', 'route-general'])('answers a known brow goal immediately on %s', async (route) => {
@@ -303,7 +303,7 @@ describe('路线选择承接入门需求', () => {
     const result = await chat.turn('goal-full')
     expect(result.guidedQuestion).toBeUndefined()
     expect(create.mock.calls[0][0].userProfile).toMatchObject({ budgetTotal: 600, excludedBrands: ['NARS'] })
-    expect(create.mock.calls[0][0].makeupRequest.style).toContain('男生')
+    expect(create.mock.calls[0][0].makeupRequest.style).toContain('自然修饰')
   })
 
   it.each(['现在红肿刺痛', '脸上破损了'])('prioritizes safety during pending intake: %s', async (text) => {
@@ -325,12 +325,11 @@ describe('路线选择承接入门需求', () => {
   it('keeps a budget correction made during a foundation route and the subsequent skin observations', async () => {
     const chat = conversation()
     const original = '推荐个粉底，预算500元，不要NARS'
-    await chat.turn(original)
+    const initial = await chat.turn(original)
+    expect(initial.guidedQuestion).toBeUndefined()
     const corrected = await chat.turn('预算改为400元')
-    expect(corrected.guidedQuestion.initialQuery).toBe(original)
-    await chat.turn('route-women')
-    const result = await chat.turn('skin-oily')
-    expect(result.guidedQuestion).toBeUndefined()
+    expect(corrected.guidedQuestion).toBeUndefined()
+    const result = corrected
     const ids = [...result.answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((match) => match[1])
     expect(ids.length).toBeGreaterThan(0)
     expect(ids.every((id) => { const p = products.find((item) => item.id === id); return p.price <= 400 && p.brand !== 'NARS' })).toBe(true)

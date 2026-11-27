@@ -3826,3 +3826,89 @@ git diff --cached --check
 **本阶段无新增核验，继承上一条结论。** 产品、价格、图片、评分、来源和授权均未变化。人工验收不将网页摘要、模型输出或软件测试升级为产品事实核验，不扩展此前独立任务的人工确认；已记录的第三方可用性、搜索相关性、实体手机/公网覆盖与素材风险继续保留，视频未变更。
 
 本条写入时新SHA/远端推送尚未产生，实际结果由本轮交付回执提供，下一次文档同步可回填；提交和推送前再次fetch，不强推。后续回退应依实际提交与依赖使用revert，不改写既有历史，也不恢复浏览器本地数据、环境变量或外部状态。
+
+### 2026-11-27 16:01 先回答、按需追问对话流程改造（YAS-2026-0065，待人工验收）
+
+**基线与状态**：北京时间 2026-11-27 16:01:46 核对当前分支、HEAD、工作树、索引及 `origin/dev`；`dev`、HEAD、实际 `origin/dev` 均为 `3fdf17ecb816fad0ed888a7d468fa92fde4cfdcd`。本轮修改保留在未提交工作树，索引为空；未提交、未推送、未打标签、未删除分支，当前状态为**待人工验收**。本次不是前端架构迁移阶段，不改变迁移计划的 current/done 状态。
+
+**目的与实际修改**：将小Y从固定问卷优先改为“先理解、先回答、按需追问”。服务端顺序调整为安全与明显不适判断、主题切换/直接回答、意图识别、条件充分性判断、直接回答或可选延伸、必要时一次关键追问；引导流程遇到产品比较或新问题立即重新路由，不吞掉新问题。完整粉底条件首轮直接给候选或说明无匹配，不询问性别、路线或肤质；支持“不用再问了”“直接给我建议”“先按这些条件回答”“你先说结论”“不清楚的地方你自己假设”“换个问题”“我想问的是”等表达。推荐方向仅使用 `natural_refinement`、`daily_makeup`、`neutral_makeup`、`unspecified`，只作为当前请求条件，不保存性别、不从语言或照片推断性别。回答完成后可提供不阻塞当前回答的完整妆容延伸。
+
+新增 `DialogueDecision` 结构化结果并接入响应契约：固定 `schemaVersion=xiaoy-dialogue-v2`、`flowVersion=answer-first-v1`、`issueId=YAS-2026-0065`，记录 `decisionMode`、统一意图、置信度、缺失字段、保守假设、路线偏好、中断状态、理由、来源分类和 ISO 时间；时间同时标记 `timezone=Asia/Shanghai`。来源区分 `user`、`catalog`、`knowledge`、`web`，自由文本不能作为结构化成功结果。既有产品 ID、价格、品牌、色号、链接和候选仍由站内数据校验，保留兼容字段和旧引导代码。
+
+`needsOnlineResearch` 已收窄为显式搜索/联网、今天明天与当前天气、最新价格/促销/上市/新闻/近期研究、当前成分/口碑/市场信息；“最近总觉得妆很脏”“护肤”“成分”“我现在皮肤状态不好”等普通表达不再单独触发联网。无模型配置时继续返回真实的本地规则/受控知识降级，并明确不是模型成功回答；不虚构商品、价格、成分、色号、评分或来源。
+
+本轮实际代码/测试文件为 23 个已跟踪文件及 1 个新增文件：`server/knowledge/beauty-knowledge.test.js`、`server/knowledge/knowledge-topics.cjs`、`server/knowledge/mens-makeup.test.js`、`server/schemas.cjs`、`server/services/assistant-service.cjs`、`server/services/assistant/assistant.test.js`、`server/services/assistant/beginner-guidance.cjs`、`server/services/assistant/beginner-guidance.test.js`、`server/services/assistant/compound-answer.cjs`、`server/services/assistant/guided-intake.cjs`、`server/services/assistant/guided-intake.test.js`、`server/services/assistant/intent-router.cjs`、`server/services/assistant/parameters.cjs`、`server/services/assistant/skin-guidance.test.js`、`server/services/assistant/dialogue-decision.cjs`（新增）、`src/contracts/assistant.js`、`src/features/assistant/assistantApi.js`、`src/features/assistant/assistantUtils.js`、`src/features/assistant/assistantUtils.test.js`、`src/features/assistant/hooks/useAssistant.test.js`、`src/features/assistant/intentUtils.js`、`src/features/assistant/intentUtils.test.js`、`src/features/assistant/profileUtils.js`、`src/features/assistant/skinObservation.js`；另更新 `docs/stage-delivery-test-report.md` 与 `docs/product-data-accuracy-audit.md`。未新增 API 端点、依赖、服务端永久对话/照片存储或性别字段。
+
+**真实验证**：
+
+| 命令/检查 | 结果 |
+| --- | --- |
+| `npm test -- --run` | 通过；57 files passed，764 tests passed，退出码 0 |
+| `npm run build` | 通过；1887 modules，退出码 0；既有大 chunk 警告保留 |
+| `git diff --check` | 通过 |
+| 聚焦回归 | 148/148 通过 |
+
+回归覆盖完整粉底首轮直答、直接回答表达、引导中产品比较重新路由、完整妆容可选延伸、三种路线进入对应方案、不主动询问/保存性别、“最近总觉得妆很脏”不联网、“最新粉底价格”和“明天上海天气”联网、无模型配置真实降级、产品事实/ID/来源/价格/安全边界，以及桌面和移动端既有主流程契约。测试只使用合成输入和既有受控数据；未将单测通过描述为真实模型、实体手机或公网部署验收。
+
+**未实现、降级与隐私边界**：真实 GLM、实时搜索质量、实体手机、全部浏览器组合、公网部署和人工体验尚未在本轮完成；产品图片授权、来源和独立适配风险沿用历史审计。结构化决策失败时保留兼容响应并走本地受控降级，不把模型自由文本冒充成功；联网失败仍需明确失败或降级，不用旧知识冒充最新事实。当前请求路线、假设和引导状态不写入长期画像；没有新增服务端永久保存用户对话或照片，也不新增性别持久化字段。负责人完成人工验收前不得标记完成、提交、推送或打标签。
+
+### 2026-11-27 17:22 卡粉知识与明确妆容方向补修（YAS-2026-0065，待人工验收）
+
+**基线与状态**：沿用本轮基线 `3fdf17ecb816fad0ed888a7d468fa92fde4cfdcd`。北京时间 2026-11-27 17:21:59 再次核对 `dev`、HEAD、`origin/dev`；当前仍在未提交工作树，索引为空，未提交、未推送、未打标签、未删除分支，状态保持**待人工验收**。本次只补充同一问题编号的回归修复，不创建新问题编号或迁移阶段。
+
+**实际修改**：受截图暴露的普通“妆很脏/卡粉”表达影响，`server/knowledge/beauty-entries.cjs` 增加“卡粉怎么办”“妆总是卡粉”“妆很卡粉”到受控知识条目，并在 `server/knowledge/beauty-knowledge.test.js` 增加命中回归；`server/services/assistant/intent-router.cjs` 支持自然修饰、日常彩妆、中性妆容和按需求搭配等表达，同时避免把旧请求“男生日常自然修饰”误判为新路线；`server/services/assistant/guided-intake.cjs` 和 `server/services/assistant/assistant-service.cjs` 让明确完整妆容请求绕过初始路线/肤质问卷并重新路由；`server/services/assistant/skin-guidance.test.js` 增加引导中切题回归。没有新增 API 端点、持久化字段、依赖、产品事实或性别字段。
+
+**真实自动验证**：聚焦 3 个测试文件 111/111 通过；随后执行 `npm test -- --run`，57 个测试文件、769 个测试全部通过；`npm run build` 成功（1887 modules，既有大 chunk 警告保留）；`git diff --check` 通过。验证覆盖卡粉问题进入普通受控知识回答且不因“最近”联网、明确妆容方向不先进入问卷、引导中切换产品问题立即重新路由，以及原有产品事实、来源、价格、安全边界和桌面/移动主流程回归。
+
+**未实现、降级与隐私边界**：本轮未重新验证真实 GLM、实时搜索质量、实体手机、公网部署或全部浏览器组合；无模型时仍走真实受控本地降级，不伪装成模型成功。卡粉条目只提供一般化妆手法和限制，不构成医疗诊断或疗效承诺。没有新增服务端永久保存用户对话或照片，不读取真实用户数据或密钥；产品图片授权、来源和独立适配风险继续沿用审计台账。负责人人工验收前不得提交、推送或打标签。
+
+### 2026-11-27 18:53:50 GitHub 提交授权与收尾（YAS-2026-0065，北京时间）
+
+负责人明确要求“先把现在所有的优化提交到github上去”，授权当前小Y先回答、按需追问、话题切换、预算修正、卡粉知识识别及对应契约/测试/文档在 dev 提交并正常推送。本次不是新的架构阶段：ARCH-14 保持 done，无新的 current，不创建或移动标签、Release，不删除分支。上传授权不补记未发生的人工体验测试；此前“待人工验收”和失败记录保留为当时事实。
+
+开始核验于 2026-11-27 18:49:19：dev/HEAD/origin/dev/实际远端均为 3fdf17ecb816fad0ed888a7d468fa92fde4cfdcd，索引为空，原27路径属于本次授权范围。arch-stage-14 对象 2e09f6ffc64b6f742e62caf0de5971f2feb63f01 指向 f65780588b96de71c8ff79c81c2a9c333fa266f5，本地与远端一致。本轮同步 README 当前说明、FINAL-PROMPT、可复用及服务端运行提示词、迁移计划和两份累计报告，修正旧“先选男生/女生路线”文案与当前先回答流程的冲突；没有扩展新功能、API、依赖或数据存储。
+
+最终复验：2026-11-27 18:52–18:53 执行 npm test，57个文件、769/769通过；npm run build 成功，1887模块，原有大于500 kB分包警告保留；git diff --check 通过。使用现有合成provider/受控数据测试，没有调用真实GLM或搜索。本轮没有重新运行桌面/360px浏览器脚本、实体手机或公网部署验收，旧浏览器记录不冒充本次结果。
+
+本阶段无新增核验，继承上一条结论。商品、价格、图片、评分、来源和授权没有变化，既有pending/blocked、图片授权及独立实测缺口保留。卡粉变更是既有知识的表达匹配，不是新来源或医疗结论；路线仅为本次请求偏好，不询问、推断或持久化性别，不新增照片上传或服务端永久对话保存。
+
+用户反馈“智能服务当前不可用”的具体运行地址、请求和完整错误尚未确定，原因未定位，不能将本次代码上传称为该问题已修复。无模型时受控知识/站内推荐保留明确降级，外部查询失败不伪装为最新事实。真实模型质量、实时搜索、全部人工体验和公网可用性继续待验证；比赛视频和部署设置未修改。
+
+本条写入时提交与推送尚未执行；提交前和推送前重新fetch核对dev，最终SHA与远端匹配由本轮交付回执提供，后续可回填，不为回填改写历史。回退按实际提交与后续依赖使用revert，Git不恢复浏览器数据、环境变量或外部服务状态。
+
+实际归档范围共32路径：
+
+- `FINAL-PROMPT.md`
+- `README.md`
+- `docs/frontend-architecture-migration-plan.md`
+- `docs/product-data-accuracy-audit.md`
+- `docs/prompts/xiaoy-guided-intake.md`
+- `docs/stage-delivery-test-report.md`
+- `server/knowledge/beauty-entries.cjs`
+- `server/knowledge/beauty-knowledge.test.js`
+- `server/knowledge/knowledge-topics.cjs`
+- `server/knowledge/mens-makeup.test.js`
+- `server/schemas.cjs`
+- `server/services/assistant-service.cjs`
+- `server/services/assistant/assistant.test.js`
+- `server/services/assistant/beginner-guidance.cjs`
+- `server/services/assistant/beginner-guidance.test.js`
+- `server/services/assistant/compound-answer.cjs`
+- `server/services/assistant/dialogue-decision.cjs`
+- `server/services/assistant/guided-beauty-prompt.cjs`
+- `server/services/assistant/guided-intake.cjs`
+- `server/services/assistant/guided-intake.test.js`
+- `server/services/assistant/intent-router.cjs`
+- `server/services/assistant/parameters.cjs`
+- `server/services/assistant/skin-guidance.test.js`
+- `src/contracts/assistant.js`
+- `src/features/assistant/assistantApi.js`
+- `src/features/assistant/assistantUtils.js`
+- `src/features/assistant/assistantUtils.test.js`
+- `src/features/assistant/hooks/useAssistant.test.js`
+- `src/features/assistant/intentUtils.js`
+- `src/features/assistant/intentUtils.test.js`
+- `src/features/assistant/profileUtils.js`
+- `src/features/assistant/skinObservation.js`
+
+用户入口：npm run dev → http://127.0.0.1:5174/ → 小Y智能选妆。可用“想买一款通勤粉底，预算300，轻薄不显毛孔”检查首轮直接回答，“怎么看肤质 → 我想问的是，妆总是卡粉应该怎么办？”检查退出旧引导，以及“我想学日常化妆 → 直接给我建议”检查结束问卷。普通用户不输入API Key。AGENTS既有规则仍适用，无需修改。

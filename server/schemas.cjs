@@ -57,6 +57,33 @@ const sourceSchema = z.object({
   accessedAt: z.string().datetime(),
 }).strict()
 
+const dialogueDecisionSourceSchema = z.object({
+  kind: z.enum(['user', 'catalog', 'knowledge', 'web']),
+  title: z.string().trim().min(1).max(300),
+  url: z.string().url().max(2000).nullable(),
+  publisher: z.string().trim().max(200).default(''),
+  accessedAt: z.string().datetime().nullable(),
+  supports: z.array(z.string().trim().min(1).max(160)).max(12).default([]),
+}).strict()
+
+const dialogueDecisionSchema = z.object({
+  schemaVersion: z.literal('xiaoy-dialogue-v2'),
+  issueId: z.literal('YAS-2026-0065'),
+  flowVersion: z.literal('answer-first-v1'),
+  decisionMode: z.enum(['answer', 'answer_with_assumption', 'ask_one', 'followup_offer', 'safety', 'clarification']),
+  intent: z.enum(['catalog_recommendation', 'product_comparison', 'product_fact', 'beauty_knowledge', 'makeup_plan', 'plan_adjustment', 'external_question', 'external_research', 'greeting_help', 'unsupported_sensitive', 'clarification']),
+  confidence: z.number().finite().min(0).max(1),
+  missingFields: z.array(z.string().trim().min(1).max(160)).max(8),
+  assumptions: z.array(z.string().trim().min(1).max(240)).max(8),
+  routePreference: z.enum(['natural_refinement', 'daily_makeup', 'neutral_makeup', 'unspecified']),
+  interruptedFlow: z.boolean(),
+  reason: z.string().trim().max(500),
+  sources: z.array(dialogueDecisionSourceSchema).max(16),
+  createdAt: z.string().datetime(),
+  timezone: z.literal('Asia/Shanghai'),
+  followupOffer: z.string().trim().max(300).optional(),
+}).strict()
+
 const productSourceSchema = z.object({
   title: z.string().trim().min(1).max(300),
   url: z.string().url().max(2000).nullable(),
@@ -123,6 +150,7 @@ const assistantResponseSchema = z.object({
   beginnerContext: beginnerContextSchema.optional(),
   coverage: z.array(assistantCoverageSchema).max(7).optional(),
   knowledgeEvidence: z.array(knowledgeEvidenceSchema).max(8).optional(),
+  dialogueDecision: dialogueDecisionSchema,
 }).strict()
 
 const userProfileSchema = z.object({
@@ -200,6 +228,7 @@ const makeupPlanResponseSchema = z.object({
 module.exports = {
   assistantRequestSchema,
   assistantResponseSchema,
+  dialogueDecisionSchema,
   candidateEvidenceSchema,
   makeupPlanRequestSchema,
   makeupPlanResponseSchema,

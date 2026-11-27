@@ -194,11 +194,12 @@ describe('小Y本地规则', () => {
     expect(reply.text).not.toMatch(/待核验|已核验|未核验|待确认|未标注|暂无信息|null 小时/)
   })
 
-  it('asks for skin type before recommending and explains matching conditions after clarification', () => {
-    expect(localReply('推荐通勤底妆', {})).toEqual({
-      text: '为了避免只凭热度推荐，我需要先确认你的肤质。你是油皮、混油皮、干皮、混干皮，还是敏感肌？',
-      products: [],
-    })
+  it('answers a complete catalog request before asking for optional skin context', () => {
+    const initial = localReply('推荐通勤底妆', {})
+    expect(initial.products.length).toBeGreaterThan(0)
+    expect(initial.products.every((product) => products.includes(product) && product.category === '粉底液')).toBe(true)
+    expect(initial.text).toContain('没有提供肤质')
+    expect(initial.text).toContain('保守筛选')
     const profile = { skin: '油皮', budget: 400, category: '粉底液' }
     const reply = localReply('推荐通勤底妆', profile)
     expect(reply.products.length).toBeGreaterThan(0)

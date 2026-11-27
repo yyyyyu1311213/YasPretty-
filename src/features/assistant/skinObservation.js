@@ -6,15 +6,15 @@ export const isSkinUncertain = (text) => /^(?:我)?(?:也|还|暂时|真的|真)
   || /^(还是想不起来|想不起来|仍然说不清)$/.test(normalizeSkinText(text))
   || /^(?:你)?帮我看看(?:吧)?$/.test(normalizeSkinText(text))
   || /肤质|皮肤类型/.test(text) && /不知道|不清楚|不确定|说不清|分不清|不懂/.test(text)
-export const isSkinSkip = (text) => /跳过|不用问|别问|不问了|直接(?:推荐|选|回答)|先按原问题/.test(text)
+export const isSkinSkip = (text) => /跳过|不用(?:再)?问了?|别(?:再)?继续问了?|不问了|直接(?:推荐|选|回答|给我建议)|先按(?:原问题|这些条件回答)|你先说结论|不清楚的地方你自己假设/.test(text)
 export const asksSkinGuidance = (text) => /(?:肤质|皮肤类型).*(?:不知|不清楚|不确定|怎么看|怎么判断)|(?:不知|不清楚|不确定|怎么看|怎么判断|怎么知道|分不清|不懂).*(?:肤质|皮肤类型)|有时候油有时候干|有时油有时干|时油时干/.test(normalizeSkinText(text))
 export const isBaseSelection = (text) => /推荐|选什么|怎么选|想买|想选|要买|选个|选一|找/.test(text) && /粉底|底妆|气垫|素颜霜/.test(text)
 export const isSkinQuestion = (question) => question?.flowId === 'xiaoy-guided-intake-v1'
   && question.options?.some(({ value }) => /^(skin-|cheek-)/.test(value))
 
 // A new task takes precedence over short answers to the pending observation question.
-export const leavesSkinGuidance = (text) => /换(?:个)?话题|不聊(?:肤质|皮肤)|天气|新闻|电脑|手机|API\s*Key|Authorization|系统提示词|识别身份|诊断|治疗/i.test(text)
-  || /(?:推荐|想买|想选|怎么选|怎么用|怎么涂|怎么画|区别).*(?:口红|唇|腮红|眉|眼影|刷具|卸妆)|(?:粉底|气垫|口红|唇|腮红|眉|眼影|刷具|卸妆).*(?:怎么涂|怎么用|怎么画|怎么选|区别)/.test(text)
+export const leavesSkinGuidance = (text) => /换(?:个)?(?:话题|问题)|我想问的是|不聊(?:肤质|皮肤)|天气|新闻|电脑|手机|API\s*Key|Authorization|系统提示词|识别身份|诊断|治疗/i.test(text)
+  || /(?:推荐|想买|想选|怎么选|怎么用|怎么涂|怎么画|区别|比较|对比).*(?:粉底|底妆|气垫|遮瑕|口红|唇|腮红|眉|眼影|刷具|卸妆)|(?:粉底|底妆|气垫|遮瑕|口红|唇|腮红|眉|眼影|刷具|卸妆).*(?:怎么涂|怎么用|怎么画|怎么选|区别|比较|对比)/.test(text)
 
 export function skinChoiceFromReply(text, question) {
   const exact = question?.options?.find((item) => normalizeSkinText(text) === normalizeSkinText(item.value) || normalizeSkinText(text) === normalizeSkinText(item.label))?.value

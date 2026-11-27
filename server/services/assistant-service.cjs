@@ -13,10 +13,10 @@ const { catalogSize } = require('../knowledge/product-facts-adapter.cjs')
 const { answerProductFacts } = require('./assistant/fact-answer.cjs')
 const { answerKnowledge } = require('./assistant/knowledge-answer.cjs')
 const { advanceGuidedIntake, beginGuidedIntake } = require('./assistant/guided-intake.cjs')
-const { isBeginnerRequest, goalFromText, beginnerNext, beginnerAnswer, continueBeginner, beginnerFollowupAnswer } = require('./assistant/beginner-guidance.cjs')
+const { isBeginnerRequest, goalFromText, wantsDirectAnswer, beginnerNext, beginnerAnswer, continueBeginner, beginnerFollowupAnswer } = require('./assistant/beginner-guidance.cjs')
 const { decomposeQuestions } = require('./assistant/questions.cjs')
 const { requestBudget, boundedProvider, combineAnswers } = require('./assistant/compound-answer.cjs')
-const SHANGHAI_TIME_ZONE = 'Asia/Shanghai'
+const { SHANGHAI_TIME_ZONE, buildDialogueDecision } = require('./assistant/dialogue-decision.cjs')
 
 function isWeatherQuestion(text) {
   return /(天气|气温|温度|下雨|降雨)/.test(String(text || ''))
@@ -111,6 +111,19 @@ function filterCurrentWeatherResults(results, weather) {
   })
 }
 
+const MAKEUP_FOLLOWUP_OFFER = '如果你还想搭配完整妆容，我可以继续按自然修饰、日常彩妆或不区分性别的方向搭配。'
+
+function routePreferenceFromGuidance(guidance, recommendation = {}) {
+  if (recommendation.routePreference && recommendation.routePreference !== 'unspecified') return recommendation.routePreference
+  const selected = guidance?.selections || []
+  if (selected.includes('natural_refinement')) return 'natural_refinement'
+  if (selected.includes('daily_makeup')) return 'daily_makeup'
+  if (selected.includes('neutral_makeup')) return 'neutral_makeup'
+  return guidance?.route === 'men' ? 'natural_refinement'
+    : guidance?.route === 'women' ? 'daily_makeup'
+      : guidance?.route === 'general' ? 'neutral_makeup' : 'unspecified'
+}
+
 function createAssistantService({ zhipuProvider: provider, weatherProvider, makeupPlanService, products, verificationRecords = {}, clock = () => new Date() }) {
   const plans = makeupPlanService || require('./makeup-plan-service.cjs').createMakeupPlanService({ zhipuProvider: provider, products, clock })
   const facts = createProductFactsIndex(products, verificationRecords)
@@ -126,7 +139,8 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
             : await classifyIntent(query, products, zhipuProvider, messages)
       const parameters = guidance?.initialQuery
         ? await extractGuidedParameters(guidance.initialQuery, guidance.updates, profile, products)
-        : await extractParameters(query, profile, products)
+        : await extractParameters(query, profile, products, messages)
+      parameters.recommendation.routePreference = routePreferenceFromGuidance(guidance, parameters.recommendation)
       if (guidance?.previousConditions) {
         Object.assign(parameters.recommendation, guidance.previousConditions)
         if (guidance.correctionQuery) {
@@ -149,15 +163,21 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       }
       if (guidedSkin && (guidedSkin.sensitive || parameters.profile.skin === '敏感肌')) parameters.recommendation.sensitive = true
       const routedQuery = guidance?.promptContext ? `${guidance.promptContext}\n${query}` : query
-      const reply = (answer, answerMode = 'local', sources = [], usedWebSearch = false, model = null, evidence = {}) => assistantResponseSchema.parse({
-        answer, answerMode, sources, usedWebSearch, model, intent,
+      const reply = (answer, answerMode = 'local', sources = [], usedWebSearch = false, model = null, evidence = {}) => {
+        const followupOffer = evidence.followupOffer || (intent === 'catalog_recommendation' && !guidance?.question ? MAKEUP_FOLLOWUP_OFFER : '')
+        const finalAnswer = followupOffer && !answer.includes(followupOffer) ? `${answer}\n\n${followupOffer}` : answer
+        return assistantResponseSchema.parse({
+        answer: finalAnswer, answerMode, sources, usedWebSearch, model, intent,
         ...(evidence.guidedQuestion ? { guidedQuestion: evidence.guidedQuestion } : {}),
         ...(evidence.beginnerContext ? { beginnerContext: evidence.beginnerContext } : {}),
         knowledgeEvidence: evidence.knowledgeEvidence || [],
+        dialogueDecision: buildDialogueDecision({ query, intent, answerMode, sources, guidance, parameters,
+          evidence: { ...evidence, followupOffer }, clock }),
         coverage: [{ question: query, intent, status: evidence.status || (answerMode === 'clarification' ? 'clarification' : 'answered'),
           knowledgeIds: evidence.knowledgeIds || [], productIds: [...new Set([...answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((m) => m[1]))].slice(0, 6),
           missing: evidence.missing || (answerMode === 'clarification' ? ['需要补充明确的对象或条件，当前尚未完成回答。'] : []) }],
       })
+      }
       const skinEntries = guidance && (guidedSkin || guidance.question?.options.some(({ value }) => /^(skin-|cheek-)/.test(value)))
         ? retrieveKnowledge('判断肤质', 'beauty_knowledge').filter((entry) => entry.id === 'self-reported-skin-type') : []
       const skinEvidence = { knowledgeEvidence: knowledgeEvidence(skinEntries), knowledgeIds: skinEntries.map((entry) => entry.id) }
@@ -175,9 +195,10 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       if (guidance?.kind === 'knowledge') {
         const knowledgeQuery = guidance.knowledgeQuery || guidance.query
         const result = await answerKnowledge({ query: knowledgeQuery, intent: 'beauty_knowledge', provider: zhipuProvider, budget: context.budget, products })
-        const routeLabel = guidance.route === 'men' ? '男生自然修饰'
-          : guidance.route === 'women' ? '女生日常彩妆'
-            : guidance.route === 'general' ? '按需求选择、不区分性别' : '肤质/底妆'
+        const routePreference = routePreferenceFromGuidance(guidance, parameters.recommendation)
+        const routeLabel = routePreference === 'natural_refinement' ? '自然修饰'
+          : routePreference === 'daily_makeup' ? '日常彩妆'
+            : routePreference === 'neutral_makeup' ? '按需求搭配、不区分性别' : '肤质/底妆'
         const lead = `按你选择的${routeLabel}路线，结合刚才的需求整理参考。`
         const note = guidance.route === 'men' && guidance.selections?.includes('focus-men-base')
           ? '\n\n当前接入的眉毛与修容研究资料不支持素颜霜的具体成分、功效或商品适配判断；商品建议会以站内已核验资料为准。'
@@ -222,17 +243,11 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
         const baseCategories = ['粉底液', '气垫', '遮瑕', '散粉', '素颜霜', '隔离', '有色面霜']
         const hasSkinCondition = Boolean(parameters.recommendation.skin || parameters.recommendation.skinValues?.length)
         const skippedSkin = parameters.recommendation.skinSkipped === true || guidance?.selections?.includes('skin-unknown') === true || guidance?.stopGuidance && !hasSkinCondition
-        if (!hasSkinCondition && !skippedSkin && (!parameters.recommendation.category || baseCategories.includes(parameters.recommendation.category))) {
-          // Reuse the same observation flow for an existing plain-text clarification.
-          const next = await advanceGuidedIntake('不知道自己啥肤质', [
-            { role: 'user', content: query }, { role: 'assistant', content: '请告诉我你的肤质。' },
-          ], profile)
-          return answerOne({ query, messages, profile }, { ...context, guided: next })
-        }
+        const assumedSkin = !hasSkinCondition && !skippedSkin && (!parameters.recommendation.category || baseCategories.includes(parameters.recommendation.category))
         const selection = selectRecommendations(products, parameters.recommendation, query)
-        const skinNote = skippedSkin ? parameters.recommendation.sensitive
+        const skinNote = (skippedSkin || assumedSkin) ? parameters.recommendation.sensitive
           ? '\n\n本次未按干油倾向筛选；仍单独考虑你已说明的敏感倾向。'
-          : '\n\n本次没有按肤质筛选候选，先按已知的品类、预算等条件选择。'
+          : `\n\n${assumedSkin ? '你没有提供肤质，我先按品类、预算和已知妆效做保守筛选。' : '本次没有按肤质筛选候选，先按已知的品类、预算等条件选择。'}`
           : parameters.recommendation.skinLabel ? '\n\n本次按你提供的日常感受筛选候选。' : ''
         if (guidedSkin) return reply(`${guidance.summary}\n\n${recommendationAnswer(selection, parameters.recommendation, { concise: true })}${skinNote}`,
           'local', knowledgeSources(skinEntries), false, null, skinEvidence)
@@ -240,7 +255,8 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
         if (skippedSkin || parameters.recommendation.skinValues?.length) delete requestProfile.skin
         const result = await organizeCatalogAnswer({ provider: zhipuProvider, profile: requestProfile, products: selection.map(({ product }) => product), intent, query: routedQuery, messages,
           conditions: parameters.recommendation, fallback: `${!zhipuProvider?.configured ? '智能服务未配置，已使用站内基础规则推荐。\n\n' : ''}${recommendationAnswer(selection, parameters.recommendation)}` })
-        return reply(`${result.answer}${skinNote}`, result.answerMode, [], false, result.model)
+        return reply(`${result.answer}${skinNote}`, result.answerMode, [], false, result.model,
+          assumedSkin ? { assumptions: ['用户未提供肤质，本次按品类、预算和已知妆效保守筛选。'] } : {})
       }
       const question = questionForSelection(query, products, messages)
       if (intent === 'product_fact' || intent === 'product_comparison') {
@@ -312,7 +328,12 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
       const skipSkinGuidance = leavesSkinGuidance(input.query)
       const hasExplicitFollowup = /[;；\n]|另外|此外|还想|顺便|再问|并且|同时|以及/.test(String(input.query || ''))
       if (hasSkinDiscomfort(input.query) && !hasExplicitFollowup) return answerOne(input, { skinDiscomfort: true })
-      if (!hasSkinDiscomfort(input.query) && intentRouter(input.query, products) !== 'unsupported_sensitive') {
+      const topicSwitch = leavesSkinGuidance(input.query)
+      // An explicit makeup-plan request is a new topic even when the previous
+      // turn was a skin or route question. Let the normal router answer it.
+      const currentIntent = intentRouter(input.query, products, input.messages || [])
+      if (!hasSkinDiscomfort(input.query) && !topicSwitch
+        && currentIntent !== 'unsupported_sensitive' && currentIntent !== 'makeup_plan') {
         const followup = await continueBeginner(input.query, input.messages || [])
         if (followup) return hasSkinDiscomfort(followup.query)
           ? answerOne({ ...input, query: followup.query }, { skinDiscomfort: true }) : answerOne(input, { guided: followup })

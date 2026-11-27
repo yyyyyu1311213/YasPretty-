@@ -344,7 +344,7 @@ describe('小Y状态与发送流程', () => {
 
   it.each([
     ['你好', '你好，我是小Y。先用一句话告诉我你想解决什么', false],
-    ['推荐通勤底妆', '为了避免只凭热度推荐', false],
+    ['推荐通勤底妆', '没有提供肤质', true],
     ['我是油皮，预算 400 元，想要柔雾通勤底妆', '根据目前记录的需求', true],
   ])('keeps a labeled local fallback after request failure for %s', async (text, expected, hasProducts) => {
     vi.mocked(requestAssistant).mockRejectedValue(new TypeError('Failed to fetch'))

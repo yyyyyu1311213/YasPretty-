@@ -25,6 +25,7 @@ export async function requestAssistant({ text, messages, profile }) {
     ...(data.intent ? { intent: data.intent } : {}),
     ...(data.coverage ? { coverage: data.coverage } : {}),
     ...(data.knowledgeEvidence ? { knowledgeEvidence: data.knowledgeEvidence } : {}),
+    ...(data.dialogueDecision ? { dialogueDecision: data.dialogueDecision } : {}),
     ...(data.guidedQuestion ? { question: data.guidedQuestion } : {}),
     ...(data.beginnerContext ? { beginnerContext: data.beginnerContext } : {}),
   }

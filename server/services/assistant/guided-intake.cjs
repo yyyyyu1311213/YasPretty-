@@ -4,11 +4,19 @@ const { isBeginnerRequest, isBeginnerQuestion, wantsDirectAnswer, goalFromText, 
 
 const option = (label, value) => ({ label, value })
 const routeOptions = [
-  option('我是男生，想看自然修饰', 'route-men'),
-  option('我是女生，按日常彩妆建议', 'route-women'),
-  option('按需求选择，不区分性别', 'route-general'),
+  option('自然修饰', 'natural_refinement'),
+  option('日常彩妆', 'daily_makeup'),
+  option('按需求搭配、不区分性别', 'neutral_makeup'),
   option('先按原问题直接回答', 'route-direct'),
 ]
+
+// Older clients may still submit the pre-v2 route values. Accept them at the
+// boundary, then keep all new decisions on the answer-first route vocabulary.
+const canonicalRouteSelection = (value) => ({
+  'route-men': 'natural_refinement',
+  'route-women': 'daily_makeup',
+  'route-general': 'neutral_makeup',
+}[value] || value)
 
 function makeQuestion(step, route, selections, options, initialQuery = '') {
   return {
@@ -36,10 +44,14 @@ function isFreshConversation(messages = []) {
 function shouldBeginGuidedIntake(query, messages = [], intent = '') {
   const text = normalizedText(query)
   if (!text || !isFreshConversation(messages)) return false
-  if (['unsupported_sensitive', 'external_research', 'product_fact', 'product_comparison', 'plan_adjustment', 'greeting_help'].includes(intent)) return false
+  if (['unsupported_sensitive', 'external_research', 'product_fact', 'product_comparison', 'makeup_plan', 'plan_adjustment', 'greeting_help'].includes(intent)) return false
   if (/^(你好|嗨|hello|hi|在吗)$/.test(text)) return false
   if (/天气|气温|下雨|最新|新闻|促销|多少钱|价格|成分|规格|保质期|上市|官网/.test(text)) return false
-  return Boolean(goalFromText(text)) || /化妆|妆容|妆面|底妆|肤质|皮肤|肤色|色调|底色|粉底|气垫|素颜霜|眉毛|眉形|眉粉|眉笔|修容|修饰|高光|遮瑕|腮红|唇妆|彩妆/.test(text)
+  // Ordinary product and knowledge questions are answered first. A vague
+  // beginner request still needs one small, request-scoped choice to produce a
+  // useful lesson, so it may enter the bounded intake without asking identity.
+  return (isBeginnerRequest(text) || Boolean(goalFromText(text)))
+    && !isBaseMakeupRecommendation(text)
 }
 
 function summarizeRequest(query) {
@@ -48,7 +60,7 @@ function summarizeRequest(query) {
 }
 
 function isBaseMakeupRecommendation(query) {
-  return /推荐|选什么|怎么选|想买|想选|找.*(?:粉底|底妆|素颜霜|气垫)/.test(query)
+  return /推荐|选什么|怎么选|想买|想选|想做|打算做|准备做|找.*(?:粉底|底妆|素颜霜|气垫)/.test(query)
     && /底妆|粉底|气垫|素颜霜/.test(query)
 }
 
@@ -82,12 +94,18 @@ function matchOption(query, question) {
   if (exact) return exact.value
 
   if (question.step === 1) {
+    if (text === 'route-men') return 'route-men'
+    if (text === 'route-women') return 'route-women'
+    if (text === 'route-general') return 'route-general'
     if (/跳过/.test(text)) return 'route-direct'
     if (/不知道|不清楚|不确定|随便|按需求|不区分|都可以/.test(text)) return 'route-general'
     if (/男生|男士|男性|男妆|男生日常/.test(text)) return 'route-men'
     if (/女生|女士|女性|女生日常/.test(text)) return 'route-women'
     if (/不区分性别|不想说性别|按需求/.test(text)) return 'route-general'
     if (/原问题|直接回答|直接提问|直接问/.test(text)) return 'route-direct'
+    if (/自然修饰|natural_refinement/.test(text)) return 'natural_refinement'
+    if (/日常彩妆|daily_makeup/.test(text)) return 'daily_makeup'
+    if (/不区分性别|按需求/.test(text)) return 'neutral_makeup'
     if (/完整妆容|全妆|妆容方案|做一套妆/.test(text)) return 'route-plan'
     if (/肤质|肤色|色调|底妆|色号/.test(text)) return 'route-skin'
     if (/其他问题/.test(text)) return 'route-direct'
@@ -200,7 +218,9 @@ function detailQuestion(route, selections, initialQuery, focus) {
 }
 
 function routeName(route) {
-  return route === 'men' ? '男生自然修饰' : route === 'women' ? '日常彩妆' : '按需求、不区分性别'
+  return route === 'men' || route === 'natural_refinement' ? '自然修饰'
+    : route === 'women' || route === 'daily_makeup' ? '日常彩妆'
+      : '按需求搭配、不区分性别'
 }
 
 function selectedCondition(value) {
@@ -235,7 +255,7 @@ function promptContext(route, selections) {
   const parts = [`用户本次主动选择的建议路线：${routeName(route)}`]
   if (focusLabel(focus)) parts.push(`关注重点：${focusLabel(focus)}`)
   if (detail) parts.push(`用户补充：${selectedCondition(detail)}`)
-  parts.push('这是本次回答的风格偏好，不代表身份判断，也不写入长期画像；只依据用户实际自述。')
+  parts.push('这是本次请求的妆容方向偏好，不代表身份判断，也不写入长期画像；只依据用户实际自述。')
   return parts.join('；')
 }
 
@@ -243,8 +263,8 @@ function guidedQuery(initialQuery, route, selections) {
   const focus = selections[1]
   const detail = selections[2]
   const routeContext = `用户主动选择${routeName(route)}路线。`
-  if (focus === 'focus-men-brow') return `${routeContext}用户原始需求：${initialQuery}。男生眉毛怎么画、眉毛整理教程。`
-  if (focus === 'focus-men-contour') return `${routeContext}用户原始需求：${initialQuery}。男生修容教程、阴影怎么晕染。`
+  if (focus === 'focus-men-brow') return `${routeContext}用户原始需求：${initialQuery}。眉毛整理、眉形与眉眼关系教程。`
+  if (focus === 'focus-men-contour') return `${routeContext}用户原始需求：${initialQuery}。轻修容与面部明暗晕染教程。`
   if (focus === 'focus-men-base') return `${routeContext}用户原始需求：${initialQuery}。素颜霜或底妆选择。${detail ? selectedCondition(detail) : ''}`
   if (focus === 'focus-men-routine') return `${routeContext}用户原始需求：${initialQuery}。快速日常自然妆容方案。${detail ? selectedCondition(detail) : ''}`
   if (focus === 'focus-skin-type') return `${routeContext}用户原始需求：${initialQuery}。肤质自述与日常观察。${detail ? selectedCondition(detail) : ''}`
@@ -336,10 +356,11 @@ async function advanceGuidedIntakeCore(query, messages = [], profile = {}) {
       knowledgeQuery: guidedQuery(originalQuery, current.route, current.selections || []), stopGuidance: true,
       promptContext: `${promptContext(current.route, current.selections || [])}；用户要求按已有信息直接回答，不再提问。` }
   }
-  const selected = matchOption(query, current)
-  if (!selected || !current.options.some((item) => item.value === selected)) {
+  const matched = matchOption(query, current)
+  const selected = canonicalRouteSelection(matched)
+  if (!selected || !current.options.some((item) => canonicalRouteSelection(item.value) === selected)) {
     if (current.step === 1 && isBeginnerRequest(originalQuery) && /预算|分钟|慢慢学|皮|妆效|面试|通勤/.test(query)) {
-      return beginnerNext({ initialQuery: originalQuery, route: 'general', selections: ['route-general'], updates: [query.slice(0, 1000)] }, makeQuestion)
+      return beginnerNext({ initialQuery: originalQuery, route: 'general', selections: ['neutral_makeup'], updates: [query.slice(0, 1000)] }, makeQuestion)
     }
     return null
   }
@@ -349,9 +370,9 @@ async function advanceGuidedIntakeCore(query, messages = [], profile = {}) {
     if (selected === 'route-direct') return isBeginnerRequest(initialQuery)
       ? beginnerNext({ initialQuery, direct: true }, makeQuestion)
       : { kind: 'continue', query: initialQuery, stopGuidance: true, promptContext: '用户选择直接按原问题回答，不再追问。' }
-    const route = selected === 'route-men' ? 'men'
-      : selected === 'route-women' ? 'women'
-        : selected === 'route-general' ? 'general'
+    const route = selected === 'natural_refinement' ? 'men'
+      : selected === 'daily_makeup' ? 'women'
+        : selected === 'neutral_makeup' ? 'general'
           : selected === 'route-skin' ? 'skin'
             : selected === 'route-plan' ? 'plan' : null
     if (!route) return null
@@ -392,14 +413,14 @@ async function advanceGuidedIntakeCore(query, messages = [], profile = {}) {
     }
 
     if (route === 'men' && !/眉|修容|轮廓|素颜霜|底妆|肤质|肤色|色调|妆容方案|完整妆容/.test(initialQuery)) {
-      return { kind: 'ask', answer: `收到，按你选的男生自然修饰路线，我会结合「${summarizeRequest(initialQuery)}」继续。你想先看哪一项？`,
+      return { kind: 'ask', answer: `收到，按你选的自然修饰路线，我会结合「${summarizeRequest(initialQuery)}」继续。你想先看哪一项？`,
         question: focusQuestion(route, [selected], initialQuery) }
     }
 
     if (route === 'men' && /眉|眉毛|眉形|修容|轮廓|阴影|高光/.test(initialQuery)) {
       const query = /眉|眉毛|眉形/.test(initialQuery)
-        ? `${initialQuery} 男生眉毛怎么画 眉形与眉眼关系`
-        : `${initialQuery} 男生修容与面部明暗立体感观感`
+        ? `${initialQuery} 眉毛怎么画、眉形与眉眼关系`
+        : `${initialQuery} 修容与面部明暗立体感观感`
       return { kind: 'knowledge', route, selections: [selected], query: initialQuery, knowledgeQuery: query,
         promptContext: promptContext(route, [selected]) }
     }
@@ -411,7 +432,7 @@ async function advanceGuidedIntakeCore(query, messages = [], profile = {}) {
   if (current.step === 2) {
     if (current.route === 'men' && selected === 'focus-men-base' && !isBaseMakeupRecommendation(initialQuery)) {
       return { kind: 'knowledge', route: current.route, selections, query: initialQuery,
-        knowledgeQuery: `${initialQuery} 男生底妆教程`, promptContext: promptContext(current.route, selections) }
+        knowledgeQuery: `${initialQuery} 底妆教程`, promptContext: promptContext(current.route, selections) }
     }
     const isLegacyFocus = current.route === 'skin' || current.route === 'plan'
     const isNeedChoice = /^(?:skin-|tone-|undertone-)/.test(selected)

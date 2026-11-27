@@ -1,4 +1,5 @@
 const { assistantResponseSchema } = require('../../schemas.cjs')
+const { buildDialogueDecision } = require('./dialogue-decision.cjs')
 
 function requestBudget(reserveSafety = false) { return { knowledgeChars: reserveSafety ? 6200 : 7200, knowledgeEntries: reserveSafety ? 7 : 8 } }
 
@@ -45,9 +46,12 @@ function combineAnswers(results, deferred = []) {
   }
   const incomplete = coverage.filter((item) => item.status !== 'answered')
   if (incomplete.length) sections.push(`仍缺少的信息：\n${incomplete.map((item) => `“${item.question}”：${item.missing.join('；')}`).join('\n')}`)
+  const answer = sections.join('\n\n')
   return assistantResponseSchema.parse({
-    answer: sections.join('\n\n'), intent: 'compound', answerMode: results.every((r) => r.answerMode === 'knowledge') ? 'knowledge' : 'local',
+    answer, intent: 'compound', answerMode: results.every((r) => r.answerMode === 'knowledge') ? 'knowledge' : 'local',
     sources, usedWebSearch: results.some((r) => r.usedWebSearch), model: null, coverage, knowledgeEvidence: [...evidence.values()],
+    dialogueDecision: buildDialogueDecision({ query: results.map((result) => result.coverage[0]?.question).join('；'),
+      intent: 'compound', answerMode: 'local', sources, evidence: {} }),
   })
 }
 
