@@ -1,3 +1,5 @@
+const { productNameVariants } = require('./product-resolver.cjs')
+
 const fieldPatterns = {
   specification: /规格|容量|多少(?:克|毫升)|\d+\s*(?:g|ml|克|毫升)/i,
   netContent: /净含量|多少(?:克|毫升)/,
@@ -24,7 +26,9 @@ const fieldPatterns = {
 }
 function factQuery(query, products) {
   let question = String(query).normalize('NFKC')
-  for (const product of products) question = question.replaceAll(product.name.normalize('NFKC'), '')
+  for (const name of products.flatMap(productNameVariants).sort((a, b) => b.length - a.length)) {
+    question = question.replaceAll(name.normalize('NFKC'), '')
+  }
   const fields = Object.entries(fieldPatterns).filter(([, pattern]) => pattern.test(question)).map(([field]) => field)
   if (fields.includes('netContent') && !fields.includes('specification')) fields.unshift('specification')
   const overview = fields.length === 0
