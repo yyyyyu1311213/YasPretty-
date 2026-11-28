@@ -4,6 +4,7 @@ import { products } from '../../data/products'
 function detectIntent(text, profile = {}) {
   const mentioned = findMentionedProducts(text)
   if (/红肿|刺痛|过敏|诊断|治疗|API\s*Key|系统提示词/i.test(text)) return 'unsupported_sensitive'
+  if (/^(?:我(?:(?:是|属于|只是|也是)?)(?:一名|一个)?(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子)|本人(?:(?:是|属于)?)(?:一名|一个)?(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子)|(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子))[。！!？?\s]*$/.test(String(text || '').trim())) return 'clarification'
   if (/手机|打印机|电脑|汽车|自行车|笔记本|耳机/.test(text) && !mentioned.length) return 'external_question'
   if (!mentioned.length && /区别|差别|不同/.test(text) && /粉底|气垫|底妆|遮瑕|散粉/.test(text)) return 'beauty_knowledge'
   if (/(怎么涂|怎么上|怎么用|怎么办|技巧|原理|底妆教程|什么是|是什么|色号怎么选|(?:总|容易|之后|后).*(?:起皮|卡粉|脱妆)|卡粉$|起皮$)/.test(text) && /妆|粉底|气垫|皮|口红|睫毛/.test(text)) return 'beauty_knowledge'

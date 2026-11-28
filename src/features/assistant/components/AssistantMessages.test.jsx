@@ -29,6 +29,21 @@ describe('小Y消息展示边界', () => {
     expect(markup).not.toContain('class="xiaoy-message assistant loading"')
   })
 
+  it('shows assistant Markdown as plain text while leaving the user message untouched', () => {
+    const markup = renderToStaticMarkup(<AssistantMessages {...props} messages={[
+      { id: 'user', role: 'user', content: '**这是用户原话**' },
+      { id: 'assistant', role: 'assistant', content: '## 建议\n\n**肤质适配**：查看资料。\n- 少量试用。\n1. 留意感受。' },
+    ]} />)
+    expect(markup).toContain('**这是用户原话**')
+    expect(markup).toContain('建议')
+    expect(markup).toContain('肤质适配：查看资料。')
+    expect(markup).toContain('少量试用。')
+    expect(markup).toContain('第1项：留意感受。')
+    expect(markup).not.toContain('**肤质适配**')
+    expect(markup).not.toContain('## 建议')
+    expect(markup).not.toContain('- 少量试用。')
+  })
+
   it('shows route choices only after an assistant response and enables only the current choice set', () => {
     const question = { flowId: 'xiaoy-guided-intake-v1', step: 1, route: null, selections: [],
       options: [{ label: '我是男生，想看自然修饰', value: 'route-men' }, { label: '按需求选择', value: 'route-general' }] }

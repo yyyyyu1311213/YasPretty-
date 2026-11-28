@@ -23,6 +23,22 @@ describe('小Y业务请求', () => {
     expect(history[1].beginnerContext).toBeUndefined()
     expect(result.beginnerContext.lastStep).toBe('brow')
   })
+  it('sends prior assistant turns as plain text and adapts a Markdown model reply to plain text', async () => {
+    const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({
+      answer: '## 参考\n\n**结论**：可以少量试用。\n- 留意感受。 [1]\n[[PRODUCT:not-a-real-id]]',
+    }) })
+    vi.stubGlobal('fetch', fetch)
+    const result = await requestAssistant({ ...input, messages: [
+      { role: 'user', content: '**这是我写的**' },
+      { role: 'assistant', content: '**旧版回答**\n- 保留来源 [1]' },
+    ] })
+    expect(JSON.parse(fetch.mock.calls[0][1].body).messages).toEqual([
+      { role: 'user', content: '**这是我写的**' },
+      { role: 'assistant', content: '旧版回答\n保留来源 [1]', productIds: [] },
+    ])
+    expect(result.text).toBe('参考\n\n结论：可以少量试用。\n留意感受。 [1]')
+    expect(result.text).not.toMatch(/\*\*|^#{1,6}\s|^[-*+]\s/m)
+  })
   it('adapts coverage and knowledge evidence without adding them to conversation requests', async () => {
     const coverage = [{ question: '合成复合问题', intent: 'beauty_knowledge', status: 'partial', knowledgeIds: ['kb'], productIds: [], missing: ['缺少资料'] }]
     const knowledgeEvidence = [{ id: 'kb', version: 'knowledge.v2' }]

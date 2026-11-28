@@ -4,6 +4,11 @@ import { products } from '../../data/products'
 import assistantService from '../../../server/services/assistant-service.cjs'
 
 describe('小Y前端流程意图', () => {
+  it.each(['我是男生', '本人是一名男性', '女生'])('does not infer a product request from identity alone: %s', (text) => {
+    expect(detectIntent(text)).toBe('clarification')
+    expect(assistantService.intentRouter(text, products)).toBe('clarification')
+  })
+
   it.each(['给我推荐电脑', '我想买手机', '推荐一款打印机'])('audit: cannot turn external requests into offline beauty recommendations: %s', (text) => {
     expect(detectIntent(text)).toBe('external_question')
   })

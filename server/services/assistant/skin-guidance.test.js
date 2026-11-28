@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import service from '../assistant-service.cjs'
 import { advanceGuidedIntake, beginGuidedIntake } from './guided-intake.cjs'
+import { products as catalogProducts } from '../../../src/data/products.js'
 
 const fixture = [
-  ['mixed', '粉底液', ['混干皮'], 150, '甲牌'], ['oily', '粉底液', ['油皮'], 120, '甲牌'],
+  ['mixed', '粉底液', ['干皮', '混干皮'], 150, '甲牌'], ['oily', '粉底液', ['油皮'], 120, '甲牌'],
   ['cushion', '气垫', ['干皮'], 180, '甲牌'], ['cushion-oily', '气垫', ['油皮'], 190, '甲牌'],
 ].map(([id, category, skins, price, brand]) => ({ id, category, skins, price, brand,
   name: `合成商品${id}`, finish: '柔雾', scenes: ['通勤'], shades: [], wear: 8, coverage: '中', recommendationReady: true }))
@@ -24,14 +25,132 @@ function conversation(profile = {}, configured = false) {
 const productIds = (reply) => reply.coverage.flatMap((part) => part.productIds)
 
 describe('YAS-2026-0065 answer-first 对话流程', () => {
-  it('完整粉底请求首轮直接回答，并提供不阻塞的妆容延伸', async () => {
+  it('缺少肤质的底妆选品先询问日常感受，不提前给出产品', async () => {
     const flow = conversation()
     const result = await flow.send('想买一款通勤粉底，预算300，轻薄不显毛孔')
+    expect(result.intent).toBe('clarification')
+    expect(result.guidedQuestion.options.map(({ value }) => value)).toContain('skin-oily')
+    expect(productIds(result)).toEqual([])
+    expect(result.answer).toContain('继续选底妆')
+    expect(result.answer).not.toContain('甲牌')
+  })
+
+  it('用户只说明性别时询问具体需求，不推断为底妆或商品推荐', async () => {
+    const flow = conversation({}, true)
+    const result = await flow.send('我是男生')
+    expect(result.intent).toBe('clarification')
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(productIds(result)).toEqual([])
+    expect(result.answer).toContain('只知道性别还无法判断')
+    expect(flow.provider.chat).not.toHaveBeenCalled()
+  })
+
+  it('性别回答不会结束肤质追问；自然表达补充肤质后继续原选品', async () => {
+    const flow = conversation()
+    const first = await flow.send('我是男生，想选粉底液，预算150元')
+    expect(first.guidedQuestion.options.map(({ value }) => value)).toContain('skin-oily')
+    const identity = await flow.send('我是男生')
+    expect(identity.intent).toBe('clarification')
+    expect(identity.guidedQuestion).toEqual(first.guidedQuestion)
+    expect(productIds(identity)).toEqual([])
+
+    const result = await flow.send('我的肤质偏干，偶尔长痘')
     expect(result.intent).toBe('catalog_recommendation')
     expect(result.guidedQuestion).toBeUndefined()
-    expect(productIds(result).length).toBeGreaterThan(0)
-    expect(result.answer).toContain('如果你还想搭配完整妆容')
-    expect(result.answer).not.toMatch(/男生|女生|男性|女性/)
+    expect(productIds(result)).toEqual(['mixed'])
+    expect(result.answer).toContain('干性肤质')
+    expect(result.answer).not.toContain('平时到下午')
+  })
+
+  it('识别“肤质的话是干皮，偶尔长痘”并直接继续底妆推荐', async () => {
+    const flow = conversation()
+    const first = await flow.send('推荐一款通勤粉底液，预算150元')
+    expect(first.guidedQuestion).toBeDefined()
+
+    const result = await flow.send('肤质的话是干皮，偶尔长痘')
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(productIds(result)).toEqual(['mixed'])
+    expect(result.answer).toContain('干性肤质')
+    expect(result.answer).not.toContain('平时到下午')
+  })
+
+  it('回答肤质时顺带追问推荐，不再重复肤质引导', async () => {
+    const flow = conversation()
+    const first = await flow.send('推荐一款通勤粉底液，预算150元')
+    expect(first.guidedQuestion).toBeDefined()
+
+    const result = await flow.send('肤质的话是干皮，偶尔长痘，有什么推荐')
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(productIds(result)).toEqual(['mixed'])
+    expect(result.answer).toContain('干性肤质')
+    expect(result.answer).not.toMatch(/哪里容易出油|换个好回想/)
+  })
+
+  it('截图场景：首轮已自述干皮，随后询问推荐时直接进入商品筛选', async () => {
+    const provider = { configured: true, modelName: 'synthetic', chat: vi.fn(async () => '收到。'), search: vi.fn() }
+    const api = service.createAssistantService({ products: fixture, zhipuProvider: provider,
+      weatherProvider: { forecast: vi.fn() } })
+    const messages = [{ role: 'assistant', content: '嗨，我是小Y。先告诉我你想解决什么。', id: 'welcome' }]
+    const first = await api.answer({ query: '肤质的话是干皮，偶尔长痘', messages, profile: {} })
+    expect(first.guidedQuestion).toBeUndefined()
+    expect(first.intent).not.toBe('clarification')
+    messages.push({ role: 'user', content: '肤质的话是干皮，偶尔长痘' }, { role: 'assistant', content: first.answer })
+
+    const result = await api.answer({ query: '肤质的话是干皮，偶尔长痘，有什么推荐', messages, profile: {} })
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(productIds(result)).toEqual(expect.arrayContaining(['mixed', 'cushion']))
+    expect(productIds(result)).not.toContain('oily')
+    expect(productIds(result)).not.toContain('cushion-oily')
+    expect(result.answer).not.toMatch(/哪里容易出油|换个好回想/)
+  })
+
+  it('真实站内目录：自述干皮后问有什么推荐，直接返回干皮候选商品', async () => {
+    const provider = { configured: false, chat: vi.fn(), search: vi.fn() }
+    const api = service.createAssistantService({ products: catalogProducts, zhipuProvider: provider,
+      weatherProvider: { forecast: vi.fn() } })
+    const result = await api.answer({ query: '肤质的话是干皮，偶尔长痘，有什么推荐',
+      messages: [{ role: 'user', content: '肤质的话是干皮，偶尔长痘' }, { role: 'assistant', content: '收到。' }], profile: {} })
+    const selected = catalogProducts.filter(({ id }) => productIds(result).includes(id))
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(selected.length).toBeGreaterThan(0)
+    expect(selected.every(({ skins = [] }) => skins.includes('干皮'))).toBe(true)
+    expect(result.answer).not.toMatch(/哪里容易出油|换个好回想/)
+    expect(provider.chat).not.toHaveBeenCalled()
+  })
+
+  it('明确跳过肤质后按原品类和预算筛选并说明筛选限制', async () => {
+    const flow = conversation()
+    const first = await flow.send('推荐一款粉底液，预算150元')
+    expect(first.guidedQuestion).toBeDefined()
+    const result = await flow.send('直接推荐吧')
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(productIds(result)).toEqual(['mixed', 'oily'])
+    expect(result.answer).toContain('本次没有按肤质筛选')
+  })
+
+  it('等待肤质时改问另一项底妆，会为新需求重新采集并保留新上下文', async () => {
+    const flow = conversation()
+    const first = await flow.send('怎么看肤质')
+    expect(first.guidedQuestion).toBeDefined()
+    const changed = await flow.send('换个问题，推荐通勤素颜霜')
+    expect(changed.intent).toBe('clarification')
+    expect(changed.guidedQuestion.initialQuery).toBe('换个问题，推荐通勤素颜霜')
+    expect(productIds(changed)).toEqual([])
+    expect(changed.answer).toContain('继续选底妆')
+  })
+
+  it('首轮已经明确要求跳过时不弹观察引导', async () => {
+    const flow = conversation()
+    const result = await flow.send('推荐通勤粉底，预算150元，直接推荐吧')
+    expect(result.intent).toBe('catalog_recommendation')
+    expect(result.guidedQuestion).toBeUndefined()
+    expect(productIds(result)).toEqual(['mixed', 'oily'])
+    expect(result.answer).toContain('本次没有按肤质筛选')
   })
 
   it.each(['不用再问了', '别继续问了', '直接给我建议', '先按这些条件回答', '你先说结论', '不清楚的地方你自己假设'])
@@ -123,7 +242,7 @@ describe('YAS-2026-0065 answer-first 对话流程', () => {
 
   it('不主动询问或保存性别', async () => {
     const profile = {}
-    const result = await conversation(profile).send('推荐一款通勤粉底，预算300')
+    const result = await conversation(profile).send('我是干皮，推荐一款通勤粉底，预算300')
     expect(result.answer).not.toMatch(/男生|女生|男性|女性/)
     expect(profile).not.toHaveProperty('gender')
     expect(result.dialogueDecision.routePreference).toBe('unspecified')
@@ -143,14 +262,15 @@ describe('YAS-2026-0065 answer-first 对话流程', () => {
   it('无模型配置时真实降级，不伪装成 AI 成功回答', async () => {
     const flow = conversation({}, false)
     const result = await flow.send('推荐一款通勤粉底，预算300')
-    expect(result.answerMode).toBe('local')
-    expect(result.answer).toContain('智能服务未配置')
+    expect(result.answerMode).toBe('clarification')
+    expect(result.guidedQuestion).toBeDefined()
+    expect(productIds(result)).toEqual([])
     expect(result.model).toBeNull()
     expect(flow.provider.chat).not.toHaveBeenCalled()
   })
 
   it('DialogueDecision 包含版本、问题编号、北京时间和来源分类', async () => {
-    const result = await conversation().send('推荐一款通勤粉底，预算300')
+    const result = await conversation().send('我是干皮，推荐一款通勤粉底，预算300')
     expect(result.dialogueDecision).toMatchObject({
       schemaVersion: 'xiaoy-dialogue-v2', issueId: 'YAS-2026-0065', flowVersion: 'answer-first-v1',
       timezone: 'Asia/Shanghai', intent: 'catalog_recommendation',

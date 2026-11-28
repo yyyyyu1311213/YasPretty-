@@ -176,10 +176,11 @@ describe('路线选择承接入门需求', () => {
 
   it('keeps foundation purchasing and known conditions after route/direct answer', async () => {
     const chat = conversation()
-    const result = await chat.turn('推荐个粉底，预算400元，不要NARS')
+    const first = await chat.turn('推荐个粉底，预算400元，不要NARS')
+    const result = await chat.turn('先按原问题直接回答')
     expect(result.guidedQuestion).toBeUndefined()
     expect(result.intent).toBe('catalog_recommendation')
-    expect(result.answer).toContain('你没有提供肤质')
+    expect(result.answer).toContain('没有按肤质筛选')
     const ids = [...result.answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((match) => match[1])
     expect(ids).toContain('mac-studio-fix')
     expect(result.answer).not.toContain('没有找到符合当前条件的站内产品')
@@ -187,10 +188,11 @@ describe('路线选择承接入门需求', () => {
 
   it('uses the existing skin observation for a foundation request without asking a goal', async () => {
     const chat = conversation()
-    const result = await chat.turn('推荐个粉底')
+    await chat.turn('推荐个粉底')
+    const result = await chat.turn('全脸都容易油')
     expect(result.guidedQuestion).toBeUndefined()
     expect(result.intent).toBe('catalog_recommendation')
-    expect(result.answer).toContain('没有提供肤质')
+    expect(result.answer).toContain('按你提供的日常感受')
   })
 
   it.each(['route-women', 'route-men', 'route-general'])('answers a known brow goal immediately on %s', async (route) => {
@@ -327,10 +329,10 @@ describe('路线选择承接入门需求', () => {
     const chat = conversation()
     const original = '推荐个粉底，预算500元，不要NARS'
     const initial = await chat.turn(original)
-    expect(initial.guidedQuestion).toBeUndefined()
+    expect(initial.guidedQuestion).toBeDefined()
     const corrected = await chat.turn('预算改为400元')
-    expect(corrected.guidedQuestion).toBeUndefined()
-    const result = corrected
+    expect(corrected.guidedQuestion).toBeDefined()
+    const result = await chat.turn('直接推荐吧')
     const ids = [...result.answer.matchAll(/\[\[PRODUCT:([^\]]+)\]\]/g)].map((match) => match[1])
     expect(ids.length).toBeGreaterThan(0)
     expect(ids.every((id) => { const p = products.find((item) => item.id === id); return p.price <= 400 && p.brand !== 'NARS' })).toBe(true)

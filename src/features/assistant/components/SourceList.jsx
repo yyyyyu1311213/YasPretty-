@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react'
+import { toPlainAssistantText } from '../assistantUtils'
 
 function sourceUrl(source) {
   try {
@@ -18,8 +19,8 @@ export default function SourceList({ sources }) {
       {visibleSources.map(({ source, index }) => {
         const url = sourceUrl(source)
         const title = url ? <a key={`${source.url}-${index}`} href={url} target="_blank" rel="noreferrer">
-          <b>[{index + 1}]</b>{source.title}<ChevronRight size={14} />
-        </a> : <span><b>[{index + 1}]</b> {source.title}（内部记录，无公开链接）</span>
+          <b>[{index + 1}]</b>{toPlainAssistantText(source.title)}<ChevronRight size={14} />
+        </a> : <span><b>[{index + 1}]</b> {toPlainAssistantText(source.title)}（内部记录，无公开链接）</span>
         return url ? title : <div key={index}>{title}</div>
       })}
     </div>

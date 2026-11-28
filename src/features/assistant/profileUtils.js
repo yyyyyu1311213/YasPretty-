@@ -24,7 +24,7 @@ export function extractSpendingLimit(text) {
 
 function dailySkinCondition(text) {
   const observation = readSkinObservation(text)
-  if (observation.explicit) return null // explicit self reports retain the existing profile parser
+  if (observation.explicit) return null // Explicit self-reports use the profile label; daily observations stay request-only.
   const assessment = assessSkin(observation)
   return assessment.values.length ? assessment : null
 }
@@ -43,7 +43,10 @@ export function extractRequestConditions(text, current = {}) {
   const skin = text.match(/(?:适合|给|为|推荐(?:一款|一个)?)\s*(混油皮|混干皮|敏感肌|油皮|干皮)/)?.[1]
   if (skin) conditions.skin = skin
   const dailySkin = dailySkinCondition(text)
-  if (dailySkin) {
+  const explicitSkin = readSkinObservation(text).explicit
+  if (explicitSkin && !conditions.skin && !conditions.skinValues?.length) {
+    conditions.skin = explicitSkin
+  } else if (dailySkin) {
     delete conditions.skin
     conditions.skinValues = dailySkin.values
     conditions.skinLabel = dailySkin.label
@@ -83,8 +86,11 @@ export function extractProfile(text, current = {}) {
     if (otherContext || uncertainContext) continue
     if (/^我不是.*(?:皮|肌)/.test(clause)) { correction = true; continue }
     if (!clause || /[？?]|吗|是否|是不是|还是|可能|好像|大概是|也许|不确定|应该是|假如|如果|假设/.test(clause)) continue
-    const skin = clause.match(SKIN)?.[0]
-    if (skin && (/^(?:我是|我(?:的)?肤质(?:是|为)|我属于|我偏|肤质(?:是|为|改为)|改为|更正为)/.test(clause) || clause === skin || correction && /^是/.test(clause))
+    const skin = readSkinObservation(clause).explicit || clause.match(SKIN)?.[0]
+    if (skin && (/^(?:而|但是|但)?我(?:是|属于|偏|肤质|的肤质|皮肤|的皮肤|肌肤|的肌肤)/.test(clause)
+      || /^(?:肤质|皮肤|肌肤)(?:是|为|改为|偏)/.test(clause)
+      || /^(?:改为|更正为)/.test(clause)
+      || clause === skin || correction && /^是/.test(clause))
       && !/不是|不属于|不确定/.test(clause)) next.skin = skin.replace(/^大/, '')
     correction = false
     const personal = desire.test(clause) && !/不|排除|避免/.test(clause)

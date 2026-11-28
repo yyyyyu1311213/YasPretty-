@@ -29,4 +29,12 @@ describe('小Y来源列表', () => {
     }
     expect(renderToStaticMarkup(tree)).toContain('参考来源')
   })
+
+  it('cleans formatting from source titles without changing their target URLs', () => {
+    const tree = SourceList({ sources: [{ kind: 'web', title: '**合成来源**', url: 'https://example.test/source' }] })
+    const markup = renderToStaticMarkup(tree)
+    expect(markup).toContain('合成来源')
+    expect(markup).toContain('href="https://example.test/source"')
+    expect(markup).not.toContain('**合成来源**')
+  })
 })

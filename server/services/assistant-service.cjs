@@ -217,6 +217,8 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
           { knowledgeEvidence: evidence, knowledgeIds: evidence.map((item) => item.id) })
       }
       if (intent === 'greeting_help') return reply('你好，我是小Y。可以帮你选产品、比较产品、查询资料、学习化妆手法或生成完整妆容。')
+      if (intent === 'clarification') return reply('收到。只知道性别还无法判断你想解决什么问题，我也不会按性别直接挑产品。你可以告诉我想了解的品类或遇到的具体问题。',
+        'clarification', [], false, null, { status: 'clarification', missing: ['尚未说明具体需求或产品品类。'] })
       if (intent === 'unsupported_sensitive') {
         const entries = retrieveKnowledge('新产品红肿刺痛不适', 'skin_safety').slice(0, 1)
         return reply(hasSkinDiscomfort(query) || /过敏|治疗|诊断/.test(query)
@@ -328,11 +330,18 @@ function createAssistantService({ zhipuProvider: provider, weatherProvider, make
   }
   return {
     async answer(input) {
-      const { leavesSkinGuidance } = await import('../../src/features/assistant/skinObservation.js')
-      const skipSkinGuidance = leavesSkinGuidance(input.query)
+      const { leavesSkinGuidance, needsBaseSkinGuidance } = await import('../../src/features/assistant/skinObservation.js')
+      const pendingQuestion = input.messages?.at(-1)?.question
+      const hasPendingQuestion = pendingQuestion?.flowId === 'xiaoy-guided-intake-v1'
+      const startsNewSkinIntake = hasPendingQuestion && needsBaseSkinGuidance(input.query, input.profile || {})
+      // Product wording starts a new skin intake on a fresh conversation. The
+      // broad leave matcher only acts as a topic switch while a question is
+      // actually pending; otherwise “想选粉底” would skip the first check.
+      const explicitTopicSwitch = /换(?:个)?(?:话题|问题)|我想问的是|不聊(?:肤质|皮肤)|天气|新闻|电脑|手机|API\s*Key|Authorization|系统提示词|识别身份|诊断|治疗/i.test(String(input.query || ''))
+      const skipSkinGuidance = hasPendingQuestion ? leavesSkinGuidance(input.query) && !startsNewSkinIntake : explicitTopicSwitch
       const hasExplicitFollowup = /[;；\n]|另外|此外|还想|顺便|再问|并且|同时|以及/.test(String(input.query || ''))
       if (hasSkinDiscomfort(input.query) && !hasExplicitFollowup) return answerOne(input, { skinDiscomfort: true })
-      const topicSwitch = leavesSkinGuidance(input.query)
+      const topicSwitch = hasPendingQuestion ? leavesSkinGuidance(input.query) && !startsNewSkinIntake : explicitTopicSwitch
       // An explicit makeup-plan request is a new topic even when the previous
       // turn was a skin or route question. Let the normal router answer it.
       const currentIntent = intentRouter(input.query, products, input.messages || [])

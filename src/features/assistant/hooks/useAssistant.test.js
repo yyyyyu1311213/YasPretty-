@@ -344,7 +344,8 @@ describe('小Y状态与发送流程', () => {
 
   it.each([
     ['你好', '你好，我是小Y。先用一句话告诉我你想解决什么', false],
-    ['推荐通勤底妆', '没有提供肤质', true],
+    ['推荐通勤底妆', '暂未推荐产品', false],
+    ['我是男生', '只知道性别还无法判断', false],
     ['我是油皮，预算 400 元，想要柔雾通勤底妆', '根据目前记录的需求', true],
   ])('keeps a labeled local fallback after request failure for %s', async (text, expected, hasProducts) => {
     vi.mocked(requestAssistant).mockRejectedValue(new TypeError('Failed to fetch'))
@@ -355,7 +356,7 @@ describe('小Y状态与发送流程', () => {
     expect(render()).toMatchObject({ busy: false, mode: 'local', activeModel: '', input: '' })
     expect(render().messages[1]).toMatchObject({ role: 'user', content: text, productIds: [], sources: [] })
     expect(requestAssistant).toHaveBeenCalledOnce()
-    expect(latest().content).toContain('已降级')
+    if (text !== '我是男生') expect(latest().content).toContain('已降级')
     expect(requestMakeupPlan).not.toHaveBeenCalled()
     expect(saved('messages')).toEqual(render().messages)
     if (text.startsWith('我是油皮')) {
@@ -367,6 +368,24 @@ describe('小Y状态与发送流程', () => {
         expect(product.skins).toContain('油皮')
       }
     }
+  })
+
+  it('keeps an unrelated identity answer on the pending offline skin question', async () => {
+    const profile = { budget: 150 }
+    const initialQuery = '我是男生，想选粉底液，预算150元'
+    const question = { flowId: 'xiaoy-guided-intake-v1', step: 1, route: 'general', selections: [], initialQuery,
+      options: [{ label: '全脸都容易油', value: 'skin-oily' }, { label: '主要是额头和鼻子', value: 'skin-zone' },
+        { label: '不太出油', value: 'skin-low-oil' }, { label: '没注意过，换个问法', value: 'skin-unknown' }] }
+    values.set('yaspretty-xiaoy-profile-v1', JSON.stringify({ version: 1, value: profile }))
+    values.set('yaspretty-xiaoy-messages-v1', JSON.stringify({ version: 1, value: [
+      { role: 'user', content: initialQuery }, { role: 'assistant', content: '平时到下午哪里容易出油？', question },
+    ] }))
+    vi.stubGlobal('navigator', { onLine: false })
+    await render().sendMessage('我是男生')
+    expect(latest().question).toEqual(question)
+    expect(latest().content).toContain('性别不能代替肤质信息')
+    expect(latest().productIds).toEqual([])
+    expect(saved('profile')).toEqual(profile)
   })
 
   it('captures pre-send history, persists the user/profile before completion and rejects sends after rendering busy', async () => {

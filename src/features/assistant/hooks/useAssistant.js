@@ -8,7 +8,8 @@ import { cleanErrorMessage, extractProfile, localMakeupReply, localReply } from 
 import { canRecommendOffline, detectIntent, needsOnlineResearch } from '../intentUtils'
 import { beginnerFollowup, readBeginnerContext } from '../beginnerContext'
 import { assessSkin, readSkinObservation, observationFromChoice, skinConditions, skinConversationContext,
-  skinObservationFromQuestion, isSkinQuestion, isSkinUncertain, isSkinSkip, asksSkinGuidance, skinChoiceFromReply, leavesSkinGuidance, advanceSkinObservation } from '../skinObservation'
+  skinObservationFromQuestion, skinQuestionSpec, needsBaseSkinGuidance, isSkinQuestion, isSkinUncertain, isSkinSkip,
+  asksSkinGuidance, skinChoiceFromReply, leavesSkinGuidance, advanceSkinObservation } from '../skinObservation'
 
 const welcomeMessage = {
   id: 'welcome',
@@ -85,7 +86,8 @@ export function useAssistant() {
     const context = skinConversationContext(history)
     const choice = selectedValue || skinChoiceFromReply(text, context?.question)
     const hasObservation = Object.keys(readSkinObservation(text)).length > 0
-    const skinTurn = context && !leavesSkinGuidance(text) && ((choice && (isSkinQuestion(context.question) || context.baseSelection)) || isSkinUncertain(text) || isSkinSkip(text) || asksSkinGuidance(text) || hasObservation)
+    const skinTurn = context && !leavesSkinGuidance(text) && (isSkinQuestion(context.question)
+      || (choice && context.baseSelection) || isSkinUncertain(text) || isSkinSkip(text) || asksSkinGuidance(text) || hasObservation)
     const guidedTurn = activeQuestion?.question?.flowId === 'xiaoy-guided-intake-v1' && !leavesSkinGuidance(text)
     const beginnerTurn = Boolean(beginnerFollowup(text) && readBeginnerContext(history))
     const nextProfile = selectedValue || skinTurn || guidedTurn || beginnerTurn ? profile : extractProfile(text, profile)
@@ -113,6 +115,7 @@ export function useAssistant() {
       const assessment = progress?.assessment || (skinTurn ? assessSkin(observation, isSkinSkip(text) || choice === 'route-direct') : null)
       const skinChoice = assessment ? { ...skinConditions(assessment), sensitive: assessment.sensitive || profile.skin === '敏感肌' } : null
       const fallbackQuery = progress?.initialQuery || (skinTurn ? context.initialQuery : text)
+      const needsInitialSkin = !context && needsBaseSkinGuidance(text, nextProfile)
       const intent = detectIntent(fallbackQuery)
       const errorMessage = cleanErrorMessage(error.message)
       const offline = globalThis.navigator?.onLine === false || error instanceof TypeError
@@ -120,6 +123,14 @@ export function useAssistant() {
       if (/红肿|刺痛|破损|皮肤破|明显不适/.test(text)) {
         setMessages((current) => [...current, createMessage('assistant', '先停止使用让你不适的产品，并咨询合格专业人员。现在有明显不适，先暂停上妆和产品推荐。')])
         setMode('ready')
+      } else if (needsInitialSkin) {
+        const spec = skinQuestionSpec('oil')
+        const question = { flowId: 'xiaoy-guided-intake-v1', step: 1, route: 'general', selections: [], initialQuery: text, options: spec.options }
+        setMessages((current) => [...current, createMessage('assistant', `${reason}，已降级为本地肤质引导，暂未推荐产品。${spec.answer}`, [], [], question, true)])
+        setMode('local')
+      } else if (intent === 'clarification') {
+        setMessages((current) => [...current, createMessage('assistant', '只知道性别还无法判断你想解决什么问题，我也不会按性别直接挑产品。你可以告诉我想了解的品类或遇到的具体问题。')])
+        setMode('local')
       } else if (beginnerTurn || guidedTurn && !isSkinQuestion(activeQuestion.question)) {
         const failed = createMessage('assistant', `${reason}，这次${beginnerTurn ? '追问' : '选择'}尚未处理完成。已保留原问题和“${text}”，可以重试，也可以直接输入新的要求。`)
         failed.retry = { text, selectedValue, questionId: activeQuestion.id, ...(beginnerTurn ? { kind: 'followup' } : {}) }

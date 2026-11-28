@@ -2,7 +2,7 @@ import { postJson } from '../../lib/api/client'
 import { ASSISTANT_ENDPOINT } from '../../lib/api/endpoints'
 import { createApiError } from '../../lib/api/errors'
 import { requestMakeupPlan as requestPlan } from '../makeup-plan/makeupPlanApi'
-import { formatPlanReply, parseAssistantResult, planPayloadFromConversation } from './assistantUtils'
+import { formatPlanReply, parseAssistantResult, planPayloadFromConversation, toPlainAssistantText } from './assistantUtils'
 
 /**
  * @param {{text: string, messages: import('../../contracts/index.js').AssistantMessage[], profile: import('../../contracts/index.js').AssistantProfile}} request
@@ -11,7 +11,9 @@ export async function requestAssistant({ text, messages, profile }) {
   const { data } = await postJson(ASSISTANT_ENDPOINT, {
     query: text,
     profile,
-    messages: messages.slice(-8).map((message) => ({ role: message.role, content: message.content.slice(0, 4000), ...(message.role === 'assistant' ? { productIds: (message.productIds || []).slice(0, 3), ...(message.question ? { question: message.question } : {}), ...(message.beginnerContext ? { beginnerContext: message.beginnerContext } : {}) } : {}) })),
+    messages: messages.slice(-8).map((message) => ({ role: message.role,
+      content: (message.role === 'assistant' ? toPlainAssistantText(message.content) : message.content).slice(0, 4000),
+      ...(message.role === 'assistant' ? { productIds: (message.productIds || []).slice(0, 3), ...(message.question ? { question: message.question } : {}), ...(message.beginnerContext ? { beginnerContext: message.beginnerContext } : {}) } : {}) })),
   }, (response, data) => createApiError(
     data?.error?.message || `请求失败（${response.status}）`,
     data?.error?.code || 'REQUEST_FAILED',

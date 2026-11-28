@@ -2,6 +2,7 @@ import { products } from '../../data/products'
 import { legacyToForm, toPlanPayload } from '../makeup-plan/makeupPlanUtils'
 import { findMentionedProducts } from './intentUtils'
 import { extractRequestConditions } from './profileUtils'
+import { isBaseSelection, isSkinSkip, needsBaseSkinGuidance } from './skinObservation'
 
 const SCENE_OPTIONS = ['通勤', '约会', '拍照', '夏季', '秋冬', '长时间带妆', '答辩']
 const INTERNAL_PRODUCT_STATUS = /待核验|已核验|未核验|待确认|未标注|暂无信息|unknown|null/i
@@ -92,8 +93,12 @@ export function recommendProducts(profile, text) {
 export function localReply(text, profile, requestConditions = {}) {
   profile = { ...extractRequestConditions(text, profile), ...requestConditions }
   if (requestConditions.skinValues || requestConditions.skinSkipped) delete profile.skin
+  if (isBaseSelection(text) && isSkinSkip(text) && !profile.skin) profile.skinSkipped = true
   if (/^(你好|嗨|hello|hi)[！!。\s]*$/i.test(text)) {
     return { text: '你好，我是小Y。先用一句话告诉我你想解决什么，我会结合需求继续引导。', products: [] }
+  }
+  if (needsBaseSkinGuidance(text, profile)) {
+    return { text: '在筛选底妆前，我需要先了解你日常的肤质倾向。性别不能判断肤质；你可以描述平时哪里容易出油、两颊是否干燥，也可以跳过肤质筛选。', products: [] }
   }
 
   const mentioned = findMentionedProducts(text)
@@ -184,6 +189,30 @@ export function formatPlanReply(plan) {
   }
 }
 
+export function toPlainAssistantText(value) {
+  return String(value ?? '')
+    .replace(/\r\n?/g, '\n')
+    .replace(/^[ \t]{0,3}(?:```|~~~)[^\n]*$/gm, '')
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '$1（$2）')
+    .replace(/^[ \t]{0,3}#{1,6}[ \t]+/gm, '')
+    .replace(/^[ \t]*>[ \t]?/gm, '')
+    .replace(/^[ \t]*(?:[-*+]|•)[ \t]+/gm, '')
+    .replace(/^[ \t]*(\d+)[.)、][ \t]+/gm, '第$1项：')
+    .replace(/^[ \t]*\|?[ \t]*:?-{3,}:?[ \t]*(?:\|[ \t]*:?-{3,}:?[ \t]*)+\|?[ \t]*$/gm, '\uE000')
+    .replace(/^[ \t]*\|(.+)\|[ \t]*$/gm, (_, row) => row.split('|').map((cell) => cell.trim()).filter(Boolean).join('：'))
+    .replace(/\n\uE000\n/g, '\n')
+    .replace(/^[ \t]*(?:-{3,}|_{3,}|\*{3,})[ \t]*$/gm, '')
+    .replace(/(\*\*|__)([^\n]+?)\1/g, '$2')
+    .replace(/~~([^\n]+?)~~/g, '$1')
+    .replace(/`([^`\n]+)`/g, '$1')
+    .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '$1')
+    .replace(/(?<![\w])_([^_\n]+)_(?![\w])/g, '$1')
+    .replace(/^[ \t]+|[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 export function localMakeupReply(text, profile) {
   const waterGlow = /水光|亮泽|清透|韩女/.test(text)
   const baseProducts = recommendProducts({ ...profile, category: '粉底液' }, '底妆').slice(0, 2)
@@ -209,7 +238,7 @@ export function parseAssistantResult(raw) {
     .map((match) => match[1].trim())
     .filter((id) => products.some((product) => product.id === id))
   return {
-    text: raw.replace(/\n?\[\[PRODUCT:[^\]]+\]\]/g, '').trim(),
+    text: toPlainAssistantText(raw.replace(/\n?\[\[PRODUCT:[^\]]+\]\]/g, '')),
     productIds: [...new Set(ids)].slice(0, 3),
   }
 }

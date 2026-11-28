@@ -21,6 +21,7 @@ const isExternalObject = (text) => /手机|打印机|电脑|汽车|自行车|笔
 const isRecommendation = (text) => /推荐|选什么|怎么选|哪个好|我(?:是|的肤质是|肤质是).*(?:皮|肌)|^(?:混油皮|混干皮|干皮|油皮|敏感肌)$|^预算|(?:我.*)?(?:想要|想找|想买|想选|要买)/.test(text)
 const isOverview = (text) => /怎么样|好用|介绍|了解|评价|如何/.test(text)
 const isCatalogSizeQuestion = (text) => /^(?:请问)?(?:你们(?:的)?|本站|站内|网站(?:上)?|产品库(?:里|中)?|库里)(?:产品库(?:里|中)?|收录|列出|展示|推荐|卖|的|这些|产品|商品|化妆品)*(?:全部|全|都)?(?:是|是不是|是指|收录)?(?:正装|小样|中样|试用装)(?:规格)?(?:吗|么|对吗)?[？?。！!\s]*$/.test(text)
+const isIdentityOnlyStatement = (text) => /^(?:我(?:(?:是|属于|只是|也是)?)(?:一名|一个)?(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子)|本人(?:(?:是|属于)?)(?:一名|一个)?(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子)|(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子))[。！!？?\s]*$/.test(text)
 
 function intentRouter(query, products = [], messages = []) {
   const text = String(query || '').trim()
@@ -29,6 +30,8 @@ function intentRouter(query, products = [], messages = []) {
   const reference = (referencePattern.test(text) || resolution.referenced) && !/手机|打印机|电脑|汽车/.test(text)
   const specified = resolution.products.length > 0
   if (isSensitive(text)) return 'unsupported_sensitive'
+  // Identity alone is neither a makeup goal nor a product-filtering condition.
+  if (isIdentityOnlyStatement(text)) return 'clarification'
   const preferenceChoice = /^(?:natural_refinement|daily_makeup|neutral_makeup|自然修饰|日常彩妆|不区分性别|按需求搭配)[。！!？?\s]*$/.test(text)
   const offeredPlanDirection = messages.at(-1)?.role === 'assistant' && /(?:搭配完整妆容|调整妆容方向).*(?:自然修饰|日常彩妆|不区分性别)/.test(messages.at(-1)?.content || '')
   if (preferenceChoice && offeredPlanDirection) return 'makeup_plan'

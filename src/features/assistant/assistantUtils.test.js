@@ -10,6 +10,7 @@ import {
   parseAssistantResult,
   planPayloadFromConversation,
   recommendProducts,
+  toPlainAssistantText,
 } from './assistantUtils'
 import { extractRequestConditions, extractSpendingLimit, skinRequestFromChoice } from './profileUtils'
 import { assessSkin, readSkinObservation, skinConditions } from './skinObservation'
@@ -42,9 +43,14 @@ describe('小Y本地规则', () => {
     expect(profile).toEqual({ skin: '油皮', budget: 1000 })
   })
 
-  it('recognizes existing daily observations but not an occasional flake as a skin category', () => {
+  it('recognizes varied self-reported skin language but not unrelated concerns or an occasional flake', () => {
     expect(extractRequestConditions('我想选底妆，T区油、两颊偏干')).toMatchObject({ skinValues: ['混油皮', '混干皮'] })
     expect(extractRequestConditions('我想选底妆，偶尔起皮')).not.toHaveProperty('skinValues')
+    expect(extractRequestConditions('我的肤质偏干，偶尔长痘，推荐粉底液')).toMatchObject({ skin: '干皮' })
+    expect(extractRequestConditions('我属于干性皮肤，预算200元，想买气垫')).toMatchObject({ skin: '干皮', budget: 200 })
+    expect(extractRequestConditions('平时不怎么出油，两颊容易紧绷，想选底妆')).toMatchObject({ skinValues: ['干皮', '混干皮'] })
+    expect(extractRequestConditions('我是男生，偶尔长痘，想选底妆')).not.toHaveProperty('skinValues')
+    expect(extractProfile('我的皮肤偏干，偶尔长痘')).toMatchObject({ skin: '干皮' })
   })
 
   it.each(['我朋友说，预算200元，想要哑光气垫', 'YSL售价300元左右', '假如我是干皮，预算200元', '她喜欢哑光，想买气垫'])('audit: does not persist third-person, hypothetical or product-price statements: %s', (text) => {
@@ -162,6 +168,18 @@ describe('小Y本地规则', () => {
     expect(result.text).not.toContain('PRODUCT')
   })
 
+  it('converts common Markdown reply syntax into ordinary text while retaining citations and link targets', () => {
+    const markdown = '# 选择建议\n\n**肤质适配**：先看产品资料。\n- 少量试用。\n1. 观察妆效。\n\n`自然光`下复核，[来源](https://example.test/source)。\n\n| 项目 | 说明 |\n| --- | --- |\n| 妆效 | 自然 |\n\n> 结果会受光线影响。'
+    expect(toPlainAssistantText(markdown)).toBe('选择建议\n\n肤质适配：先看产品资料。\n少量试用。\n第1项：观察妆效。\n\n自然光下复核，来源（https://example.test/source）。\n\n项目：说明\n妆效：自然\n\n结果会受光线影响。')
+    expect(toPlainAssistantText('加粗 **保留 _SKU_** 与 [1] 来源编号。')).toBe('加粗 保留 SKU 与 [1] 来源编号。')
+  })
+
+  it('cleans Markdown formatting in model answers without losing validated product markers', () => {
+    const knownId = products[0].id
+    const result = parseAssistantResult(`**建议**：按 [1] 资料选择。\n[[PRODUCT:${knownId}]]`)
+    expect(result).toEqual({ text: '建议：按 [1] 资料选择。', productIds: [knownId] })
+  })
+
   it('updates stated conditions without losing existing preferences or mutating the old profile', () => {
     const current = { skin: '油皮', budget: 400, scene: '通勤', tone: '暖调', city: '杭州' }
     const next = extractProfile('改为大干皮，预算 200 元，我喜欢雾面，我是冷白', current)
@@ -196,10 +214,12 @@ describe('小Y本地规则', () => {
 
   it('answers a complete catalog request before asking for optional skin context', () => {
     const initial = localReply('推荐通勤底妆', {})
-    expect(initial.products.length).toBeGreaterThan(0)
-    expect(initial.products.every((product) => products.includes(product) && product.category === '粉底液')).toBe(true)
-    expect(initial.text).toContain('没有提供肤质')
-    expect(initial.text).toContain('保守筛选')
+    expect(initial.products).toEqual([])
+    expect(initial.text).toContain('筛选底妆前')
+    expect(initial.text).toContain('日常的肤质倾向')
+    const skipped = localReply('推荐通勤底妆，直接推荐吧', {})
+    expect(skipped.products.length).toBeGreaterThan(0)
+    expect(skipped.text).toContain('本次候选未按肤质筛选')
     const profile = { skin: '油皮', budget: 400, category: '粉底液' }
     const reply = localReply('推荐通勤底妆', profile)
     expect(reply.products.length).toBeGreaterThan(0)

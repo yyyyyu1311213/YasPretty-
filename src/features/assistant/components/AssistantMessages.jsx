@@ -3,6 +3,7 @@ import { isSkinQuestion } from '../skinObservation'
 import { products } from '../../../data/products'
 import AssistantProduct from './AssistantProduct'
 import SourceList from './SourceList'
+import { toPlainAssistantText } from '../assistantUtils'
 
 export default function AssistantMessages({ messages, profile, busy, activity, messageEndRef, onOpenProduct, onChoose, onRetry }) {
   const lastMessage = messages.at(-1)
@@ -13,7 +14,7 @@ export default function AssistantMessages({ messages, profile, busy, activity, m
         <article key={message.id} className={`xiaoy-message ${message.role}`}>
           <span className="xiaoy-message-icon">{message.role === 'assistant' ? <Bot size={17} /> : <UserRound size={17} />}</span>
           <div className="xiaoy-message-body">
-            <p>{message.content}</p>
+            <p>{message.role === 'assistant' ? toPlainAssistantText(message.content) : message.content}</p>
             {message.question && (
               <div className="xiaoy-choice-group" role="group" aria-label="小Y引导选项">
                 {message.question.options.map((option) => (

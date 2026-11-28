@@ -7,13 +7,22 @@ export const isSkinUncertain = (text) => /^(?:我)?(?:也|还|暂时|真的|真)
   || /^(?:你)?帮我看看(?:吧)?$/.test(normalizeSkinText(text))
   || /肤质|皮肤类型/.test(text) && /不知道|不清楚|不确定|说不清|分不清|不懂/.test(text)
 export const isSkinSkip = (text) => /跳过|不用(?:再)?问了?|别(?:再)?继续问了?|不问了|直接(?:推荐|选|回答|给我建议)|先按(?:原问题|这些条件回答)|你先说结论|不清楚的地方你自己假设/.test(text)
+export const isIdentityOnlyStatement = (text) => /^(?:我(?:(?:是|属于|只是|也是)?)(?:一名|一个)?(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子)|本人(?:(?:是|属于)?)(?:一名|一个)?(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子)|(?:男生|男士|男性|男的|女生|女士|女性|女的|男孩子|女孩子))[。！!？?\s]*$/.test(String(text || '').trim())
 export const asksSkinGuidance = (text) => /(?:肤质|皮肤类型).*(?:不知|不清楚|不确定|怎么看|怎么判断)|(?:不知|不清楚|不确定|怎么看|怎么判断|怎么知道|分不清|不懂).*(?:肤质|皮肤类型)|有时候油有时候干|有时油有时干|时油时干/.test(normalizeSkinText(text))
-export const isBaseSelection = (text) => /推荐|选什么|怎么选|想买|想选|要买|选个|选一|找/.test(text) && /粉底|底妆|气垫|素颜霜/.test(text)
+export const isBaseSelection = (text) => /推荐|建议|选什么|怎么选|怎么挑|想买|想选|想挑|想找|想要|需要|要买|选个|选一|挑个|挑一|帮我选|帮我挑|购买/.test(text)
+  && /粉底|底妆|气垫|素颜霜|遮瑕|散粉|隔离|有色面霜/.test(text)
+  && !/色号|怎么涂|怎么上|怎么用|教程|步骤|区别|顺序|先.{0,6}(?:粉底|遮瑕)|化妆刷|刷具/.test(text)
+export const needsBaseSkinGuidance = (text, profile = {}) => {
+  if (!isBaseSelection(text) || profile.skin || profile.skinValues?.length || profile.skinSkipped || isSkinSkip(text)) return false
+  if (/(?:适合|给|为|推荐(?:一款|一个)?)\s*(?:混油皮|混干皮|敏感肌|油皮|干皮)/.test(String(text || ''))) return false
+  return !assessSkin(readSkinObservation(text)).values.length
+}
 export const isSkinQuestion = (question) => question?.flowId === 'xiaoy-guided-intake-v1'
   && question.options?.some(({ value }) => /^(skin-|cheek-)/.test(value))
 
 // A new task takes precedence over short answers to the pending observation question.
 export const leavesSkinGuidance = (text) => /换(?:个)?(?:话题|问题)|我想问的是|不聊(?:肤质|皮肤)|天气|新闻|电脑|手机|API\s*Key|Authorization|系统提示词|识别身份|诊断|治疗/i.test(text)
+  || /^(?:你好|嗨|hello|hi|在吗)[！!。？?\s]*$/i.test(String(text || '').trim())
   || /(?:推荐|想买|想选|怎么选|怎么用|怎么涂|怎么画|区别|比较|对比).*(?:粉底|底妆|气垫|遮瑕|口红|唇|腮红|眉|眼影|刷具|卸妆)|(?:粉底|底妆|气垫|遮瑕|口红|唇|腮红|眉|眼影|刷具|卸妆).*(?:怎么涂|怎么用|怎么画|怎么选|区别|比较|对比)/.test(text)
 
 export function skinChoiceFromReply(text, question) {
@@ -31,9 +40,9 @@ export function skinChoiceFromReply(text, question) {
 export function readSkinObservation(text, previous = {}) {
   const value = normalizeSkinText(text)
   const next = { ...previous }
-  const explicit = String(text).match(/(?:^|[，,。；;\s])(?:我是|我属于|我肤质是|我的肤质是)?(混油皮|混干皮|油皮|干皮)(?=$|[，,。；;\s]|皮肤|想|预算|推荐)/)?.[1]
-  if (explicit && !/不是|不确定|不知道|如果|适合|吗|\?/.test(String(text))) next.explicit = explicit
-  if (/(?:我是|我有|容易|属于).*敏感|^敏感肌$/.test(value)) next.sensitive = true
+  const explicit = explicitSkinType(text)
+  if (explicit) next.explicit = explicit
+  if (/(?:我.{0,8}|容易|属于).*(?:敏感|易泛红)|敏感肌|干敏肌|油敏肌/.test(value)) next.sensitive = true
   const low = /不太(?:出)?油|不怎么(?:出)?油|很少出油|不(?:出)?油/.test(value)
   const all = /(?:全脸|整脸)(?:都|也|很|容易|常|经常|总是|每次)*[出偏]?油|容易全脸出油/.test(value)
   const zone = /(?:t区|字区|鼻子|鼻翼|额头)(?:和鼻子|和额头)?(?:都|也|很|容易|常|经常|总是|主要|会|爱)*[出偏]?油/.test(value)
@@ -47,8 +56,23 @@ export function readSkinObservation(text, previous = {}) {
   else if (/偶尔|有时/.test(value) && dryness) next.cheeks = 'sometimes'
   else if (dryness && (cheeks || /经常|总是|常常|每天/.test(value))) next.cheeks = 'often'
   if (/不油也不干|不干也不油|不明显油也不明显干|全脸都还好/.test(value)) Object.assign(next, { oil: 'low', cheeks: 'never' })
-  if ((all && low) || /有时候油有时候干|有时油有时干|时油时干|出油又紧绷|又油又(?:干|紧绷)/.test(value)) next.conflicting = true
+  if ((all && low) || /有时候油有时候干|有时油有时干|时油时干|出油又紧绷|又油又(?:干|紧绷)|外油内干/.test(value)) next.conflicting = true
   return next
+}
+
+function explicitSkinType(text) {
+  const aliases = '(混合型偏油|混合偏油|混油皮|混合型偏干|混合偏干|混干皮|油敏肌|油性(?:皮肤|肌肤|肤质)?|偏油(?:性)?|大油皮|油皮|油|干敏肌|干性(?:皮肤|肌肤|肤质)?|偏干(?:性)?|大干皮|干皮|干燥|干)'
+  const prefix = '(?:我是|我属于|我偏向|我偏|我(?:最近|平时|通常|现在)?(?:的)?(?:肤质|皮肤|肌肤)(?:的话)?(?:是|为|属于|偏向|偏|比较|有点|挺|很)?|我|(?:肤质|皮肤|肌肤)(?:的话)?(?:是|为|属于|改为|偏向|偏|比较|有点|挺|很)?|是|为|改为|更正为)'
+  const clauses = String(text).normalize('NFKC').split(/[，,。；;]/)
+    .filter((clause) => !/不是|不属于|不确定|不知道|如果|假设|适合|吗|\?/.test(clause))
+  const match = clauses.map((clause) => clause.match(new RegExp(`^(?:${prefix})?${aliases}(?=$|\\s|皮肤|肌肤|肤质|的|了|想|预算|推荐|购买)`)))
+    .find(Boolean)
+  if (!match) return null
+  const alias = match[1]
+  if (/^(?:混油|混合.*偏油)/.test(alias)) return '混油皮'
+  if (/^(?:混干|混合.*偏干)/.test(alias)) return '混干皮'
+  if (/油/.test(alias)) return '油皮'
+  return '干皮'
 }
 
 export function observationFromChoice(value, previous = {}) {
@@ -100,7 +124,7 @@ export function assessSkin(observation = {}, skip = false) {
 }
 
 const skinQuestions = {
-  oil: { answer: '没关系，不用先给自己贴标签。平时到下午，你脸上通常哪里容易出油？', options: [
+  oil: { answer: '平时到下午，你脸上通常哪里容易出油？', options: [
     ['全脸都容易油', 'skin-oily'], ['主要是额头和鼻子', 'skin-zone'], ['不太出油', 'skin-low-oil'], ['没注意过，换个问法', 'skin-unknown'],
   ] },
   'oil-clue': { answer: '换个好回想的问法：最近下午照镜子或摸脸时，哪种情况更常见？', options: [
@@ -136,13 +160,20 @@ function skinQuestionKind(value = '') {
 
 // Same bounded question progression online and after a transport failure.
 export function advanceSkinObservation(question, text) {
-  if (!isSkinQuestion(question) || leavesSkinGuidance(text)) return null
+  if (!isSkinQuestion(question)) return null
+  const explicitSkip = isSkinSkip(text)
+  if (leavesSkinGuidance(text) && !explicitSkip) return null
   const choice = skinChoiceFromReply(text, question)
   const observation = readSkinObservation(text)
   const selected = question.options.find(({ value }) => value === choice)
-  const skipped = isSkinSkip(text) || Boolean(selected && isSkinSkip(selected.label))
+  const skipped = explicitSkip || Boolean(selected && isSkinSkip(selected.label))
   const uncertain = isSkinUncertain(text) || /unknown$/.test(choice || '')
-  if (!choice && !Object.keys(observation).length && !skipped && !uncertain && !asksSkinGuidance(text)) return null
+  if (!choice && !Object.keys(observation).length && !skipped && !uncertain && !asksSkinGuidance(text)) {
+    return { assessment: assessSkin(skinObservationFromQuestion(question)), initialQuery: question.initialQuery || '',
+      selections: question.selections || [], answer: isIdentityOnlyStatement(text)
+        ? '收到。性别不能代替肤质信息；请按刚才的问题补充日常感受，或选择“不确定/跳过”。'
+        : '我还没识别到与肤质有关的日常感受。请按刚才的问题补充；如果暂时不确定，可以换种方式回想或选择跳过。', question }
+  }
   const initialQuery = choice ? question.initialQuery || '' : `${question.initialQuery || ''}；${text}`.slice(0, 1000)
   const previous = skinObservationFromQuestion(question)
   const value = choice ? observationFromChoice(choice, previous) : readSkinObservation(text, previous)

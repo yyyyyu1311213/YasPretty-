@@ -62,13 +62,18 @@ describe('AI-R01 server orchestration', () => {
     expect(result.answer).toContain('停止使用并咨询合格专业人员')
     expect(result.guidedQuestion).toBeUndefined()
   })
-  it('continues with catalog candidates when the user explicitly skips an unknown skin type', async () => {
+  it('continues with catalog candidates after the user explicitly skips skin intake', async () => {
     const api = service.createAssistantService({ products: products.map((product) => ({ ...product, category: '粉底液' })), zhipuProvider: { ...provider(), configured: false } })
     const query = '我想选底妆，但不清楚自己的肤质'
-    const result = await api.answer({ query, profile: { skin: '油皮' }, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
+    const first = await api.answer({ query, profile: { skin: '油皮' }, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
+    expect(first.guidedQuestion).toBeDefined()
+    const result = await api.answer({ query: '直接推荐吧', profile: { skin: '油皮' }, messages: [
+      { id: 'welcome', role: 'assistant', content: '先说需求' }, { role: 'user', content: query },
+      { role: 'assistant', content: first.answer, question: first.guidedQuestion },
+    ] })
     expect(result.intent).toBe('catalog_recommendation')
     expect(result.answer).toContain('[[PRODUCT:b]]')
-    expect(result.answer).toContain('你没有提供肤质')
+    expect(result.answer).toContain('本次没有按肤质筛选')
     expect(result.answer).not.toContain('先告诉我你的肤质')
     expect(result.answer).toContain('[[PRODUCT:a]]')
   })
@@ -106,8 +111,8 @@ describe('AI-R01 server orchestration', () => {
 
     const occasional = '我想选底妆，偶尔起皮'
     const next = await api.answer({ query: occasional, messages: [{ id: 'welcome', role: 'assistant', content: '先说需求' }] })
-    expect(next.guidedQuestion).toBeUndefined()
-    expect(next.intent).toBe('beauty_knowledge')
+    expect(next.guidedQuestion).toBeDefined()
+    expect(next.intent).toBe('clarification')
   })
 
   it('does not ask about sex for safety-sensitive skin discomfort', async () => {

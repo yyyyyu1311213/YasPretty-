@@ -31,6 +31,7 @@ const provider = {
       assert(messages.some(({ content }) => content === '有点烦，陪我聊聊'), 'missing recent context')
       return '刚才你说有点烦，我们可以从最困扰你的那件事聊起。'
     }
+    if (query === '测试回复格式') return '# 普通文本测试\n\n**重点内容**：只显示普通文本。\n- 保留来源编号 [1]\n1. 继续保留顺序。'
     return '听起来今天有些累。愿意聊聊发生了什么吗？'
   },
   async search() { throw new Error('Unexpected search for non-timely fallback') },
@@ -57,7 +58,7 @@ try {
       if (await menu.isVisible()) await menu.click()
       await page.getByRole('button', { name: '小Y智能选妆', exact: true }).filter({ visible: true }).click()
     }
-    async function turn(query, phrase, expectedStatus = 200, expectedCalls = 1) {
+    async function turn(query, phrase, expectedStatus = 200, expectedCalls = 1, expectPlainText = false, expectGuidance = false, expectedIntent = null) {
       const before = calls.length
       const messageCount = await page.locator('.xiaoy-message:not(.loading)').count()
       const responsePromise = page.waitForResponse((reply) => new URL(reply.url()).pathname === '/api/assistant')
@@ -67,12 +68,17 @@ try {
       const reply = await responsePromise
       const body = await reply.json()
       assert.equal(reply.status(), expectedStatus, JSON.stringify(body))
+      if (expectedIntent) assert.equal(body.intent, expectedIntent, JSON.stringify(body))
       await page.waitForFunction((count) => document.querySelectorAll('.xiaoy-message:not(.loading)').length === count + 2, messageCount)
       await page.waitForFunction((text) => [...document.querySelectorAll('.xiaoy-message.assistant')].at(-1)?.textContent.includes(text), phrase)
       assert.equal(calls.length - before, expectedCalls)
       const last = await page.locator('.xiaoy-message.assistant').last().innerText()
       assert(!/查询某款产品、比较产品|synthetic-private-detail/.test(last), last)
-      assert.equal(await page.getByRole('group', { name: '小Y引导选项' }).count(), 0)
+      if (expectPlainText) {
+        assert(!/(?:\*\*|__|~~|^\s{0,3}#{1,6}\s|^\s*[-*+]\s|^\s*\d+[.)]\s|```)/m.test(last), last)
+      }
+      const enabledGuidanceOptions = page.locator('.xiaoy-message.assistant:last-of-type .xiaoy-choice-group button:not([disabled])')
+      assert.equal(await enabledGuidanceOptions.count() > 0, expectGuidance)
       const geometry = await page.evaluate(() => {
         const chat = document.querySelector('.xiaoy-messages')
         return { width: document.documentElement.scrollWidth, chat: chat.clientWidth, scroll: chat.scrollWidth }
@@ -83,6 +89,7 @@ try {
     mode = 'success'
     await turn('有点烦，陪我聊聊', '听起来今天有些累')
     await turn('再展开说说', '刚才你说有点烦')
+    await turn('测试回复格式', '重点内容', 200, 1, true)
     await page.screenshot({ path: path.join(output, `${width}-conversation.png`) })
     await page.getByRole('button', { name: '重新开始', exact: true }).click()
     await turn('帮我写一句话', '你希望写给谁')
@@ -90,6 +97,17 @@ try {
     await turn('每次看到那么多化妆步骤就不想动了', '可以少做一点')
     await turn('我不想画眼线', '可以不画眼线')
     await page.screenshot({ path: path.join(output, `${width}-beauty-fallback.png`) })
+    await page.getByRole('button', { name: '重新开始', exact: true }).click()
+    await turn('怎么看肤质', '通常哪里容易出油', 200, 0, false, true)
+    await turn('换个问题，推荐通勤粉底', '继续选底妆', 200, 0, false, true)
+    await page.getByRole('button', { name: '重新开始', exact: true }).click()
+    await turn('我是男生，怎么选素颜霜', '继续选底妆', 200, 0, false, true)
+    await turn('我是男生', '性别不能代替肤质信息', 200, 0, false, true)
+    await turn('肤质的话是干皮，偶尔长痘', '没有找到适用肤质记录', 200, 0)
+    await page.screenshot({ path: path.join(output, `${width}-skin-guidance.png`) })
+    await page.getByRole('button', { name: '重新开始', exact: true }).click()
+    await turn('肤质的话是干皮，偶尔长痘', '听起来今天有些累', 200, 1, false, false, 'external_question')
+    await turn('肤质的话是干皮，偶尔长痘，有什么推荐', '听起来今天有些累', 200, 1, false, false, 'catalog_recommendation')
     await page.getByRole('button', { name: '重新开始', exact: true }).click()
     await turn('这款多少钱', '产品名称和版本', 200, 0)
     for (const failure of ['unconfigured', 'timeout', 'failure']) {
