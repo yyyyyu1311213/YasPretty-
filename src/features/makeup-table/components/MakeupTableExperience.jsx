@@ -54,8 +54,11 @@ export default function MakeupTableExperience({ openingReady = false, onOpenProd
       }
       if (event.data.type === 'scroll-handoff') {
         const deltaY = Number(event.data.deltaY) || 0
+        const progressDeltaY = Number.isFinite(Number(event.data.progressDeltaY))
+          ? Number(event.data.progressDeltaY)
+          : deltaY
         const current = scrollProgressRef.current
-        const next = Math.max(0, Math.min(1, current + deltaY / 900))
+        const next = Math.max(0, Math.min(1, current + progressDeltaY / 900))
         scrollProgressRef.current = next
         setScrollProgress(next)
         send('scroll-exit-progress', { progress: next })

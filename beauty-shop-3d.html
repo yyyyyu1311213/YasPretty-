@@ -3438,6 +3438,62 @@
     });
 
     let pointerDownPos = null;
+    let touchScrollGesture = null;
+    const TOUCH_SCROLL_AXIS_THRESHOLD = 8;
+    const TOUCH_SCROLL_PROGRESS_SCALE = 1.8;
+
+    // Single-finger vertical swipes share the existing page handoff; horizontal orbit and pinch stay with OrbitControls.
+    document.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'touch') return;
+      if (event.isPrimary === false) {
+        touchScrollGesture = null;
+        return;
+      }
+      touchScrollGesture = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        lastY: event.clientY,
+        axis: null,
+      };
+    }, { capture: true, passive: true });
+
+    document.addEventListener('pointermove', (event) => {
+      const gesture = touchScrollGesture;
+      if (!gesture || event.pointerType !== 'touch' || event.pointerId !== gesture.pointerId) return;
+
+      if (!gesture.axis) {
+        const distanceX = event.clientX - gesture.startX;
+        const distanceY = event.clientY - gesture.startY;
+        if (Math.max(Math.abs(distanceX), Math.abs(distanceY)) < TOUCH_SCROLL_AXIS_THRESHOLD) return;
+        gesture.axis = Math.abs(distanceY) > Math.abs(distanceX) ? 'vertical' : 'horizontal';
+      }
+
+      const deltaY = gesture.lastY - event.clientY;
+      gesture.lastY = event.clientY;
+      if (gesture.axis !== 'vertical' || phase !== 'shop' || !Number.isFinite(deltaY) || Math.abs(deltaY) < 0.5) return;
+
+      if (!scrollHandoffActive && deltaY > 0 && camera.position.distanceTo(controls.target) < scrollBaselineDistance - SCROLL_BASELINE_EPSILON) return;
+      if (!scrollHandoffActive && deltaY < 0) return;
+      if (!scrollHandoffActive && deltaY > 0) startScrollHandoff();
+      if (!scrollHandoffActive) return;
+
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+      if (scrollReleased && deltaY > 0) {
+        sendToSite('scroll-handoff', { deltaY, progressDeltaY: deltaY * TOUCH_SCROLL_PROGRESS_SCALE, released: true });
+        return;
+      }
+      if (scrollReleased && deltaY < 0) scrollReleased = false;
+      sendToSite('scroll-handoff', { deltaY, progressDeltaY: deltaY * TOUCH_SCROLL_PROGRESS_SCALE });
+    }, { capture: true, passive: false });
+
+    function clearTouchScrollGesture(event) {
+      if (touchScrollGesture?.pointerId === event.pointerId) touchScrollGesture = null;
+    }
+    document.addEventListener('pointerup', clearTouchScrollGesture, { capture: true, passive: true });
+    document.addEventListener('pointercancel', clearTouchScrollGesture, { capture: true, passive: true });
+
     renderer.domElement.addEventListener('pointerdown', (event) => {
       updatePointer(event);
       pointerDownPos = { x: event.clientX, y: event.clientY };
